@@ -1,19 +1,53 @@
 {
   "mode": "skims",
-  "generated_at": "2026-03-05T09:48:45.147180+00:00",
+  "generated_at": "2026-03-05T10:13:45.210777+00:00",
   "stats": {
     "mode": "skims",
     "forced_all_quick": true,
     "min_score": 8.0,
-    "deep_divecandidates": 19,
+    "deep_divecandidates": 26,
     "deep_cap": null,
     "deep_selected": 0,
-    "quick_candidates": 19,
+    "quick_candidates": 26,
     "quick_skim_target": null,
-    "quick_selected": 19
+    "quick_selected": 26
   },
   "deep_dive": [],
   "quick_skim": [
+    {
+      "id": "2602.07834v1",
+      "title": "Interpretable Analytic Calabi-Yau Metrics via Symbolic Distillation",
+      "abstract": "Calabi--Yau manifolds are essential for string theory but require computing intractable metrics. Here we show that symbolic regression can distill neural approximations into simple, interpretable formulas. Our five-term expression matches neural accuracy ($R^2 = 0.9994$) with 3,000-fold fewer parameters. Multi-seed validation confirms that geometric constraints select essential features, specifically power sums and symmetric polynomials, while permitting structural diversity. The functional form can be maintained across the studied moduli range ($ψ\\in [0, 0.8]$) with coefficients varying smoothly; we interpret these trends as empirical hypotheses within the accuracy regime of the locally-trained teachers ($σ\\approx 8-9\\%$ at $ψ\\neq 0$). The formula reproduces physical observables -- volume integrals and Yukawa couplings -- validating that symbolic distillation recovers compact, interpretable models for quantities previously accessible only to black-box networks.",
+      "authors": [
+        "D Yang Eng"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.DG"
+      ],
+      "published": "2026-02-08T05:51:35+00:00",
+      "link": "https://arxiv.org/pdf/2602.07834v1",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "symbolic regression for interpretable formulas in physics",
+      "llm_evidence_cn": "用于物理学可解释公式的符号回归",
+      "llm_evidence": "用于物理学可解释公式的符号回归",
+      "canonical_evidence": "用于物理学可解释公式的符号回归",
+      "llm_tldr_en": "Uses symbolic regression to distill complex neural metrics into simple, interpretable analytic formulas.",
+      "llm_tldr_cn": "利用符号回归将复杂的神经度量蒸馏为简单、可解释的解析公式。",
+      "llm_tldr": "利用符号回归将复杂的神经度量蒸馏为简单、可解释的解析公式。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "interpretability and transparency of symbolic regression models",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
     {
       "id": "2602.08270v1",
       "title": "A few-shot and physically restorable symbolic regression turbulence model based on normalized general effective-viscosity hypothesis",
@@ -38,9 +72,9 @@
       "llm_evidence_cn": "用于工程应用的符号回归湍流模型",
       "llm_evidence": "用于工程应用的符号回归湍流模型",
       "canonical_evidence": "用于工程应用的符号回归湍流模型",
-      "llm_tldr_en": "Proposes a physically restorable symbolic regression model for RANS turbulence simulation in engineering.",
-      "llm_tldr_cn": "提出了一种用于工程RANS湍流模拟的物理可恢复符号回归模型。",
-      "llm_tldr": "提出了一种用于工程RANS湍流模拟的物理可恢复符号回归模型。",
+      "llm_tldr_en": "Proposes a physically restorable symbolic regression model for improving RANS turbulence simulations.",
+      "llm_tldr_cn": "提出一种物理可恢复的符号回归模型，用于改进RANS湍流模拟。",
+      "llm_tldr": "提出一种物理可恢复的符号回归模型，用于改进RANS湍流模拟。",
       "llm_tags": [
         "query:sr"
       ],
@@ -70,13 +104,13 @@
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "high-performance symbolic regression library SimpliPy",
-      "llm_evidence_cn": "高性能符号回归库 SimpliPy",
-      "llm_evidence": "高性能符号回归库 SimpliPy",
-      "canonical_evidence": "高性能符号回归库 SimpliPy",
-      "llm_tldr_en": "Introduces SimpliPy, a rule-based engine that speeds up symbolic expression simplification by 100x.",
-      "llm_tldr_cn": "引入 SimpliPy，一种基于规则的引擎，将符号表达式简化速度提升了100倍。",
-      "llm_tldr": "引入 SimpliPy，一种基于规则的引擎，将符号表达式简化速度提升了100倍。",
+      "llm_evidence_en": "high-performance simplification engine for symbolic regression",
+      "llm_evidence_cn": "符号回归的高性能简化引擎",
+      "llm_evidence": "符号回归的高性能简化引擎",
+      "canonical_evidence": "符号回归的高性能简化引擎",
+      "llm_tldr_en": "Proposes SimpliPy, a rule-based engine that speeds up expression simplification in amortized SR by 100x.",
+      "llm_tldr_cn": "提出SimpliPy规则引擎，将摊销符号回归中的表达式简化速度提升了100倍。",
+      "llm_tldr": "提出SimpliPy规则引擎，将摊销符号回归中的表达式简化速度提升了100倍。",
       "llm_tags": [
         "query:sr"
       ],
@@ -110,57 +144,19 @@
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "LLM-based scientific equation discovery via policy optimization",
-      "llm_evidence_cn": "基于大语言模型和策略优化的科学方程发现",
-      "llm_evidence": "基于大语言模型和策略优化的科学方程发现",
-      "canonical_evidence": "基于大语言模型和策略优化的科学方程发现",
-      "llm_tldr_en": "Introduces PiT-PO to evolve LLMs into adaptive generators for symbolic regression and equation discovery.",
-      "llm_tldr_cn": "提出PiT-PO框架，将大语言模型演化为用于符号回归和方程发现的自适应生成器。",
-      "llm_tldr": "提出PiT-PO框架，将大语言模型演化为用于符号回归和方程发现的自适应生成器。",
+      "llm_evidence_en": "LLM-based scientific equation discovery via physics-informed policy optimization",
+      "llm_evidence_cn": "通过物理信息策略优化进行基于大语言模型的科学方程发现",
+      "llm_evidence": "通过物理信息策略优化进行基于大语言模型的科学方程发现",
+      "canonical_evidence": "通过物理信息策略优化进行基于大语言模型的科学方程发现",
+      "llm_tldr_en": "Evolves LLMs into adaptive generators for symbolic regression using physics-informed reinforcement learning.",
+      "llm_tldr_cn": "利用物理信息强化学习将大语言模型演化为符号回归的自适应生成器。",
+      "llm_tldr": "利用物理信息强化学习将大语言模型演化为符号回归的自适应生成器。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
       "matched_query_text": "neural symbolic regression using transformer architectures",
       "matched_requirement_id": "req-7",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2602.12259v2",
-      "title": "Think like a Scientist: Physics-guided LLM Agent for Equation Discovery",
-      "abstract": "Explaining observed phenomena through symbolic, interpretable formulas is a fundamental goal of science. Recently, large language models (LLMs) have emerged as promising tools for symbolic equation discovery, owing to their broad domain knowledge and strong reasoning capabilities. However, most existing LLM-based systems try to guess equations directly from data, without modeling the multi-step reasoning process that scientists often follow: first inferring physical properties such as symmetries, then using these as priors to restrict the space of candidate equations. We introduce KeplerAgent, an agentic framework that explicitly follows this scientific reasoning process. The agent coordinates physics-based tools to extract intermediate structure and uses these results to configure symbolic regression engines such as PySINDy and PySR, including their function libraries and structural constraints. Across a suite of physical equation benchmarks, KeplerAgent achieves substantially higher symbolic accuracy and greater robustness to noisy data than both LLM and traditional baselines.",
-      "authors": [
-        "Jianke Yang",
-        "Ohm Venkatachalam",
-        "Mohammad Kianezhad",
-        "Sharvaree Vadgama",
-        "Rose Yu"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI",
-        "cs.LG"
-      ],
-      "published": "2026-02-12T18:49:27+00:00",
-      "link": "https://arxiv.org/pdf/2602.12259v2",
-      "tags": [
-        "keyword:SR",
-        "query:SR"
-      ],
-      "llm_score": 10.0,
-      "llm_evidence_en": "LLM agent for scientific equation discovery",
-      "llm_evidence_cn": "用于科学方程发现的LLM智能体",
-      "llm_evidence": "用于科学方程发现的LLM智能体",
-      "canonical_evidence": "用于科学方程发现的LLM智能体",
-      "llm_tldr_en": "KeplerAgent uses LLMs and physics-based tools to discover symbolic equations through scientific reasoning.",
-      "llm_tldr_cn": "KeplerAgent 利用大模型和物理工具，通过科学推理过程发现符号方程。",
-      "llm_tldr": "KeplerAgent 利用大模型和物理工具，通过科学推理过程发现符号方程。",
-      "llm_tags": [
-        "query:sr"
-      ],
-      "matched_query_tag": "query:sr",
-      "matched_query_text": "algorithms for scientific equation discovery and modeling",
-      "matched_requirement_id": "req-4",
       "selection_source": "fresh_fetch"
     },
     {
@@ -191,13 +187,13 @@
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "incorporating scientific consistency and domain constraints into symbolic regression",
-      "llm_evidence_cn": "将科学一致性和领域约束引入符号回归",
-      "llm_evidence": "将科学一致性和领域约束引入符号回归",
-      "canonical_evidence": "将科学一致性和领域约束引入符号回归",
-      "llm_tldr_en": "Proposes PG-SR to ensure discovered equations align with fundamental scientific principles and constraints.",
-      "llm_tldr_cn": "提出PG-SR框架，通过引入先验约束确保发现的方程符合科学原理。",
-      "llm_tldr": "提出PG-SR框架，通过引入先验约束确保发现的方程符合科学原理。",
+      "llm_evidence_en": "incorporating physical constraints and scientific consistency into symbolic regression",
+      "llm_evidence_cn": "将物理约束和科学一致性纳入符号回归",
+      "llm_evidence": "将物理约束和科学一致性纳入符号回归",
+      "canonical_evidence": "将物理约束和科学一致性纳入符号回归",
+      "llm_tldr_en": "Proposes PG-SR to ensure scientific consistency in symbolic regression using prior constraints.",
+      "llm_tldr_cn": "提出 PG-SR 框架，通过先验约束确保符号回归中的科学一致性。",
+      "llm_tldr": "提出 PG-SR 框架，通过先验约束确保符号回归中的科学一致性。",
       "llm_tags": [
         "query:sr"
       ],
@@ -226,13 +222,13 @@
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "rediscovering gravity and gauge theory relations via symbolic regression",
-      "llm_evidence_cn": "通过符号回归重新发现引力和规范场论关系",
-      "llm_evidence": "通过符号回归重新发现引力和规范场论关系",
-      "canonical_evidence": "通过符号回归重新发现引力和规范场论关系",
-      "llm_tldr_en": "Uses symbolic regression to autonomously reconstruct analytic structures in scattering amplitudes from numerical data.",
-      "llm_tldr_cn": "利用符号回归从数值数据中自主重建散射振幅中的解析结构。",
-      "llm_tldr": "利用符号回归从数值数据中自主重建散射振幅中的解析结构。",
+      "llm_evidence_en": "rediscovering gravity relations via symbolic regression in physics",
+      "llm_evidence_cn": "在物理学中通过符号回归重新发现引力关系",
+      "llm_evidence": "在物理学中通过符号回归重新发现引力关系",
+      "canonical_evidence": "在物理学中通过符号回归重新发现引力关系",
+      "llm_tldr_en": "Uses symbolic regression to autonomously reconstruct analytic structures like KLT relations from scattering data.",
+      "llm_tldr_cn": "利用符号回归从散射数据中自主重构KLT关系等解析结构。",
+      "llm_tldr": "利用符号回归从散射数据中自主重构KLT关系等解析结构。",
       "llm_tags": [
         "query:sr"
       ],
@@ -263,19 +259,57 @@
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "physics-informed symbolic regression for turbulent flow",
-      "llm_evidence_cn": "物理启发的湍流符号回归",
-      "llm_evidence": "物理启发的湍流符号回归",
-      "canonical_evidence": "物理启发的湍流符号回归",
-      "llm_tldr_en": "Combines physical scaling relations with symbolic regression to model friction losses in pipes.",
-      "llm_tldr_cn": "将物理缩放关系与符号回归结合，对管道摩擦损失进行建模。",
-      "llm_tldr": "将物理缩放关系与符号回归结合，对管道摩擦损失进行建模。",
+      "llm_evidence_en": "Physics-informed symbolic regression with physical priors for fluid dynamics",
+      "llm_evidence_cn": "结合物理先验的物理信息符号回归用于流体力学",
+      "llm_evidence": "结合物理先验的物理信息符号回归用于流体力学",
+      "canonical_evidence": "结合物理先验的物理信息符号回归用于流体力学",
+      "llm_tldr_en": "Applies symbolic regression with physical constraints to predict friction losses in turbulent pipe flow.",
+      "llm_tldr_cn": "将带有物理约束的符号回归应用于预测湍流管道流中的摩擦损失。",
+      "llm_tldr": "将带有物理约束的符号回归应用于预测湍流管道流中的摩擦损失。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
       "matched_query_text": "incorporating physical constraints into symbolic regression",
       "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.17750v1",
+      "title": "Inelastic Constitutive Kolmogorov-Arnold Networks: A generalized framework for automated discovery of interpretable inelastic material models",
+      "abstract": "A key problem of solid mechanics is the identification of the constitutive law of a material, that is, the relation between strain and stress. Machine learning has lead to considerable advances in this field lately. Here we introduce inelastic Constitutive Kolmogorov-Arnold Networks (iCKANs). This novel artificial neural network architecture can discover in an automated manner symbolic constitutive laws describing both the elastic and inelastic behavior of materials. That is, it can translate data from material testing into corresponding elastic and inelastic potential functions in closed mathematical form. We demonstrate the advantages of iCKANs using both synthetic data and experimental data of the viscoelastic polymer materials VHB 4910 and VHB 4905. The results demonstrate that iCKANs accurately capture complex viscoelastic behavior while preserving physical interpretability. It is a particular strength of iCKANs that they can process not only mechanical data but also arbitrary additional information available about a material (e.g., about temperature-dependent behavior). This makes iCKANs a powerful tool to discover in the future also how specific processing or service conditions affect the properties of materials.",
+      "authors": [
+        "Chenyi Ji",
+        "Kian P. Abdolazizi",
+        "Hagen Holthusen",
+        "Christian J. Cyron",
+        "Kevin Linka"
+      ],
+      "primary_category": "cond-mat.mtrl-sci",
+      "categories": [
+        "cond-mat.mtrl-sci",
+        "cs.AI",
+        "physics.comp-ph"
+      ],
+      "published": "2026-02-19T15:51:24+00:00",
+      "link": "https://arxiv.org/pdf/2602.17750v1",
+      "tags": [
+        "query:SR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "automated discovery of symbolic constitutive laws in closed mathematical form",
+      "llm_evidence_cn": "自动发现闭式数学形式的符号本构方程",
+      "llm_evidence": "自动发现闭式数学形式的符号本构方程",
+      "canonical_evidence": "自动发现闭式数学形式的符号本构方程",
+      "llm_tldr_en": "Introduces iCKANs to discover interpretable symbolic mathematical expressions for material models from data.",
+      "llm_tldr_cn": "引入 iCKANs 从数据中发现材料模型的可解释符号数学表达式。",
+      "llm_tldr": "引入 iCKANs 从数据中发现材料模型的可解释符号数学表达式。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "automated discovery of mathematical expressions from data",
+      "matched_requirement_id": "req-3",
       "selection_source": "fresh_fetch"
     },
     {
@@ -300,54 +334,54 @@
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "state of the art symbolic regression using generative latent spaces",
-      "llm_evidence_cn": "使用生成潜空间的先进符号回归算法",
-      "llm_evidence": "使用生成潜空间的先进符号回归算法",
-      "canonical_evidence": "使用生成潜空间的先进符号回归算法",
-      "llm_tldr_en": "Proposes GenSR, a framework that maps symbolic equations into a continuous generative latent space.",
-      "llm_tldr_cn": "提出了 GenSR 框架，将符号方程映射到连续的生成潜空间中进行搜索。",
-      "llm_tldr": "提出了 GenSR 框架，将符号方程映射到连续的生成潜空间中进行搜索。",
+      "llm_evidence_en": "Generative latent space for symbolic regression using CVAE",
+      "llm_evidence_cn": "使用CVAE为符号回归构建生成式潜空间",
+      "llm_evidence": "使用CVAE为符号回归构建生成式潜空间",
+      "canonical_evidence": "使用CVAE为符号回归构建生成式潜空间",
+      "llm_tldr_en": "Introduces GenSR, a framework that maps symbolic equations into a continuous generative latent space.",
+      "llm_tldr_cn": "引入GenSR框架，将符号方程映射到连续的生成式潜空间中进行搜索。",
+      "llm_tldr": "引入GenSR框架，将符号方程映射到连续的生成式潜空间中进行搜索。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
-      "matched_query_text": "state of the art symbolic regression algorithms",
-      "matched_requirement_id": "req-9",
+      "matched_query_text": "neural symbolic regression using transformer architectures",
+      "matched_requirement_id": "req-7",
       "selection_source": "fresh_fetch"
     },
     {
-      "id": "2602.21393v1",
-      "title": "An information-based model selection criterion for data-driven model discovery",
-      "abstract": "Data-driven model discovery (DDMD) algorithms are powerful tools for extracting interpretable symbolic models from data. However, identifying the model that best balances goodness-of-fit and sparsity is often a laborious process requiring user fine-tuning, is prone to overfitting, and results may significantly vary depending on model initialization and specific training procedure. Here, we present a sparse regression algorithm that automatically and adaptively generates candidate models, and uses a novel sample-length-scaling logarithmic information criterion (SLIC) to identify the best model from these candidates. We demonstrate that SLIC greatly outperforms other popular information criteria in extracting the correct model from the data of several nonlinear ordinary and partial differential equations. Then, we demonstrate SLIC's ability to discover interpretable models from experimental datasets in fluid dynamics and nanotechnology that generate new testable predictions.",
+      "id": "2602.21307v1",
+      "title": "SymTorch: A Framework for Symbolic Distillation of Deep Neural Networks",
+      "abstract": "Symbolic distillation replaces neural networks, or components thereof, with interpretable, closed-form mathematical expressions. This approach has shown promise in discovering physical laws and mathematical relationships directly from trained deep learning models, yet adoption remains limited due to the engineering barrier of integrating symbolic regression into deep learning workflows. We introduce SymTorch, a library that automates this distillation by wrapping neural network components, collecting their input-output behavior, and approximating them with human-readable equations via PySR. SymTorch handles the engineering challenges that have hindered adoption: GPU-CPU data transfer, input-output caching, model serialization, and seamless switching between neural and symbolic forward passes. We demonstrate SymTorch across diverse architectures including GNNs, PINNs and transformer models. Finally, we present a proof-of-concept for accelerating LLM inference by replacing MLP layers with symbolic surrogates, achieving an 8.3\\% throughput improvement with moderate performance degradation.",
       "authors": [
-        "Michael C Chung",
-        "Alen Zacharia",
-        "Juan Guan"
+        "Elizabeth S. Z. Tan",
+        "Adil Soubki",
+        "Miles Cranmer"
       ],
-      "primary_category": "q-bio.QM",
+      "primary_category": "cs.LG",
       "categories": [
-        "q-bio.QM"
+        "cs.LG"
       ],
-      "published": "2026-02-24T21:45:10+00:00",
-      "link": "https://arxiv.org/pdf/2602.21393v1",
+      "published": "2026-02-24T19:17:56+00:00",
+      "link": "https://arxiv.org/pdf/2602.21307v1",
       "tags": [
         "keyword:SR",
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "sparse regression algorithm for extracting interpretable symbolic models from data",
-      "llm_evidence_cn": "从数据中提取可解释符号模型的稀疏回归算法",
-      "llm_evidence": "从数据中提取可解释符号模型的稀疏回归算法",
-      "canonical_evidence": "从数据中提取可解释符号模型的稀疏回归算法",
-      "llm_tldr_en": "Presents a sparse regression algorithm and a new information criterion (SLIC) for data-driven model discovery.",
-      "llm_tldr_cn": "提出了一种稀疏回归算法和新的信息准则 (SLIC) 用于数据驱动的模型发现。",
-      "llm_tldr": "提出了一种稀疏回归算法和新的信息准则 (SLIC) 用于数据驱动的模型发现。",
+      "llm_evidence_en": "SymTorch library for symbolic distillation using PySR",
+      "llm_evidence_cn": "使用PySR进行符号蒸馏的SymTorch库",
+      "llm_evidence": "使用PySR进行符号蒸馏的SymTorch库",
+      "canonical_evidence": "使用PySR进行符号蒸馏的SymTorch库",
+      "llm_tldr_en": "Presents SymTorch, a library for distilling neural networks into interpretable equations via symbolic regression.",
+      "llm_tldr_cn": "推出SymTorch库，通过符号回归将神经网络蒸馏为可解释的数学公式。",
+      "llm_tldr": "推出SymTorch库，通过符号回归将神经网络蒸馏为可解释的数学公式。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
-      "matched_query_text": "state of the art symbolic regression algorithms",
-      "matched_requirement_id": "req-9",
+      "matched_query_text": "high-performance symbolic regression libraries and tools",
+      "matched_requirement_id": "req-6",
       "selection_source": "fresh_fetch"
     },
     {
@@ -379,50 +413,15 @@
       "llm_evidence_cn": "语言模型引导的物理定律符号回归",
       "llm_evidence": "语言模型引导的物理定律符号回归",
       "canonical_evidence": "语言模型引导的物理定律符号回归",
-      "llm_tldr_en": "Introduces a framework using LLMs to guide symbolic regression for discovering interpretable physical laws.",
-      "llm_tldr_cn": "引入了一个利用大语言模型引导符号回归以发现可解释物理定律的框架。",
-      "llm_tldr": "引入了一个利用大语言模型引导符号回归以发现可解释物理定律的框架。",
+      "llm_tldr_en": "Uses LLMs to guide symbolic regression for discovering interpretable physical laws in materials science.",
+      "llm_tldr_cn": "利用大语言模型引导符号回归，从材料科学数据中发现可解释的物理定律。",
+      "llm_tldr": "利用大语言模型引导符号回归，从材料科学数据中发现可解释的物理定律。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
       "matched_query_text": "neural symbolic regression using transformer architectures",
       "matched_requirement_id": "req-7",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2602.23467v1",
-      "title": "On the Limits of Interpretable Machine Learning in Quintic Root Classification",
-      "abstract": "Can Machine Learning (ML) autonomously recover interpretable mathematical structure from raw numerical data? We aim to answer this question using the classification of real-root configurations of polynomials up to degree five as a structured benchmark. We tested an extensive set of ML models, including decision trees, logistic regression, support vector machines, random forest, gradient boosting, XGBoost, symbolic regression, and neural networks. Neural networks achieved strong in-distribution performance on quintic classification using raw coefficients alone (84.3% + or - 0.9% balanced accuracy), whereas decision trees perform substantially worse (59.9% + or - 0.9\\%). However, when provided with an explicit feature capturing sign changes at critical points, decision trees match neural performance (84.2% + or - 1.2%) and yield explicit classification rules. Knowledge distillation reveals that this single invariant accounts for 97.5% of the extracted decision structure. Out-of-distribution, data-efficiency, and noise robustness analyses indicate that neural networks learn continuous, data-dependent geometric approximations of the decision boundary rather than recovering scale-invariant symbolic rules. This distinction between geometric approximation and symbolic invariance explains the gap between predictive performance and interpretability observed across models. Although high predictive accuracy is attainable, we find no evidence that the evaluated ML models autonomously recover discrete, human-interpretable mathematical rules from raw coefficients. These results suggest that, in structured mathematical domains, interpretability may require explicit structural inductive bias rather than purely data-driven approximation.",
-      "authors": [
-        "Rohan Thomas",
-        "Majid Bani-Yaghoub"
-      ],
-      "primary_category": "math.NA",
-      "categories": [
-        "math.NA",
-        "cs.LG"
-      ],
-      "published": "2026-02-26T19:53:41+00:00",
-      "link": "https://arxiv.org/pdf/2602.23467v1",
-      "tags": [
-        "keyword:SR",
-        "query:SR"
-      ],
-      "llm_score": 10.0,
-      "llm_evidence_en": "comparison between symbolic regression and neural networks",
-      "llm_evidence_cn": "符号回归与神经网络的比较",
-      "llm_evidence": "符号回归与神经网络的比较",
-      "canonical_evidence": "符号回归与神经网络的比较",
-      "llm_tldr_en": "Evaluates symbolic regression and neural networks on recovering mathematical structures from numerical data.",
-      "llm_tldr_cn": "评估了符号回归和神经网络在从数值数据中恢复数学结构方面的表现。",
-      "llm_tldr": "评估了符号回归和神经网络在从数值数据中恢复数学结构方面的表现。",
-      "llm_tags": [
-        "query:sr"
-      ],
-      "matched_query_tag": "query:sr",
-      "matched_query_text": "comparison between symbolic regression and neural networks",
-      "matched_requirement_id": "req-10",
       "selection_source": "fresh_fetch"
     },
     {
@@ -449,19 +448,19 @@
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "variational inference for symbolic regression using soft symbolic trees",
-      "llm_evidence_cn": "使用软符号树的符号回归变分推理",
-      "llm_evidence": "使用软符号树的符号回归变分推理",
-      "canonical_evidence": "使用软符号树的符号回归变分推理",
-      "llm_tldr_en": "Introduces VaSST, a scalable probabilistic framework for symbolic regression based on variational inference.",
-      "llm_tldr_cn": "引入了 VaSST，一种基于变分推理的可扩展符号回归概率框架。",
-      "llm_tldr": "引入了 VaSST，一种基于变分推理的可扩展符号回归概率框架。",
+      "llm_evidence_en": "recovering closed-form expressions from data",
+      "llm_evidence_cn": "从数据中恢复闭式表达式",
+      "llm_evidence": "从数据中恢复闭式表达式",
+      "canonical_evidence": "从数据中恢复闭式表达式",
+      "llm_tldr_en": "Introduces a scalable probabilistic framework for symbolic regression using variational inference.",
+      "llm_tldr_cn": "引入一种基于变分推理的可扩展概率框架，用于符号回归和物理规律发现。",
+      "llm_tldr": "引入一种基于变分推理的可扩展概率框架，用于符号回归和物理规律发现。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
-      "matched_query_text": "fundamental principles and methods of symbolic regression",
-      "matched_requirement_id": "req-1",
+      "matched_query_text": "automated discovery of mathematical expressions from data",
+      "matched_requirement_id": "req-3",
       "selection_source": "fresh_fetch"
     },
     {
@@ -484,19 +483,88 @@
         "query:SR"
       ],
       "llm_score": 10.0,
-      "llm_evidence_en": "systematic comparative study of state-of-the-art SR frameworks like PySR and PhySO",
-      "llm_evidence_cn": "对 PySR 和 PhySO 等最先进符号回归框架的系统比较研究",
-      "llm_evidence": "对 PySR 和 PhySO 等最先进符号回归框架的系统比较研究",
-      "canonical_evidence": "对 PySR 和 PhySO 等最先进符号回归框架的系统比较研究",
-      "llm_tldr_en": "Evaluates multiple SOTA symbolic regression algorithms for interpretable classification in astrophysics.",
-      "llm_tldr_cn": "评估了多种最先进的符号回归算法，用于天体物理学中的可解释分类。",
-      "llm_tldr": "评估了多种最先进的符号回归算法，用于天体物理学中的可解释分类。",
+      "llm_evidence_en": "comparative study of four state-of-the-art SR frameworks",
+      "llm_evidence_cn": "四种最先进符号回归框架的对比研究",
+      "llm_evidence": "四种最先进符号回归框架的对比研究",
+      "canonical_evidence": "四种最先进符号回归框架的对比研究",
+      "llm_tldr_en": "Evaluates PySR, ESR, PhySO, and MvSR for interpretable classification in astrophysics.",
+      "llm_tldr_cn": "在天体物理分类任务中对比评估了PySR、ESR、PhySO和MvSR等先进符号回归框架。",
+      "llm_tldr": "在天体物理分类任务中对比评估了PySR、ESR、PhySO和MvSR等先进符号回归框架。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
       "matched_query_text": "state of the art symbolic regression algorithms",
       "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03346v1",
+      "title": "Physics-constrained symbolic regression for discovering closed-form equations of multimodal water retention curves from experimental data",
+      "abstract": "Modeling the unsaturated behavior of porous materials with multimodal pore size distributions presents significant challenges, as standard hydraulic models often fail to capture their complex, multi-scale characteristics. A common workaround involves superposing unimodal retention functions, each tailored to a specific pore size range; however, this approach requires separate parameter identification for each mode, which limits interpretability and generalizability, especially in data-sparse scenarios. In this work, we introduce a fundamentally different approach: a physics-constrained machine learning framework designed for meta-modeling, enabling the automatic discovery of closed-form mathematical expressions for multimodal water retention curves directly from experimental data. Mathematical expressions are represented as binary trees and evolved via genetic programming, while physical constraints are embedded into the loss function to guide the symbolic regressor toward solutions that are physically consistent and mathematically robust. Our results demonstrate that the proposed framework can discover closed-form equations that effectively represent the water retention characteristics of porous materials with varying pore structures. To support third-party validation, application, and extension, we make the full implementation publicly available in an open-source repository.",
+      "authors": [
+        "Yejin Kim",
+        "Hyoung Suk Suh"
+      ],
+      "primary_category": "physics.geo-ph",
+      "categories": [
+        "physics.geo-ph",
+        "cs.AI",
+        "cs.SC"
+      ],
+      "published": "2026-02-24T18:48:15+00:00",
+      "link": "https://arxiv.org/pdf/2603.03346v1",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "physics-constrained symbolic regression for closed-form equations",
+      "llm_evidence_cn": "物理约束符号回归用于闭式方程发现",
+      "llm_evidence": "物理约束符号回归用于闭式方程发现",
+      "canonical_evidence": "物理约束符号回归用于闭式方程发现",
+      "llm_tldr_en": "Introduces a physics-constrained symbolic regression framework to discover water retention equations from sparse data.",
+      "llm_tldr_cn": "引入物理约束符号回归框架，从稀疏数据中自动发现水分保持闭式方程。",
+      "llm_tldr": "引入物理约束符号回归框架，从稀疏数据中自动发现水分保持闭式方程。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "incorporating physical constraints into symbolic regression",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.07360v1",
+      "title": "In-Context System Identification for Nonlinear Dynamics Using Large Language Models",
+      "abstract": "Sparse Identification of Nonlinear Dynamics (SINDy) is a powerful method for discovering parsimonious governing equations from data, but it often requires expert tuning of candidate libraries. We propose an LLM-aided SINDy pipeline that iteratively refines candidate equations using a large language model (LLM) in the loop through in-context learning. The pipeline begins with a baseline SINDy model fit using an adaptive library and then enters a LLM-guided refinement cycle. At each iteration, the current best equations, error metrics, and domain-specific constraints are summarized in a prompt to the LLM, which suggests new equation structures. These candidate equations are parsed against a defined symbolic form and evaluated on training and test data. The pipeline uses simulation-based error as a primary metric, but also assesses structural similarity to ground truth, including matching functional forms, key terms, couplings, qualitative behavior. An iterative stopping criterion ends refinement early if test error falls below a threshold (NRMSE < 0.1) or if a maximum of 10 iterations is reached. Finally, the best model is selected, and we evaluate this LLM-aided SINDy on 63 dynamical system datasets (ODEBench) and march leuba model for boiling nuclear reactor. The results are compared against classical SINDy and show the LLM-loop consistently improves symbolic recovery with higher equation similarity to ground truth and lower test RMSE than baseline SINDy for cases with complex dynamics. This work demonstrates that an LLM can effectively guide SINDy's search through equation space, integrating data-driven error feedback with domain-inspired symbolic reasoning to discover governing equations that are not only accurate but also structurally interpretable.",
+      "authors": [
+        "Linyu Lin"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-02-07T04:52:33+00:00",
+      "link": "https://arxiv.org/pdf/2602.07360v1",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM-aided SINDy for discovering governing equations with domain constraints",
+      "llm_evidence_cn": "利用大模型辅助SINDy发现带有领域约束的控制方程",
+      "llm_evidence": "利用大模型辅助SINDy发现带有领域约束的控制方程",
+      "canonical_evidence": "利用大模型辅助SINDy发现带有领域约束的控制方程",
+      "llm_tldr_en": "Proposes an LLM-in-the-loop pipeline to refine SINDy for nonlinear system identification.",
+      "llm_tldr_cn": "提出一种大模型在环的SINDy流水线，用于非线性系统辨识的方程精炼。",
+      "llm_tldr": "提出一种大模型在环的SINDy流水线，用于非线性系统辨识的方程精炼。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "algorithms for scientific equation discovery and modeling",
+      "matched_requirement_id": "req-4",
       "selection_source": "fresh_fetch"
     },
     {
@@ -521,19 +589,57 @@
         "query:SR"
       ],
       "llm_score": 9.0,
-      "llm_evidence_en": "foundation model for ODE inference and symbolic regression comparison",
-      "llm_evidence_cn": "用于ODE推断的基础模型及与符号回归的对比",
-      "llm_evidence": "用于ODE推断的基础模型及与符号回归的对比",
-      "canonical_evidence": "用于ODE推断的基础模型及与符号回归的对比",
-      "llm_tldr_en": "Presents FIM-ODE, a foundation model for predicting vector fields from noisy trajectories, outperforming SR.",
-      "llm_tldr_cn": "提出FIM-ODE基础模型，直接从噪声轨迹预测向量场，性能优于符号回归。",
-      "llm_tldr": "提出FIM-ODE基础模型，直接从噪声轨迹预测向量场，性能优于符号回归。",
+      "llm_evidence_en": "foundation model for ODE inference using neural operators",
+      "llm_evidence_cn": "使用神经算子进行ODE推理的基础模型",
+      "llm_evidence": "使用神经算子进行ODE推理的基础模型",
+      "canonical_evidence": "使用神经算子进行ODE推理的基础模型",
+      "llm_tldr_en": "A pretrained foundation model that predicts ODE vector fields directly from noisy trajectory data.",
+      "llm_tldr_cn": "一种预训练基础模型，可直接从噪声轨迹数据中预测ODE向量场。",
+      "llm_tldr": "一种预训练基础模型，可直接从噪声轨迹数据中预测ODE向量场。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
-      "matched_query_text": "state of the art symbolic regression algorithms",
-      "matched_requirement_id": "req-9",
+      "matched_query_text": "neural symbolic regression using transformer architectures",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.12259v2",
+      "title": "Think like a Scientist: Physics-guided LLM Agent for Equation Discovery",
+      "abstract": "Explaining observed phenomena through symbolic, interpretable formulas is a fundamental goal of science. Recently, large language models (LLMs) have emerged as promising tools for symbolic equation discovery, owing to their broad domain knowledge and strong reasoning capabilities. However, most existing LLM-based systems try to guess equations directly from data, without modeling the multi-step reasoning process that scientists often follow: first inferring physical properties such as symmetries, then using these as priors to restrict the space of candidate equations. We introduce KeplerAgent, an agentic framework that explicitly follows this scientific reasoning process. The agent coordinates physics-based tools to extract intermediate structure and uses these results to configure symbolic regression engines such as PySINDy and PySR, including their function libraries and structural constraints. Across a suite of physical equation benchmarks, KeplerAgent achieves substantially higher symbolic accuracy and greater robustness to noisy data than both LLM and traditional baselines.",
+      "authors": [
+        "Jianke Yang",
+        "Ohm Venkatachalam",
+        "Mohammad Kianezhad",
+        "Sharvaree Vadgama",
+        "Rose Yu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-02-12T18:49:27+00:00",
+      "link": "https://arxiv.org/pdf/2602.12259v2",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM agent for symbolic equation discovery using scientific reasoning",
+      "llm_evidence_cn": "利用科学推理进行符号方程发现的大模型智能体",
+      "llm_evidence": "利用科学推理进行符号方程发现的大模型智能体",
+      "canonical_evidence": "利用科学推理进行符号方程发现的大模型智能体",
+      "llm_tldr_en": "KeplerAgent uses LLMs and physics tools to discover interpretable formulas through multi-step reasoning.",
+      "llm_tldr_cn": "KeplerAgent利用大模型和物理工具通过多步推理发现可解释的符号公式。",
+      "llm_tldr": "KeplerAgent利用大模型和物理工具通过多步推理发现可解释的符号公式。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "neural symbolic regression using transformer architectures",
+      "matched_requirement_id": "req-7",
       "selection_source": "fresh_fetch"
     },
     {
@@ -562,12 +668,49 @@
       ],
       "llm_score": 9.0,
       "llm_evidence_en": "data-driven equation discovery for dynamical systems",
-      "llm_evidence_cn": "动力系统的驱动方程发现",
-      "llm_evidence": "动力系统的驱动方程发现",
-      "canonical_evidence": "动力系统的驱动方程发现",
-      "llm_tldr_en": "Uses equation discovery to learn gradient flows as surrogates for accelerating engineering optimization.",
-      "llm_tldr_cn": "利用方程发现技术学习梯度流，作为加速工程优化的代理模型。",
-      "llm_tldr": "利用方程发现技术学习梯度流，作为加速工程优化的代理模型。",
+      "llm_evidence_cn": "动力系统的数据驱动方程发现",
+      "llm_evidence": "动力系统的数据驱动方程发现",
+      "canonical_evidence": "动力系统的数据驱动方程发现",
+      "llm_tldr_en": "Uses equation discovery to learn gradient flow dynamics as surrogates for engineering optimization problems.",
+      "llm_tldr_cn": "利用方程发现学习梯度流动力学，作为工程优化问题的代理模型。",
+      "llm_tldr": "利用方程发现学习梯度流动力学，作为工程优化问题的代理模型。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "algorithms for scientific equation discovery and modeling",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.15603v1",
+      "title": "Symbolic recovery of PDEs from measurement data",
+      "abstract": "Models based on partial differential equations (PDEs) are powerful for describing a wide range of complex relationships in the natural sciences. Accurately identifying the PDE model, which represents the underlying physical law, is essential for a proper understanding of the problem. This reconstruction typically relies on indirect and noisy measurements of the system's state and, without specifically tailored methods, rarely yields symbolic expressions, thereby hindering interpretability. In this work, we address this issue by considering existing neural network architectures based on rational functions for the symbolic representation of physical laws. These networks leverage the approximation power of rational functions while also benefiting from their flexibility in representing arithmetic operations. Our main contribution is an identifiability result, showing that, in the limit of noiseless, complete measurements, such symbolic networks can uniquely reconstruct the simplest physical law within the PDE model. Specifically, reconstructed laws remain expressible within the symbolic network architecture, with regularization-minimizing parameterizations promoting interpretability and sparsity in case of $L^1$-regularization. In addition, we provide regularity results for symbolic networks. Empirical validation using the ParFam architecture supports these theoretical findings, providing evidence for the practical reconstructibility of physical laws.",
+      "authors": [
+        "Erion Morina",
+        "Philipp Scholl",
+        "Martin Holler"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.SC",
+        "math.OC"
+      ],
+      "published": "2026-02-17T14:20:36+00:00",
+      "link": "https://arxiv.org/pdf/2602.15603v1",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "symbolic representation of physical laws from noisy measurements",
+      "llm_evidence_cn": "从噪声测量数据中进行物理定律的符号表示",
+      "llm_evidence": "从噪声测量数据中进行物理定律的符号表示",
+      "canonical_evidence": "从噪声测量数据中进行物理定律的符号表示",
+      "llm_tldr_en": "Uses rational function neural networks to recover symbolic PDE expressions from noisy measurement data.",
+      "llm_tldr_cn": "利用有理函数神经网络从噪声测量数据中恢复偏微分方程的符号表达式。",
+      "llm_tldr": "利用有理函数神经网络从噪声测量数据中恢复偏微分方程的符号表达式。",
       "llm_tags": [
         "query:sr"
       ],
@@ -597,57 +740,19 @@
         "query:SR"
       ],
       "llm_score": 9.0,
-      "llm_evidence_en": "sparse symbolic backbone for governing equations with physics-informed training",
-      "llm_evidence_cn": "用于控制方程的稀疏符号主干及物理信息训练",
-      "llm_evidence": "用于控制方程的稀疏符号主干及物理信息训练",
-      "canonical_evidence": "用于控制方程的稀疏符号主干及物理信息训练",
-      "llm_tldr_en": "Proposes a physics-informed sparse machine learning framework to discover governing equations for inverters.",
-      "llm_tldr_cn": "提出一种物理信息稀疏机器学习框架，用于发现逆变器的控制方程。",
-      "llm_tldr": "提出一种物理信息稀疏机器学习框架，用于发现逆变器的控制方程。",
+      "llm_evidence_en": "discovering governing equations via sparse symbolic backbone",
+      "llm_evidence_cn": "通过稀疏符号骨干发现控制方程",
+      "llm_evidence": "通过稀疏符号骨干发现控制方程",
+      "canonical_evidence": "通过稀疏符号骨干发现控制方程",
+      "llm_tldr_en": "Proposes a physics-informed sparse machine learning framework to discover unknown governing equations.",
+      "llm_tldr_cn": "提出了一种物理信息稀疏机器学习框架，用于发现未知的控制方程。",
+      "llm_tldr": "提出了一种物理信息稀疏机器学习框架，用于发现未知的控制方程。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
-      "matched_query_text": "incorporating physical constraints into symbolic regression",
-      "matched_requirement_id": "req-8",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2602.17750v1",
-      "title": "Inelastic Constitutive Kolmogorov-Arnold Networks: A generalized framework for automated discovery of interpretable inelastic material models",
-      "abstract": "A key problem of solid mechanics is the identification of the constitutive law of a material, that is, the relation between strain and stress. Machine learning has lead to considerable advances in this field lately. Here we introduce inelastic Constitutive Kolmogorov-Arnold Networks (iCKANs). This novel artificial neural network architecture can discover in an automated manner symbolic constitutive laws describing both the elastic and inelastic behavior of materials. That is, it can translate data from material testing into corresponding elastic and inelastic potential functions in closed mathematical form. We demonstrate the advantages of iCKANs using both synthetic data and experimental data of the viscoelastic polymer materials VHB 4910 and VHB 4905. The results demonstrate that iCKANs accurately capture complex viscoelastic behavior while preserving physical interpretability. It is a particular strength of iCKANs that they can process not only mechanical data but also arbitrary additional information available about a material (e.g., about temperature-dependent behavior). This makes iCKANs a powerful tool to discover in the future also how specific processing or service conditions affect the properties of materials.",
-      "authors": [
-        "Chenyi Ji",
-        "Kian P. Abdolazizi",
-        "Hagen Holthusen",
-        "Christian J. Cyron",
-        "Kevin Linka"
-      ],
-      "primary_category": "cond-mat.mtrl-sci",
-      "categories": [
-        "cond-mat.mtrl-sci",
-        "cs.AI",
-        "physics.comp-ph"
-      ],
-      "published": "2026-02-19T15:51:24+00:00",
-      "link": "https://arxiv.org/pdf/2602.17750v1",
-      "tags": [
-        "query:SR"
-      ],
-      "llm_score": 9.0,
-      "llm_evidence_en": "automated discovery of symbolic constitutive laws in closed mathematical form",
-      "llm_evidence_cn": "自动发现闭式数学形式的符号本构方程",
-      "llm_evidence": "自动发现闭式数学形式的符号本构方程",
-      "canonical_evidence": "自动发现闭式数学形式的符号本构方程",
-      "llm_tldr_en": "Introduces iCKANs to discover interpretable symbolic material models from experimental data.",
-      "llm_tldr_cn": "引入 iCKANs 从实验数据中自动发现可解释的符号材料模型。",
-      "llm_tldr": "引入 iCKANs 从实验数据中自动发现可解释的符号材料模型。",
-      "llm_tags": [
-        "query:sr"
-      ],
-      "matched_query_tag": "query:sr",
-      "matched_query_text": "automated discovery of mathematical expressions from data",
-      "matched_requirement_id": "req-3",
+      "matched_query_text": "algorithms for scientific equation discovery and modeling",
+      "matched_requirement_id": "req-4",
       "selection_source": "fresh_fetch"
     },
     {
@@ -670,13 +775,13 @@
         "query:SR"
       ],
       "llm_score": 9.0,
-      "llm_evidence_en": "discovering governing equations using Kolmogorov-Arnold Networks",
-      "llm_evidence_cn": "使用Kolmogorov-Arnold网络发现控制方程",
-      "llm_evidence": "使用Kolmogorov-Arnold网络发现控制方程",
-      "canonical_evidence": "使用Kolmogorov-Arnold网络发现控制方程",
-      "llm_tldr_en": "Introduces KANDy for discovering governing equations in complex dynamical systems via KANs.",
-      "llm_tldr_cn": "引入KANDy，通过KAN网络发现复杂动力系统中的控制方程。",
-      "llm_tldr": "引入KANDy，通过KAN网络发现复杂动力系统中的控制方程。",
+      "llm_evidence_en": "discovering governing equations by replacing sparse regression with KAN",
+      "llm_evidence_cn": "通过用KAN替换稀疏回归来发现控制方程",
+      "llm_evidence": "通过用KAN替换稀疏回归来发现控制方程",
+      "canonical_evidence": "通过用KAN替换稀疏回归来发现控制方程",
+      "llm_tldr_en": "Introduces KANDy to discover governing equations in complex dynamical systems using Kolmogorov-Arnold Networks.",
+      "llm_tldr_cn": "引入KANDy，利用Kolmogorov-Arnold网络发现复杂动力系统中的控制方程。",
+      "llm_tldr": "引入KANDy，利用Kolmogorov-Arnold网络发现复杂动力系统中的控制方程。",
       "llm_tags": [
         "query:sr"
       ],
@@ -686,38 +791,185 @@
       "selection_source": "fresh_fetch"
     },
     {
-      "id": "2602.17829v1",
-      "title": "Causality by Abstraction: Symbolic Rule Learning in Multivariate Timeseries with Large Language Models",
-      "abstract": "Inferring causal relations in timeseries data with delayed effects is a fundamental challenge, especially when the underlying system exhibits complex dynamics that cannot be captured by simple functional mappings. Traditional approaches often fail to produce generalized and interpretable explanations, as multiple distinct input trajectories may yield nearly indistinguishable outputs. In this work, we present ruleXplain, a framework that leverages Large Language Models (LLMs) to extract formal explanations for input-output relations in simulation-driven dynamical systems. Our method introduces a constrained symbolic rule language with temporal operators and delay semantics, enabling LLMs to generate verifiable causal rules through structured prompting. ruleXplain relies on the availability of a principled model (e.g., a simulator) that maps multivariate input time series to output time series. Within ruleXplain, the simulator is used to generate diverse counterfactual input trajectories that yield similar target output, serving as candidate explanations. Such counterfactual inputs are clustered and provided as context to the LLM, which is tasked with the generation of symbolic rules encoding the joint temporal trends responsible for the patterns observable in the output times series. A closed-loop refinement process ensures rule consistency and semantic validity. We validate the framework using the PySIRTEM epidemic simulator, mapping testing rate inputs to daily infection counts; and the EnergyPlus building energy simulator, observing temperature and solar irradiance inputs to electricity needs. For validation, we perform three classes of experiments: (1) the efficacy of the ruleset through input reconstruction; (2) ablation studies evaluating the causal encoding of the ruleset; and (3) generalization tests of the extracted rules across unseen output trends with varying phase dynamics.",
+      "id": "2602.21393v1",
+      "title": "An information-based model selection criterion for data-driven model discovery",
+      "abstract": "Data-driven model discovery (DDMD) algorithms are powerful tools for extracting interpretable symbolic models from data. However, identifying the model that best balances goodness-of-fit and sparsity is often a laborious process requiring user fine-tuning, is prone to overfitting, and results may significantly vary depending on model initialization and specific training procedure. Here, we present a sparse regression algorithm that automatically and adaptively generates candidate models, and uses a novel sample-length-scaling logarithmic information criterion (SLIC) to identify the best model from these candidates. We demonstrate that SLIC greatly outperforms other popular information criteria in extracting the correct model from the data of several nonlinear ordinary and partial differential equations. Then, we demonstrate SLIC's ability to discover interpretable models from experimental datasets in fluid dynamics and nanotechnology that generate new testable predictions.",
       "authors": [
-        "Preetom Biswas",
-        "Giulia Pedrielli",
-        "K. Selçuk Candan"
+        "Michael C Chung",
+        "Alen Zacharia",
+        "Juan Guan"
       ],
-      "primary_category": "cs.LG",
+      "primary_category": "q-bio.QM",
       "categories": [
-        "cs.LG"
+        "q-bio.QM"
       ],
-      "published": "2026-02-19T20:49:06+00:00",
-      "link": "https://arxiv.org/pdf/2602.17829v1",
+      "published": "2026-02-24T21:45:10+00:00",
+      "link": "https://arxiv.org/pdf/2602.21393v1",
       "tags": [
         "keyword:SR",
         "query:SR"
       ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "extracting formal symbolic rules and causal relations from timeseries",
-      "llm_evidence_cn": "从时间序列中提取形式化符号规则和因果关系",
-      "llm_evidence": "从时间序列中提取形式化符号规则和因果关系",
-      "canonical_evidence": "从时间序列中提取形式化符号规则和因果关系",
-      "llm_tldr_en": "Uses LLMs to extract interpretable symbolic rules for causal relations in dynamical systems.",
-      "llm_tldr_cn": "利用大语言模型提取动力系统中因果关系的可解释符号规则。",
-      "llm_tldr": "利用大语言模型提取动力系统中因果关系的可解释符号规则。",
+      "llm_score": 9.0,
+      "llm_evidence_en": "extracting interpretable symbolic models from data using sparse regression and information criteria",
+      "llm_evidence_cn": "利用稀疏回归和信息准则从数据中提取可解释的符号模型",
+      "llm_evidence": "利用稀疏回归和信息准则从数据中提取可解释的符号模型",
+      "canonical_evidence": "利用稀疏回归和信息准则从数据中提取可解释的符号模型",
+      "llm_tldr_en": "Proposes a sparse regression algorithm and a new information criterion (SLIC) for automated symbolic model discovery.",
+      "llm_tldr_cn": "提出一种稀疏回归算法和新型信息准则（SLIC），用于自动化的符号模型发现。",
+      "llm_tldr": "提出一种稀疏回归算法和新型信息准则（SLIC），用于自动化的符号模型发现。",
       "llm_tags": [
         "query:sr"
       ],
       "matched_query_tag": "query:sr",
       "matched_query_text": "automated discovery of mathematical expressions from data",
       "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.23467v1",
+      "title": "On the Limits of Interpretable Machine Learning in Quintic Root Classification",
+      "abstract": "Can Machine Learning (ML) autonomously recover interpretable mathematical structure from raw numerical data? We aim to answer this question using the classification of real-root configurations of polynomials up to degree five as a structured benchmark. We tested an extensive set of ML models, including decision trees, logistic regression, support vector machines, random forest, gradient boosting, XGBoost, symbolic regression, and neural networks. Neural networks achieved strong in-distribution performance on quintic classification using raw coefficients alone (84.3% + or - 0.9% balanced accuracy), whereas decision trees perform substantially worse (59.9% + or - 0.9\\%). However, when provided with an explicit feature capturing sign changes at critical points, decision trees match neural performance (84.2% + or - 1.2%) and yield explicit classification rules. Knowledge distillation reveals that this single invariant accounts for 97.5% of the extracted decision structure. Out-of-distribution, data-efficiency, and noise robustness analyses indicate that neural networks learn continuous, data-dependent geometric approximations of the decision boundary rather than recovering scale-invariant symbolic rules. This distinction between geometric approximation and symbolic invariance explains the gap between predictive performance and interpretability observed across models. Although high predictive accuracy is attainable, we find no evidence that the evaluated ML models autonomously recover discrete, human-interpretable mathematical rules from raw coefficients. These results suggest that, in structured mathematical domains, interpretability may require explicit structural inductive bias rather than purely data-driven approximation.",
+      "authors": [
+        "Rohan Thomas",
+        "Majid Bani-Yaghoub"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "cs.LG"
+      ],
+      "published": "2026-02-26T19:53:41+00:00",
+      "link": "https://arxiv.org/pdf/2602.23467v1",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "comparison between symbolic regression and neural networks on mathematical benchmarks",
+      "llm_evidence_cn": "在数学基准测试中对比符号回归与神经网络",
+      "llm_evidence": "在数学基准测试中对比符号回归与神经网络",
+      "canonical_evidence": "在数学基准测试中对比符号回归与神经网络",
+      "llm_tldr_en": "Evaluates symbolic regression and neural networks for classifying mathematical structures in quintic polynomials.",
+      "llm_tldr_cn": "评估符号回归和神经网络在五次多项式数学结构分类中的表现。",
+      "llm_tldr": "评估符号回归和神经网络在五次多项式数学结构分类中的表现。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "comparison between symbolic regression and neural networks",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.11630v1",
+      "title": "Neuro-Symbolic Multitasking: A Unified Framework for Discovering Generalizable Solutions to PDE Families",
+      "abstract": "Solving Partial Differential Equations (PDEs) is fundamental to numerous scientific and engineering disciplines. A common challenge arises from solving the PDE families, which are characterized by sharing an identical mathematical structure but varying in specific parameters. Traditional numerical methods, such as the finite element method, need to independently solve each instance within a PDE family, which incurs massive computational cost. On the other hand, while recent advancements in machine learning PDE solvers offer impressive computational speed and accuracy, their inherent ``black-box\" nature presents a considerable limitation. These methods primarily yield numerical approximations, thereby lacking the crucial interpretability provided by analytical expressions, which are essential for deeper scientific insight. To address these limitations, we propose a neuro-assisted multitasking symbolic PDE solver framework for PDE family solving, dubbed NMIPS. In particular, we employ multifactorial optimization to simultaneously discover the analytical solutions of PDEs. To enhance computational efficiency, we devise an affine transfer method by transferring learned mathematical structures among PDEs in a family, avoiding solving each PDE from scratch. Experimental results across multiple cases demonstrate promising improvements over existing baselines, achieving up to a $\\sim$35.7% increase in accuracy while providing interpretable analytical solutions.",
+      "authors": [
+        "Yipeng Huang",
+        "Dejun Xu",
+        "Zexin Lin",
+        "Zhenzhong Wang",
+        "Min Jiang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-02-12T06:25:44+00:00",
+      "link": "https://arxiv.org/pdf/2602.11630v1",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "discovering generalizable solutions to PDE families using neuro-symbolic framework",
+      "llm_evidence_cn": "使用神经符号框架发现偏微分方程族的泛化解",
+      "llm_evidence": "使用神经符号框架发现偏微分方程族的泛化解",
+      "canonical_evidence": "使用神经符号框架发现偏微分方程族的泛化解",
+      "llm_tldr_en": "Introduces a neuro-symbolic framework to solve and discover mathematical structures within PDE families.",
+      "llm_tldr_cn": "引入一种神经符号框架，用于求解和发现偏微分方程族中的数学结构。",
+      "llm_tldr": "引入一种神经符号框架，用于求解和发现偏微分方程族中的数学结构。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "algorithms for scientific equation discovery and modeling",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.13174v1",
+      "title": "Learning functional components of PDEs from data using neural networks",
+      "abstract": "Partial differential equations often contain unknown functions that are difficult or impossible to measure directly, hampering our ability to derive predictions from the model. Workflows for recovering scalar PDE parameters from data are well studied: here we show how similar workflows can be used to recover functions from data. Specifically, we embed neural networks into the PDE and show how, as they are trained on data, they can approximate unknown functions with arbitrary accuracy. Using nonlocal aggregation-diffusion equations as a case study, we recover interaction kernels and external potentials from steady state data. Specifically, we investigate how a wide range of factors, such as the number of available solutions, their properties, sampling density, and measurement noise, affect our ability to successfully recover functions. Our approach is advantageous because it can utilise standard parameter-fitting workflows, and in that the trained PDE can be treated as a normal PDE for purposes such as generating system predictions.",
+      "authors": [
+        "Torkel E. Loman",
+        "Yurij Salmaniw",
+        "Antonio Leon Villares",
+        "Jose A. Carrillo",
+        "Ruth E. Baker"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.AP"
+      ],
+      "published": "2026-02-13T18:32:33+00:00",
+      "link": "https://arxiv.org/pdf/2602.13174v1",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "recovering functional components of PDEs from data",
+      "llm_evidence_cn": "从数据中恢复偏微分方程的函数组件",
+      "llm_evidence": "从数据中恢复偏微分方程的函数组件",
+      "canonical_evidence": "从数据中恢复偏微分方程的函数组件",
+      "llm_tldr_en": "Embeds neural networks into PDEs to discover unknown functional components and interaction kernels from data.",
+      "llm_tldr_cn": "将神经网络嵌入偏微分方程，从数据中发现未知的函数组件和相互作用核。",
+      "llm_tldr": "将神经网络嵌入偏微分方程，从数据中发现未知的函数组件和相互作用核。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "automated discovery of mathematical expressions from data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.13864v1",
+      "title": "Evolving Multi-Channel Confidence-Aware Activation Functions for Missing Data with Channel Propagation",
+      "abstract": "Learning in the presence of missing data can result in biased predictions and poor generalizability, among other difficulties, which data imputation methods only partially address. In neural networks, activation functions significantly affect performance yet typical options (e.g., ReLU, Swish) operate only on feature values and do not account for missingness indicators or confidence scores. We propose Three-Channel Evolved Activations (3C-EA), which we evolve using Genetic Programming to produce multivariate activation functions f(x, m, c) in the form of trees that take (i) the feature value x, (ii) a missingness indicator m, and (iii) an imputation confidence score c. To make these activations useful beyond the input layer, we introduce ChannelProp, an algorithm that deterministically propagates missingness and confidence values via linear layers based on weight magnitudes, retaining reliability signals throughout the network. We evaluate 3C-EA and ChannelProp on datasets with natural and injected (MCAR/MAR/MNAR) missingness at multiple rates under identical preprocessing and splits. Results indicate that integrating missingness and confidence inputs into the activation search improves classification performance under missingness.",
+      "authors": [
+        "Naeem Shahabi Sani",
+        "Ferial Najiantabriz",
+        "Shayan Shafaei",
+        "Dean F. Hougen"
+      ],
+      "primary_category": "cs.NE",
+      "categories": [
+        "cs.NE",
+        "cs.LG"
+      ],
+      "published": "2026-02-14T19:52:10+00:00",
+      "link": "https://arxiv.org/pdf/2602.13864v1",
+      "tags": [
+        "keyword:SR",
+        "query:SR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "evolved activations using Genetic Programming",
+      "llm_evidence_cn": "使用遗传编程进化激活函数",
+      "llm_evidence": "使用遗传编程进化激活函数",
+      "canonical_evidence": "使用遗传编程进化激活函数",
+      "llm_tldr_en": "Uses Genetic Programming to evolve multivariate activation functions that handle missing data and confidence scores.",
+      "llm_tldr_cn": "利用遗传编程进化多元激活函数，以处理缺失数据和置信度得分。",
+      "llm_tldr": "利用遗传编程进化多元激活函数，以处理缺失数据和置信度得分。",
+      "llm_tags": [
+        "query:sr"
+      ],
+      "matched_query_tag": "query:sr",
+      "matched_query_text": "evolutionary algorithms and genetic programming for symbolic regression",
+      "matched_requirement_id": "req-2",
       "selection_source": "fresh_fetch"
     }
   ]
