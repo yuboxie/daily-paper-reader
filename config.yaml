@@ -276,3 +276,58 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-03-11T04:09:15.934Z'
+    - tag: LLM MH
+      description: 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文
+      enabled: true
+      keywords:
+        - keyword: LLM
+          keyword_cn: 大语言模型
+          query: Large Language Models
+        - keyword: Mental Health
+          keyword_cn: 心理健康
+          query: Mental health applications and diagnosis
+        - keyword: Psychiatry
+          keyword_cn: 精神病学
+          query: Computational psychiatry and LLMs
+        - keyword: Psychotherapy
+          keyword_cn: 心理治疗
+          query: AI-assisted psychotherapy and counseling
+        - keyword: Depression
+          keyword_cn: 抑郁症
+          query: LLM for depression detection and analysis
+        - keyword: Anxiety
+          keyword_cn: 焦虑症
+          query: Large language models for anxiety assessment
+        - keyword: Sentiment Analysis
+          keyword_cn: 情感分析
+          query: Emotional and sentiment analysis in mental health
+        - keyword: Clinical Psychology
+          keyword_cn: 临床心理学
+          query: LLMs in clinical psychology research
+      intent_queries:
+        - query: Applications of large language models in mental health diagnosis
+          query_cn: 大语言模型在心理健康诊断中的应用
+          enabled: true
+          source: manual
+          note: ''
+        - query: LLM based conversational agents for psychological counseling
+          query_cn: 基于大语言模型的心理咨询对话代理
+          enabled: true
+          source: manual
+          note: ''
+        - query: Ethical considerations of using LLMs in mental healthcare
+          query_cn: 在心理健康医疗中使用大语言模型的伦理考量
+          enabled: true
+          source: manual
+          note: ''
+        - query: Fine tuning large language models for mental health support
+          query_cn: 针对心理健康支持微调大语言模型
+          enabled: true
+          source: manual
+          note: ''
+        - query: Review of natural language processing in clinical psychology
+          query_cn: 临床心理学中的自然语言处理综述
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T04:11:46.646Z'
