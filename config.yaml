@@ -117,3 +117,55 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-03-11T03:49:29.657Z'
+    - tag: LLM EC
+      description: 查找LLM做情感计算和共情对话的论文
+      enabled: true
+      keywords:
+        - keyword: LLM
+          keyword_cn: 大语言模型
+          query: Large Language Models
+        - keyword: Affective Computing
+          keyword_cn: 情感计算
+          query: Affective Computing and Sentiment Analysis
+        - keyword: Emotional Intelligence
+          keyword_cn: 情感智能
+          query: Artificial Emotional Intelligence in LLMs
+        - keyword: Emotion Recognition
+          keyword_cn: 情绪识别
+          query: Emotion Recognition in Conversation
+        - keyword: Empathetic Response
+          keyword_cn: 共情回复生成
+          query: Empathetic Response Generation
+        - keyword: Psychological Support
+          keyword_cn: 心理支持
+          query: LLMs for Psychological Support and Counseling
+        - keyword: Chain of Empathy
+          keyword_cn: 共情链
+          query: Chain of Empathy prompting for LLMs
+      intent_queries:
+        - query: benchmarking empathy in large language models
+          query_cn: 大语言模型共情能力基准测试
+          enabled: true
+          source: manual
+          note: ''
+        - query: fine tuning LLMs for empathetic conversation
+          query_cn: 针对共情对话的大语言模型微调
+          enabled: true
+          source: manual
+          note: ''
+        - query: prompt engineering for emotional intelligence in AI
+          query_cn: 提升AI情感智能的提示工程
+          enabled: true
+          source: manual
+          note: ''
+        - query: evaluating emotional support capabilities of LLMs
+          query_cn: 评估大语言模型的情感支持能力
+          enabled: true
+          source: manual
+          note: ''
+        - query: LLM based emotion recognition and sentiment classification
+          query_cn: 基于大语言模型的情绪识别与情感分类
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T03:56:57.812Z'
