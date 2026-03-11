@@ -1,0 +1,169 @@
+Title: LLM-Guided Knowledge Distillation for Temporal Knowledge Graph Reasoning
+
+URL Source: https://arxiv.org/pdf/2602.14428v1
+
+Published Time: Tue, 17 Feb 2026 02:54:05 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# LLM-Guided Knowledge Distillation for Temporal Knowledge Graph Reasoning 
+
+Wang Xing 1, Wei Song 2, Siyu Lin 3, Chen Wu 2, Man Wang 2
+
+> 1
+
+School of Computer Science and Technology, Xidian University 
+
+> 2
+
+School of Computing and Artificial Intelligence, Southwest Jiaotong University 
+
+> 3
+
+School of Information Science and Engineering, Chongqing Jiaotong University 
+
+Abstract 
+
+Temporal knowledge graphs (TKGs) support reasoning over time-evolving facts, yet state-of-the-art models are often computationally heavy and costly to deploy. Existing compression and distillation techniques are largely designed for static graphs; directly applying them to tem-poral settings may overlook time-dependent interactions and lead to performance degrada-tion. We propose an LLM-assisted distillation framework specifically designed for temporal knowledge graph reasoning. Beyond a con-ventional high-capacity temporal teacher, we incorporate a large language model as an auxil-iary instructor to provide enriched supervision. The LLM supplies broad background knowl-edge and temporally informed signals, enabling a lightweight student to better model event dy-namics without increasing inference-time com-plexity. Training is conducted by jointly opti-mizing supervised and distillation objectives, using a staged alignment strategy to progres-sively integrate guidance from both teachers. Extensive experiments on multiple public TKG benchmarks with diverse backbone architec-tures demonstrate that the proposed approach consistently improves link prediction perfor-mance over strong distillation baselines, while maintaining a compact and efficient student model. The results highlight the potential of large language models as effective teachers for transferring temporal reasoning capability to resource-efficient TKG systems. 
+
+1 Introduction 
+
+Temporal knowledge graphs (TKGs) attach times-tamps to facts and enable modeling how rela-tions change over time (Hamilton et al., 2018; Kazemi et al., 2020). They underpin many ap-plications, including monitoring system states, se-mantic retrieval, and planning (Cai et al., 2022). Popular benchmarks include YAGO (Mahdis-oltani et al., 2013) and WIKI/Wikidata (Vran-deˇ ci´ c and Krötzsch, 2014). Before temporal set-tings, embedding-based models for static KGs established strong link-prediction baselines (Bor-des et al., 2013). Methods like TransE repre-sent relations as translations (Bordes et al., 2013), RotatE uses complex-space rotations (Sun et al., 2019), ComplEx relies on complex bilinear scoring (Trouillon et al., 2016), and SimplE improves ex-pressiveness with paired embeddings (Kazemi and Poole, 2018). These ideas are frequently reused when building time-aware variants. For TKGs, early methods extended translation-style scoring with temporal components (Hamilton et al., 2018), while others employed neural architec-tures (e.g., recurrent or convolutional modules) to aggregate histories (Jin et al., 2020). Nonetheless, naively adapting static techniques can under-model event dynamics and time-dependent constraints. Recent work has explored incorporating explicit temporal logical structures to enhance reasoning over temporal knowledge graphs. Differentiable logical rule learning frameworks (Xiong et al., 2024b) model temporal dependencies through logi-cal rules, enabling interpretable temporal reasoning and time prediction. Most evaluations consider two regimes: interpo-lation (completion within an observed window) and extrapolation (forecasting beyond the latest time) (Li et al., 2021). HyTE is a representative inter-polation approach (Dasgupta et al., 2018), while extrapolation has been studied via continuous-time or history-driven models (Trivedi et al., 2017). Ex-amples include Chronos (Mavromatis et al., 2022), Know-Evolve (Trivedi et al., 2017), ExTTE (Li et al., 2021), CyGNet (Zhu et al., 2021), and RE-NET (Jin et al., 2020). While effective, many such models become large, increasing training and de-ployment cost. This motivates efficient TKG rea-soning, as real systems often need low-latency in-ference under strict memory and power budgets (Cai et al., 2022). Model compression and knowl-edge distillation are natural options (Hinton et al., 1
+
+> arXiv:2602.14428v1 [cs.CL] 16 Feb 2026
+
+2015). Model compression and inference acceleration have attracted increasing attention in recent years. Knowledge distillation has proven effective across domains such as computer vision and recommen-dation systems (Hinton et al., 2015). Within knowl-edge graph research, distillation techniques are commonly used to transfer representations from large teachers to lightweight students. However, most existing approaches are designed for static knowledge graphs and rarely account for temporal dynamics (Park et al., 2019). Large language models (LLMs), including GPT-3 (Brown et al., 2020), PaLM (Chowdhery et al., 2023), and LLaMA (Touvron et al., 2023), ex-hibit strong reasoning and generalization abilities derived from large-scale pretraining. Techniques such as instruction tuning and reinforcement learn-ing from human feedback further enhance their decision-making capabilities (Ouyang et al., 2022). Recent findings indicate that LLMs can handle complex reasoning tasks and generalize to diverse real-world scenarios (Xiong et al., 2024a; Yang et al., 2024a). Moreover, they are capable of struc-tured reasoning and deliberate planning through im-plicit world-model mechanisms (Yang et al., 2024b; Xiong et al., 2025). These characteristics make LLMs suitable as powerful teacher models in a distillation framework. Inspired by these insights, we introduce a distil-lation strategy specifically designed for temporal knowledge graph reasoning. The proposed frame-work employs LLMs as auxiliary teachers to in-ject both background knowledge and time-aware reasoning signals into the training process. By su-pervising compact student models with enriched temporal semantics, our method facilitates efficient deployment in resource-constrained environments. Experimental evidence shows that the proposed ap-proach surpasses conventional temporal KG mod-els while substantially reducing computational and storage overhead. 
+
+2 Distillation for Temporal Knowledge Graph Reasoning Models Enhanced by LLMs 
+
+2.1 Problem Definition 
+
+We represent a temporal knowledge graph (TKG) as timestamped quadruples g = ( s, p, o, t ), where 
+
+s, o ∈ E are entities, p ∈ R is a relation, and t ∈ T
+
+is the timestamp. The TKG can be structured as a sequence of snapshots G = {G 1, . . . , GT }, with Gt
+
+containing all observed facts at time t.The task focuses on time-conditioned link pre-diction: given queries like (s, p, ?, t ) or (? , p, o, t ),the model ranks candidate entities to provide the most plausible completion. In extrapolation tasks, queries may extend beyond the final training snap-shot, requiring generalization from historical pat-terns to future time points. At time t, the task involves constructing incom-plete fact quadruples G′ 
+
+> t
+
+by replacing the subject or object entity in the original set Gt. These incom-plete fact sets, combined with the original facts, form the complete temporal graph Gc, defined as 
+
+Gc = G ∪ G ′. (1) The incomplete facts are: 
+
+G′ = (s′, p, o, t ) | s′ ∈ E, s ′̸ = s
+
+∪ (s, p, o ′, t ) | o′ ∈ E, o ′̸ = o . (2) 
+
+2.2 Model Overview 
+
+We distill temporal reasoning into a compact stu-dent model S, guided by two teachers: a task teacher T , a high-capacity TKG model trained on 
+
+G, and a large language model (LLM) M . The task teacher provides robust supervision, while the LLM contributes complementary semantic knowl-edge, especially for sparse or ambiguous temporal data. Training involves two phases. In Phase 1, the student model S aligns with T to learn a stable temporal scoring function. Phase 2 incorporates guidance from M to further refine the student’s ranking behavior and improve generalization. At inference, only the student model is used, ensuring low deployment cost. 
+
+2.3 Loss Functions 
+
+Three loss functions are used during training, com-bined into the final objective function. Let L1 be the distillation loss between the student and the teacher model, L2 be the distillation loss between the student and the LLM, and L3 be the supervised loss based on ground truth labels. The total loss is: 
+
+Ltotal = L1 + L2 + βL 3. (3) The first loss function, L1, transfers temporal reasoning knowledge from the teacher model to the 2(a) Traditional knowledge distillation method (b) Large language model based distillation method 
+
+> Figure 1: Comparison between different distillation methods.
+
+student using an encoder-decoder architecture. The distillation loss is defined as: 
+
+L1 = α C g log fT (s, p, o, t )
+
++ (1 − α) C g log fS (s, p, o, t ). (4) where fT and fS are the teacher and student scor-ing functions, respectively, and C(·) denotes the softmax function. The second loss, L2, minimizes the discrepancy between the student model and LLM predictions using the Huber loss: 
+
+L2 =
+
+( 12 (fT − fS )2, |fT − fS | ≤ δ, δ|fT − fS | − 12 δ2, |fT − fS | > δ, (5) where fT and fS are the prediction scores from the LLM and student, and δ is a threshold hyperparam-eter. The third loss, L3, is the supervised loss based on ground truth labels. It uses the LLM to encode entity relations, producing vector representations. The loss is computed as the mean squared error: 
+
+L3 = ∥fS (p) − P (p)∥22, (6) where fS (p) is the student model’s prediction and 
+
+P (p) is the ground truth label. The final objective combines these losses: 
+
+Ltotal = L1 + αL 2 + βL LLM  
+
+> 3
+
+, (7) where LLLM  
+
+> 3
+
+is the LLM-assisted distillation loss. 
+
+3 Experimental Setup 
+
+This section outlines the experimental setup, in-cluding the datasets, baseline models, and training configurations. 
+
+3.1 Datasets 
+
+We use two benchmark datasets for temporal knowledge graph reasoning: YAGO11k and WIKI-data12k. These datasets are commonly used for evaluating temporal reasoning models (Hamilton et al., 2018; Cai et al., 2022). YAGO11k is de-rived from Wikipedia, WordNet, and GeoNames (Mahdisoltani et al., 2013), while WIKIdata12k is constructed from Wikidata and Wikimedia Com-mons (Vrandeˇ ci´ c and Krötzsch, 2014). Both datasets support interpolation and extrapolation tasks. 
+
+3.2 Baseline Models 
+
+We compare our method against three baseline dis-tillation models: • BKD : A traditional distillation technique that optimizes the Kullback–Leibler divergence to align the probability distributions produced by the teacher and the student models (Hinton et al., 2015). • FitNet : An enhanced variant of basic distil-lation that applies supervision to intermedi-ate hidden layers, enabling the student to cap-ture richer internal representations from the teacher network (Srivastava et al., 2015). • RKD : A relation-aware distillation strategy that preserves structural information by align-ing pairwise distances and angular relation-ships between teacher and student embedding spaces. 
+
+3.3 Model Selection 
+
+We adopt TTransE and TADistMult as the under-lying knowledge graph embedding models. Both 3Figure 2: The training and prediction on quadruple knowledge with the large language model. Table 1: Statistical data of two datasets                                  
+
+> Dataset Entities Relations Train Valid Test YAGO 10,623 10 161,540 19,523 20,026 WIKI 12,544 24 539,286 67,538 63,110
+> Table 2: Introduction of classic TKG models
+> Model Encoder Decoder TTransE –∥s+p−o+t∥2
+> TADistMult pseq = LSTM( p:t)(s◦o)p⊤
+> seq
+
+are widely used temporal KG methods and achieve competitive results on time-aware link prediction benchmarks (Hamilton et al., 2018; Cai et al., 2022). The encoder and decoder structures follow the settings described in their original papers. In these formulations, s, o ∈ Rd denote subject and object embeddings, p ∈ Rd represents the rela-tion embedding, and t corresponds to the temporal representation. The operator ◦ indicates element-wise multiplication. 
+
+3.4 Evaluation Metrics 
+
+We assess model performance on two widely used temporal knowledge graph benchmarks. Evalua-tion is conducted using mean rank (MR), mean reciprocal rank (MRR), and Hits@1, Hits@3, and Hits@10, which are standard metrics for link pre-diction in knowledge graphs (Bordes et al., 2013; Trouillon et al., 2016). Hits@k reports the pro-portion of test queries for which the ground-truth entity is ranked within the top-k predictions. A smaller MR indicates better overall ranking qual-ity, while higher MRR and Hits@k values reflect stronger predictive accuracy and more reliable en-tity prioritization (Sun et al., 2019). These metrics collectively evaluate both global ranking perfor-mance and top-position precision. 
+
+3.5 Training Settings 
+
+All experiments are conducted on a workstation equipped with an Intel Core i9-10900K CPU and an NVIDIA RTX 3090 Ti GPU. Our implementation builds upon an extended version of the OpenKE framework (Han et al., 2018), implemented in Py-Torch. To emphasize the knowledge transfer challenge, we intentionally create a substantial capacity gap between teacher and student models. The teacher embedding dimension is set to 400, whereas the student embedding size is restricted to 25. This set-ting reflects common practice in distillation studies for compact knowledge graph embeddings (Hinton et al., 2015) and ensures that performance gains are not due to increased model capacity. Training is performed with a batch size of 1024 for up to 10,000 epochs to ensure stable conver-gence. The temperature parameter used in soft distillation is fixed at 7, following standard practice in knowledge distillation literature. We employ the Adagrad optimizer to better handle sparse relational data and to adaptively adjust learning rates during optimization (Duchi et al., 2011). All hyperparam-eters are selected based on validation performance. 
+
+4 Results and Analysis 
+
+4.1 Experimental Results 
+
+We evaluate the proposed framework on both the YAGO and WIKI datasets. Except for MR, all re-ported metrics are presented as percentages. Under identical experimental conditions, the best results 4Table 3: Distillation results of different model method combinations on two datasets                                                                                             
+
+> YAGO WIKI Model Method MRR MR Hits@1 Hits@3 Hits@10 MRR MR Hits@1 Hits@3 Hits@10 TTransE BKD 7.65 1410.12 3.50 7.83 15.61 7.94 2383.67 4.75 8.22 14.04 FitNet 7.59 1201.69 3.06 7.18 16.48 7.86 2148.86 3.93 7.78 14.67 RKD 7.01 1186.27 3.56 6.95 13.47 7.89 2052.37 4.72 7.49 12.85 Ours 7.69 1193.15 3.61 7.89 16.57 7.92 1985.63 4.86 8.36 14.94
+> TADistMult BKD 61.90 973.89 58.51 64.13 67.59 45.89 3150.11 42.46 48.87 51.18 FitNet 58.44 986.92 54.71 60.29 65.34 43.92 3158.20 39.77 47.38 50.18 RKD 58.15 1089.57 54.48 61.72 65.17 42.72 3287.49 36.32 43.92 47.28 Ours 61.87 965.35 58.73 64.15 67.68 46.03 3142.85 42.50 49.16 51.14
+
+are highlighted and the second-best values are un-derlined. Across both datasets and backbone models, the student networks trained with our method consis-tently surpass those trained using conventional dis-tillation strategies. Compared with BKD, improve-ments are observed on nearly all evaluation crite-ria. For TTransE on YAGO, performance increases are observed across MR, MRR, and Hits metrics, indicating better overall ranking and stronger top-position accuracy. Similar improvements are ob-served on the WIKI dataset, demonstrating robust-ness across different temporal knowledge distribu-tions. The TADistMult backbone shows comparable trends. When compared with FitNet and RKD, the proposed method achieves more stable and gener-ally superior results across most metrics. In par-ticular, noticeable gains on Hits@1 and Hits@3 suggest that the distilled student model ranks cor-rect entities more accurately at higher positions, which is especially important in real-world tempo-ral reasoning systems. In a limited number of settings, certain baselines slightly outperform our approach on individual met-rics. For instance, RKD exhibits marginally better MR results under specific configurations. These fluctuations may be attributed to differences in in-termediate representation alignment or to the re-stricted capacity of the compact student model. Additional training epochs help reduce such gaps, suggesting that optimization stability plays a role. 
+
+4.2 Ablation Analysis 
+
+To further understand the impact of LLM-guided supervision, we perform ablation studies by remov-ing the LLM-related distillation component. Com-pared with the BKD baseline, incorporating seman-tic signals from large language models consistently improves performance across most metrics on both datasets. The results indicate that structured knowl-edge extracted from LLMs provides complemen-tary information beyond task-specific supervision, enhancing the generalization ability of lightweight students. 
+
+5 Conclusion 
+
+We present an LLM-augmented distillation frame-work for temporal knowledge graph reasoning designed for efficient deployment in resource-constrained environments. By transferring struc-tured temporal knowledge from high-capacity teacher models and leveraging semantic signals from large language models, the proposed ap-proach improves predictive accuracy while preserv-ing a compact model size. Extensive experiments on multiple datasets and backbone architectures demonstrate consistent gains over traditional dis-tillation methods, validating both the effectiveness and practicality of the proposed framework. 
+
+References            
+
+> Antoine Bordes, Nicolas Usunier, Alberto Garcia-Duran, Jason Weston, and Oksana Yakhnenko. 2013. Translating embeddings for modeling multi-relational data. Advances in neural information pro-cessing systems , 26. Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, and 1 others. 2020. Language models are few-shot learners. Advances in neural information processing systems , 33:1877–1901. Borui Cai, Yong Xiang, Longxiang Gao, He Zhang, Yunfeng Li, and Jianxin Li. 2022. Temporal knowl-edge graph completion: A survey. arXiv preprint arXiv:2201.08236 .Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra, Adam Roberts, Paul
+
+5Barham, Hyung Won Chung, Charles Sutton, Sebas-tian Gehrmann, and 1 others. 2023. Palm: Scaling language modeling with pathways. Journal of Ma-chine Learning Research , 24(240):1–113. Shib Sankar Dasgupta, Swayambhu Nath Ray, and Partha Talukdar. 2018. Hyte: Hyperplane-based temporally aware knowledge graph embedding. In 
+
+Proceedings of the 2018 conference on empirical methods in natural language processing , pages 2001– 2011. John Duchi, Elad Hazan, and Yoram Singer. 2011. Adaptive subgradient methods for online learning and stochastic optimization. Journal of Machine Learning Research .Will Hamilton, Payal Bajaj, Marinka Zitnik, Dan Juraf-sky, and Jure Leskovec. 2018. Embedding logical queries on knowledge graphs. Advances in neural information processing systems , 31. Xu Han, Shulin Cao, Xin Lv, Yankai Lin, Zhiyuan Liu, Maosong Sun, and Juanzi Li. 2018. Openke: An open toolkit for knowledge embedding. In Proceed-ings of the 2018 conference on empirical methods in natural language processing: system demonstrations ,pages 139–144. Geoffrey Hinton, Oriol Vinyals, and Jeff Dean. 2015. Distilling the knowledge in a neural network. arXiv preprint arXiv:1503.02531 .Woojeong Jin, Meng Qu, Xisen Jin, and Xiang Ren. 2020. Recurrent event network: Autoregressive struc-ture inferenceover temporal knowledge graphs. In 
+
+Proceedings of the 2020 conference on empirical methods in natural language processing (EMNLP) ,pages 6669–6683. Seyed Mehran Kazemi, Rishab Goel, Kshitij Jain, Ivan Kobyzev, Akshay Sethi, Peter Forsyth, and Pascal Poupart. 2020. Representation learning for dynamic graphs: A survey. Journal of Machine Learning Research , 21(70):1–73. Seyed Mehran Kazemi and David Poole. 2018. Simple embedding for link prediction in knowledge graphs. 
+
+Advances in neural information processing systems ,31. Zixuan Li, Xiaolong Jin, Wei Li, Saiping Guan, Jiafeng Guo, Huawei Shen, Yuanzhuo Wang, and Xueqi Cheng. 2021. Temporal knowledge graph reason-ing based on evolutional representation learning. In 
+
+Proceedings of the 44th international ACM SIGIR conference on research and development in informa-tion retrieval , pages 408–417. Farzaneh Mahdisoltani, Joanna Biega, and Fabian M Suchanek. 2013. Yago3: A knowledge base from multilingual wikipedias. In CIDR .Costas Mavromatis, Prasanna Lakkur Subramanyam, Vassilis N Ioannidis, Adesoji Adeshina, Phillip R Howard, Tetiana Grinberg, Nagib Hakim, and George Karypis. 2022. Tempoqr: temporal question reason-ing over knowledge graphs. In Proceedings of the AAAI conference on artificial intelligence , volume 36, pages 5825–5833. Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, and 1 others. 2022. Training language models to follow in-structions with human feedback. Advances in neural information processing systems , 35:27730–27744. Wonpyo Park, Dongju Kim, Yan Lu, and Minsu Cho. 2019. Relational knowledge distillation. In Proceed-ings of the IEEE/CVF conference on computer vision and pattern recognition , pages 3967–3976. Rupesh K Srivastava, Klaus Greff, and Jürgen Schmid-huber. 2015. Training very deep networks. Advances in neural information processing systems , 28. Zhiqing Sun, Zhi-Hong Deng, Jian-Yun Nie, and Jian Tang. 2019. Rotate: Knowledge graph embedding by relational rotation in complex space. arXiv preprint arXiv:1902.10197 .Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, and 1 others. 2023. Llama: Open and effi-cient foundation language models. arXiv preprint arXiv:2302.13971 .Rakshit Trivedi, Hanjun Dai, Yichen Wang, and Le Song. 2017. Know-evolve: Deep temporal reason-ing for dynamic knowledge graphs. In international conference on machine learning , pages 3462–3471. PMLR. Théo Trouillon, Johannes Welbl, Sebastian Riedel, Éric Gaussier, and Guillaume Bouchard. 2016. Complex embeddings for simple link prediction. In Interna-tional conference on machine learning , pages 2071– 2080. PMLR. Denny Vrandeˇ ci´ c and Markus Krötzsch. 2014. Wiki-data: a free collaborative knowledgebase. Communi-cations of the ACM , 57(10):78–85. Siheng Xiong, Ali Payani, Ramana Kompella, and Fara-marz Fekri. 2024a. Large language models can learn temporal reasoning. In Proceedings of the 62nd An-nual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 10452– 10470. Siheng Xiong, Ali Payani, Yuan Yang, and Faramarz Fekri. 2025. Deliberate reasoning in language mod-els as structure-aware planning with an accurate world model. In Proceedings of the 63rd Annual Meeting of the Association for Computational Lin-guistics (Volume 1: Long Papers) , pages 31900– 31931. 
+
+6Siheng Xiong, Yuan Yang, Faramarz Fekri, and James Clayton Kerce. Tilp: Differentiable learning of temporal logical rules on knowledge graphs. In 
+
+The Eleventh International Conference on Learning Representations .Siheng Xiong, Yuan Yang, Ali Payani, James C Kerce, and Faramarz Fekri. 2024b. Teilp: Time prediction over knowledge graphs via logical reasoning. In 
+
+Proceedings of the AAAI conference on artificial in-telligence , volume 38, pages 16112–16119. Yuan Yang, Siheng Xiong, Ali Payani, Ehsan Shareghi, and Faramarz Fekri. 2024a. Can llms reason in the wild with programs? In Findings of the Association for Computational Linguistics: EMNLP 2024 , pages 9806–9829. Yuan Yang, Siheng Xiong, Ali Payani, Ehsan Shareghi, and Faramarz Fekri. 2024b. Harnessing the power of large language models for natural language to first-order logic translation. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 6942– 6959. Cunchao Zhu, Muhao Chen, Changjun Fan, Guangquan Cheng, and Yan Zhang. 2021. Learning from history: Modeling temporal knowledge graphs with sequen-tial copy-generation networks. In Proceedings of the AAAI conference on artificial intelligence , volume 35, pages 4732–4740. 
+
+7

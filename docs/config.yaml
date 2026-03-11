@@ -25,3 +25,40 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: EHR TR
+      description: LLM在电子健康记录（EHR）时序推理方面的研究论文
+      enabled: true
+      keywords:
+        - keyword: LLM
+          keyword_cn: 大语言模型
+          query: Large Language Models
+        - keyword: EHR
+          keyword_cn: 电子健康记录
+          query: Electronic Health Records
+        - keyword: Temporal Reasoning
+          keyword_cn: 时序推理
+          query: temporal reasoning in clinical data
+        - keyword: Clinical NLP
+          keyword_cn: 临床自然语言处理
+          query: clinical natural language processing
+        - keyword: Reasoning benchmarks
+          keyword_cn: 推理基准测试
+          query: benchmarking LLMs on medical temporal reasoning
+      intent_queries:
+        - query: Large language models for temporal reasoning in electronic health records
+          query_cn: 大语言模型在电子健康记录时序推理中的应用
+          enabled: true
+          source: manual
+          note: ''
+        - query: State of the art LLM methods for longitudinal EHR analysis
+          query_cn: 用于纵向EHR分析的最新LLM方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: Challenges of temporal reasoning for LLMs in the healthcare domain
+          query_cn: 医疗领域LLM时序推理面临的挑战
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T02:51:43.347Z'

@@ -1,0 +1,725 @@
+Title: GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories
+
+URL Source: https://arxiv.org/pdf/2602.12828v1
+
+Published Time: Mon, 16 Feb 2026 01:42:51 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+Zhan Qu 1 2 Michael F¨ arber 1 2 
+
+# Abstract 
+
+Predicting future clinical events from longitu-dinal electronic health records (EHRs) is chal-lenging due to sparse multi-type clinical events, hierarchical medical vocabularies, and the ten-dency of large language models (LLMs) to hal-lucinate when reasoning over long structured histories. We study next-visit event prediction, which aims to forecast a patient’s upcoming clin-ical events based on prior visits. We propose 
+
+GRAIL , a framework that models longitudinal EHRs using structured geometric representations and structure-aware retrieval. GRAIL constructs a unified clinical graph by combining determin-istic coding-system hierarchies with data-driven temporal associations across event types, em-beds this graph in hyperbolic space, and sum-marizes each visit as a probabilistic Central Event 
+
+that denoises sparse observations. At inference time, GRAIL retrieves a structured set of clin-ically plausible future events aligned with hier-archical and temporal progression, and option-ally refines their ranking using an LLM as a con-strained inference-time reranker. Experiments on MIMIC-IV show that GRAIL consistently im-proves multi-type next-visit prediction and yields more hierarchy-consistent forecasts. Our code is publicly available at: GRAIL-1EB1 
+
+# 1. Introduction 
+
+Longitudinal electronic health records (EHRs) are central to clinical decision support, enabling models of disease pro-gression, treatment response, and adverse events over time (Rajkomar et al., 2018; Harutyunyan et al., 2019; Choi et al., 2016a). A large body of work represents patient histories as sequences of visits and applies recurrent or transformer-based architectures to predict future clinical events or risks 
+
+> 1
+
+Department of Computer Science, TU Dresden, Dresden, Ger-many 2ScaDS.AI, Dresden, Germany. Correspondence to: Zhan Qu <zhan.qu@tu-dresden.de >.
+
+Preprint. February 16, 2026. 
+
+(Choi et al., 2016b; Li et al., 2020). More recently, large language models (LLMs) have been explored for clinical reasoning due to their strong semantic representations and few-shot generalization capabilities (Singhal et al., 2023; Nori et al., 2023). However, the effective use of LLMs for longitudinal EHR analysis remains limited by a fundamental mismatch between the unique structure of medical data and the assumptions of modern generative models. A key difficulty is that EHR trajectories are sparse, irregu-larly sampled, and multi-modal (Lipton et al., 2015; Che et al., 2018). Within a single admission, information is recorded as multiple unordered sets of entities drawn from different coding systems (Johnson et al., 2023), such as di-agnoses in ICD and medications in NDC/ATC, rather than as a coherent sequence of clinically salient states. This fragmentation makes it unclear which elements within a visit are most representative of the patient’s condition, and it leaves many clinically meaningful relationships implicit (e.g., which diagnoses motivate which treatments, or which medications drive which lab changes). One approach to recovering structure is to incorporate ex-ternal biomedical knowledge bases such as UMLS (Boden-reider, 2004) to provide relations and hierarchies (Qu & F ¨arber, 2025). However, these resources can be difficult to operationalize at scale: they merge overlapping vocab-ularies, include redundant or weakly specified relations, and vary widely in granularity across concept types. In contrast, widely used medical coding systems, such as ICD-10 (WHO, 2004) for diagnoses and the Anatomical Ther-apeutic Chemical (ATC) classification (WHO, 2024) for medications, provide reliable and universally available de-terministic hierarchical structure. While typically shallow, these hierarchies encode clinically meaningful abstraction (coarse-to-fine groupings) in a way that is consistent across institutions and datasets. Yet hierarchies alone do not capture the full complexity of longitudinal EHRs: clinically meaningful dependencies fre-quently span modalities and unfold over time. Diagnoses precede treatments, medications affect laboratory values, and these interactions are rarely explicit in the data. Im-portantly, longitudinal EHRs still encode such relationships implicitly through co-occurrence patterns and temporal or-1
+
+> arXiv:2602.12828v1 [cs.LG] 13 Feb 2026 GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories
+
+dering across visits. This motivates complementing deter-ministic hierarchies with data-driven association signals computed directly from patient trajectories, which can re-cover cross-modal and temporal structure without relying on noisy external ontologies. Representing both hierarchical abstraction and data-driven associations in a unified framework raises a central modeling question: what geometry best supports this structure? Eu-clidean embeddings treat distances isotropically and provide no native notion of containment or directionality, making it difficult to represent abstraction and progression consis-tently. Hyperbolic geometry, by contrast, offers an inductive bias well-suited to hierarchical organization and asymmetric relationships (Nickel & Kiela, 2017; Ganea et al., 2018). In this work, we embed clinical concepts in hyperbolic space, summarize visits using hyperbolic barycenters, and exploit geometric directionality to support structure-aware retrieval of plausible future clinical events. Finally, while LLMs offer powerful semantic reasoning ca-pabilities, their direct application to raw longitudinal EHRs is constrained by context limits and a lack of structured grounding (Zhou et al., 2025; Qu & F ¨arber, 2025). Naively linearizing long, multi-modal histories can increase halluci-nation risk and produce clinically inconsistent predictions. We therefore treat LLMs as inference-time reasoning mod-ules that operate over a compact, structured set of retrieved candidates rather than over raw EHR sequences. By con-straining LLMs to rerank clinically plausible events derived from structured representations, we combine hyperbolic structure as a strong prior with LLM semantic reasoning, while reducing hallucinations by restricting the output space. We introduce GRAIL (Geometric Reasoning Augmented Inference with LLMs), a framework that integrates determin-istic coding-system hierarchies, data-driven cross-modal as-sociations, hyperbolic representation learning, and structure-aware retrieval for longitudinal EHR modeling. GRAIL constructs a unified clinical graph, embeds it in hyperbolic space, compresses each visit into a denoised Central Event ,and retrieves a structured Risk Horizon of candidate future events. LLMs are optionally used to rerank retrieved candi-dates at inference time. Our main contributions are: 1. Hyperbolic Graph Construction: We construct deter-ministic trees for disjoint modalities (diagnoses, medi-cations, labs) and stitch them into a single connected topology using lagged pointwise mutual information (PMI), yielding a statistically grounded, noise-reduced graph that connects heterogeneous clinical inputs. 2. Hyperbolic Central Event Denoising: We com-press sparse, multi-modal admissions by comput-ing a (tangent-space) Fr ´echet-mean approximation of event embeddings in hyperbolic space, producing a semantics-preserving Central Event that drastically re-duces sequence length for downstream processing. 3. Structure-Aware Geometric Prompting: We develop a retrieval mechanism that uses hyperbolic distance and directionality to define a Risk Horizon of likely next events. By augmenting LLM prompts with structured, trajectory-consistent candidates, we reduce hallucina-tion and improve forecasting accuracy. 
+
+# 2. Related Work 
+
+Deep Sequential Models for Longitudinal EHRs. Early work modeled longitudinal EHRs as temporal sequences using recurrent neural networks, demonstrating the feasi-bility of next-visit prediction from diagnosis codes (Choi et al., 2016a; Pham et al., 2016). RETAIN introduced reverse-time attention to improve interpretability (Choi et al., 2016b), while subsequent models incorporated uncertainty-aware and survival objectives (Alaa & van der Schaar, 2019). Transformer-based architectures later treated medical codes as tokens, enabling long-range dependency modeling (Li et al., 2020; Rasmy et al., 2021). Recent work has explored long-context and encoder–decoder transformers for EHRs, showing improved robustness to irregular timing and com-plex disease trajectories (Wornow et al., 2024; Yang et al., 2023). Foundation models such as MOTOR further scale temporal modeling via time-to-event pretraining on large co-horts (Steinberg et al., 2023). While effective for temporal pattern extraction, these methods typically flatten heteroge-neous medical concepts into Euclidean token embeddings, discarding explicit hierarchical structure and cross-modal relationships that are central to clinical reasoning. 
+
+Ontology-Aware and Graph-Based Clinical Represen-tation Learning. To incorporate medical knowledge, ontology-aware methods leverage hierarchical structures such as ICD and SNOMED-CT. GRAM propagates infor-mation from ancestor concepts via attention (Choi et al., 2017), while KAME integrates external knowledge graphs into memory networks (Ma et al., 2018). Graph-based ap-proaches construct patient–code or code–code graphs and apply GNNs for representation learning (Shang et al., 2019; Mao et al., 2022). More recent work models EHRs as tem-poral heterogeneous graphs using graph transformers or time-aware message passing (Xu et al., 2022; Chen et al., 2024). Although effective, these methods embed ontological and relational structure implicitly in Euclidean space, which limits their ability to represent hierarchy, directionality, and asymmetric abstraction, and they often rely on external KGs that may introduce noise and scalability challenges. 
+
+Hyperbolic Geometry for Medical Representation Learn-ing Hyperbolic geometry provides low-distortion embed-2GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories            
+
+> Figure 1. Overview of the GRAIL framework. (A) We construct a unified typed graph Gby merging deterministic coding hierarchies with data-driven, lagged cross-modal associations. (B) The model learns hyperbolic node embeddings and denoises visits into probabilistic “Central Events” ( μt) via joint edge reconstruction and masked-visit self-supervision. (C) At inference, geometric “Risk Cones” restrict retrieval to hierarchically consistent, downstream candidates to form a Typed Risk Horizon ( RT). (D) An optional LLM component rescores these candidates using compressed patient history, combining geometric and semantic signals for final next-visit prediction.
+
+dings for hierarchical and tree-structured data due to its exponential volume growth (Sarkar, 2011; Nickel & Kiela, 2017). Hyperbolic entailment cones and hyperbolic GNNs extend these ideas to neural models operating on non-Euclidean manifolds (Ganea et al., 2018; Chami et al., 2019; Liu et al., 2019). In the medical domain, hyperbolic embeddings have been used to capture latent hierarchies among ICD codes and reflect clinically meaningful group-ings (Beaulieu-Jones et al., 2019). Subsequent work demon-strated benefits for EHR prediction tasks such as mortality and readmission prediction (Lu et al., 2019), as well as self-supervised and graph-based frameworks for diagnosis prediction (Lu et al., 2021; Naseem et al., 2024). Hyper-bolic representations have also been applied to automatic ICD coding, where explicit encoding of ICD hierarchies im-proves multi-label classification (Cao et al., 2020; Wu et al., 2024). However, existing hyperbolic approaches remain largely diagnosis-centric and focus on classification-style tasks, leaving heterogeneous, multi-modal longitudinal tra-jectories underexplored. 
+
+Retrieval-Augmented Generation in Medicine Large language models have demonstrated strong performance on medical question answering and reasoning benchmarks (Singhal et al., 2023; Nori et al., 2023), but hallucination remains a critical risk in high-stakes clinical settings (Ji et al., 2023). Retrieval-augmented generation mitigates this risk by grounding responses in retrieved evidence, typically from large text corpora (Lewis et al., 2020; Guu et al., 2020). In medicine, recent work has benchmarked RAG pipelines and shown that retrieval strategies and corpora substantially affect clinical QA performance (Xiong et al., 2024). Be-yond text retrieval, knowledge graph–augmented prompting retrieves structured context such as entities, relations, or subgraphs (Pan et al., 2024; Zeng et al., 2025), and recent systems integrate graph-based retrieval into medical RAG pipelines (Wu et al., 2025). However, many retrieval mech-anisms rely on lexical overlap or Euclidean similarity, and structured evidence is often linearized before prompting, discarding relational and hierarchical information (Lewis et al., 2020; Pan et al., 2024). This motivates structure-aware retrieval criteria that leverage the geometry of hierarchical medical knowledge, as pursued in our approach. 3GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+# 3. Methodology 
+
+We propose GRAIL (Geometric Reasoning Augmented In-ference with LLMs), a framework for longitudinal EHR modeling that integrates (i) deterministic coding-system hierarchies, (ii) data-driven cross-modal temporal associ-ations, (iii) hyperbolic representation learning, and (iv) structure-aware retrieval with optional LLM reranking at inference time. 
+
+3.1. Overview of the GRAIL Pipeline 
+
+GRAIL consists of four stages (as in Figure 1): (A) con-structing a unified typed clinical graph from deterministic hierarchies and lagged cross-modal associations, (B) learn-ing hyperbolic node embeddings via typed edge reconstruc-tion, and denoising each visit into a probabilistic Central Event using masked-visit self-supervision, (C) performing structure-aware retrieval to form a typed Risk Horizon, and (D) optional LLM-based reranking for next-visit prediction. Algorithm 1 summarizes the end-to-end procedure. 
+
+3.2. Problem Setup and Notation 
+
+A patient trajectory is a sequence of visits indexed by time 
+
+t ∈ { 1, . . . , T }. Each visit is a set-valued, multi-modal observation: 
+
+St =
+
+n
+
+S(dx)  
+
+> t
+
+, S (proc)  
+
+> t
+
+, S (med)  
+
+> t
+
+, S (lab) 
+
+> t
+
+o
+
+,S(m) 
+
+> t
+
+⊂ V (m).
+
+(1) Given history S1: t, we aim to predict next-visit events S(m)
+
+> t+1
+
+(multi-label) and/or a designated primary event. We denote the unified vocabulary by 
+
+V = [
+
+> m
+
+V(m) ∪ V (anc) , (2) where V(anc) contains deterministic ancestor nodes. 
+
+3.3. Unified Typed Clinical Graph Construction 
+
+We construct a directed typed graph G = ( V, E) with two edge families: (i) deterministic hierarchical edges and (ii) data-driven temporal cross-modal edges. Edges are parti-tioned by relation types r ∈ R :
+
+E = Ehier ∪ E cross , E = [
+
+> r∈R
+
+Er . (3) 3.3.1. D ETERMINISTIC VERTICAL HIERARCHIES 
+
+Within each modality, we build deterministic parent–child edges from coding structure (e.g., ICD prefixes, ATC levels). We direct edges from abstract parents to specific children: 
+
+Ehier =
+
+n
+
+(p → v) : p = parent( v), v ∈ V (m)o
+
+. (4) 
+
+Algorithm 1 GRAIL: Geometric Reasoning Augmented Inference with LLMs 
+
+Require: Longitudinal EHR trajectories {S(i)1: T }Ni=1 
+
+Ensure: Next-visit prediction bST +1  
+
+> 1:
+
+Graph Construction  
+
+> 2:
+
+Build deterministic hierarchical edges Ehier  
+
+> 3:
+
+for each modality pair (m, m ′) and lag ∆ do  
+
+> 4:
+
+Compute lagged co-occurrence statistics  
+
+> 5:
+
+Compute PMI ∆ 
+
+> 6:
+
+Retain edges using Eq. (7)  
+
+> 7:
+
+end for  
+
+> 8:
+
+Apply stability filtering using Eq. (9)  
+
+> 9:
+
+Construct graph G = ( V, E) 
+
+> 10:
+
+Hyperbolic Node Embedding  
+
+> 11:
+
+Initialize embeddings {zv } ⊂ Ddc 
+
+> 12:
+
+repeat  
+
+> 13:
+
+Sample typed edges and negatives  
+
+> 14:
+
+Update embeddings by minimizing Ledge  
+
+> 15:
+
+until convergence  
+
+> 16:
+
+Central Event Pretraining  
+
+> 17:
+
+repeat  
+
+> 18:
+
+for each visit St do  
+
+> 19:
+
+Sample masked codes Mt 
+
+> 20:
+
+Compute barycenter μt 
+
+> 21:
+
+Minimize Lmask  
+
+> 22:
+
+end for  
+
+> 23:
+
+until convergence  
+
+> 24:
+
+Inference  
+
+> 25:
+
+Compute Central Event CE T 
+
+> 26:
+
+Retrieve Risk Horizon RT 
+
+> 27:
+
+Rank candidates using geometric score  
+
+> 28:
+
+if LLM reranking enabled then  
+
+> 29:
+
+Combine geometric and LLM scores  
+
+> 30:
+
+end if  
+
+> 31:
+
+Output bST +1 
+
+This directionality ensures that specialization corresponds to moving “downstream” in the hierarchy. 3.3.2. T EMPORAL CROSS -M ODAL STITCHING VIA 
+
+LAGGED PMI To connect modality trees and encode longitudinal depen-dencies, we define lagged co-occurrence for a ∈ V (m) and 
+
+b ∈ V (m′), m̸ = m′:
+
+P∆(a, b ) = Pr 
+
+
+
+a ∈ S(m) 
+
+> t
+
+, b ∈ S(m′)
+
+> t+∆
+
+
+
+,
+
+∆ ∈ { 0, . . . , ∆max }.
+
+(5) We compute lagged PMI (associational, not causal): 
+
+PMI ∆(a → b) = log P∆(a, b )
+
+P (a)P (b) . (6) 4GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+We retain a directed cross-modal edge a → b if 
+
+PMI ∆(a → b) > τ m,m ′,∆ ∧ cnt ∆(a, b ) ≥ κ, (7) where κ is a minimum support threshold. Each retained edge is assigned a type 
+
+r = type( a → b) = ( m → m′, ∆) , (8) yielding Ecross = S 
+
+> r
+
+Er .3.3.3. S TABILITY FILTERING 
+
+To reduce dataset-specific artifacts, we apply bootstrap sta-bility filtering to PMI-derived edges. Let E(b)cross denote the cross-modal edge set recovered on bootstrap resample 
+
+b ∈ { 1, . . . , B }. We keep edge e iff 
+
+stab( e) = 1
+
+B
+
+> B
+
+X
+
+> b=1
+
+I
+
+h
+
+e ∈ E (b)cross 
+
+i
+
+≥ q, (9) where q ∈ (0 , 1] controls the stability requirement. 
+
+3.4. Hyperbolic Geometry and Node Embedding 
+
+We embed nodes into the d-dimensional Poincar ´e ball of curvature −c:
+
+Ddc = x ∈ Rd : ∥x∥ < 1/√c , zv ∈ Ddc ∀v ∈ V .
+
+(10) For any two embeddings x, y ∈ Ddc , we use the hyperbolic distance dD(x, y ) (Appendix A.1). For an observed edge 
+
+(u → v) of type r, we define a compatibility score 
+
+sr (u, v ) = −dD(zu, z v ). (11) Embeddings are trained via typed edge reconstruction with negative sampling; the full typed edge reconstruction objec-tive and optimization details are provided in Appendix A.2 and optimized with Riemannian SGD/Adam with projection to enforce ∥zv ∥ < 1/√c.
+
+3.5. Visit Denoising via Probabilistic Central Events 
+
+Let Ct = S 
+
+> m
+
+S(m) 
+
+> t
+
+be the set of all codes observed at visit t.We compute a visit-level hyperbolic barycenter as a closed-form approximation of the Fr ´echet mean using log–exp maps at the origin: 
+
+μt = exp c
+
+> 0
+
+1
+
+P 
+
+> ci∈C t
+
+wt,i 
+
+X
+
+> ci∈C t
+
+wt,i log c
+
+> 0
+
+(zci )
+
+!
+
+, (12) where wt,i ≥ 0 are code weights (uniform by default). Rather than snapping μt to a single nearest node, we define a soft assignment over candidate nodes: 
+
+pt(v) = exp( −β d D(μt, z v )) 
+
+P 
+
+> v′∈V t
+
+exp( −β d D(μt, z v′ )) , (13) where Vt is a restricted candidate pool (e.g., same-modality nodes and ancestors) for efficiency. The Central Event is 
+
+CE t = ( μt, p t(·)) .
+
+3.6. Masked-Visit Reconstruction for Self-Supervised Denoising 
+
+To train Central Events to preserve predictable clinical signal while filtering noise, we randomly mask a subset of visit codes Mt ⊂ C t and compute μt from Ct \ M t. We then score a masked code c ∈ M t by hyperbolic distance: 
+
+p(c | μt) ∝ exp( −dD(μt, z c)/τ ) . (14) Training minimizes the sampled-softmax / contrastive re-construction loss 
+
+Lmask = − X
+
+> c∈M t
+
+log p(c | μt), (15) with an efficient negative-sampling normalization. The com-plete sampled-softmax formulation and negative sampling strategy are detailed in Appendix A.3, Eq. (29). 
+
+3.7. Structure-Aware Retrieval via Hyperbolic Risk Horizons 
+
+Given the most recent Central Event at time T , GRAIL per-forms structure-aware retrieval to identify a compact set of clinically plausible next-visit events. We refer to this retrieved, modality-typed candidate set as the Risk Hori-zon . Unlike standard nearest-neighbor retrieval in embed-ding space, our approach explicitly incorporates hierarchi-cal structure, cross-modal temporal associations, and direc-tional progression. 3.7.1. C ANDIDATE POOL CONSTRUCTION 
+
+Let vT = arg max v pT (v) denote the representative con-cept of the current visit, selected as the maximum-a-posteriori estimate under the Central Event distribution. We construct an initial candidate pool by unifying three struc-tured neighborhoods: 
+
+Ccand  
+
+> T
+
+= Desc( vT ) ∪ Assoc( vT ) ∪ Pred( vT ), (16) where: (i) Desc( vT ) denotes hierarchical descendants of 
+
+vT within the deterministic coding-system hierarchy, (ii) 
+
+Assoc( vT ) denotes same-visit cross-modal associates (i.e., edges with ∆ = 0 ), and (iii) Pred( vT ) denotes lagged pre-dictive neighbors (i.e., edges with ∆ > 0) derived from temporal stitching. This construction ensures that candi-dates are grounded in clinically observed hierarchical and temporal dependencies. 3.7.2. R ISK CONES FOR DIRECTIONAL RETRIEVAL 
+
+While the candidate pool captures structural relevance, not all candidates represent plausible future developments. To 5GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+enforce directional consistency, we introduce risk cones ,which restrict retrieval to concepts that lie downstream of the current patient state in hyperbolic space. Let r(vT ) denote the root (or highest-level ancestor) of vT
+
+in its modality-specific hierarchy. We define the downstream direction in the tangent space at the origin as 
+
+dT = log c
+
+> 0
+
+(zvT ) − log c
+
+> 0
+
+(zr(vT )). (17) For a candidate node u, we compute its angular deviation from this downstream direction: 
+
+cos ∠(u; vT ) = ⟨log c
+
+> 0
+
+(zu), d T ⟩∥ log c
+
+> 0
+
+(zu)∥ ∥ dT ∥ . (18) We say that u lies within the risk cone of vT if 
+
+∠(u; vT ) ≤ ϕ, (19) where ϕ is a cone aperture parameter controlling the trade-off between specificity and recall. Intuitively, risk cones favor specializations and downstream developments over unrelated or overly abstract concepts. 
+
+Geometric relevance scoring. After filtering candidates by risk cone membership, we rank retained nodes using a geometric relevance score that balances proximity to the current visit representation and directional alignment: 
+
+sgeo (u; T ) = −dD(zu, μ T ) + η · I[u ∈ Cone( vT )] , (20) where μT is the visit barycenter of the Central Event at time 
+
+T , I[·] is the indicator function, and η ≥ 0 controls the strength of the directional prior. 
+
+Typed Risk Horizon. Finally, we select the top-K ranked candidates per modality according to sgeo (u; T ) to form the typed Risk Horizon 
+
+RT =
+
+n
+
+R(dx)  
+
+> T
+
+, R(proc)  
+
+> T
+
+, R(med)  
+
+> T
+
+, R(lab) 
+
+> T
+
+o
+
+, (21) which serves as structured, geometry-aware context for downstream inference and LLM-based reranking (Sec-tion 3.8). 
+
+3.8. LLM Prompting and Geometric–LLM Reranking 
+
+We use the Risk Horizon to constrain LLM inference to clinically plausible candidates. Let Desc( ·) map codes to short text descriptions. The LLM receives (i) a compressed history from Central Events and (ii) candidates grouped by modality. For each candidate u ∈ R (m) 
+
+> T
+
+, we obtain an LLM score sllm (u; T ) (e.g., log-probability under multiple-choice prompting) and combine it with the geometric score: 
+
+s(u; T ) = λ s llm (u; T ) + (1 − λ) sgeo (u; T ), (22) predicting top-k events per modality: 
+
+bS(m)  
+
+> T+1
+
+= Top -k{s(u; T ) : u ∈ R (m) 
+
+> T
+
+}. (23) LLM reranking is used strictly at inference time; we do not backpropagate through the LLM. 
+
+3.9. Training Objective and Optimization 
+
+We jointly train node embeddings and Central Event denois-ing using 
+
+L = Ledge + α Lmask , (24) where Ledge is the typed edge reconstruction loss (Ap-pendix A.2, Eq. (27) ) and Lmask is the masked-visit re-construction loss (Appendix A.3, Eq. (29) ). We optimize on the Poincar ´e ball using Riemannian SGD/Adam with projection to maintain zv ∈ Ddc .
+
+# 4. Experimental Setup 
+
+We evaluate GRAIL on the MIMIC-IV database (Johnson et al., 2023), focusing on longitudinal forecasting robustness, multi-modal integration, and inference grounding. 
+
+Dataset and Cohort. After filtering for patients with se-quence length T ≥ 2, we extract longitudinal trajectories for a cohort of 14,013 patients comprising 183,965 total visits. The average trajectory length is 3 visits per patient (min = 2, max = 18). The unified vocabulary V contains 25,808 unique nodes and 115,0359 edges across four modalities, with an average density of 47 codes per visit (dx/proc/med/lab = 15/3/12/17). Detailed cohort construction, vocabulary fil-tering ( ≈ 25 occurrence threshold), and leakage control protocols are detailed in Appendix B. 
+
+Tasks. We evaluate on (i) Multi-modal next-visit predic-tion , ranking the likelihood of all codes in St+1 given his-tory S1: t, and (ii) Primary diagnosis prediction , a single-label classification of the primary condition at t + 1 .
+
+Baselines. We compare GRAIL against three baseline cat-egories: (i) Sequential encoders that linearize visits into Euclidean token sequences, including Transformer (Eucl.), BEHRT, and RETAIN; (ii) Graph and retrieval methods ,including Euclidean RAG (Euclidean embedding kNN re-trieval), Euclidean GRAIL (matched-topology ablation us-ing Rd embeddings), and Hyperbolic (no stitch), which removes lagged PMI cross-modal edges to isolate the effect of temporal stitching; and (iii) LLM baselines , where Llama-3.1-8B-Instruct, Llama-3.1-70B-Instruct, and Qwen3-8B perform zero-shot next-event selection from large candidate spaces, as well as a standard Euclidean RAG+LLM setup. All LLM methods are inference-only and use the same his-tory compression for fairness. Hyperparameter details and baseline implementations are provided in Appendix C. 6GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+Table 1. Multi-modal next-visit prediction on MIMIC-IV (per event type).                                                                                                                                                                
+
+> Dx Proc Med Lab Model R@5 R@10 nDCG@10 R@5 R@10 nDCG@10 R@5 R@10 nDCG@10 R@5 R@10 nDCG@10
+> Sequential Baselines
+> Transformer (Eucl.) 0.214 0.318 0.232 0.121 0.197 0.138 0.066 0.112 0.074 0.058 0.103 0.067 BEHRT 0.226 0.334 0.246 0.128 0.206 0.145 0.070 0.118 0.078 0.061 0.109 0.071 RETAIN 0.201 0.301 0.217 0.113 0.188 0.132 0.062 0.106 0.070 0.055 0.098 0.064
+> Graph & Retrieval
+> Euclidean RAG 0.241 0.357 0.266 0.136 0.221 0.156 0.080 0.132 0.090 0.073 0.123 0.083 Euclidean GRAIL 0.257 0.377 0.284 0.146 0.234 0.167 0.086 0.140 0.097 0.078 0.131 0.088 Hyperbolic (no stitch) 0.265 0.387 0.293 0.149 0.240 0.171 0.090 0.146 0.101 0.082 0.138 0.092
+> Large Language Models (zero-shot)
+> Llama-3.1-8B-Instruct 0.154 0.243 0.165 0.081 0.142 0.094 0.041 0.075 0.048 0.037 0.070 0.044 Llama-3.1-70B-Instruct 0.376 0.470 0.287 0.294 0.360 0.307 0.249 0.286 0.256 0.143 0.179 0.151 Qwen3-8B 0.160 0.250 0.171 0.084 0.147 0.097 0.043 0.078 0.050 0.039 0.072 0.046
+> Ours
+> GRAIL (w.o. LLM backend) 0.383 0.410 0.315 0.260 0.357 0.283 0.201 0.262 0.214 0.295 0.354 0.308 GRAIL (+Llama-3.1-8B-Instruct) 0.598 0.618 0.522 0.594 0.764 0. 589 0.508 0.573 0.523 0.602 0.665 0.618
+> GRAIL (+Qwen3-8B) 0.587 0.657 0.520 0.563 0.662 0.587 0.506 0.570 0.521 0.500 0.562 0.516
+
+Metrics. For multi-modal next-visit prediction, we report Recall@k ( k ∈ { 5, 10 }) and nDCG@10, computed per visit and macro-averaged. For primary diagnosis prediction, we report Top-1, Top-5, and MRR. To assess clinical validity under coding noise, we additionally report hierarchy-aware metrics : average shortest-path distance in the ICD hierarchy between predictions and ground truth (Tree Distance) and an Ancestor Match rate measuring shared higher-level ICD ancestors. 
+
+# 5. Results 
+
+5.1. Task 1: Multi-Modal Next-Visit Prediction 
+
+Table 1 summarizes next-visit prediction performance across diagnoses, procedures, medications, and laboratory tests. Beyond raw performance gains, the results reveal several consistent behaviors that help clarify when and why structured geometric retrieval is effective for longitudinal EHR modeling. 
+
+Retrieval as a robustness mechanism under clinical noise. 
+
+A first observation is that all retrieval-based approaches out-perform sequence-only baselines across modalities. This is particularly evident for procedures, medications, and labs, where unordered code sets, sparsity, and institution-specific coding practices introduce substantial noise. Re-stricting prediction to a candidate set grounded in historical co-occurrence and hierarchy appears to act as an implicit regularizer, reducing the burden on the model to discrimi-nate among thousands of rarely observed codes. The con-sistent improvement of Euclidean RAG over BEHRT and Transformer baselines suggests that this effect is largely independent of geometry and instead stems from candidate restriction itself. 
+
+Role of hyperbolic geometry beyond candidate restric-tion. While retrieval alone is beneficial, hyperbolic em-beddings provide additional and systematic gains under matched or comparable structure. The improvements from Euclidean GRAIL to GRAIL without the LLM backend are modest for diagnoses but much larger for medications and labs. This asymmetry is informative: diagnoses are often already organized into relatively stable and shallow hierarchies, whereas medications and labs exhibit heavier long-tail distributions and more pronounced coarse-to-fine abstraction. Hyperbolic geometry appears to better accom-modate these properties by allocating more representational capacity to fine-grained specializations while preserving their relationship to higher-level concepts. This suggests that the primary benefit of hyperbolic space in this setting is not simply better distance preservation, but improved alignment between embedding geometry and the abstraction structure imposed by medical coding systems. 
+
+Importance of temporal cross-modal stitching. The ab-lation without lagged PMI edges highlights the importance of explicitly encoding cross-modal temporal dependencies. Performance drops are largest for medications and labs, which are rarely predictable from within-modality history alone. This aligns with clinical intuition: prescriptions are typically motivated by diagnoses or procedures, and lab tests are often ordered to monitor treatment effects. Deter-ministic hierarchies provide vertical structure within each modality, but temporal stitching provides the horizontal links needed to model clinical progression across modali-ties. Without these links, the Risk Horizon becomes less trajectory-consistent, leading to weaker retrieval for down-stream modalities. 
+
+LLMs as semantic refiners rather than primary fore-casters. The contrast between zero-shot LLM baselines 7GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+and LLM reranking over GRAIL is particularly instructive. Small LLMs perform poorly when asked to directly select future codes from the full vocabulary, even when provided with compressed history. However, when the same mod-els are applied as rankers over a structured and trajectory-consistent candidate set, they yield large improvements across all modalities. This suggests that, in this setting, LLMs are most effective at resolving fine-grained seman-tic ambiguities among plausible candidates rather than at discovering those candidates in the first place. The similar performance of different small LLM backends under the same retrieval further supports this view: once the candidate set is well structured, model choice matters less than the quality of the geometric prior. 
+
+Implications for multi-modal forecasting. Taken to-gether, the multi-modal results suggest a layered model-ing strategy. Retrieval defines what is plausible, geometry defines how plausibility is organized, and LLMs refine or-dering within that space. Improvements in Recall@k indi-cate better coverage of true future events, while gains in nDCG@k indicate that these events are ranked more con-sistently with clinical relevance. The fact that these gains are largest for sparse modalities suggests that GRAIL is particularly well suited to settings where data sparsity and heterogeneity limit the effectiveness of purely sequential models.                            
+
+> Table 2. Primary diagnosis prediction.
+> Model Top-1 Top-5 MRR Hier. Dist ↓Anc. M Transformer (Eucl.) 0.126 0.362 0.214 3.62 0.581 Euclidean RAG 0.139 0.389 0.232 3.34 0.603 Hyperbolic (no stitch) 0.146 0.404 0.241 3.18 0.616
+> GRAIL (Ours) 0.668 0.748 0.676 1.98 0.972
+
+5.2. Task 2: Primary Diagnosis Prediction 
+
+Table 2 reports results for primary diagnosis prediction along with hierarchy-aware metrics. In contrast to the multi-label setting, this task requires selecting a single dominant clinical state, making it a useful probe of how well Central Events summarize patient history. 
+
+Stability of Central Events for single-label prediction. 
+
+The large improvement in Top-1 accuracy and MRR indi-cates that Central Events provide a stable and discriminative representation of patient state for single-label forecasting. Unlike sequence encoders that must implicitly aggregate un-ordered code sets over time, GRAIL explicitly compresses each visit into a geometric summary that preserves pre-dictable structure while filtering noise. This appears to be particularly beneficial when only one outcome must be cho-sen, as small differences in ranking can have a large impact on Top-1 accuracy. 
+
+Hierarchy-aware behavior under label ambiguity. The hierarchy-aware metrics provide additional insight into model behavior when exact matches are not achieved. The reduction in hierarchical distance suggests that errors made by GRAIL tend to remain within clinically related subtrees of the ICD hierarchy. This is an important property in EHR data, where fine-grained diagnosis codes may vary across clinicians or institutions, and near-miss predictions often re-main clinically meaningful. The strong ancestor match score reported for GRAIL is consistent with this interpretation and supports the claim that the model internalizes hierarchical structure rather than merely memorizing frequent codes. 
+
+Overall interpretation. Across both tasks, the results indicate that explicitly modeling hierarchy, temporal asso-ciation, and geometry yields benefits that go beyond incre-mental performance gains. The improvements are largest where clinical data are most sparse and heterogeneous, and where purely sequential modeling struggles. The combina-tion of structured retrieval and constrained LLM inference suggests a practical pathway for integrating large language models into longitudinal clinical prediction without relying on unconstrained generation. 
+
+# 6. Conclusion 
+
+We introduced GRAIL, a framework for longitudinal EHR forecasting that integrates deterministic coding hierarchies, data-driven temporal stitching, hyperbolic representation learning, and structure-aware retrieval, with optional LLM reranking at inference time. By explicitly modeling hierar-chical abstraction and cross-modal temporal dependencies, GRAIL provides a compact and clinically grounded repre-sentation of patient trajectories. Experiments on MIMIC-IV demonstrate consistent improvements in multi-modal next-visit prediction, more hierarchy-consistent forecasts, and stronger grounding by constraining LLM inference to clinically plausible candidates. Together, these results indi-cate that hyperbolic geometry offers a principled inductive bias for longitudinal clinical modeling, and that retrieval-based integration enables a reliable and scalable pathway for incorporating LLM reasoning into high-stakes healthcare prediction tasks. 8GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+# Impact Statement 
+
+This work focuses on improving the reliability and in-terpretability of longitudinal modeling over electronic health records (EHRs), with the goal of supporting clin-ical decision-making and medical research. By integrating explicit medical hierarchies, data-driven temporal associ-ations, and structure-aware retrieval with large language models (LLMs), the proposed framework aims to reduce clinically implausible predictions and ungrounded model outputs, which are critical risks in high-stakes healthcare set-tings. If translated responsibly, such methods could support downstream applications such as clinical forecasting, cohort analysis, and hypothesis generation, particularly in settings where patient trajectories are sparse and heterogeneous. At the same time, this work is not intended for direct clinical deployment. The models are trained and evaluated retro-spectively on observational EHR data and may reflect bi-ases, missingness, or documentation practices present in the source dataset. Predictions generated by the model should therefore not be interpreted as medical advice, and any real-world use would require prospective validation, regulatory approval, and oversight by qualified medical professionals. Regarding data accessibility and reproducibility, our ex-periments are conducted on the MIMIC-IV dataset, which contains sensitive patient information and is distributed un-der controlled access agreements. As a result, we do not release the dataset itself. However, MIMIC-IV is publicly available to qualified researchers who complete the required data use training and agreements. To support reproducibil-ity, we commit to releasing all preprocessing code, model implementations, and fixed experimental configurations. Re-searchers with authorized access to the same dataset will be able to reproduce our results and evaluate extensions under identical experimental conditions. More broadly, this work highlights the importance of com-bining structured inductive biases with constrained use of LLMs in medical domains. We hope it encourages further research into geometry-aware, retrieval-based, and inter-pretable approaches that prioritize reliability and grounding over unconstrained generation in healthcare applications. 
+
+# References 
+
+Alaa, A. M. and van der Schaar, M. Attentive state-space modeling of disease progression. Advances in neural information processing systems , 32, 2019. Beaulieu-Jones, B. K., Kohane, I. S., and Beam, A. L. Learn-ing contextual hierarchical structure of medical concepts with poincair ´e embeddings to clarify phenotypes. In Pa-cific Symposium on Biocomputing. Pacific Symposium on Biocomputing , volume 24, pp. 8, 2019. Bodenreider, O. The unified medical language system (umls): integrating biomedical terminology. Nucleic acids research , 32(suppl 1):D267–D270, 2004. Cao, P., Chen, Y., Liu, K., Zhao, J., Liu, S., and Chong, W. Hypercore: Hyperbolic and co-graph representation for automatic icd coding. In Proceedings of the 58th annual meeting of the association for computational linguistics ,pp. 3105–3114, 2020. Chami, I., Ying, Z., R ´e, C., and Leskovec, J. Hyperbolic graph convolutional neural networks. Advances in neural information processing systems , 32, 2019. Che, Z., Purushotham, S., Cho, K., Sontag, D., and Liu, Y. Recurrent neural networks for multivariate time series with missing values. Scientific reports , 8(1):6085, 2018. Chen, J., Yin, C., Wang, Y., and Zhang, P. Predictive model-ing with temporal graphical representation on electronic health records. In IJCAI: proceedings of the conference ,volume 2024, pp. 5763, 2024. Choi, E., Bahadori, M. T., Schuetz, A., Stewart, W. F., and Sun, J. Doctor ai: Predicting clinical events via recurrent neural networks. In Machine learning for healthcare conference , pp. 301–318. PMLR, 2016a. Choi, E., Bahadori, M. T., Sun, J., Kulas, J., Schuetz, A., and Stewart, W. Retain: An interpretable predictive model for healthcare using reverse time attention mechanism. 
+
+Advances in neural information processing systems , 29, 2016b. Choi, E., Bahadori, M. T., Song, L., Stewart, W. F., and Sun, J. Gram: graph-based attention model for health-care representation learning. In Proceedings of the 23rd ACM SIGKDD international conference on knowledge discovery and data mining , pp. 787–795, 2017. Ganea, O., B ´ecigneul, G., and Hofmann, T. Hyperbolic neu-ral networks. Advances in neural information processing systems , 31, 2018. Guu, K., Lee, K., Tung, Z., Pasupat, P., and Chang, M. Retrieval augmented language model pre-training. In 
+
+International conference on machine learning , pp. 3929– 3938. PMLR, 2020. Harutyunyan, H., Khachatrian, H., Kale, D. C., Ver Steeg, G., and Galstyan, A. Multitask learning and benchmark-ing with clinical time series data. Scientific data , 6(1):96, 2019. Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., Ishii, E., Bang, Y. J., Madotto, A., and Fung, P. Survey of halluci-nation in natural language generation. ACM computing surveys , 55(12):1–38, 2023. 9GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+Johnson, A. E., Bulgarelli, L., Shen, L., Gayles, A., Sham-mout, A., Horng, S., Pollard, T. J., Hao, S., Moody, B., Gow, B., et al. Mimic-iv, a freely accessible electronic health record dataset. Scientific data , 10(1):1, 2023. Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., K ¨uttler, H., Lewis, M., Yih, W.-t., Rockt ¨aschel, T., et al. Retrieval-augmented generation for knowledge-intensive nlp tasks. Advances in neural information pro-cessing systems , 33:9459–9474, 2020. Li, Y., Rao, S., Solares, J. R. A., Hassaine, A., Ramakr-ishnan, R., Canoy, D., Zhu, Y., Rahimi, K., and Salimi-Khorshidi, G. Behrt: transformer for electronic health records. Scientific reports , 10(1):7155, 2020. Lipton, Z. C., Kale, D. C., Elkan, C., and Wetzel, R. Learn-ing to diagnose with lstm recurrent neural networks. arXiv preprint arXiv:1511.03677 , 2015. Liu, Q., Nickel, M., and Kiela, D. Hyperbolic graph neural networks. Advances in neural information processing systems , 32, 2019. Lu, C., Reddy, C. K., and Ning, Y. Self-supervised graph learning with hyperbolic embedding for temporal health event prediction. IEEE Transactions on Cybernetics , 53 (4):2124–2136, 2021. Lu, Q., De Silva, N., Kafle, S., Cao, J., Dou, D., Nguyen, T. H., Sen, P., Hailpern, B., Reinwald, B., and Li, Y. Learning electronic health records through hyperbolic embedding of medical ontologies. In Proceedings of the 10th acm international conference on bioinformatics, computational biology and health informatics , pp. 338– 346, 2019. Ma, F., You, Q., Xiao, H., Chitta, R., Zhou, J., and Gao, J. Kame: Knowledge-based attention model for diagnosis prediction in healthcare. In Proceedings of the 27th ACM international conference on information and knowledge management , pp. 743–752, 2018. Mao, C., Yao, L., and Luo, Y. Medgcn: Medication rec-ommendation and lab test imputation via graph convolu-tional networks. Journal of Biomedical Informatics , 127: 104000, 2022. Naseem, U., Thapa, S., Zhang, Q., Wang, S., Rashid, J., Hu, L., and Hussain, A. Graph learning with label attention and hyperbolic embedding for temporal event prediction in healthcare. Neurocomputing , 592:127736, 2024. Nickel, M. and Kiela, D. Poincar ´e embeddings for learning hierarchical representations. Advances in neural informa-tion processing systems , 30, 2017. Nori, H., King, N., McKinney, S. M., Carignan, D., and Horvitz, E. Capabilities of gpt-4 on medical challenge problems. arXiv preprint arXiv:2303.13375 , 2023. Pan, S., Luo, L., Wang, Y., Chen, C., Wang, J., and Wu, X. Unifying large language models and knowledge graphs: A roadmap. IEEE Transactions on Knowledge and Data Engineering , 36(7):3580–3599, 2024. Pham, T., Tran, T., Phung, D., and Venkatesh, S. Deepcare: A deep dynamic memory model for predictive medicine. In Pacific-Asia conference on knowledge discovery and data mining , pp. 30–41. Springer, 2016. Qu, Z. and F ¨arber, M. Medieval: A unified medical bench-mark for patient-contextual and knowledge-grounded rea-soning in llms. arXiv preprint arXiv:2512.20822 , 2025. Rajkomar, A., Oren, E., Chen, K., Dai, A. M., Hajaj, N., Hardt, M., Liu, P. J., Liu, X., Marcus, J., Sun, M., et al. Scalable and accurate deep learning with electronic health records. NPJ digital medicine , 1(1):18, 2018. Rasmy, L., Xiang, Y., Xie, Z., Tao, C., and Zhi, D. Med-bert: pretrained contextualized embeddings on large-scale structured electronic health records for disease prediction. 
+
+NPJ digital medicine , 4(1):86, 2021. Sarkar, R. Low distortion delaunay embedding of trees in hyperbolic plane. In International symposium on graph drawing , pp. 355–366. Springer, 2011. Shang, J., Ma, T., Xiao, C., and Sun, J. Pre-training of graph augmented transformers for medication recommendation. 
+
+arXiv preprint arXiv:1906.00346 , 2019. Singhal, K., Azizi, S., Tu, T., Mahdavi, S. S., Wei, J., Chung, H. W., Scales, N., Tanwani, A., Cole-Lewis, H., Pfohl, S., et al. Large language models encode clinical knowledge. 
+
+Nature , 620(7972):172–180, 2023. Steinberg, E., Fries, J., Xu, Y., and Shah, N. Motor: A time-to-event foundation model for structured medical records. arXiv preprint arXiv:2301.03150 , 2023. WHO. International Statistical Classification of Diseases and related health problems: Alphabetical index , vol-ume 3. World Health Organization, 2004. WHO. Anatomical therapeutic chemical (atc) classification, 2024. Wornow, M., Bedi, S., Hernandez, M. A. F., Steinberg, E., Fries, J. A., R´ e, C., Koyejo, S., and Shah, N. H. Context clues: Evaluating long context models for clinical pre-diction tasks on ehrs. arXiv preprint arXiv:2412.16178 ,2024. 10 GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+Wu, J., Zhu, J., Qi, Y., Chen, J., Xu, M., Menolascina, F., Jin, Y., and Grau, V. Medical graph rag: Evidence-based medical large language model via graph retrieval-augmented generation. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pp. 28443–28467, 2025. Wu, Y., Chen, X., Yao, X., Yu, Y., and Chen, Z. Hyper-bolic graph convolutional neural network with contrastive learning for automated icd coding. Computers in Biology and Medicine , 168:107797, 2024. Xiong, G., Jin, Q., Lu, Z., and Zhang, A. Benchmarking retrieval-augmented generation for medicine. In Findings of the Association for Computational Linguistics ACL 2024 , pp. 6233–6251, 2024. Xu, Y., Ying, H., Qian, S., Zhuang, F., Zhang, X., Wang, D., Wu, J., and Xiong, H. Time-aware context-gated graph attention network for clinical risk prediction. IEEE Transactions on Knowledge and Data Engineering , 35 (7):7557–7568, 2022. Yang, Z., Mitra, A., Liu, W., Berlowitz, D., and Yu, H. Transformehr: transformer-based encoder-decoder gen-erative model to enhance prediction of disease outcomes using electronic health records. Nature communications ,14(1):7857, 2023. Zeng, Z., Cheng, Q., Hu, X., Zhuang, Y., Liu, X., He, K., and Liu, Z. Kosel: Knowledge subgraph enhanced large language model for medical question answering. 
+
+Knowledge-Based Systems , 309:112837, 2025. Zhou, Y., Liu, X., Yan, C., Ning, C., Zhang, X., Li, B., Fu, X., Wang, S., Hu, G., Wang, Y., and Wu, J. Evaluat-ing LLMs across multi-cognitive levels: From medical knowledge mastery to scenario-based problem solving. In Forty-second International Conference on Machine Learning , 2025. URL https://openreview.net/ forum?id=sgrJs7dbWC .11 GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+# A. Additional Formulas and Optimization Details 
+
+A.1. Hyperbolic Geometry 
+
+We embed nodes in the d-dimensional Poincar´ e ball of curvature −c,
+
+Ddc = {x ∈ Rd : ∥x∥ < 1/√c}.
+
+The hyperbolic distance between x, y ∈ Ddc is 
+
+dD(x, y ) = 2
+
+√c arctanh  √c ∥(−x) ⊕c y∥ , (25) where ⊕c denotes M¨ obius addition. We use the logarithmic and exponential maps at the origin: 
+
+log c
+
+> 0
+
+(x) = 2
+
+√c arctanh( √c∥x∥) x
+
+∥x∥ , exp c
+
+> 0
+
+(v) = tanh 
+
+ √c∥v∥
+
+2
+
+ v
+
+√c∥v∥ . (26) After each gradient update, embeddings are projected to ensure ∥zv ∥ < 1/√c.
+
+A.2. Typed Edge Reconstruction Objective 
+
+For a directed edge (u → v) of type r, the compatibility score is defined as 
+
+sr (u, v ) = −dD(zu, z v ).
+
+We optimize the negative-sampling objective 
+
+Ledge = − X
+
+> r∈R
+
+X
+
+> (u→v)∈E r
+
+log σ(γr + sr (u, v )) + X 
+
+> v−∼N r(v)
+
+log σ(γr − sr (u, v −)) 
+
+ , (27) where Nr (v) samples negatives from the same target modality and γr is a learned type-specific bias. 
+
+A.3. Masked-Visit Reconstruction Loss 
+
+Given a masked visit Mt ⊂ C t and Central Event μt, we define the probability of recovering a masked code c as 
+
+p(c | μt) = exp( −dD(μt, z c)/τ )exp( −dD(μt, z c)/τ ) + P  
+
+> c−∼N (c)
+
+exp( −dD(μt, z c− )/τ ) . (28) The reconstruction loss is 
+
+Lmask = − X
+
+> c∈M t
+
+log p(c | μt), (29) where negatives are sampled from the same modality as c.
+
+# B. Dataset and Cohort Details 
+
+B.1. Cohort Selection and Preprocessing 
+
+We conduct experiments on the MIMIC-IV database. We construct patient trajectories as time-ordered sequences of visits, where each visit is a multi-modal set containing diagnoses (ICD-9/10), procedures (ICD-9/10), medications (ATC), and laboratory tests (LOINC). 
+
+Inclusion Criteria. We include patients meeting the following criteria: • Sequence Length: Minimum of Tmin = 2 visits to ensure sufficient history for longitudinal modeling. 12 GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+• Data Density: We filter rare codes by enforcing a minimum frequency of ≥ 25 occurrences across the training corpus per modality. 
+
+Vocabulary and Hierarchy. For each retained leaf code, we include its deterministic ancestors from the standard medical ontologies (e.g., ICD hierarchy, ATC levels). The final vocabulary V is the union of all retained leaves and their ancestors. 
+
+Data Splits. We split the dataset by patient into training (80%), validation (10%), and test (10%) sets. This ensures that no patient’s future visits appear in the training set (patient-level leakage control). Crucially, all aggregate statistics used for graph construction—specifically the lagged PMI values for temporal stitching—are computed strictly on the training split to prevent label leakage. 
+
+B.2. Task Definitions Task A: Multi-modal Next-Visit Prediction. Given history S1: t, the model predicts the set of codes S(m) 
+
+> t+1
+
+for each modality 
+
+m ∈ { dx , proc , med , lab }. This is formulated as a multi-label ranking problem where the model outputs a score for every code in the vocabulary V(m).
+
+Task B: Primary Diagnosis Prediction. We predict the single primary diagnosis code for visit t + 1 . In MIMIC-IV, explicit “primary” diagnosis labels can be ambiguous or inconsistently specified across structured tables. We therefore extract the primary diagnosis directly from discharge summaries, where it is explicitly documented in the majority of cases, and use this as the target label for evaluation. 
+
+# C. Baseline Implementations 
+
+We compare GRAIL against the following categories of baselines. All methods use matched embedding dimensions ( d = 64 )where applicable. 
+
+C.1. Sequential Baselines 
+
+• Transformer: A standard Transformer encoder that treats a visit as a “sentence” of flattened code tokens. We add a specialized [SEP] token between visits and use the representation of the final [CLS] token for prediction. • BEHRT: A BERT-based model pretrained on large-scale EHR data using masked language modeling (MLM), then fine-tuned for next-visit prediction. • RETAIN: An interpretable RNN-based model that uses a two-level attention mechanism (visit-level and variable-level) to generate risk scores. 
+
+C.2. Ontology and Graph Baselines 
+
+• GRAM / KAME: Ontology-aware methods that use a DAG-based attention mechanism to regularize leaf embeddings using their ancestors. We extend these methods to multi-modal data by learning separate DAGs for each modality and concatenating the final visit representations. • GNN Baselines: A Graph Neural Network (GAT) trained on a static co-occurrence graph. • Euclidean GRAIL (Ablation): To isolate the benefit of hyperbolic geometry, we implement a version of GRAIL where: 1. Nodes are embedded in Euclidean space Rd.2. Central Events are computed using standard Euclidean centroids (means). 3. Retrieval uses Euclidean ( L2) distance. The graph topology and noise masking strategies remain identical to the main GRAIL model. 
+
+C.3. LLM Baselines 
+
+• Zero-shot Prompting: We feed the raw code history (converted to text descriptions) to the LLM and ask it to predict the next likely events. 13 GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories 
+
+• RAG (Euclidean): Standard Retrieval-Augmented Generation where the retriever selects top-k candidates based on Euclidean similarity to the history embedding, without GRAIL’s structure-aware risk cones. 
+
+# D. Evaluation Metrics 
+
+D.1. Ranking Metrics 
+
+For multi-label prediction, we report: • Recall@k: The proportion of true next-visit codes present in the top-k predicted candidates. • nDCG@k: Normalized Discounted Cumulative Gain, which rewards correct predictions ranked higher in the list. • Micro-F1: Calculated by thresholding probabilities (threshold tuned on validation set). 
+
+D.2. Hierarchy-Aware Metrics 
+
+To assess clinical semantic similarity rather than just exact string matching: • Tree Distance: The shortest path distance in the ontology tree (e.g., ICD-10) between the predicted code and the ground truth. A lower distance indicates a ”clinically close” error (e.g., predicting Type 2 Diabetes w/o complications 
+
+instead of Type 2 Diabetes w/ renal complications ). • Ancestor Match@L: The accuracy of predicting the correct ancestor at level L of the hierarchy (e.g., matching the correct ICD Chapter). 
+
+D.3. Grounding Metrics 
+
+For LLM-generated predictions, we measure: • Grounded Mention Rate: The fraction of generated codes that are present in either the patient’s explicit history or the retrieval set (Risk Horizon). • Unsupported Mention Rate: The fraction of generated codes that appear in neither, indicating potential hallucination. 
+
+# E. Implementation Details 
+
+All models are implemented in PyTorch. Optimization is performed using Riemannian Adam (for hyperbolic parameters) and standard Adam (for Euclidean parameters). 
+
+Hyperparameters. 
+
+• Embedding Dimension: d = 64 for all methods. • Curvature ( c): We treat curvature as a trainable parameter, initialized at c = 1 .0.• Negative Sampling: We use nneg = 50 negatives per positive edge for graph training. • Masking: For visit denoising, we use a mask ratio ρ randomly sampled from [0 .15 , 0.30] during training. • Stitching: We retain cross-modal edges with PMI > 0 and support count κ ≥ 50 .
+
+Reproducibility. All dataset preprocessing scripts and train/test splits are released to ensure exact replication of the graph topology and patient cohorts. 14

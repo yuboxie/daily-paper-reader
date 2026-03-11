@@ -1,0 +1,452 @@
+Title: Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series
+
+URL Source: https://arxiv.org/pdf/2602.10385v1
+
+Published Time: Thu, 12 Feb 2026 01:24:14 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series 
+
+# Jia Li 
+
+jiaxx213@umn.edu Department of Surgery; Department of Computer Science, U of M Minneapolis, MN, USA 
+
+# Yu Hou 
+
+hou00127@umn.edu Department of Surgery, U of M Minneapolis, MN, USA 
+
+# Rui Zhang 
+
+ruizhang@umn.edu Department of Surgery, U of M Minneapolis, MN, USA 
+
+## Abstract 
+
+Automatically discovering personalized sequential events from large-scale time-series data is crucial for enabling precision medicine in clinical research, yet it remains a formidable challenge even for contemporary AI models. For example, while transformers capture rich associations, they are mostly agnostic to event timing and ordering, thereby bypassing potential causal reasoning. Intuitively, we need a method capable of evaluating the “degree of alignment” among patient-specific trajectories and identifying their shared patterns, i.e., the significant events in a consistent sequence. This necessitates treating timing as a true computable dimension, allowing models to assign “relative timestamps” to candidate events beyond their observed physical times. In this work, we introduce LITT, a novel Timing-Transformer ar-chitecture that enables temporary alignment of sequential events on a virtual “relative timeline”, thereby enabling event-timing-focused attention and personalized interpretations of clinical trajectories. Its interpretability and effectiveness are validated on real-world longitudinal EHR data from 3,276 breast cancer patients to predict the onset timing of cardiotoxicity-induced heart disease. Further-more, LITT outperforms both the benchmark and state-of-the-art survival analysis methods on public datasets, positioning it as a significant step forward for precision medicine in clinical AI. 
+
+## Keywords 
+
+Timing Attention, Personalized Clinical Trajectory 
+
+## 1 Introduction 
+
+Despite the central role of event timing and ordering in time-series data, these aspects have received surprisingly little attention in existing learning methods [ 2 , 18 ], even though they are critical for fields like clinical research that demand purely data-driven approaches to advance insights. Preceding events can alter underlying conditions and modify the effects of subsequent events; e.g., long-term smoking substan-tially increases stroke risk in patients with hypertension. However, we cannot assume all such dependencies are already captured in existing domain knowledge, and still, there is growing demand to discover more complex, patient-specific temporal patterns from real electronic health record (EHR) data - such as personalized clinical trajectories - for precision medicine [19, 23]. Classical survival analysis, also known as time-to-event analy-sis, traditionally focuses on specific clinical events to model their joint influence on one or more mortality risks [ 28 ]. With the rapid advancement of AI techniques, numerous variables across diverse data types can now be incorporated to enrich such analyses, such as multi-modal mechanisms [ 26 ] and transformer-based methods [ 9, 12 , 29 ] capable of handling thousands of events simultaneously. However, these advances have further reinforced the tendency to neglect temporal aspects in modeling, favoring order-irrelevant associations among events. To date, we cannot answer a fundamental question: What is the model-predicted life expectancy for a particular patient? (i.e., to perform an event-timing regression ) While survival curves and con-cordance indices (C-index) provide cohort-level probabilities (e.g., 50% chance of survival until time XX), they offer limited insight into which sequential events drive longer or shorter survival compared to others. In technical terms, scalable methods for identifying key event trajectories that could improve or worsen these outcomes in EHR data remain lacking [8]. Let’s return to our core intuition: Can AI be used to summarize the most common sequential event patterns from real patient data in a purely data-driven manner, without “pretending to know the truth” [21]? A critical challenge is how to evaluate the significance of event timing. Inspired by the attention scheme in language modeling, we frame this as capturing timing attention of potential events. Unlike standard token attention, this requires treating time as a true computable dimension. The concept of relative timing has long been employed in fields such as dynamical systems and physics, where a virtual timeline simplifies integration over the temporal dimension [ 7, 30 ]. Build-ing on this idea, we introduce LITT (Level-of-Individual Timing Transformer) , a novel recurrent architecture that constructs “rela-tive timestamps” for potential events, repositions them in a virtual relative timeline, and enables their temporal alignment across in-dividuals (i.e., patients). Consequently, timing attention becomes measurable: A higher degree of alignment, i.e., a more concentrated temporal distribution in this timeline, indicates that the event is more significant under the current conditional context. In this work, we present a real-world experimental application using longitudinal EHR data from 3,276 breast cancer patients to pre-dict the onset timing of cardiotoxicity induced by cancer treatments. The proposed LITT model effectively discovers typical trajectory patterns from over 3.5 × 10 14 possible event combinations, enabling highly compact, intuitive temporal insights. In these event-timing regression tasks, we evaluate predictive accuracy using multiple metrics and compare LITT against base-line models. For broader validation, we assess the C-index on the public healthcare datasets SUPPORT and METABRIC, where LITT outperforms most state-of-the-art deep learning survival analysis methods and the benchmark Cox proportional hazards (CPH) model in estimating 50% survival probability. 
+
+> arXiv:2602.10385v1 [cs.LG] 11 Feb 2026 Jia Li, Yu Hou, and Rui Zhang
+
+The main contributions of this work are as follows: 
+
+• Enabling purely data-driven discovery of clinical trajectory patterns (i.e., typical significant-event sequences), applied in a practical case to provide intuitive novel insights; 
+
+• Identifying the distinction of computable timing against mere learnable timing, and introducing relative time as the key component in deep learning architectures; 
+
+• Establishing the concept of Timing Attention and proposing a validated method for its estimation; 
+
+• Analyzing the fundamental differences between LSTM and GRU with respect to timing transformation. 
+
+## 2 Computation of Timing 2.1 Related Works 
+
+The problem of irregular timing across individuals in time-series data is referred to as temporal heterogeneity [ 34 ], encompassing irregular follow-ups, incomplete sequences, right-censoring, and other sources of missingness. To address this, traditional models introduce time intervals as explicit variables [ 11 ] to represent the events of interest. However, such predefined time windows suffer from apparent restrictions [ 17 ], including the limited temporal flexibility to handle missing observations and censoring issues [ 27 ]. Deep learning methods offer inherent advantages in handling missing values and censoring by integrating masking mechanisms directly into training [ 22 ]. They effectively capture dependencies among irregularly spaced events, thus can consistently outperform conventional techniques in real-world EHR applications [ 8]. Yet, these models remain largely insensitive to sequential patterns, face interpretability challenges, and contribute little to the discovery of novel clinical insights [31]. A straightforward approach to incorporate time into compu-tation is to treat it as a learnable input feature in RNN architec-tures [ 3, 10 , 25 ]. The literature has explored the use of absolute timestamps of time series as a key strategy for handling irregular intervals: for instance, Chen et al. (2018) introduced neural ordi-nary differential equations (Neural ODEs) [ 4 ], while Schirmer et al. (2022) proposed the encoder governed by linear stochastic differen-tial equations (SDEs) [ 20 ]. Time-aware attention in RNNs is also not a new concept [1, 36]. Despite these advances, a fundamental question remains under-explored: While time can be modeled as an input learnable feature, why can it not also serve as an output predictable outcome? In modeling, both 𝑋 and 𝑌 are treated symmetrically as variables, differing only in observability. Thus, if time is genuinely treated as a computable dimension in modeling, it should also be predictable. To our knowledge, however, few competing models exist to directly perform event-timing regression. Treating timing as a learnable (or computational) dimension in modeling does not necessarily make it computable in the interpre-tive sense. This distinction fundamentally separates LITT from existing approaches. A learnable variable serves as input infor-mation to the model, whereas a computable variable requires the model to generate meaningful, interpretable values for it. For most conventional variables, these two roles may coincide. Timing, however, is a special case. Time scaling in real-world pro-cesses is inherently multiplicative (exponential-like) [ 14 , 24 ]. It Absolute Time 𝒕 
+
+with time unit = 𝟏 
+
+Relative Time 𝝉 
+
+with time unit 
+
+∆𝝉 = 𝟑                                                                            
+
+> ∆𝑡 0=4∆𝑡 1=2∆𝑡 2=3∆𝑡 3=5
+> 04
+> unit ∆𝜏 =3
+> 123567…
+> 𝒙 𝟎
+> 𝒙 𝟏
+> 𝒙 𝟐
+> 𝒙 𝟑
+> 𝒙 𝟒
+> 𝒙 𝟎
+> 𝒙 𝟏
+> 𝒙 𝟐
+> 𝒙 𝟑
+> 𝒙 𝟒
+> 𝛾 0=3
+> 4𝛾 1=3
+> 2
+> At Individual -Level :
+> ➢Discrete Observations 𝒙 𝒊 ,𝒊 =𝟎 ,𝟏 ,𝟐 ,𝟑 ,…
+> ➢Continuous ODE: 𝒅 𝟐 𝒙 (𝒕 )
+> 𝒅 𝒕 𝟐 +𝜸 (𝒕 )𝒅𝒙 (𝒕 )
+> 𝒅𝒕 +𝜷𝒙 (𝒕 )=𝟎
+> At Group -Level :
+> ➢Continuous ODE: 𝒙 𝝉 =𝒔𝒊𝒏 𝝎 𝝉 with 𝝎 𝟐 =𝜷
+> ➢Discrete Coefficients 𝜸 𝒊 =∆𝝉
+> ∆𝒕 𝒊
+> ,𝒊 =𝟎 ,𝟏 ,𝟐 ,𝟑 ,…
+> 𝛾 2=3
+> 3𝛾 3=3
+> 5
+> unit =1
+
+Figure 1: Example of timing transformation from absolute time to relative time, which can be represented by a sequence of scaling coefficients {𝛾 𝑖 } with 𝑖 = 0, . . . ,𝑇 .
+
+is therefore reasonable to apply exponential transformations to hidden states in the latent space to improve the modeling perfor-mance [ 1, 4 , 20 , 36 ]. Nevertheless, these methods largely neglect the transformed timing itself as an interpretable outcome. Interestingly, exponential mechanisms for time transformation have already appeared in RNNs [ 3, 35 ], but they primarily address missing values (equal to irregular time intervals) rather than relative timing interpretation. These applications are naturally restricted to a group-level fea-ture learning, as RNN gates operate at this level. In contrast, a sequence of relative timestamps assigned by the model defines an 
+
+individual-level (i.e., patient-specific) time transformation (from absolute to relative), which is independent of and distinct from those of other individuals in the cohort. 
+
+## 2.2 Why Attention for Event Timing 
+
+For a time series of length 𝑇 comprising distinct sequential states, there are Í𝑇 𝑟 =1
+
+ 𝑇 𝑟 
+
+ = 2𝑇 −1 possible non-empty subsets of states that could define events of interest, with each subset of size 𝑟 admitting 
+
+𝑟 ! possible orderings. Exhaustive enumeration and evaluation of all candidate event combinations, therefore, incurs a computational complexity of 𝑂 (𝑇 ! · 𝑇 · 2𝑇 ).In traditional statistics, such sequential data can be modeled using Dynamic Bayesian Networks (DBNs), where nodes represent potential events of interest. These network structures, however, typically impose a Markov assumption on the sequential events to maintain clarity and tractability. Once a sequence such as 𝐴 →
+
+𝐵 → 𝐶 is established, alternative patterns (e.g., 𝐴 → 𝐶 or 𝐵 → 𝐴 )are excluded unless {𝐴, 𝐵, 𝐶 } can be treated as a temporal Markov blanket — in which ordering is irrelevant. This relaxation, however, risks reverting to the combinatorial explosion described earlier. Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series 
+
+By adopting an attention mechanism, we can eliminate strict timing constraints and allow the model to determine the most relevant orderings. Event order is implicitly preserved through timestamp values (larger timestamps indicate later events), and timing transforma-tions naturally maintain these relationships without altering the original sequence in the generated relative timeline. Alignment on relative timing occurs automatically in the latent space, guided by the sequential patterns that the model deems most important. For example, if 𝐴 → 𝐶 emerges as the dominant pattern, an individual exhibiting 𝐴 → 𝐵 → 𝐶 would receive relative timestamps that emphasize alignment between 𝐴 and 𝐶 with respect to other individuals. In our experiments (Section 4), we illustrate a practical sequential pattern to demonstrate that, when a Markov blanket exists, all branches naturally converge to similar attention values, signaling the blanket’s presence. 
+
+## 2.3 Relative Timing Transformation 
+
+Figure 1 illustrates step-wise time transformation using a simple sinusoidal curve as an individual’s dynamic trajectory. The abso-lute time interval Δ𝑡 is transformed by the model into a relative interval Δ𝜏 , and the relative timeline 𝜏 is gradually constructed by accumulating these sequential Δ𝜏 values. Here, the derived coefficients {𝛾 𝑖 } represent the sequential time-scaling rates governing this transformation. Each patient possesses an individual coefficient sequence {𝛾 𝑖 }𝑇 𝑖 =0. Consequently, the model operates on an 𝑁 × 𝑇 coefficient matrix 𝑉 , where 𝛾 𝑖 𝑗 ∈ 𝑉 denotes the 𝑖 -th time step’s scaling coefficient for patient 𝑗 (𝑗 = 0, . . . , 𝑁 ). The matrix 𝑉 is obtained by simultaneously optimizing across all 𝑁 individuals in the group, thereby enforcing a globally effective relative timeline 𝜏 that captures their shared temporal patterns and defines a group-level reference. Conversely, the original absolute timestamps encode individual-level trajectories, which can be recov-ered from the common dynamic on 𝜏 by applying the corresponding coefficients {𝛾 𝑖 𝑗 }𝑇 𝑖 =0 for each patient 𝑗 .Let 𝑥 (𝜏 ) denote the continuous dynamic trajectory transformed from 𝑥 (𝑡 ), which manifests as the observed sequence {𝑥 𝑖 𝑗 }𝑇 𝑖 =0 for patient 𝑗 . The time-scaling function 𝛾 (𝑡 ) can then be expressed through a second-order ordinary differential equation (ODE): 
+
+𝑥 ′′ (𝑡 ) + 𝛾 (𝑡 )𝑥 ′ (𝑡 ) + 𝛽𝑥 (𝑡 ) = 0, 𝛽 > 0 (1) Our goal is to eliminate the first-order damping term 𝛾 (𝑡 )𝑥 ′ (𝑡 ),reducing the ODE to the undamped harmonic oscillator form: 
+
+𝑥 ′′ (𝑡 ) + 𝛽𝑥 (𝑡 ) = 0. (2) This yields the explicit analytic solution: 
+
+𝑥 (𝑡 ) = 𝐴 cos (√︁ 𝛽, 𝑡 ) + 𝐵 sin (√︁ 𝛽, 𝑡 ), 𝐴, 𝐵 ∈ R, (3) which provides a direct and interpretable representation of oscilla-tory behavior, as displayed in the example of Figure 1. Let 𝜏 = 𝜏 (𝑡 ) denote the desired time transformation, so that 
+
+𝑥 (𝑡 ) = 𝑥 (𝜏 (𝑡 )) . Applying the chain rule yields: 
+
+first order: 𝑥 ′ (𝑡 ) = 𝑑𝑥 𝑑𝑡 = 𝑑𝑥 𝑑𝜏 𝑑𝜏 𝑑𝑡 = 𝑥 ′ (𝜏 )𝜏 ′ (𝑡 )
+
+second order: 𝑥 ′′ (𝑡 ) = 𝑑 𝑑𝑡 (𝑥 ′ (𝜏 )𝜏 ′ (𝑡 )) = 𝑥 ′′ (𝜏 )( 𝜏 ′ (𝑡 )) 2 + 𝑥 ′ (𝜏 )𝜏 ′′ (𝑡 )𝜎  𝜎  𝑡𝑎𝑛ℎ  𝜎 
+
+×
+
+×
+
++
+
+×
+
+> 𝑡𝑎𝑛ℎ
+> 𝒄 𝒊 𝒄 𝒊 −𝟏
+> 𝒉 𝒊 𝒉 𝒊 −𝟏
+> 𝒉 𝒊
+> 𝒙 𝒊
+> Forget
+> Gate
+> Input
+> Gate
+> Output
+> Gate
+
+𝒆 −
+
+×
+
+> Time -Trans Gate
+> 𝒕 𝒊
+> LSTM backbone
+
+Figure 2: Unit architecture of the LITT model, where the absolute timestamp 𝑡 serves as a dedicated input to the Time-Transformation Gate . The gate’s update is separated from the standard LSTM backbone, and its output is multiplied with the cell state. 
+
+Substituting into Equation (1) gives: 
+
+𝑥 ′′ (𝜏 )( 𝜏 ′ (𝑡 )) 2 + 𝑥 ′ (𝜏 ) [ 𝜏 ′′ (𝑡 ) + 𝛾 (𝑡 )𝜏 ′ (𝑡 )] + 𝛽𝑥 (𝜏 ) = 0
+
+To eliminate the first-order damping term, we set the coefficient of 𝑥 ′ (𝜏 ) to zero to obtain the solution of this time transformation: 
+
+In continuous: 𝜏 ′ (𝑡 ) = 𝐶𝑒 − ∫ 𝛾 (𝑡 ) 𝑑𝑡 with 𝐶 ∈ R
+
+In discrete: 𝑑𝜏 𝑑𝑡 = 𝐶𝑒 − Í𝑡 𝑖 =0 𝛾 𝑖 with 𝐶 ∈ R (4) From Equation (4), achieving the desired transformation at step 𝑖 
+
+requires scaling all preceding absolute timestamps 𝑡 0, . . . , 𝑡 𝑖 −1 by the cumulative factors 𝑒 −𝛾 0 , . . . , 𝑒 −𝛾 𝑖 −1 , respectively. Within a recurrent architecture, this is realized by a dedicated gate that computes 𝑒 𝛾 per step using absolute timestamps as input. The gate uses specialized parameter updates to maintain individualization, separate from the standard recurrent backbone. 
+
+## 3 Level-of-Individual Timing Transformer 3.1 Time-Transformation Gate 
+
+We introduce the Time-Transformation Gate , built upon an LSTM recurrent backbone, as illustrated in Figure 2. Notably, the LSTM cell state preserves complete global-dynamic information across long sequences without suffering from vanish-ing gradients (unlike the GRU hidden state, which is susceptible to exponential decay - see Appendix A for proof). This makes LSTM a natural choice for parameterizing time-transformation coefficients. In contrast to applications such as language modeling or image processing, where LSTM is often regarded as merely providing longer memory than GRU without any fundamental difference [ 32 ,33 ], in clinical time-series learning, precise timing computation is paramount. This makes LSTM the necessary architecture backbone for reliable temporal modeling, whereas GRU proves inadequate. Jia Li, Yu Hou, and Rui Zhang 𝒑 𝒋 +𝟐             
+
+> 𝒑 𝒋 +𝟏
+> 𝒑 𝒋
+> 𝝉 𝟏𝒋
+> 𝝉 𝟐 𝒋
+> 𝝉 𝟑 𝒋
+> …
+> 𝝉 𝒊 𝒋
+> Order by Time
+> …
+> Max
+> 𝜿 𝟏
+> 𝜿 𝟐
+> 𝜿 𝟑
+> 𝜿 𝒊
+> 𝜿 𝟐
+> 𝑬 𝟐 Selected
+> 𝜿 𝟒
+> 𝜿 𝟓
+> 𝜿 𝟑
+> 𝜿 𝒊
+> Recalculated
+> Conditional on 𝑬 𝟐
+> 𝜿 𝟑
+> …
+> Event Timing Attention
+> Max
+> 𝑬 𝟑 Selected
+> 𝜿 𝟒
+> 𝜿 𝟓
+> 𝜿 𝒊
+> 𝜿 𝟒
+> …
+> Max
+> 𝑬 𝟒 Selected
+> …
+> …
+> …
+> Recalculated
+> Conditional on 𝑬 𝟐 &𝑬 𝟑
+> …
+> Event 𝑬 𝟏
+> Event 𝑬 𝟐
+> Event 𝑬 𝟑
+> …
+
+Figure 3: Conditional event-timing attention updates using model-derived relative timestamps, resulting in the discovery of the most significant temporal trajectory pattern 𝐸 2 → 𝐸 3 → 𝐸 4 → . . . shared across patients {𝑝 𝑗 , 𝑝 𝑗 +1, 𝑝 𝑗 +2, . . . } = 𝑃 .
+
+The LITT processing flow is then: 
+
+𝑓 𝑖 = 𝜎 (𝑈 𝑓 ℎ𝑖 −1 + 𝑊 𝑓 𝑥 𝑖 + 𝑏 𝑓 ) forget gate 
+
+𝐼 𝑖 = 𝜎 (𝑈 𝐼 ℎ𝑖 −1 + 𝑊 𝐼 𝑥 𝑖 + 𝑏 𝐼 ) input gate 
+
+𝑜 𝑖 = 𝜎 (𝑈 𝑜 ℎ𝑖 −1 + 𝑊 𝑜 𝑥 𝑖 + 𝑏 𝑜 ) output gate 
+
+𝑦 𝑖 = 𝑈 ℎℎ𝑖 −1 + 𝑊 ℎ𝑥 𝑖 + 𝑏 ℎ candidate predict 
+
+𝑐 𝑖 = 𝑓 𝑖 ⊙ 𝑐 𝑖 −1 + 𝐼 𝑖 ⊙ 𝜙 (𝑦 𝑖 ) original cell state 
+
+ℎ𝑖 = 𝑜 𝑖 ⊙ 𝜙 (𝑐 𝑖 ) hidden state 
+
+𝛾 𝑖 = 𝑊 𝛾 𝑡 𝑖 + 𝑏 𝛾 time scaling coefficient 
+
+𝑐 𝑖 = 𝑒 −𝛾 𝑖 𝑐 𝑖 time-transformation coefficient 𝑒 −𝛾 𝑖 for 𝑐 𝑖 
+
+Here, 𝑥 𝑖 ∈ R𝑛 represents the 𝑛 -dimensional input feature at time step 𝑖 = 0, . . . ,𝑇 . The operator ⊙ means element-wise multipli-cation. The nonlinear activation function 𝜙 is typically tanh (𝑥 ) =
+
+(𝑒 𝑥 −𝑒 −𝑥 ) /( 𝑒 𝑥 +𝑒 −𝑥 ), while the sigmoid function 𝜎 (𝑥 ) = (1+𝑒 −𝑥 )−1
+
+is standard for gating nonlinearity. According to their update mechanisms, the parameters are cate-gorized into two levels: (1) Group-Level parameters: {𝑊 , 𝑈 , 𝑏 }𝑓 ,𝐼,𝑜 for the three stan-dard LSTM gates (forget, input, and output). (2) Individual-Level parameters: matrices 𝑊 𝛾 and 𝑏 𝛾 that repre-sent the time-scaling coefficients 𝛾 .
+
+## 3.2 Conditional Timing Attention 
+
+Let 𝑃 = {𝑝 𝑗 }𝑁 𝑗 =0 denote the cohort of patients. After the LITT modeling process, each patient 𝑝 𝑗 obtains a sequence of relative timestamps (𝜏 𝑖 )𝑇 𝑖 =0 corresponding to its 𝑇 potential events ordered by time. The 𝑖 -th relative timestamp is computed by accumulating the preceding time-scaling coefficients. For convenience, we let 𝑉 
+
+collectively represent the parameters 𝑊 𝛾 and 𝑏 𝛾 , so that: 
+
+𝜏 𝑖 = exp −
+
+> 𝑖
+
+∑︁ 
+
+> 𝑙 =0
+
+(𝑊 𝛾 𝑡 𝑙 + 𝑏 𝛾 )
+
+!
+
+= exp (− 𝑉 𝑖 𝑇 𝑖 ),
+
+where 𝑇 𝑖 = Í𝑖 𝑙 =0 𝑡 𝑙 denotes the cumulative absolute time up to step 𝑖 .For any particular event, the relative timestamps across all patients exhibiting that event form a temporal distribution on the relative timeline. We quantify the central concentration of this distribution using excess kurtosis: 
+
+𝜅 (𝜏 𝑖 ∼i.i.d. 𝑃 ) = 𝜇 4
+
+𝜎 4 − 3,
+
+where 𝜇 4 is the fourth central moment and 𝜎 is the standard de-viation. A higher 𝜅 indicates stronger central concentration around the mean (leptokurtic behavior), accompanied by heavier tails and more extreme outliers. Figure 3 illustrates the conditional update process for timing attention 𝜅 across candidate events. At each step, the event with the highest 𝜅 (indicating greatest temporal significance) is selected. The 𝜅 values of the remaining candidates are then recalculated for the next selection, conditioned on the events chosen so far. 
+
+## 4 Experiments 
+
+To validate LITT’s effectiveness in clinical practice, we use real-world longitudinal EHR time-series data from 3,276 breast cancer patients monitored between 2012 and 2024 (minimum follow-up: 1 year), originally sourced from the Fairview Health System. The primary goal is to predict the diagnosis timing of cardiotoxicity-induced heart disease, a major complication of breast cancer treat-ment and one of the leading causes of mortality in this population [13]. Predictions target three key cardiovascular outcomes: (1) heart failure (HF) (2) ischemic heart disease (IS), and (3) arrhythmias (ARR) Input features comprise 36 dimensions extracted from structured EHR data (see Appendix C for detailed information). The cohort exhibits substantial temporal heterogeneity, with sequence lengths ranging from approximately 100 to over 4,000 time steps. All se-quences are anchored to the breast cancer diagnosis date (day 0), with timestamps recorded as days elapsed since diagnosis. To further evaluate LITT’s performance in single-risk survival analysis, we conduct comparative experiments on two widely used public benchmark datasets: SUPPORT and METABRIC. SUPPORT (Study to Understand Prognoses and Preferences for Outcomes and Risks of Treatments, 1995) contains 9,105 seriously ill Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series 
+
+Figure 4: Association heatmaps (also considered as regular attention) under three initial treatment conditions: first-time radiation therapy, first-time chemotherapy, and first-time targeted therapy. Displayed events include first-time medication use (prefixed Md_) and first-time diagnoses (prefixed Dx_). See Appendix C for abbreviation information. 
+
+hospitalized adult patients with 14 clinical features and a censoring rate of approximately 30%. METABRIC (Molecular Taxonomy of Breast Cancer International Consortium, 2012) includes 1,980 breast cancer patients with long-term follow-up (median 10–15 years, up to 30 years), where the primary outcome is breast cancer-specific death. Both datasets serve as established standards for validating survival models and deep learning approaches. The experiments consist of three main tasks: (1) Trajectory pattern discovery (on real-world EHRs) (2) Event-timing regression (on real-world EHRs) (3) Single-risk survival analysis (on SUPPORT and METABRIC) 
+
+## 4.1 Experiment 1: Trajectory Discovery 
+
+Among the 36 features, we selected 17 binary variables to define 23 candidate events. The three major treatment procedures - radiation, chemotherapy, and targeted therapy - each contribute three events, corresponding to their first, second, and third administrations for the same patient. The remaining 14 binary features comprise 5 diagnoses of related comorbidities (e.g., hypercholesterolemia and hypertension) and 9 commonly prescribed medications for effects such as cholesterol management, blood pressure control, and car-diovascular protection. To highlight the importance of performing conditional event selection in a sequential manner, Figure 4 presents pairwise asso-ciation heatmaps under three distinct initial-condition scenarios, focusing on diagnosis and medication binary events. In existing deep survival analysis literature, such association heatmaps typically reflect standard event attention. However, the comparison reveals that different initial conditions produce substan-tially distinct contextual patterns. For instance, SGLT2 inhibitors (Md_SGLT2) show predominantly positive associations in patients whose initial treatment involves first-time radiation therapy, whereas these associations tend to shift toward largely negative in those starting with targeted therapy. This observed pattern may reflect real-world precision medicine in patient sub-populations: Radiation-first approaches are more common in early-stage, lower-risk cases (often hormone receptor-positive and HER2-negative), where diabetes management follows standard guidelines without increased urgency for cardioprotection. In contrast, targeted therapy (e.g., HER2-directed agents such as trastuzumab) is typically initiated in HER2-positive or advanced cases, which carry a higher risk of cardiotoxicity and often involve neoadjuvant systemic regimens, potentially influencing the pre-scribing patterns or results of the SGLT2 inhibitor due to differences in the stage, subtype, and concurrent therapies. By applying sequential timing-attention selection using an ap-propriate 𝜅 threshold, we identify three major trajectory types in the cohort, initiated by first-time radiation, chemotherapy, and tar-geted therapy, respectively. The fully explored trajectories identified by LITT are detailed in Appendix D. For clearer comparative illustration, we display the predominant parts of radiation-initiated and chemotherapy-initiated trajectories in Figure 5. Events that condition on the same set of preceding events and exhibit similar attention values are merged into a single event, reflecting the coalescence of these routines. Consequently, the resulting trajectories in Figure 5 appear novelly intuitive. Notably, certain routines display distinct attention values at their endpoints. For example, in the second-to-last step of the radiation-initiated trajectory (top panel), the second and third routines have nearly identical attention values of 41.8, whereas the first routine ends with 56.4. Although these routines condition on the same preceding events, merging them would be inappropriate, suggest-ing that the ordering of the events {Chemo_ 2, Chemo_ 3, Radia_ 2,
+
+Radia_ 3} is important, particularly along the first, which is also the most significant routine. Jia Li, Yu Hou, and Rui Zhang Radia _1: 27.4  Chemo _1: 28.9                                                   
+
+> Chemo _2: 22.8
+> Radia _2: 34.9
+> Radia _2: 39.7
+> Chemo _2: 35.2
+> Radia _3: 25.3
+> Chemo _3: 34.4
+> Radia _3: 28.0
+> Chemo _2: 42.7
+> Radia _3: 56.4
+> Chemo _3: 41.8
+> Chemo _3: 41.8
+> Target _1: 24.0
+> Count :180 Count :190 Count :203 Count :220 Count :247 Count :1608 Count :50
+> Rate: 38.4% Rate: 38.5% Rate: 39.9% Rate: 40.7% Rate: 42.1% Rate: 22.9% Rate: 52.0%
+> Count :115 Count :118 Count :122 Count :132 Count :138 Count :602 Count :50
+> Rate: 44.3% Rate: 45.3% Rate: 44.7% Rate: 44.2% Rate: 43.5% Rate: 36.2% Rate: 50.0%
+> Chemo _1: 24.7 Target _1: 26.9 Target _2: 24.7 Chemo _2: 57.9 Chemo _3: 34.4 Target _3: 24.2 Radia _1: 41.29
+> Chemo _2: 23.4 Target _2: 55.1
+> Chemo _3: 41.98 Target _2: 52.9
+> Target _3: 24.2
+
+Figure 5: Two typical trajectories discovered by LITT in a purely data-driven manner from real-world EHR data. Each step displays the number of available patients (top) and the proportion of heart disease diagnoses (label = 1, bottom). Red numeric values indicate LITT-computed conditional event-timing attention given all preceding events. Event names are suffixed with 1, 2, or 3 to denote the first, second, or third administration of the procedure. The most significant routine is shown in red. 
+
+Figure 6: Performance comparison across three cardiovascular outcomes: heart failure (HF), ischemic heart disease (IS), and arrhythmias (ARR). LITT w/o Ind refers to the LITT model trained with all time-scaling coefficients 𝛾 set to 1 (equal to zero out), effectively eliminating individual-level temporal features. 
+
+In contrast, within the chemotherapy-initiated trajectory (bot-tom panel), four routine branches can be merged into a single event at the second-to-last step because they exhibit highly similar attention values. This indicates that a Markov blanket wrapping 
+
+{Target_ 2, Chemo_ 2, Chemo_ 3} can be safely identified in this case. The differences between the two trajectories also provide impor-tant clinical insights. The radiation-initiated trajectory primarily includes all three administrations of radiation and chemotherapy, but typically concludes after the first targeted therapy. In contrast, the chemotherapy-initiated trajectory encompasses all three admin-istrations of targeted therapy and chemotherapy, yet generally ends with a single radiation treatment. This divergence likely reflects the real-world application of precision medicine principles. The for-mer aligns more closely with early-stage, lower-risk breast cancers, Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series 
+
+Figure 7: Training error traces (measured as RMSE in days) for LITT, LSTM, and GRU across epochs in event timing regression tasks, resulting from 10-fold cross-validation. 
+
+where local control via surgery followed by radiation is prioritized. Conversely, the latter is more characteristic of higher-risk cases and frequently incorporates targeted agents. These patterns highlight how tumor biology, stage, and risk stratification guide sequencing decisions in contemporary breast cancer management. 
+
+## 4.2 Experiment 2: Event-Timing Regression 
+
+Direct regression on event timings remains a well-known challenge in conventional learning paradigms; meanwhile, traditional survival analysis is not designed to treat timing as a continuous outcome [6 , 16 ]. In the absence of directly comparable methods, we primarily benchmark LITT against standard RNN models (GRU and LSTM), which are widely regarded as natural and effective baselines for capturing temporal dependencies in sequential data. As expected, LITT exhibits clear and steady convergence in predictive RMSE during training, as shown in Figure 7. In contrast, GRU and LSTM show no meaningful improvement, reflecting their inability to incorporate time as a computable dimension. For more intuitive comparisons on the regression outcome, in addition to RMSE in predicted days, we also report AUC and F1 score, as shown in Figure 6. These binary metrics are derived by thresholding the predicted event day against the patient’s last ob-served day: predictions beyond the last observation are treated as negative (no diagnosis), while earlier predictions are treated as positive (diagnosed). Since AUC and F1 scores are derived from thresholding the re-gression output rather than direct binary prediction, they are not directly comparable to results from dedicated binary classification models. In addition to standard RNNs, we also include linear lo-gistic regression (GLM) and random forest (RF) as complementary baselines for evaluation. The LITT method is evaluated in two configurations: with and without activation of the time-scaling coefficients 𝛾 , which capture individual-level temporal features. The substantial performance gap between these two modes indicates that the majority of indi-vidualized temporal information is derived from the ground-truth outcomes (in days). Consequently, achieving optimal predictive performance with LITT may require additional external patient-specific data. 
+
+Methods SUPPORT METABRIC 
+
+CPH 0.596 ( ± 0.004) 0.623 ( ±0.020) 
+
+RSF 0.639 ( ±0.005) 0.665 ( ±0.022) 
+
+DeepSurv 0.619 ( ±0.005) 0.641 ( ±0.022) 
+
+DeepHit 0.630 ( ±0.007) 0.642 ( ±0.023) 
+
+DSM 0.637 ( ±0.005) 0.670 ( ±0.014) 
+
+SurvTrace 0.649 ( ±0.004) 0.682 ( ±0.115) LITT w/o Ind 0.669 ( ±0.006) 0.673 ( ±0.023) 
+
+Table 1: Performance of single-risk survival analysis in C-index using public datasets SUPPORT and METABRIC. CPH = Cox Proportional hazard, RSF = Random Survival Forest, DSM = Deep Survival Machine 
+
+## 4.3 Experiment 3: Survival Analysis 
+
+LITT is not specifically designed for survival analysis outcomes. However, its predicted event timings can be used to derive a C-index for evaluation, although it does not produce a traditional survival curve. We compare LITT against several state-of-the-art deep survival analysis methods from the literature: DeepHit [ 12 ], DeepSurv [ 9], SurvTrace [ 29 ], and Deep Survival Machine [ 15 ]. We also include the classic Cox proportional hazards (CPH) model and random survival forest (RSF) as baseline methods. For fair comparison, all models are evaluated using the 50% survival probability threshold. As shown in Table 1, LITT without activation of the time-scaling coefficients ( 𝛾 ) achieves competitive results, although it is not consistently the top performer across all methods. 
+
+## 5 Conclusion 
+
+In this work, we have systematically examined the historical and conceptual foundations of timing computations in time-series mod-eling, highlighting a critical yet under-explored distinction: making timing a learnable feature does not automatically render it com-putable in the interpretive sense. We argue that truly enabling time as a genuine computational dimension requires two key capabilities. First, event timing must be directly predictable as a continuous outcome (event-timing re-gression), rather than being treated solely as an auxiliary input. Second, models must support feasible estimation of event-timing attention, thereby enabling refinement of temporal trajectories -that is, allowing the model to discover individualized sequential patterns in a purely data-driven manner. By introducing LITT, a recurrent architecture with an LSTM backbone equipped with a dedicated time-transformation gate, we demonstrate that these capabilities are indeed achievable. By align-ing sequential events across individuals on a virtual relative time-line, LITT yields interpretable, patient-specific temporal insights from longitudinal EHR data and produces highly intuitive visual-izations of clinical trajectories. A further key contribution is that LITT’s direct event-timing regression generates fully comparable individual-level predictions -a critical prerequisite for downstream causal inference. This work paves the way for more temporally faithful and clinically meaning-ful deep learning models, establishing foundational building blocks for future progress in precision medicine and causal AI. Jia Li, Yu Hou, and Rui Zhang 
+
+## References 
+
+[1] Mohammad Al Olaimat, Serdar Bozdag, and Alzheimer’s Disease Neuroimaging Initiative. 2024. TA-RNN: an attention-based time-aware recurrent neural net-work architecture for electronic health records. Bioinformatics 40, Supplement_1 (2024), i169–i179. [2] Kay H Brodersen, Fabian Gallusser, Jim Koehler, Nicolas Remy, and Steven L Scott. 2015. Inferring causal impact using Bayesian structural time-series models. (2015). [3] Zhengping Che, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu. 2018. Recurrent neural networks for multivariate time series with missing values. Scientific reports 8, 1 (2018), 6085. [4] Ricky TQ Chen, Yulia Rubanova, Jesse Bettencourt, and David K Duvenaud. 2018. Neural ordinary differential equations. Advances in neural information processing systems 31 (2018). [5] Junyoung Chung, Caglar Gulcehre, KyungHyun Cho, and Yoshua Bengio. 2014. Empirical evaluation of gated recurrent neural networks on sequence modeling. 
+
+arXiv preprint arXiv:1412.3555 (2014). [6] Taane G Clark, Michael J Bradburn, Sharon B Love, and Douglas G Altman. 2003. Survival analysis part I: basic concepts and first analyses. British journal of cancer 
+
+89, 2 (2003), 232–238. [7] Seana Coulson and Cristobal Pagán Cánovas. 2009. Understanding timelines: Conceptual metaphor and conceptual integration. Cognitive Semiotics 5, 1-2 (2009), 198–219. [8] Yinan Huang, Jieni Li, Mai Li, and Rajender R Aparasu. 2023. Application of machine learning in predicting survival outcomes involving real-world data: a scoping review. BMC medical research methodology 23, 1 (2023), 268. [9] Jared L Katzman, Uri Shaham, Alexander Cloninger, Jonathan Bates, Tingting Jiang, and Yuval Kluger. 2018. DeepSurv: personalized treatment recommender system using a Cox proportional hazards deep neural network. BMC medical research methodology 18, 1 (2018), 24. [10] Seyed Mehran Kazemi, Rishab Goel, Sepehr Eghbali, Janahan Ramanan, Jaspreet Sahota, Sanjay Thakur, Stella Wu, Cathal Smyth, Pascal Poupart, and Marcus Brubaker. 2019. Time2vec: Learning a vector representation of time. arXiv preprint arXiv:1907.05321 (2019). [11] Philippe Laborie and Jerome Rogerie. 2008. Reasoning with Conditional Time-Intervals.. In FLAIRS . 555–560. [12] Changhee Lee, William Zame, Jinsung Yoon, and Mihaela Van Der Schaar. 2018. Deephit: A deep learning approach to survival analysis with competing risks. In 
+
+Proceedings of the AAAI conference on artificial intelligence , Vol. 32. [13] Laxmi S Mehta, Karol E Watson, Ana Barac, Theresa M Beckie, Vera Bittner, Salvador Cruz-Flores, Susan Dent, Lavanya Kondapalli, Bonnie Ky, Tochukwu Okwuosa, et al . 2018. Cardiovascular disease and breast cancer: where these entities intersect: a scientific statement from the American Heart Association. 
+
+Circulation 137, 8 (2018), e30–e66. [14] James D Murray. 2002. Mathematical Biology: I. An Introduction (3rd ed.). Interdisciplinary Applied Mathematics, Vol. 17. Springer-Verlag, New York. doi:10.1007/b98868 [15] Chirag Nagpal, Xinyu Li, and Artur Dubrawski. 2021. Deep survival machines: Fully parametric survival regression and representation learning for censored data with competing risks. IEEE Journal of Biomedical and Health Informatics 25, 8 (2021), 3163–3175. [16] Seo Young Park, Ji Eun Park, Hyungjin Kim, and Seong Ho Park. 2021. Review of statistical methods for evaluating the performance of survival or other time-to-event prediction models (from conventional to deep learning approaches). 
+
+Korean Journal of Radiology 22, 10 (2021), 1697. [17] MS Rose, AM Gillis, and RS Sheldon. 1999. Evaluation of the bias in using the time to the first event when the inter-event intervals have a Weibull distribution. 
+
+Statistics in medicine 18, 2 (1999), 139–154. [18] Jakob Runge, Andreas Gerhardus, Gherardo Varando, Veronika Eyring, and Gustau Camps-Valls. 2023. Causal inference for time series. Nature Reviews Earth & Environment 4, 7 (2023), 487–505. [19] Pedro Sanchez, Jeremy P Voisey, Tian Xia, Hannah I Watson, Alison Q O’Neil, and Sotirios A Tsaftaris. 2022. Causal machine learning for healthcare and precision medicine. Royal Society Open Science 9, 8 (2022), 220638. [20] Mona Schirmer, Mazin Eltayeb, Stefan Lessmann, and Maja Rudolph. 2022. Mod-eling irregular time series with continuous recurrent units. In International conference on machine learning . PMLR, 19388–19405. [21] Bernhard Schölkopf, Francesco Locatello, Stefan Bauer, Nan Rosemary Ke, Nal Kalchbrenner, Anirudh Goyal, and Yoshua Bengio. 2021. Toward causal repre-sentation learning. IEEE 109, 5 (2021), 612–634. [22] Benjamin Shickel, Patrick James Tighe, Azra Bihorac, and Parisa Rashidi. 2017. Deep EHR: a survey of recent advances in deep learning techniques for electronic health record (EHR) analysis. IEEE journal of biomedical and health informatics 
+
+22, 5 (2017), 1589–1604. [23] Amy Sitapati, Hyeoneui Kim, Barbara Berkovich, Rebecca Marmor, Siddharth Singh, Robert El-Kareh, Brian Clay, and Lucila Ohno-Machado. 2017. Integrated precision medicine: the role of electronic health records in delivering personal-ized treatment. Wiley Interdisciplinary Reviews: Systems Biology and Medicine 9, 3 (2017), e1378. [24] Steven H. Strogatz. 2015. Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, Chemistry, and Engineering (2nd ed.). CRC Press. [25] Corentin Tallec and Yann Ollivier. 2018. Can recurrent neural networks warp time? arXiv preprint arXiv:1804.11188 (2018). [26] Li Tong, Wenqi Shi, Monica Isgut, Yishan Zhong, Peter Lais, Logan Gloster, Jimin Sun, Aniketh Swain, Felipe Giuste, and May D Wang. 2023. Integrating multi-omics data with EHR for precision medicine using advanced artificial intelligence. IEEE Reviews in Biomedical Engineering 17 (2023), 80–97. [27] Anthony Joe Turkson, Francis Ayiah-Mensah, and Vivian Nimoh. 2021. Han-dling censoring and censored data in survival analysis: a standalone systematic literature review. International journal of mathematics and mathematical sciences 
+
+2021, 1 (2021), 9307475. [28] Ping Wang, Yan Li, and Chandan K Reddy. 2019. Machine learning for survival analysis: A survey. ACM Computing Surveys (CSUR) 51, 6 (2019), 1–36. [29] Zifeng Wang and Jimeng Sun. 2022. Survtrace: Transformers for survival analysis with competing events. In Proceedings of the 13th ACM international conference on bioinformatics, computational biology and health informatics . 1–9. [30] Gabriele Wulf, Timothy D Lee, and Richard A Schmidt. 1994. Reducing knowledge of results about relative versus absolute timing: Differential effects on learning. 
+
+Journal of motor behavior 26, 4 (1994), 362–369. [31] Feng Xie, Han Yuan, Yilin Ning, Marcus Eng Hock Ong, Mengling Feng, Wynne Hsu, Bibhas Chakraborty, and Nan Liu. 2022. Deep learning for temporal data representation in electronic health records: A systematic review of challenges and methodologies. Journal of biomedical informatics 126 (2022), 103980. [32] Shudong Yang, Xueying Yu, and Ying Zhou. 2020. Lstm and gru neural network performance comparison study: Taking yelp review dataset as an example. In 
+
+2020 International workshop on electronic communication and artificial intelligence (IWECAI) . IEEE, 98–101. [33] Krzysztof Zarzycki and Maciej Ławryńczuk. 2021. LSTM and GRU neural net-works as models of dynamical processes used in predictive control: A comparison of models developed for two chemical reactors. Sensors 21, 16 (2021), 5625. [34] Jing Zhao, Panagiotis Papapetrou, Lars Asker, and Henrik Boström. 2017. Learn-ing from heterogeneous temporal data in electronic health records. Journal of biomedical informatics 65 (2017), 105–119. [35] Sicheng Zhou, Anne Blaes, Chetan Shenoy, Ju Sun, and Rui Zhang. 2024. Risk prediction of heart diseases in patients with breast cancer: A deep learning approach with longitudinal electronic health records data. Iscience 27, 7 (2024). [36] Yu Zhu, Hao Li, Yikang Liao, Beidou Wang, Ziyu Guan, Haifeng Liu, and Deng Cai. 2017. What to do next: Modeling user behaviors by time-LSTM.. In IJCAI ,Vol. 17. Melbourne, VIC, 3602–3608. 
+
+## A Appendix A: Why LSTM Enables Timing Computation While GRU Cannot 
+
+Two prominent recurrent architectures, LSTM (Long Short-Term Memory) and GRU (Gated Recurrent Unit), have been extensively compared on tasks such as language modeling and computer vision, with a focus on computational efficiency[ 5, 33 ]. However, in the context of time-series learning, the LSTM’s dedicated cell state is essential for timing computations, a capability that GRUs lack. The distinction lies in their internal state update mechanisms. LSTM’s processing flow and state update Jacobian: 
+
+𝑓 𝑖 = 𝜎 (𝑈 𝑓 ℎ𝑖 −1 + 𝑊 𝑓 𝑥 𝑖 + 𝑏 𝑓 ) forget gate 
+
+𝐼 𝑖 = 𝜎 (𝑈 𝑖 ℎ𝑖 −1 + 𝑊 𝑖 𝑥 𝑖 + 𝑏 𝑖 ) input gate 
+
+𝑜 𝑖 = 𝜎 (𝑈 𝑜 ℎ𝑖 −1 + 𝑊 𝑜 𝑥 𝑖 + 𝑏 𝑜 ) output gate 
+
+𝑦 𝑖 = 𝑈 ℎℎ𝑖 −1 + 𝑊 ℎ𝑥 𝑖 + 𝑏 ℎ candidate 
+
+𝑐 𝑖 = 𝑓 𝑖 ⊙ 𝑐 𝑖 −1 + 𝑖 𝑖 ⊙ 𝜙 (𝑦 𝑖 ) cell state 
+
+ℎ𝑖 = 𝑜 𝑖 ⊙ 𝜙 (𝑐 𝑖 ) hidden state 
+
+𝐽 𝑐 = 𝜕𝑐 𝑖 
+
+𝜕𝑐 𝑖 −1
+
+= diag (𝑓 𝑖 )
+
+𝐽 ℎ = diag (𝑜 𝑖 ) · diag (1 − 𝜙 2 (𝑐 𝑖 )) · 𝜕𝑐 𝑖 
+
+𝜕ℎ 𝑖 −1
+
+GRU’s processing flow and state update Jacobian: Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series 
+
+𝑧 𝑖 = 𝜎 (𝑊 𝑧 𝑥 𝑖 + 𝑈 𝑧 ℎ𝑖 −1 + 𝑏 𝑧 ) update gate 
+
+𝑟 𝑖 = 𝜎 (𝑊 𝑟 𝑥 𝑖 + 𝑈 𝑟 ℎ𝑖 −1 + 𝑏 𝑟 ) reset gate 
+
+˜ℎ𝑖 = 𝜙 (𝑊 ℎ𝑥 𝑖 + 𝑈 ℎ (𝑟 𝑖 ⊙ ℎ𝑖 −1) + 𝑏 ℎ ) candidate 
+
+ℎ𝑖 = (1 − 𝑧 𝑖 ) ⊙ ℎ𝑖 −1 + 𝑧 𝑖 ⊙ ˜ℎ𝑖 hidden state 
+
+𝐽 ℎ = 𝜕ℎ 𝑖 
+
+𝜕ℎ 𝑖 −1
+
+= diag (1 − 𝑧 𝑖 ) + diag (𝑧 𝑖 ) · diag (1 − ˜ℎ2 
+
+> 𝑖
+
+) · 𝑈 ℎ · diag (𝑟 𝑖 )
+
+GRUs maintain a single hidden state, updated as a convex com-bination of the previous hidden state and a candidate activation, which leads to multiplicative forgetting as the blend approaches the candidate. In contrast, LSTM’s separate cell state uses addi-tive updates, with the forget gate 𝑓 𝑖 ∈ [ 0, 1] controlling retention, ensuring stable gradients over long sequences. Analysis of their state-update Jacobians reveals that, in both architectures, the hid-den state is susceptible to exponential decay due to scaling terms like 1 − ˜ℎ2 
+
+> 𝑖
+
+∈ ( 0, 1], whereas the LSTM cell state 𝑐 𝑡 supports additive accumulation without this limitation. LSTM’s additive cell-state updates allow all historical states to contribute equally when assessing mutual dependencies, enabling the alignment of identical events across varying timings. While LSTMs excel at capturing knowledge, GRUs prioritize simulating empirical patterns that mimic human memory forgetting. 
+
+## B Appendix B: Numerical Results in Figure 6 
+
+AUC HF IS ARR GLM 0.5 ± 0 0.5 ± 0 0.5 ± 0RF 0.525 ± 0.016 0.514 ± 0.010 0.522 ± 0.244 GRU 0.586 ± 0.044 0.578 ± 0.040 0.563 ± 0.031 LSTM 0.592 ± 0.042 0.587 ± 0.032 0.586 ± 0.030 LITT w/o Ind 0.659 ± 0.021 0.650 ± 0.018 0.648 ± 0.018 LITT w/ Ind 0.914 ± 0.011 0.858 ± 0.019 0.895 ± 0.014 
+
+F1 HF IS ARR GLM 0.238 ± 0.004 0.177 ± 0.004 0.214 ± 0.005 RF 0.264 ± 0.020 0.191 ± 0.014 0.235 ± 0.029 GRU 0.312 ± 0.061 0.214 ± 0.072 0.241 ± 0.042 LSTM 0.304 ± 0.081 0.251 ± 0.055 0.269 ± 0.023 LITT w/o Ind 0.387 ± 0.034 0.333 ± 0.032 0.336 ± 0.024 LITT w/ Ind 0.801 ± 0.029 0.735 ± 0.043 0.794 ± 0.027 
+
+Days HF IS ARR GLM 219 ± 0 185 ± 0 209 ± 0RF 211 ± 4 181 ± 3 203 ± 7GRU 191 ± 6 163 ± 6 188 ± 6LSTM 193 ± 6 163 ± 6 198 ± 6LITT w/o Ind 173 ± 6 157 ± 6 192 ± 6LITT w/ Ind 136 ± 5 127 ± 5 142 ± 6
+
+## C Appendix C: Experimental Data Features 
+
+Table 2: Description of outcome features Outcome Variable Included diseases ICD code 
+
+Heart Failure (HF) Combine Heart Failure (CHF) ICD9 = 428.* ICD10 = I50.* Cardiomyopathy (CM) ICD9 = 425.* ICD10 = I42.* Pulmonary Edema ICD9 = 514.* ICD10 = J81.* Ischemic Heart Disease (IS) Myocardial Infarction (MI) ICD9 = 410.*, 411.*, 412.* ICD10 = I21.*, I22.*, I23.* Angina Pectoris ICD9 = 413.* ICD10 = I20.* Coronary Artery Disease (CAD) ICD9 = 414.* ICD10 = I24.* Pulmonary Heart Disease ICD9 = 415.* ICD10 = I25.* Arrhythmias (ARR) ICD9 = 427.9* ICD10 = I48.*, I49.* The detailed interpretation of the outcome variables is provided in Table 2. Among the 36 clinical features selected as covariates, demographic and vital-sign features include: age, race, BMI, weight, height, SBP (Systolic Blood Pressure), DBP (Diastolic Blood Pres-sure), and heart rate. Additional features are detailed in Table 3. 
+
+## D Appendix D: Fully Explored Trajectories Identified by LITT 
+
+As shown in Figures 8, 9, and 10, where “kurt” indicates the attention value (corresponding to the red-marked number in Figure 5), “size” means the available sample size, equivalent to Count” in Figure 5, and “rate” means positive proportion as consistent with Figure 5. Jia Li, Yu Hou, and Rui Zhang 
+
+Table 3: Description of modeling features 
+
+Variable Type Description 
+
+LDL(Low-Density Lipoprotein) numeric LOINC test codes 2089-1 and 13457-7 HDL(High-Density Lipoprotein) numeric LOINC test codes 2085-9 and 43396-1 HBA1C(hemoglobin A1C Test) numeric LOINC test code equal to 4548-4 Troponin numeric LOINC test codes 10839-9, 42757-5, and 89579-7 BNP(brain natriuretic peptide) numeric LOINC test codes 30934-4 and 33762-6 WBC(White Blood Cell) numeric LOINC test codes 6690-2, 26464-8, 729-4, 49498-9, and 5820-6 Abnormal Glucose numeric The Glucose value with abnormal flag = 1 Abnormal Creatinine numeric The Creatinine value with abnormal flag = 1 Anthracyclines binary whether having anthracyclines-based chemotherapy medicine using Targeted binary whether having targeted therapy medicine using Radiation binary whether having radiation treatment, including procedure names: Radiation, IMRT, Proton, SRS, Hyperthermia, IORT, and Intracavitary radiation Insulin (Md_Insl) numeric Diabetes medicine Metformin (Md_Metf) numeric T2DM medicine Sulfonylureas (Md_Sulf) numeric T2DM old drug SGLT2inhibitor (Md_SGLT2) binary Medicine for T2DM, heart failure, CKD GLP-1Receptor Agonists binary Medicine for T2DM, weight loss, cardiovascular protection Ezetimibe (Md_Ezt) binary Cholesterol-lowering medication PCSK9inhibitor binary Newer cholesterol-lowering biologic drugs Fibrates (Md_Fibr) binary Lipid-lowering medications BileAcid Sequestrants (Md_BAS) binary Lipid-lowering medications Niacin binary Lipid-lowering agent Diuretics (Md_Diu) binary Medicine for hypertension, heart failure, edema, and sometimes kidney or liver disorders Hyperlipidemia binary Whether having Hyperlipidemia diagnosed: ICD9 codes 272.2, 272.4, 272.5 ICD10 codes E78.2, E78.4, E78.5 Diabetes (Dx_DB) binary Whether having Diabetes diagnosed: ICD9 codes 250.* or ICD10 codes E11.* Hypertension (Dx_HT) binary Whether having Hypertension diagnosed: ICD9 codes in the range from 401.* to 405.* ICD10 codes in the range from I10.*to I16.* Smoking (Dx_Smk) binary ICD-9 codes 305.1* and V15.82 ICD-10 code Z87.* Obesity (Dx_Ob) binary ICD-9 codes 278.* ICD-10 code E66.* Chronic Kidney Disease (Dx_CKD) binary ICD-9 codes 585.* ICD-10 code N17.* Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series 
+
+Figure 8: The Radiation-Initiated Trojectory. Jia Li, Yu Hou, and Rui Zhang 
+
+Figure 9: The Chemotherapy-Initiated Trojectory. Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series 
+
+Figure 10: The Chemotherapy-Initiated Trojectory (continue) and the Target Therapy-Initiated Trojectory.

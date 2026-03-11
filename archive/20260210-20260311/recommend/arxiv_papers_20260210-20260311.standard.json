@@ -1,0 +1,741 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-11T03:14:39.281620+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 14,
+    "deep_cap": 6,
+    "deep_selected": 7,
+    "quick_candidates": 25,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2602.12828v1",
+      "title": "GRAIL: Geometry-Aware Retrieval-Augmented Inference with LLMs over Hyperbolic Representations of Patient Trajectories",
+      "abstract": "Predicting future clinical events from longitudinal electronic health records (EHRs) is challenging due to sparse multi-type clinical events, hierarchical medical vocabularies, and the tendency of large language models (LLMs) to hallucinate when reasoning over long structured histories. We study next-visit event prediction, which aims to forecast a patient's upcoming clinical events based on prior visits. We propose GRAIL, a framework that models longitudinal EHRs using structured geometric representations and structure-aware retrieval. GRAIL constructs a unified clinical graph by combining deterministic coding-system hierarchies with data-driven temporal associations across event types, embeds this graph in hyperbolic space, and summarizes each visit as a probabilistic Central Event that denoises sparse observations. At inference time, GRAIL retrieves a structured set of clinically plausible future events aligned with hierarchical and temporal progression, and optionally refines their ranking using an LLM as a constrained inference-time reranker. Experiments on MIMIC-IV show that GRAIL consistently improves multi-type next-visit prediction and yields more hierarchy-consistent forecasts.",
+      "authors": [
+        "Zhan Qu",
+        "Michael Färber"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-02-13T11:30:37+00:00",
+      "link": "https://arxiv.org/pdf/2602.12828v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "LLMs over patient trajectories in longitudinal EHRs",
+      "llm_evidence_cn": "纵向EHR中患者轨迹的LLM推理",
+      "llm_evidence": "纵向EHR中患者轨迹的LLM推理",
+      "canonical_evidence": "纵向EHR中患者轨迹的LLM推理",
+      "llm_tldr_en": "Uses geometry-aware retrieval and LLMs to predict clinical events from longitudinal EHR data.",
+      "llm_tldr_cn": "利用几何感知检索和大模型，基于纵向电子健康记录预测未来的临床事件。",
+      "llm_tldr": "利用几何感知检索和大模型，基于纵向电子健康记录预测未来的临床事件。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.12833v1",
+      "title": "TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming Electronic Health Records (EHRs)",
+      "abstract": "Large Language Models (LLMs) encode extensive medical knowledge but struggle to apply it reliably to longitudinal patient trajectories, where evolving clinical states, irregular timing, and heterogeneous events degrade performance over time. Existing adaptation strategies rely on fine-tuning or retrieval-based augmentation, which introduce computational overhead, privacy constraints, or instability under long contexts. We introduce TRACE (Temporal Reasoning via Agentic Context Evolution), a framework that enables temporal clinical reasoning with frozen LLMs by explicitly structuring and maintaining context rather than extending context windows or updating parameters. TRACE operates over a dual-memory architecture consisting of a static Global Protocol encoding institutional clinical rules and a dynamic Individual Protocol tracking patient-specific state. Four agentic components, Router, Reasoner, Auditor, and Steward, coordinate over this structured memory to support temporal inference and state evolution. The framework maintains bounded inference cost via structured state compression and selectively audits safety-critical clinical decisions. Evaluated on longitudinal clinical event streams from MIMIC-IV, TRACE significantly improves next-event prediction accuracy, protocol adherence, and clinical safety over long-context and retrieval-augmented baselines, while producing interpretable and auditable reasoning traces.",
+      "authors": [
+        "Zhan Qu",
+        "Michael Färber"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-02-13T11:39:19+00:00",
+      "link": "https://arxiv.org/pdf/2602.12833v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Directly addresses temporal reasoning in streaming EHRs using LLMs",
+      "llm_evidence_cn": "直接研究了使用大语言模型在流式电子健康记录中进行时序推理",
+      "llm_evidence": "直接研究了使用大语言模型在流式电子健康记录中进行时序推理",
+      "canonical_evidence": "直接研究了使用大语言模型在流式电子健康记录中进行时序推理",
+      "llm_tldr_en": "Introduces TRACE, a framework for temporal clinical reasoning in longitudinal EHRs using frozen LLMs.",
+      "llm_tldr_cn": "提出 TRACE 框架，利用冻结的大语言模型在纵向电子健康记录中进行临床时序推理。",
+      "llm_tldr": "提出 TRACE 框架，利用冻结的大语言模型在纵向电子健康记录中进行临床时序推理。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "Large language models for temporal reasoning in electronic health records",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.19661v1",
+      "title": "PaReGTA: An LLM-based EHR Data Encoding Approach to Capture Temporal Information",
+      "abstract": "Temporal information in structured electronic health records (EHRs) is often lost in sparse one-hot or count-based representations, while sequence models can be costly and data-hungry. We propose PaReGTA, an LLM-based encoding framework that (i) converts longitudinal EHR events into visit-level templated text with explicit temporal cues, (ii) learns domain-adapted visit embeddings via lightweight contrastive fine-tuning of a sentence-embedding model, and (iii) aggregates visit embeddings into a fixed-dimensional patient representation using hybrid temporal pooling that captures both recency and globally informative visits. Because PaReGTA does not require training from scratch but instead utilizes a pre-trained LLM, it can perform well even in data-limited cohorts. Furthermore, PaReGTA is model-agnostic and can benefit from future EHR-specialized sentence-embedding models. For interpretability, we introduce PaReGTA-RSS (Representation Shift Score), which quantifies clinically defined factor importance by recomputing representations after targeted factor removal and projecting representation shifts through a machine learning model. On 39,088 migraine patients from the All of Us Research Program, PaReGTA outperforms sparse baselines for migraine type classification while deep sequential models were unstable in our cohort.",
+      "authors": [
+        "Kihyuk Yoon",
+        "Lingchao Mao",
+        "Catherine Chong",
+        "Todd J. Schwedt",
+        "Chia-Chun Chiang",
+        "Jing Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-02-23T10:09:50+00:00",
+      "link": "https://arxiv.org/pdf/2602.19661v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "LLM-based encoding for longitudinal EHR temporal information",
+      "llm_evidence_cn": "基于LLM的纵向EHR时序信息编码",
+      "llm_evidence": "基于LLM的纵向EHR时序信息编码",
+      "canonical_evidence": "基于LLM的纵向EHR时序信息编码",
+      "llm_tldr_en": "PaReGTA encodes longitudinal EHR events into text with temporal cues for better patient representation using LLMs.",
+      "llm_tldr_cn": "PaReGTA将纵向EHR事件编码为带有时间线索的文本，利用LLM提升患者表示能力。",
+      "llm_tldr": "PaReGTA将纵向EHR事件编码为带有时间线索的文本，利用LLM提升患者表示能力。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "Large language models for temporal reasoning in electronic health records",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.19661v2",
+      "title": "PaReGTA: An LLM-based EHR Data Encoding Approach to Capture Temporal Information",
+      "abstract": "Temporal information in structured electronic health records (EHRs) is often lost in sparse one-hot or count-based representations, while sequence models can be costly and data-hungry. We propose PaReGTA, an LLM-based encoding framework that (i) converts longitudinal EHR events into visit-level templated text with explicit temporal cues, (ii) learns domain-adapted visit embeddings via lightweight contrastive fine-tuning of a sentence-embedding model, and (iii) aggregates visit embeddings into a fixed-dimensional patient representation using hybrid temporal pooling that captures both recency and globally informative visits. Because PaReGTA does not require training from scratch but instead utilizes a pre-trained LLM, it can perform well even in data-limited cohorts. Furthermore, PaReGTA is model-agnostic and can benefit from future EHR-specialized sentence-embedding models. For interpretability, we introduce PaReGTA-RSS (Representation Shift Score), which quantifies clinically defined factor importance by recomputing representations after targeted factor removal and projecting representation shifts through a machine learning model. On 39,088 migraine patients from the All of Us Research Program, PaReGTA outperforms sparse baselines for migraine type classification while deep sequential models were unstable in our cohort.",
+      "authors": [
+        "Kihyuk Yoon",
+        "Lingchao Mao",
+        "Catherine Chong",
+        "Todd J. Schwedt",
+        "Chia-Chun Chiang",
+        "Jing Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-02-23T10:09:50+00:00",
+      "link": "https://arxiv.org/pdf/2602.19661v2",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "LLM-based EHR encoding to capture temporal information",
+      "llm_evidence_cn": "基于LLM的EHR编码方法以捕捉时间信息",
+      "llm_evidence": "基于LLM的EHR编码方法以捕捉时间信息",
+      "canonical_evidence": "基于LLM的EHR编码方法以捕捉时间信息",
+      "llm_tldr_en": "An LLM-based framework that converts longitudinal EHR events into text to capture explicit temporal cues.",
+      "llm_tldr_cn": "一种基于LLM的框架，将纵向EHR事件转换为文本以捕捉明确的时间线索。",
+      "llm_tldr": "一种基于LLM的框架，将纵向EHR事件转换为文本以捕捉明确的时间线索。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "Large language models for temporal reasoning in electronic health records",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.10385v1",
+      "title": "Time-to-Event Transformer to Capture Timing Attention of Events in EHR Time Series",
+      "abstract": "Automatically discovering personalized sequential events from large-scale time-series data is crucial for enabling precision medicine in clinical research, yet it remains a formidable challenge even for contemporary AI models. For example, while transformers capture rich associations, they are mostly agnostic to event timing and ordering, thereby bypassing potential causal reasoning.   Intuitively, we need a method capable of evaluating the \"degree of alignment\" among patient-specific trajectories and identifying their shared patterns, i.e., the significant events in a consistent sequence. This necessitates treating timing as a true \\emph{computable} dimension, allowing models to assign ``relative timestamps'' to candidate events beyond their observed physical times.   In this work, we introduce LITT, a novel Timing-Transformer architecture that enables temporary alignment of sequential events on a virtual ``relative timeline'', thereby enabling \\emph{event-timing-focused attention} and personalized interpretations of clinical trajectories. Its interpretability and effectiveness are validated on real-world longitudinal EHR data from 3,276 breast cancer patients to predict the onset timing of cardiotoxicity-induced heart disease. Furthermore, LITT outperforms both the benchmark and state-of-the-art survival analysis methods on public datasets, positioning it as a significant step forward for precision medicine in clinical AI.",
+      "authors": [
+        "Jia Li",
+        "Yu Hou",
+        "Rui Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-02-11T00:13:08+00:00",
+      "link": "https://arxiv.org/pdf/2602.10385v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Transformer for timing attention in EHR time series",
+      "llm_evidence_cn": "用于EHR时间序列时序注意力的Transformer",
+      "llm_evidence": "用于EHR时间序列时序注意力的Transformer",
+      "canonical_evidence": "用于EHR时间序列时序注意力的Transformer",
+      "llm_tldr_en": "A Time-to-Event Transformer designed to capture event timing and ordering in longitudinal EHR data.",
+      "llm_tldr_cn": "一种时间事件Transformer，旨在捕捉纵向EHR数据中的事件时序和顺序，支持精准医疗。",
+      "llm_tldr": "一种时间事件Transformer，旨在捕捉纵向EHR数据中的事件时序和顺序，支持精准医疗。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "State of the art LLM methods for longitudinal EHR analysis",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.23479v1",
+      "title": "FHIRPath-QA: Executable Question Answering over FHIR Electronic Health Records",
+      "abstract": "Though patients are increasingly granted digital access to their electronic health records (EHRs), existing interfaces may not support precise, trustworthy answers to patient-specific questions. Large language models (LLM) show promise in clinical question answering (QA), but retrieval-based approaches are computationally inefficient, prone to hallucination, and difficult to deploy over real-life EHRs. In this work, we introduce FHIRPath-QA, the first open dataset and benchmark for patient-specific QA that includes open-standard FHIRPath queries over real-world clinical data. We propose a text-to-FHIRPath QA paradigm that shifts reasoning from free-text generation to FHIRPath query synthesis, significantly reducing LLM usage. Built on MIMIC-IV on FHIR Demo, the dataset pairs over 14k natural language questions in patient and clinician phrasing with validated FHIRPath queries and answers. Further, we demonstrate that state-of-the-art LLMs struggle to deal with ambiguity in patient language and perform poorly in FHIRPath query synthesis. However, they benefit strongly from supervised fine-tuning. Our results highlight that text-to-FHIRPath synthesis has the potential to serve as a practical foundation for safe, efficient, and interoperable consumer health applications, and our dataset and benchmark serve as a starting point for future research on the topic. The full dataset and generation code is available at: https://github.com/mooshifrew/fhirpath-qa.",
+      "authors": [
+        "Michael Frew",
+        "Nishit Bheda",
+        "Bryan Tripp"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-02-26T20:14:21+00:00",
+      "link": "https://arxiv.org/pdf/2602.23479v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM reasoning over real-world clinical data in FHIR EHR format",
+      "llm_evidence_cn": "基于FHIR标准电子健康记录的LLM推理研究",
+      "llm_evidence": "基于FHIR标准电子健康记录的LLM推理研究",
+      "canonical_evidence": "基于FHIR标准电子健康记录的LLM推理研究",
+      "llm_tldr_en": "Introduces FHIRPath-QA, a benchmark for patient-specific QA using LLMs to synthesize queries over EHR data.",
+      "llm_tldr_cn": "引入FHIRPath-QA，这是一个利用LLM在EHR数据上合成查询以进行患者特定问答的基准。",
+      "llm_tldr": "引入FHIRPath-QA，这是一个利用LLM在EHR数据上合成查询以进行患者特定问答的基准。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.01557v1",
+      "title": "Benchmarking LLM Summaries of Multimodal Clinical Time Series for Remote Monitoring",
+      "abstract": "Large language models (LLMs) can generate fluent clinical summaries of remote therapeutic monitoring time series. However, it remains unclear whether these narratives faithfully capture clinically significant events, such as sustained abnormalities. Existing evaluation metrics primarily focus on semantic similarity and linguistic quality, leaving event-level correctness largely unmeasured.   To address this gap, we introduce an event-based evaluation framework for multimodal time-series summarization using the Technology-Integrated Health Management (TIHM)-1.5 dementia monitoring dataset. Clinically grounded daily events are derived through rule-based abnormal thresholds and temporal persistence criteria. Model-generated summaries are then aligned with these structured facts.   Our evaluation protocol measures abnormality recall, duration recall, measurement coverage, and hallucinated event mentions. We benchmark three approaches: zero-shot prompting, statistical prompting, and a vision-based pipeline that uses rendered time-series visualizations. The results reveal a striking decoupling between conventional metrics and clinical event fidelity. Models that achieve high semantic similarity scores often exhibit near-zero abnormality recall. In contrast, the vision-based approach demonstrates the strongest event alignment, achieving 45.7% abnormality recall and 100% duration recall.   These findings underscore the importance of event-aware evaluation to ensure reliable clinical time-series summarization.",
+      "authors": [
+        "Aditya Shukla",
+        "Yining Yuan",
+        "Ben Tamo",
+        "Yifei Wang",
+        "Micky Nnamdi",
+        "Shaun Tan",
+        "Jieru Li",
+        "Benoit Marteau",
+        "Brad Willingham",
+        "May Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-02T07:33:11+00:00",
+      "link": "https://arxiv.org/pdf/2603.01557v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "benchmarking LLM summaries of clinical time series",
+      "llm_evidence_cn": "大语言模型对临床时间序列摘要的基准测试",
+      "llm_evidence": "大语言模型对临床时间序列摘要的基准测试",
+      "canonical_evidence": "大语言模型对临床时间序列摘要的基准测试",
+      "llm_tldr_en": "Evaluates LLM ability to capture clinically significant events in multimodal time-series remote monitoring data.",
+      "llm_tldr_cn": "评估大语言模型在多模态时间序列远程监控数据中捕捉临床重要事件的能力。",
+      "llm_tldr": "评估大语言模型在多模态时间序列远程监控数据中捕捉临床重要事件的能力。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "benchmarking LLMs on medical temporal reasoning",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2602.10544v1",
+      "title": "Bridging the Compression-Precision Paradox: A Hybrid Architecture for Clinical EEG Report Generation with Guaranteed Measurement Accuracy",
+      "abstract": "Automated EEG monitoring requires clinician-level precision for seizure detection and reporting. Clinical EEG recordings exceed LLM context windows, requiring extreme compression (400:1+ ratios) that destroys fine-grained temporal precision. A 0.5 Hz error distinguishes absence epilepsy from Lennox-Gastaut syndrome. LLMs lack inherent time-series comprehension and rely on statistical associations from compressed representations. This dual limitation causes systems to hallucinate clinically incorrect measurement values.   We separate measurement extraction from text generation. Our hybrid architecture computes exact clinical values via signal processing before compression, employs a cross-modal bridge for EEG-to-language translation, and uses parameter-efficient fine-tuning with constrained decoding around frozen slots. Multirate sampling maintains long-range context while preserving event-level precision. Evaluation on TUH and CHB-MIT datasets achieves 60% fewer false alarms, 50% faster detection, and sub-clinical measurement precision. This is the first system guaranteeing clinical measurement accuracy in automated EEG reports.",
+      "authors": [
+        "Wuyang Zhang",
+        "Zhen Luo",
+        "Chuqiao Gu",
+        "Jianming Ma",
+        "Yebo Cao",
+        "Wangming Yuan",
+        "Yinzhi Jin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "math.NA"
+      ],
+      "published": "2026-02-11T05:36:14+00:00",
+      "link": "https://arxiv.org/pdf/2602.10544v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Temporal precision in clinical EEG for LLM report generation",
+      "llm_evidence_cn": "大模型生成临床脑电图报告中的时序精度",
+      "llm_evidence": "大模型生成临床脑电图报告中的时序精度",
+      "canonical_evidence": "大模型生成临床脑电图报告中的时序精度",
+      "llm_tldr_en": "A hybrid architecture to maintain fine-grained temporal precision in clinical EEG analysis using LLMs.",
+      "llm_tldr_cn": "采用混合架构解决大模型在处理长临床脑电图时丢失细粒度时序精度的问题。",
+      "llm_tldr": "采用混合架构解决大模型在处理长临床脑电图时丢失细粒度时序精度的问题。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "Large language models for temporal reasoning in electronic health records",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2602.14158v1",
+      "title": "A Multi-Agent Framework for Medical AI: Leveraging Fine-Tuned GPT, LLaMA, and DeepSeek R1 for Evidence-Based and Bias-Aware Clinical Query Processing",
+      "abstract": "Large language models (LLMs) show promise for healthcare question answering, but clinical use is limited by weak verification, insufficient evidence grounding, and unreliable confidence signalling. We propose a multi-agent medical QA framework that combines complementary LLMs with evidence retrieval, uncertainty estimation, and bias checks to improve answer reliability. Our approach has two phases. First, we fine-tune three representative LLM families (GPT, LLaMA, and DeepSeek R1) on MedQuAD-derived medical QA data (20k+ question-answer pairs across multiple NIH domains) and benchmark generation quality. DeepSeek R1 achieves the strongest scores (ROUGE-1 0.536 +- 0.04; ROUGE-2 0.226 +-0.03; BLEU 0.098 -+ 0.018) and substantially outperforms the specialised biomedical baseline BioGPT in zero-shot evaluation. Second, we implement a modular multi-agent pipeline in which a Clinical Reasoning agent (fine-tuned LLaMA) produces structured explanations, an Evidence Retrieval agent queries PubMed to ground responses in recent literature, and a Refinement agent (DeepSeek R1) improves clarity and factual consistency; an optional human validation path is triggered for high-risk or high-uncertainty cases. Safety mechanisms include Monte Carlo dropout and perplexity-based uncertainty scoring, plus lexical and sentiment-based bias detection supported by LIME/SHAP-based analyses. In evaluation, the full system achieves 87% accuracy with relevance around 0.80, and evidence augmentation reduces uncertainty (perplexity 4.13) compared to base responses, with mean end-to-end latency of 36.5 seconds under the reported configuration. Overall, the results indicate that agent specialisation and verification layers can mitigate key single-model limitations and provide a practical, extensible design for evidence-based and bias-aware medical AI.",
+      "authors": [
+        "Naeimeh Nourmohammadi",
+        "Md Meem Hossain",
+        "The Anh Han",
+        "Safina Showkat Ara",
+        "Zia Ush Shamszaman"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-02-15T14:17:27+00:00",
+      "link": "https://arxiv.org/pdf/2602.14158v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multi-agent LLM framework for clinical query processing and medical QA",
+      "llm_evidence_cn": "用于临床查询处理和医学问答的多智能体LLM框架",
+      "llm_evidence": "用于临床查询处理和医学问答的多智能体LLM框架",
+      "canonical_evidence": "用于临床查询处理和医学问答的多智能体LLM框架",
+      "llm_tldr_en": "Proposes a multi-agent framework to improve reliability and evidence grounding in medical question answering.",
+      "llm_tldr_cn": "提出一个多智能体框架，以提高医学问答中的可靠性和证据基础。",
+      "llm_tldr": "提出一个多智能体框架，以提高医学问答中的可靠性和证据基础。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "clinical natural language processing",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2602.10367v1",
+      "title": "LiveMedBench: A Contamination-Free Medical Benchmark for LLMs with Automated Rubric Evaluation",
+      "abstract": "The deployment of Large Language Models (LLMs) in high-stakes clinical settings demands rigorous and reliable evaluation. However, existing medical benchmarks remain static, suffering from two critical limitations: (1) data contamination, where test sets inadvertently leak into training corpora, leading to inflated performance estimates; and (2) temporal misalignment, failing to capture the rapid evolution of medical knowledge. Furthermore, current evaluation metrics for open-ended clinical reasoning often rely on either shallow lexical overlap (e.g., ROUGE) or subjective LLM-as-a-Judge scoring, both inadequate for verifying clinical correctness. To bridge these gaps, we introduce LiveMedBench, a continuously updated, contamination-free, and rubric-based benchmark that weekly harvests real-world clinical cases from online medical communities, ensuring strict temporal separation from model training data. We propose a Multi-Agent Clinical Curation Framework that filters raw data noise and validates clinical integrity against evidence-based medical principles. For evaluation, we develop an Automated Rubric-based Evaluation Framework that decomposes physician responses into granular, case-specific criteria, achieving substantially stronger alignment with expert physicians than LLM-as-a-Judge. To date, LiveMedBench comprises 2,756 real-world cases spanning 38 medical specialties and multiple languages, paired with 16,702 unique evaluation criteria. Extensive evaluation of 38 LLMs reveals that even the best-performing model achieves only 39.2%, and 84% of models exhibit performance degradation on post-cutoff cases, confirming pervasive data contamination risks. Error analysis further identifies contextual application-not factual knowledge-as the dominant bottleneck, with 35-48% of failures stemming from the inability to tailor medical knowledge to patient-specific constraints.",
+      "authors": [
+        "Zhiling Yan",
+        "Dingjie Song",
+        "Zhe Fang",
+        "Yisheng Ji",
+        "Xiang Li",
+        "Quanzheng Li",
+        "Lichao Sun"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-02-10T23:38:25+00:00",
+      "link": "https://arxiv.org/pdf/2602.10367v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Medical benchmark for LLMs addressing temporal misalignment",
+      "llm_evidence_cn": "解决时间错位问题的医疗大模型基准测试",
+      "llm_evidence": "解决时间错位问题的医疗大模型基准测试",
+      "canonical_evidence": "解决时间错位问题的医疗大模型基准测试",
+      "llm_tldr_en": "A contamination-free medical benchmark that addresses temporal misalignment in clinical knowledge for LLMs.",
+      "llm_tldr_cn": "一个动态更新的医疗基准测试，旨在解决大模型评估中的数据污染和知识时间错位问题。",
+      "llm_tldr": "一个动态更新的医疗基准测试，旨在解决大模型评估中的数据污染和知识时间错位问题。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "benchmarking LLMs on medical temporal reasoning",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2602.12705v2",
+      "title": "MedXIAOHE: A Comprehensive Recipe for Building Medical MLLMs",
+      "abstract": "We present MedXIAOHE, a medical vision-language foundation model designed to advance general-purpose medical understanding and reasoning in real-world clinical applications. MedXIAOHE achieves state-of-the-art performance across diverse medical benchmarks and surpasses leading closed-source multimodal systems on multiple capabilities. To achieve this, we propose an entity-aware continual pretraining framework that organizes heterogeneous medical corpora to broaden knowledge coverage and reduce long-tail gaps (e.g., rare diseases). For medical expert-level reasoning and interaction, MedXIAOHE incorporates diverse medical reasoning patterns via reinforcement learning and tool-augmented agentic training, enabling multi-step diagnostic reasoning with verifiable decision traces. To improve reliability in real-world use, MedXIAOHE integrates user-preference rubrics, evidence-grounded reasoning, and low-hallucination long-form report generation, with improved adherence to medical instructions. We release this report to document our practical design choices, scaling insights, and evaluation framework, hoping to inspire further research.",
+      "authors": [
+        "Baorong Shi",
+        "Bo Cui",
+        "Boyuan Jiang",
+        "Deli Yu",
+        "Fang Qian",
+        "Haihua Yang",
+        "Huichao Wang",
+        "Jiale Chen",
+        "Jianfei Pan",
+        "Jieqiong Cao",
+        "Jinghao Lin",
+        "Kai Wu",
+        "Lin Yang",
+        "Shengsheng Yao",
+        "Tao Chen",
+        "Xiaojun Xiao",
+        "Xiaozhong Ji",
+        "Xu Wang",
+        "Yijun He",
+        "Zhixiong Yang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.CV",
+        "eess.IV"
+      ],
+      "published": "2026-02-13T08:19:38+00:00",
+      "link": "https://arxiv.org/pdf/2602.12705v2",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Medical MLLM for multi-step diagnostic reasoning in clinical applications",
+      "llm_evidence_cn": "用于临床应用中多步诊断推理的医学多模态大模型",
+      "llm_evidence": "用于临床应用中多步诊断推理的医学多模态大模型",
+      "canonical_evidence": "用于临床应用中多步诊断推理的医学多模态大模型",
+      "llm_tldr_en": "Develops MedXIAOHE, a medical foundation model for expert-level reasoning and interaction in healthcare.",
+      "llm_tldr_cn": "开发了MedXIAOHE，这是一个用于医疗领域专家级推理和交互的医学基础模型。",
+      "llm_tldr": "开发了MedXIAOHE，这是一个用于医疗领域专家级推理和交互的医学基础模型。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2602.18645v1",
+      "title": "Adaptive Time Series Reasoning via Segment Selection",
+      "abstract": "Time series reasoning tasks often start with a natural language question and require targeted analysis of a time series. Evidence may span the full series or appear in a few short intervals, so the model must decide what to inspect. Most existing approaches encode the entire time series into a fixed representation before inference, regardless of whether or not the entire sequence is relevant. We introduce ARTIST, which formulates time-series reasoning as a sequential decision problem. ARTIST interleaves reasoning with adaptive temporal segment selection. It adopts a controller-reasoner architecture and uses reinforcement learning to train the controller role to select informative segments and the reasoner role to generate segment-conditioned reasoning traces and final answers. During inference, the model actively acquires task-relevant information instead of relying on a static summary of the full sequence. We use a novel hierarchical policy optimization approach for post-training that allows the model to excel in both segment selection and question-answering behavior. We evaluate ARTIST on six time-series reasoning benchmarks and compare it with large language models, vision-language models, and prior time-series reasoning systems. ARTIST improves average accuracy by 6.46 absolute percentage points over the strongest baseline. The largest gains appear on rare event localization and multi-segment reasoning tasks. Supervised fine-tuning improves performance, and reinforcement learning provides additional gains by optimizing question-adaptive segment selection. These results show that selective data use drives effective time-series reasoning.",
+      "authors": [
+        "Shvat Messica",
+        "Jiawen Zhang",
+        "Kevin Li",
+        "Theodoros Tsiligkaridis",
+        "Marinka Zitnik"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-02-20T22:37:36+00:00",
+      "link": "https://arxiv.org/pdf/2602.18645v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "adaptive temporal segment selection for reasoning",
+      "llm_evidence_cn": "推理中的自适应时间段选择",
+      "llm_evidence": "推理中的自适应时间段选择",
+      "canonical_evidence": "推理中的自适应时间段选择",
+      "llm_tldr_en": "ARTIST uses a controller-reasoner architecture to adaptively select informative segments for time series reasoning.",
+      "llm_tldr_cn": "ARTIST采用控制器-推理器架构，自适应地选择信息段进行时间序列推理。",
+      "llm_tldr": "ARTIST采用控制器-推理器架构，自适应地选择信息段进行时间序列推理。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2602.14428v1",
+      "title": "LLM-Guided Knowledge Distillation for Temporal Knowledge Graph Reasoning",
+      "abstract": "Temporal knowledge graphs (TKGs) support reasoning over time-evolving facts, yet state-of-the-art models are often computationally heavy and costly to deploy. Existing compression and distillation techniques are largely designed for static graphs; directly applying them to temporal settings may overlook time-dependent interactions and lead to performance degradation. We propose an LLM-assisted distillation framework specifically designed for temporal knowledge graph reasoning. Beyond a conventional high-capacity temporal teacher, we incorporate a large language model as an auxiliary instructor to provide enriched supervision. The LLM supplies broad background knowledge and temporally informed signals, enabling a lightweight student to better model event dynamics without increasing inference-time complexity. Training is conducted by jointly optimizing supervised and distillation objectives, using a staged alignment strategy to progressively integrate guidance from both teachers. Extensive experiments on multiple public TKG benchmarks with diverse backbone architectures demonstrate that the proposed approach consistently improves link prediction performance over strong distillation baselines, while maintaining a compact and efficient student model. The results highlight the potential of large language models as effective teachers for transferring temporal reasoning capability to resource-efficient TKG systems.",
+      "authors": [
+        "Wang Xing",
+        "Wei Song",
+        "Siyu Lin",
+        "Chen Wu",
+        "Man Wang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-02-16T03:27:50+00:00",
+      "link": "https://arxiv.org/pdf/2602.14428v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM-guided reasoning over temporal knowledge graphs for time-evolving facts",
+      "llm_evidence_cn": "LLM引导的时序知识图谱推理，处理随时间演变的事实",
+      "llm_evidence": "LLM引导的时序知识图谱推理，处理随时间演变的事实",
+      "canonical_evidence": "LLM引导的时序知识图谱推理，处理随时间演变的事实",
+      "llm_tldr_en": "Proposes an LLM-assisted distillation framework to improve reasoning on temporal knowledge graphs.",
+      "llm_tldr_cn": "提出一个LLM辅助的蒸馏框架，以改进时序知识图谱上的推理。",
+      "llm_tldr": "提出一个LLM辅助的蒸馏框架，以改进时序知识图谱上的推理。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2602.13979v1",
+      "title": "Chain-of-Thought Reasoning with Large Language Models for Clinical Alzheimer's Disease Assessment and Diagnosis",
+      "abstract": "Alzheimer's disease (AD) has become a prevalent neurodegenerative disease worldwide. Traditional diagnosis still relies heavily on medical imaging and clinical assessment by physicians, which is often time-consuming and resource-intensive in terms of both human expertise and healthcare resources. In recent years, large language models (LLMs) have been increasingly applied to the medical field using electronic health records (EHRs), yet their application in Alzheimer's disease assessment remains limited, particularly given that AD involves complex multifactorial etiologies that are difficult to observe directly through imaging modalities. In this work, we propose leveraging LLMs to perform Chain-of-Thought (CoT) reasoning on patients' clinical EHRs. Unlike direct fine-tuning of LLMs on EHR data for AD classification, our approach utilizes LLM-generated CoT reasoning paths to provide the model with explicit diagnostic rationale for AD assessment, followed by structured CoT-based predictions. This pipeline not only enhances the model's ability to diagnose intrinsically complex factors but also improves the interpretability of the prediction process across different stages of AD progression. Experimental results demonstrate that the proposed CoT-based diagnostic framework significantly enhances stability and diagnostic performance across multiple CDR grading tasks, achieving up to a 15% improvement in F1 score compared to the zero-shot baseline method.",
+      "authors": [
+        "Tongze Zhang",
+        "Jun-En Ding",
+        "Melik Ozolcer",
+        "Fang-Ming Hung",
+        "Albert Chih-Chieh Yang",
+        "Feng Liu",
+        "Yi-Rou Ji",
+        "Sang Won Bae"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-02-15T03:56:24+00:00",
+      "link": "https://arxiv.org/pdf/2602.13979v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Uses LLMs and CoT for clinical assessment using EHR data",
+      "llm_evidence_cn": "利用大语言模型和思维链基于电子健康记录数据进行临床评估",
+      "llm_evidence": "利用大语言模型和思维链基于电子健康记录数据进行临床评估",
+      "canonical_evidence": "利用大语言模型和思维链基于电子健康记录数据进行临床评估",
+      "llm_tldr_en": "Applies LLM Chain-of-Thought reasoning to EHR data for Alzheimer's disease assessment and diagnosis.",
+      "llm_tldr_cn": "将大语言模型思维链推理应用于电子健康记录，辅助阿尔茨海默病的评估与诊断。",
+      "llm_tldr": "将大语言模型思维链推理应用于电子健康记录，辅助阿尔茨海默病的评估与诊断。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2602.19158v1",
+      "title": "DoAtlas-1: A Causal Compilation Paradigm for Clinical AI",
+      "abstract": "Medical foundation models generate narrative explanations but cannot quantify intervention effects, detect evidence conflicts, or validate literature claims, limiting clinical auditability. We propose causal compilation, a paradigm that transforms medical evidence from narrative text into executable code. The paradigm standardizes heterogeneous research evidence into structured estimand objects, each explicitly specifying intervention contrast, effect scale, time horizon, and target population, supporting six executable causal queries: do-calculus, counterfactual reasoning, temporal trajectories, heterogeneous effects, mechanistic decomposition, and joint interventions. We instantiate this paradigm in DoAtlas-1, compiling 1,445 effect kernels from 754 studies through effect standardization, conflict-aware graph construction, and real-world validation (Human Phenotype Project, 10,000 participants). The system achieves 98.5% canonicalization accuracy and 80.5% query executability. This paradigm shifts medical AI from text generation to executable, auditable, and verifiable causal reasoning.",
+      "authors": [
+        "Yulong Li",
+        "Jianxu Chen",
+        "Xiwei Liu",
+        "Chuanyue Suo",
+        "Rong Xia",
+        "Zhixiang Lu",
+        "Yichen Li",
+        "Xinlin Zhuang",
+        "Niranjana Arun Menon",
+        "Yutong Xie",
+        "Eran Segal",
+        "Imran Razzak"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-02-22T12:40:52+00:00",
+      "link": "https://arxiv.org/pdf/2602.19158v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "temporal trajectories and causal queries in clinical AI",
+      "llm_evidence_cn": "临床AI中的时间轨迹和因果查询",
+      "llm_evidence": "临床AI中的时间轨迹和因果查询",
+      "canonical_evidence": "临床AI中的时间轨迹和因果查询",
+      "llm_tldr_en": "Proposes a causal compilation paradigm to transform medical evidence into executable code for temporal reasoning.",
+      "llm_tldr_cn": "提出一种因果编译范式，将医学证据转化为可执行代码，支持时间轨迹推理。",
+      "llm_tldr": "提出一种因果编译范式，将医学证据转化为可执行代码，支持时间轨迹推理。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2602.14564v1",
+      "title": "Assessing Large Language Models for Medical QA: Zero-Shot and LLM-as-a-Judge Evaluation",
+      "abstract": "Recently, Large Language Models (LLMs) have gained significant traction in medical domain, especially in developing a QA systems to Medical QA systems for enhancing access to healthcare in low-resourced settings. This paper compares five LLMs deployed between April 2024 and August 2025 for medical QA, using the iCliniq dataset, containing 38,000 medical questions and answers of diverse specialties. Our models include Llama-3-8B-Instruct, Llama 3.2 3B, Llama 3.3 70B Instruct, Llama-4-Maverick-17B-128E-Instruct, and GPT-5-mini. We are using a zero-shot evaluation methodology and using BLEU and ROUGE metrics to evaluate performance without specialized fine-tuning. Our results show that larger models like Llama 3.3 70B Instruct outperform smaller models, consistent with observed scaling benefits in clinical tasks. It is notable that, Llama-4-Maverick-17B exhibited more competitive results, thus highlighting evasion efficiency trade-offs relevant for practical deployment. These findings align with advancements in LLM capabilities toward professional-level medical reasoning and reflect the increasing feasibility of LLM-supported QA systems in the real clinical environments. This benchmark aims to serve as a standardized setting for future study to minimize model size, computational resources and to maximize clinical utility in medical NLP applications.",
+      "authors": [
+        "Shefayat E Shams Adib",
+        "Ahmed Alfey Sani",
+        "Ekramul Alam Esham",
+        "Ajwad Abrar",
+        "Tareque Mohmud Chowdhury"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-02-16T08:53:23+00:00",
+      "link": "https://arxiv.org/pdf/2602.14564v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Benchmarking multiple LLMs on medical QA datasets",
+      "llm_evidence_cn": "在医学问答数据集上对多个大语言模型进行基准测试",
+      "llm_evidence": "在医学问答数据集上对多个大语言模型进行基准测试",
+      "canonical_evidence": "在医学问答数据集上对多个大语言模型进行基准测试",
+      "llm_tldr_en": "Compares five recent LLMs on medical QA tasks using zero-shot evaluation and standard metrics.",
+      "llm_tldr_cn": "使用零样本评估和标准指标对比了五种近期大语言模型在医学问答任务上的表现。",
+      "llm_tldr": "使用零样本评估和标准指标对比了五种近期大语言模型在医学问答任务上的表现。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "clinical natural language processing",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2602.17475v1",
+      "title": "Small LLMs for Medical NLP: a Systematic Analysis of Few-Shot, Constraint Decoding, Fine-Tuning and Continual Pre-Training in Italian",
+      "abstract": "Large Language Models (LLMs) consistently excel in diverse medical Natural Language Processing (NLP) tasks, yet their substantial computational requirements often limit deployment in real-world healthcare settings. In this work, we investigate whether \"small\" LLMs (around one billion parameters) can effectively perform medical tasks while maintaining competitive accuracy. We evaluate models from three major families-Llama-3, Gemma-3, and Qwen3-across 20 clinical NLP tasks among Named Entity Recognition, Relation Extraction, Case Report Form Filling, Question Answering, and Argument Mining. We systematically compare a range of adaptation strategies, both at inference time (few-shot prompting, constraint decoding) and at training time (supervised fine-tuning, continual pretraining). Fine-tuning emerges as the most effective approach, while the combination of few-shot prompting and constraint decoding offers strong lower-resource alternatives. Our results show that small LLMs can match or even surpass larger baselines, with our best configuration based on Qwen3-1.7B achieving an average score +9.2 points higher than Qwen3-32B. We release a comprehensive collection of all the publicly available Italian medical datasets for NLP tasks, together with our top-performing models. Furthermore, we release an Italian dataset of 126M words from the Emergency Department of an Italian Hospital, and 175M words from various sources that we used for continual pre-training.",
+      "authors": [
+        "Pietro Ferrazzi",
+        "Mattia Franzin",
+        "Alberto Lavelli",
+        "Bernardo Magnini"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-02-19T15:38:46+00:00",
+      "link": "https://arxiv.org/pdf/2602.17475v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Evaluation of small LLMs on 20 clinical NLP tasks",
+      "llm_evidence_cn": "在20项临床NLP任务上评估小型大语言模型",
+      "llm_evidence": "在20项临床NLP任务上评估小型大语言模型",
+      "canonical_evidence": "在20项临床NLP任务上评估小型大语言模型",
+      "llm_tldr_en": "Analyzes the performance of small LLMs across various clinical NLP tasks like NER and relation extraction.",
+      "llm_tldr_cn": "系统分析了小型大语言模型在命名实体识别、关系抽取等20项临床NLP任务中的表现。",
+      "llm_tldr": "系统分析了小型大语言模型在命名实体识别、关系抽取等20项临床NLP任务中的表现。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "clinical natural language processing",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2602.19455v1",
+      "title": "SenTSR-Bench: Thinking with Injected Knowledge for Time-Series Reasoning",
+      "abstract": "Time-series diagnostic reasoning is essential for many applications, yet existing solutions face a persistent gap: general reasoning large language models (GRLMs) possess strong reasoning skills but lack the domain-specific knowledge to understand complex time-series patterns. Conversely, fine-tuned time-series LLMs (TSLMs) understand these patterns but lack the capacity to generalize reasoning for more complicated questions. To bridge this gap, we propose a hybrid knowledge-injection framework that injects TSLM-generated insights directly into GRLM's reasoning trace, thereby achieving strong time-series reasoning with in-domain knowledge. As collecting data for knowledge injection fine-tuning is costly, we further leverage a reinforcement learning-based approach with verifiable rewards (RLVR) to elicit knowledge-rich traces without human supervision, then transfer such an in-domain thinking trace into GRLM for efficient knowledge injection. We further release SenTSR-Bench, a multivariate time-series-based diagnostic reasoning benchmark collected from real-world industrial operations. Across SenTSR-Bench and other public datasets, our method consistently surpasses TSLMs by 9.1%-26.1% and GRLMs by 7.9%-22.4%, delivering robust, context-aware time-series diagnostic insights.",
+      "authors": [
+        "Zelin He",
+        "Boran Han",
+        "Xiyuan Zhang",
+        "Shuai Zhang",
+        "Haotian Lin",
+        "Qi Zhu",
+        "Haoyang Fang",
+        "Danielle C. Maddix",
+        "Abdul Fatir Ansari",
+        "Akash Chandrayan",
+        "Abhinav Pradhan",
+        "Bernie Wang",
+        "Matthew Reimherr"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL",
+        "stat.ML"
+      ],
+      "published": "2026-02-23T02:55:32+00:00",
+      "link": "https://arxiv.org/pdf/2602.19455v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Hybrid framework for time-series reasoning with LLMs",
+      "llm_evidence_cn": "大语言模型时间序列推理的混合框架",
+      "llm_evidence": "大语言模型时间序列推理的混合框架",
+      "canonical_evidence": "大语言模型时间序列推理的混合框架",
+      "llm_tldr_en": "Introduces a framework that injects time-series domain knowledge into LLMs to improve diagnostic reasoning.",
+      "llm_tldr_cn": "提出一种知识注入框架，将时间序列领域知识引入大模型以增强诊断推理能力。",
+      "llm_tldr": "提出一种知识注入框架，将时间序列领域知识引入大模型以增强诊断推理能力。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

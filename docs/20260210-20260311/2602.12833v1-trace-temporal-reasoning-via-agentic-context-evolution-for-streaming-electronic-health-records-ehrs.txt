@@ -1,0 +1,343 @@
+Title: TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming Electronic Health Records (EHRs)
+
+URL Source: https://arxiv.org/pdf/2602.12833v1
+
+Published Time: Mon, 16 Feb 2026 01:52:10 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming Electronic Health Records (EHRs) 
+
+Zhan Qu 1 2 Michael F¨ arber 1 2 
+
+# Abstract 
+
+Large Language Models (LLMs) encode exten-sive medical knowledge but struggle to apply it reliably to longitudinal patient trajectories, where evolving clinical states, irregular timing, and heterogeneous events degrade performance over time. Existing adaptation strategies rely on fine-tuning or retrieval-based augmentation, which introduce computational overhead, privacy constraints, or instability under long contexts. We introduce TRACE (Temporal Reasoning via 
+
+Agentic Context Evolution), a framework that enables temporal clinical reasoning with frozen LLMs by explicitly structuring and maintaining context rather than extending context windows or updating parameters. TRACE operates over a dual-memory architecture consisting of a static 
+
+Global Protocol encoding institutional clinical rules and a dynamic Individual Protocol tracking patient-specific state. Four agentic components, Router, Reasoner, Auditor, and Steward, coordi-nate over this structured memory to support tem-poral inference and state evolution. The frame-work maintains bounded inference cost via struc-tured state compression and selectively audits safety-critical clinical decisions. Evaluated on longitudinal clinical event streams from MIMIC-IV, TRACE significantly improves next-event pre-diction accuracy, protocol adherence, and clinical safety over long-context and retrieval-augmented baselines, while producing interpretable and au-ditable reasoning traces. TRACE is available at: TRACE-BD44 
+
+> 1
+
+Department of Computer Science, TU Dresden, Dresden, Germany 2ScaDS.AI, Dresden, Germany. Correspondence to: Zhan Qu <zhan.qu@tu-dresden.de >, Firstname2 Lastname2 
+
+<first2.last2@www.uk >.
+
+Preprint. February 16, 2026. 
+
+# 1. Introduction 
+
+Large Language Models (LLMs) have demonstrated strong performance on static medical tasks, including diagnos-tic question answering, clinical summarization, and radio-logical reporting (Singhal et al., 2023; Nori et al., 2023). However, deploying LLMs for longitudinal clinical reason-ing remains a fundamental challenge. Real-world patient care unfolds as a continuous, non-stationary event stream characterized by irregular temporal intervals, heterogeneous modalities, and evolving physiological states (Wornow et al., 2024; Xu et al., 2024). In this setting, models must reason not only over isolated observations, but over extended tra-jectories in which early decisions, latent conditions, and institutional constraints remain clinically relevant over time. A core difficulty arises from the mismatch between how LLMs process context and how clinical reasoning operates in practice. Standard Transformers rely on a fixed context window and quadratic self-attention, making long-horizon inference computationally infeasible and brittle to context dilution. As trajectories grow, models increasingly exhibit 
+
+context collapse and lost-in-the-middle behavior (Liu et al., 2024; Press et al., 2022), where critical early information (e.g., admission diagnoses or chronic contraindications) is overshadowed by recent but less relevant events. Simply extending context length or increasing model size does not resolve this structural limitation. Clinical reasoning further depends on conditional, context-sensitive heuristics that are rarely explicit in pretraining data (Qu & F ¨arber, 2025). Examples include interpreting lab trends relative to patient-specific baselines, enforcing con-traindications, or adhering to institution-level formularies and protocols. Such heuristics are neither purely parametric nor reliably recoverable through semantic similarity alone; they must be explicitly represented, selectively activated, and consistently applied as the patient trajectory evolves. Existing adaptation strategies exhibit complementary but insufficient solutions. Fine-tuning can specialize a model to a clinical domain, but incurs high computational cost, com-plicates deployment on privacy-sensitive data, and lacks robustness to evolving protocols (Zhou et al., 2025; Zuo et al., 2025; Griot et al., 2025). Retrieval-Augmented Gen-1
+
+> arXiv:2602.12833v1 [cs.LG] 13 Feb 2026 TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs
+
+eration (RAG) avoids parameter updates but relies on vector similarity, which often retrieves clinically irrelevant or tem-porally inappropriate information (Cuconasu et al., 2024; Xia et al., 2025; Xu et al., 2024). Long-context models can ingest extensive histories, but suffer from severe effi-ciency and reliability degradation in long-horizon settings (Liu et al., 2025; Li et al., 2024; Wornow et al., 2024). These limitations suggest that robust clinical reasoning requires neither continual parameter updates nor unbounded context windows, but a mechanism for structuring, maintaining, and updating the right context over time .We propose a different paradigm: treating longitudinal clin-ical reasoning as a problem of continuous context opti-mization . We introduce TRACE (Temporal Reasoning via 
+
+Agentic Context Evolution), a framework that transforms a frozen LLM into a coordinated, multi-agent system operat-ing over a compact, structured cognitive state. Rather than relying on a monolithic context window or noisy retrieval, TRACE maintains a Dual-Memory Architecture consisting of: (i) a static Global Protocol encoding institution-level clinical guidelines, and (ii) a dynamic Individual Protocol 
+
+that tracks the evolving patient state in a structured, machine-readable form. At inference time, TRACE executes a lightweight agentic loop comprising four roles. A Router performs determinis-tic, trigger-based selection of relevant global rules. A Rea-soner generates clinically grounded predictions conditioned on the selected protocols and patient state. An Auditor se-lectively verifies safety-critical or high-uncertainty actions, enforcing contraindications without incurring constant over-head. Finally, a Steward maintains a bounded context budget through a structured state compression mechanism ( Mitosis ), ensuring that inference cost remains constant with respect to trajectory length. To enable domain adaptation without test-time learning or parameter updates, TRACE employs a separate offline Re-flector agent. During an offline protocol induction phase, the Reflector analyzes model failures on historical data and synthesizes explicit, generalizable rules that are incorpo-rated into the Global Protocol. Once induced, the Global Protocol is frozen and reused across all downstream patient trajectories, ensuring a clean separation between protocol induction and deployment-time inference. We evaluate TRACE on longitudinal event streams derived from MIMIC-IV (Johnson et al., 2023) using a prequen-tial evaluation protocol that strictly separates past learning from future prediction. Across multiple open-source LLMs, TRACE substantially improves predictive accuracy, proto-col adherence, and clinical safety compared to long-context, retrieval-augmented, and monolithic agent baselines, while maintaining bounded inference cost and fully transparent, human-readable reasoning traces. Our main contributions: • A context-centric view of longitudinal clinical rea-soning. We formulate clinical decision-making over patient trajectories as a problem of continuous con-text evolution, rather than static sequence modeling or unbounded context accumulation. • TRACE: a dual-memory, agentic framework for clinical streams. We propose TRACE, a multi-agent system that explicitly separates institutional clinical knowledge from patient-specific state, enabling scal-able, interpretable reasoning over long and irregular clinical trajectories without parameter updates. • Offline protocol induction via reflective rule synthe-sis. We introduce a Reflector agent that distills gener-alizable, institution-specific clinical rules from model failures in an offline setting, avoiding fine-tuning and test-time learning. • A safety-aware inference loop with bounded infer-ence cost. TRACE integrates structured state updates and conditional safety auditing to maintain reliable clinical behavior while keeping inference cost indepen-dent of trajectory length. • Extensive empirical evaluation on longitudinal EHR data. We evaluate TRACE on event streams derived from MIMIC-IV and demonstrate consistent improvements in predictive accuracy, protocol adher-ence, and clinical safety over long-context and retrieval-augmented baselines. 
+
+# 2. Related Work 
+
+Adaptive Context and Prompt Evolution for Post-Training LLM Improvement Recent work has explored improving large language models (LLMs) without parame-ter updates by iteratively modifying textual artifacts such as prompts, system instructions, or external memory. These approaches differ in whether adaptation occurs offline or at inference time, and in whether updates target short-lived prompts or persistent external memory. Reflection-based methods show that LLMs can critique and revise their own outputs to improve performance, either within a single in-stance (Madaan et al., 2023) or across episodes in sequential decision-making (Shinn et al., 2023). In parallel, prompt optimization methods treat prompts as optimizable objects and apply black-box or evolutionary search in prompt space, including Automatic Prompt Engineer (APE) (Zhou et al., 2022), OPRO (Yang et al., 2023), and PromptBreeder (Fer-nando et al., 2024). These approaches typically operate offline on fixed evaluation sets and do not address contin-ual adaptation or long-horizon stability. Related systems such as MemGPT (Packer et al., 2023) focus on managing long-context interactions via external memory, but primar-2TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs                              
+
+> Figure 1. Overview of TRACE. Phase I (Offline): On historical event streams E≤t, prediction errors between bYtand Y∗
+> tare analyzed by a Reflector agent, which induces generalizable clinical rules that are added to the Global Protocol PG.Phase II (Online): During deployment, TRACE processes live event bundles Etusing a bounded inference state St= ( PG,PI,t , E I,t ). A Router selects relevant rules, a Reasoner predicts the next action, an Auditor conditionally verifies safety-critical decisions, and a Steward updates the patient-specific Individual Protocol PI,t +1 . The Global Protocol remains frozen during online inference. All agents use the same LLM backbone.
+
+ily address memory access and control rather than learning transferable problem-solving knowledge. Dynamic Cheatsheet (DC) (Suzgun et al., 2025) explicitly frames inference as a test-time learning process, in which an LLM maintains and curates a persistent external mem-ory to improve future performance. GEPA (Agrawal et al., 2025) advances a complementary direction by optimizing prompts for compound LLM systems through reflective edits and Pareto-based evolutionary selection, positioning prompt evolution as an alternative to reinforcement learning for system-level optimization. However, iterative prompts and memory rewriting may degrade over long horizons, par-ticularly when updates are unstructured or overwrite earlier information, leading to context drift or loss of critical con-straints. Agentic Context Engineering (ACE) (Zhang et al., 2025) addresses these limitations by evolving structured contexts via incremental updates and deterministic merg-ing, supporting both offline prompt optimization and online test-time adaptation. Together, these methods form a coher-ent research field on post-training LLM self-improvement via evolving textual artifacts, differing primarily in their optimization targets and adaptation timescales. 
+
+Medical Foundation Models and Longitudinal EHR Rea-soning Recent medical foundation models have demon-strated strong performance on static and short-horizon clini-cal tasks, including diagnostic reasoning and clinical ques-tion answering (Singhal et al., 2023; Nori et al., 2023; Wornow et al., 2023). Domain-aligned variants such as Meditron further improves medical factuality and robustness through large-scale pretraining on curated clinical corpora (Chen et al., 2023). Beyond text-centric models, recent work has explored foundation models trained directly on struc-tured medical events. COMET, for example, applies scaling laws to heterogeneous EHR sequences and demonstrates strong zero-shot performance across a range of clinical pre-diction tasks (Waxler et al., 2025). To support longitudi-nal reasoning, a growing body of work models Electronic Health Records (EHRs) as long temporal sequences of visits or events. Recent studies evaluate long-context architec-tures on full patient histories containing tens of thousands of events (Wornow et al., 2024), while representation-focused approaches such as GT-BEHRT (Poulain & Beheshti, 2024) and AutoDP (Cui & Mitra, 2024) improve predictive perfor-mance by modeling temporal dependencies, task structure, or concept relations. In parallel, several works augment lon-gitudinal EHR models with retrieval mechanisms to incor-porate external or historical clinical knowledge, including RAM-EHR (Xu et al., 2024) and multimodal medical RAG systems (Xia et al., 2025). Other efforts explore generative modeling of longitudinal EHRs, including diffusion-based approaches for synthesizing realistic multimodal patient tra-jectories (He et al., 2024; Zhong et al., 2024). Despite sub-stantial progress, existing approaches predominantly treat patient history as a flat or weakly structured sequence and rely on longer contexts, retrieval, or larger models to manage temporal dependencies, leaving open the problem of how to support reliable, interpretable, and policy-aware clinical rea-soning over unbounded event streams without continually expanding context windows or retraining model parameters. 
+
+# 3. Methodology 
+
+We formulate longitudinal clinical reasoning as a continuous context optimization problem over a potentially unbounded 3TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+event stream. A patient trajectory is modeled as a sequence of event sets E = ( E1, . . . , E T ), where each Et represents a bundle of clinical observations, interventions, and mea-surements at timestep t. At each timestep, the model must estimate P (Yt+1 |E1: t) where Yt+1 denotes the next clinical intervention or patient state. Standard Transformer architectures scale poorly to long-horizon clinical trajectories due to the quadratic O(t2) com-putational and memory complexity of self-attention and the fixed context window Lmax . Consequently, na ¨ıvely extend-ing the context length becomes computationally infeasible and empirically brittle, particularly when modeling long-term temporal dependencies in irregular clinical data. To address this limitation, TRACE reformulates longitudinal reasoning by maintaining a compact, high-density cognitive state rather than relying on massive context windows or ad hoc vector retrieval. Specifically, TRACE decouples clinical context into two complementary memory streams: a static, institution-level Global Protocol encoding clinical guidelines and shared medical knowledge, and a dynamic, patient-specific Individual Protocol that evolves over time. These memory streams are jointly managed by a multi-agent controller comprising a Router, Reasoner, Auditor, and Steward, enabling continuous context optimization over an effectively infinite horizon. In addition, TRACE employs a separate Reflector agent used exclusively during offline protocol induction to induce and refine the Global Protocol. 
+
+3.1. Dual-Memory Architecture 
+
+TRACE maintains the inference state St =(PG, PI,t , E buff ), where Ebuff is a short rolling buffer of recent raw tokens. 
+
+1. Global Protocol ( PG): The Institutional Playbook. 
+
+PG serves as the “Long-Term Semantic Memory” contain-ing transferable medical heuristics (e.g., sepsis bundles, in-sulin sliding scales). Unlike vector-based RAG which suf-fers from retrieval noise, PG is structured as a Key-Value Cheatsheet (Suzgun et al., 2025). Keys correspond to clin-ical triggers (e.g., [TRIGGER: LACTATE > 4] ), and values contain precise action guidelines. This memory is learned offline and frozen during inference (see Sec. 3.4). 
+
+2. Individual Protocol ( PI,t ): The Patient State. PI,t 
+
+is a dynamic, evolving JSON object representing the spe-cific patient’s current physiological status. It functions as a 
+
+structured state-space model , tracking active latent variables rather than summarizing past tokens: 
+
+PI,t = {”active problems” : [ d1, d 2 . . . ],
+
+”current meds” : [ m1, m 2 . . . ],
+
+”trajectory” : [ trend 1, . . . ]}
+
+3.2. Offline Protocol Induction via the Reflector 
+
+TRACE incorporates a dedicated Reflector agent responsi-ble for inducing and refining the Global Protocol PG during offline protocol induction. The Reflector operates exclu-sively offline and is never invoked during inference. Given a failed prediction at timestep t, the Reflector is pro-vided with the patient trajectory E1: t, the model’s predicted action bYt+1 , and the ground-truth intervention Y ∗
+
+> t+1
+
+. Its ob-jective is to determine whether the error arises from missing institutional knowledge or an underspecified clinical rule. When such a gap is identified, the Reflector synthesizes a new generalizable rule of the form: 
+
+IF [trigger] THEN [action] ,
+
+which is categorized and appended to the Global Protocol 
+
+PG. Once learned, PG is fixed and reused across all down-stream patient trajectories. 
+
+3.3. The TRACE Inference Loop 
+
+At each timestep t, TRACE executes a coordinated loop designed to minimize computational cost while maximizing safety. This loop operates solely over inference-time agents (Router, Reasoner, Auditor, Steward); the Reflector is not active during deployment. 
+
+Step 1: Trigger-Guided Routing. The Router selects a subset of protocol entries from PG relevant to the current state given Et and PI,t :
+
+Ct = Router (Et, PI,t , PG).
+
+The Router is prompted to match observed triggers in Et
+
+(e.g., hypotension) to protocol keys in PG, producing a compact set of candidate rules for downstream reasoning. 
+
+Step 2: Predictive Reasoning. The Reasoner generates the prediction bYt+1 using the context. It is prompted to explicitly cite rules from Ct to justify its actions: 
+
+bYt+1 , logprobs = LLM (Prompt ⊕ Ct ⊕ P I,t ⊕ Ebuff )
+
+Step 3: Trigger-Based Auditing for Computational Effi-ciency. To reduce the inference cost of reflective verifica-tion, the Auditor is conditional. We define an uncertainty proxy U ( bYt+1 ) from the average token log-probability of the generated output. The Auditor is triggered only if: 1. Uncertainty: U ( bYt+1 ) > τ uncertainty .2. Safety Criticality: bYt+1 ∩ V risk ̸ = ∅ (where Vrisk is a vocabulary of high-stakes interventions). 4TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+When triggered, the Auditor validates bYt+1 against (i) PG
+
+and (ii) explicit safety constraints derived from the struc-tured patient state PI,t (e.g., allergies, active problems). 
+
+Step 4: The Steward and Protocol Mitosis. The Stew-ard manages the context budget via Mitosis , a structured state compression algorithm. When |Ebuff | > L limit , the Steward absorbs the raw information into the structured state: 
+
+PI,t +1 = Update (PI,t , E buff )
+
+Unlike text summarization, Mitosis performs discrete state updates (e.g., removing a medication from 
+
+current meds upon a stop order). The raw buffer Ebuff 
+
+is then flushed. This keeps the prompt budget bounded and independent of the trajectory length T , while preserving the state fidelity required for clinical safety. 
+
+3.4. Optimization Strategy: Two-Phase Evolution 
+
+To prevent data contamination and ensure robust general-ization, we adopt a two-phase learning strategy inspired by GEPA (Agrawal et al., 2025). 
+
+Phase I: Offline Global Learning (Protocol Induction). 
+
+We execute TRACE on the training set. When the model fails to predict a ground-truth intervention Y ∗
+
+> t+1
+
+, the Re-flector analyzes the error. If the error stems from missing knowledge (e.g., institutional dosage limits), the Reflector synthesizes a new rule r and appends it to PG. This phase induces a high-quality ”Medical Playbook” from data. 
+
+Phase II: Online Deployment (Test-Time Adaptation). 
+
+During evaluation on the test set, PG is frozen . The system adapts solely via the Individual Protocol PI . This strictly evaluates the system’s ability to maintain patient-specific context and apply learned rules to unseen trajectories with-out parameter updates. 
+
+# 4. Data Construction 
+
+We transform the relational structure of Electronic Health Records (EHRs) into a linearized, semi-structured event stream suitable for long-horizon agentic reasoning. Raw EHR data are inherently heterogeneous and temporally sparse, spanning laboratory measurements, medication or-ders, diagnoses, and procedures recorded at irregular in-tervals. Directly modeling such relational tables as a flat sequence leads to long, low-density contexts and poor tem-poral alignment. To address this, we construct compact 
+
+event bundles that aggregate clinically related observations while preserving temporal ordering. 
+
+4.1. Source Dataset 
+
+We use MIMIC-IV v2.2 (Johnson et al., 2023), a large-scale, deidentified critical care database derived from admissions to the Beth Israel Deaconess Medical Center. From the relational schema, we extract diagnoses, medications, lab-oratory results, and procedures associated with each ICU admission. Diagnoses and procedures are represented using normalized ICD codes enriched with their textual descrip-tions. Medication data are parsed into explicit start and stop events with associated metadata such as dosage and route. Laboratory measurements are paired with reference ranges to support semantic interpretation. 
+
+4.2. Event Normalization and Semantic Discretization 
+
+To maximize information density per token and reduce nu-merical noise, continuous clinical variables are discretized into semantic categories relative to reference ranges or patient-specific baselines (e.g., Low , Normal , High ). Normal laboratory results are aggregated when possible (e.g., CMP: All Normal ), while abnormal values are ex-plicitly reported together with their measured magnitude (e.g., Creatinine: 2.1 (High) ). This semantic discretization preserves clinically salient deviations while substantially reducing token usage. 
+
+4.3. Event Bundle Construction 
+
+Clinical events are sorted chronologically within each ad-mission and grouped into Event Bundles based on temporal proximity. Events occurring within a fixed one-hour window are coalesced into a single bundle Et, which summarizes all observations, interventions, and measurements recorded during that interval. This aggregation avoids excessive frag-mentation of closely related events while maintaining a clinically meaningful temporal resolution. To handle extended periods of clinical silence, we in-sert explicit time-delta tokens (e.g., [TIME DELTA: +12 hours] ) whenever the gap between consecutive bundles exceeds a predefined threshold. These tokens allow the model to reason about elapsed time without processing redundant empty steps, yielding more compact and inter-pretable trajectories. 
+
+4.4. Serialized Clinical Streams 
+
+The above steps define a deterministic transformation 
+
+ϕ : Drelational → E text ,
+
+which maps raw relational EHR tables to a serialized event stream E = ( E1, . . . , E T ). Each event bundle is rendered as a compact textual summary with structured sections cor-responding to diagnoses, medications, laboratory results, and procedures. The resulting representation serves as the 5TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+sole input to the TRACE inference loop described in Sec-tion 3, enabling consistent processing across models and experimental conditions. Across the evaluation cohort, this construction yields con-cise patient trajectories with a manageable number of inter-action steps per ICU stay; detailed statistics on trajectory length and token counts are reported in Section X. 
+
+# 5. Experimental Setup 
+
+We evaluate TRACE in a streaming clinical decision-making setting using serialized event bundles constructed as de-scribed in Section 4. All experiments follow a prequential (predict-then-update) protocol to prevent temporal leakage and reflect realistic deployment conditions. 
+
+Evaluation Protocol. Evaluation proceeds in two phases. In Phase I (offline protocol induction), TRACE is applied to a training cohort of N = 100 ,804 patients. At each timestep 
+
+t, the system predicts bYt+1 given the observed history; when the prediction does not match the ground-truth action Y ∗
+
+> t+1
+
+,the Reflector agent analyzes the failure and, when appropri-ate, synthesizes a new generalizable rule that is appended to the Global Protocol PG. After processing the full training cohort, PG is frozen. In Phase II (streaming inference), we evaluate on a held-out test set of N = 100 ,863 patients. Each trajectory is processed sequentially, one event bundle at a time: the system predicts bYt+1 , the prediction is scored against Y ∗
+
+> t+1
+
+, and the Individual Protocol PI,t is updated via the Steward using the observed outcome. No parameter updates or PG modifications occur during this phase. 
+
+Dataset Statistics. After normalization and event bundle construction (Sec. 4), the corpus contains approximately 5.0M event bundles per phase, comprising over 43M clini-cal events. Each bundle aggregates events recorded within a one-hour window and contains on average 8.6 events, primarily laboratory measurements (4.3 per bundle) and medication orders (3.2 per bundle), with diagnoses and pro-cedures occurring less frequently. Patient trajectories are long-horizon, with an average of 48–49 event bundles per ICU admission and approximately 420 events per patient after aggregation and discretization. In Phase I, TRACE induces a Global Protocol containing 441 rules. The re-sulting protocol is compact (21 words on average per rule), human-readable, and explicitly editable, allowing clinicians or system designers to inspect, modify, or extend institu-tional heuristics without retraining the underlying model. 
+
+Backbone Models. TRACE is tested on 5 open-source LLMs spanning general-purpose and domain-specific set-tings: Llama-3.1-70B-Instruct, Qwen-2.5-72B-Instruct, Mixtral-8x22B-v0.1, Meditron-70B, and DeepSeek-V3.1. All agent roles (Router, Reasoner, Auditor, Steward, and Reflector) are instantiated as prompted LLM calls using the same backbone within a given experiment. 
+
+Prompt Structure and Context Budget. Inference is con-ducted under a fixed prompt budget with predefined token allocations for system instructions, retrieved Global Proto-col entries, the structured Individual Protocol, and a short rolling buffer of recent event bundles. This design ensures that prompt length remains bounded and independent of tra-jectory length. Prompt templates are shared across models and are provided in Appendix A. 
+
+Baselines. We compare TRACE against three baseline ap-proaches that represent common strategies for longitudinal clinical reasoning with LLMs: (i) a long-context clinical LLM that ingests the raw serialized history up to the context limit; (ii) a retrieval-augmented generation (RAG) system using a Contriever-based retriever to select top-K historical segments from the patient’s past; and (iii) a monolithic agent (MemGPT-style) that maintains a single free-text summary of patient state without separating institutional knowledge from individual context. All baselines receive the same event bundle inputs, use identical backbone models where applicable, and operate under the same fixed prompt budget during inference. 
+
+Metrics. We report four metrics: (i) Recall@5 for next-step prediction of medications, lab orders, and procedures; 
+
+(ii) Protocol Adherence , the fraction of timesteps where predictions explicitly cite an activated Global Protocol rule; 
+
+(iii) Clinical Equivalence (1–5) , a GPT-4o judged mea-sure of plan-level clinical acceptability allowing reasonable alternatives; and (iv) Auditor Activation Rate , the frac-tion of timesteps escalated to conditional verification due to uncertainty or safety-critical actions. 
+
+# 6. Results 
+
+We report main results on the held-out test cohort in Table 1. Evaluation is performed over serialized event-stream tra-jectories constructed per ICU admission (Sec. 4) using the prequential streaming protocol described in Sec. 5. Perfor-mance is measured using Recall@5 for next-step prediction of medications, lab orders, and procedures, together with a GPT-4o judged Clinical Equivalence score (1–5). For TRACE, we additionally report Protocol Adherence and the Auditor Activation Rate, which measures how often the system escalates a decision to conditional verification. 6TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs                                                               
+
+> Table 1. Main Performance Comparison on MIMIC-IV. We report Recall@5 for medication prediction, lab orders, and procedures, and the GPT-4 judged Clinical Equivalence Score (1-5). Best results in bold .
+> Method Medication Lab Order Procedure Clinical Protocol Auditor Recall@5 Recall@5 Recall@5 Equivalence Adherence Activation Rate
+> Long-Context (Llama-3-70B) 0.3192 0.2119 0.3511 2.95 --Static RAG (Contriever) 0.3221 0.1245 0.2827 3.10 --Monolithic Agent (MemGPT) 0.3224 0.136 0.3313 3.28 --TRACE (Llama-3.1-70B) 0.5986 0.4176 0.4184 3.56 92.8% 9.42% TRACE (Qwen-2.5-72B-Instruct) 0.5327 0.4332 0.3817 3.71 93.6% 7.13% TRACE (Mixtral-8x22B-v0.1) 0.5530 0.5727 0.3718 3.85 92.1% 5.15%
+> TRACE (DeepSeek-V3.1) 0.3348 0.4323 0.3089 3.96 94.7% 6.23% TRACE (Meditron-70B) 0.5723 0.4872 0.4219 3.91 94.0% 5.27%
+
+6.1. Main Results: Predictive Performance and Clinical Quality TRACE substantially improves Recall@5 over all base-lines. The long-context baseline achieves Recall@5 of 0.3192 (medications), 0.2119 (lab orders), and 0.3511 (pro-cedures). Static RAG and the monolithic agent perform comparably on medications (0.3221 and 0.3224), but de-grade markedly on lab orders (0.1245 and 0.1360) and pro-cedures (0.2827 and 0.3313). This pattern highlights a core challenge of longitudinal clinical streams: temporally appro-priate ordering depends on localized triggers and evolving state, which similarity-based retrieval and free-text sum-maries often fail to preserve. Across backbone models, TRACE consistently improves Recall@5 for medications (0.5327– 0.5986 ) and lab or-ders (0.4176– 0.5727 ). Procedure prediction also improves, with TRACE achieving up to 0.4219 (Meditron-70B) and strong performance across other backbones (0.3089– 0.4184). These results indicate that explicit state tracking and trigger-guided protocol routing improve exact-match prediction across multiple clinical action types, with partic-ularly large gains for medication and lab ordering. 
+
+Clinical equivalence improves even when exact matches remain difficult. Exact-match Recall@5 can underesti-mate clinically valid decisions, as recorded action sequences may omit acceptable alternatives (e.g., class-equivalent med-ications or alternative diagnostic workups). The Clinical Equivalence score complements Recall@5 by assessing plan-level clinical acceptability. TRACE improves equiva-lence from 2.95 (long-context) and 3.28 (monolithic agent) to 3.56– 3.96 across backbones. Notably, DeepSeek-V3.1 attains the highest equivalence score ( 3.96 ) despite only moderate Recall@5, suggesting that TRACE often gener-ates clinically reasonable alternatives that differ from the exact recorded tokens. 
+
+High protocol adherence reflects explicit institutional grounding. TRACE maintains consistently high Protocol Adherence (92.1– 94.7 %), demonstrating that the Router reliably activates relevant Global Protocol entries and that the Reasoner grounds its predictions in explicitly cited rules under a bounded prompt budget. We do not report adherence for baselines, as they do not operate over an explicit, citeable protocol representation. 
+
+Auditor activation remains conditional rather than con-stant. Table 1 reports the Auditor Activation Rate , defined as the fraction of timesteps where TRACE escalates a pre-diction to the Auditor due to high uncertainty or safety-critical action types. Activation rates range from 5.15% 
+
+(Mixtral-8x22B) to 9.42% (Llama-3.1-70B), indicating that verification is invoked on a minority of steps rather than continuously. This metric reflects verification frequency and computational overhead, not the rate of contraindicated recommendations. 
+
+6.2. Ablation Studies 
+
+Table 2 reports ablations of TRACE components using the Llama-3.1-70B backbone. 
+
+Global Protocol contributes substantially to predictive performance. Removing the Global Protocol results in a large drop in Recall@5 (0.5319 → 0.2134), indicating that institution-specific rules induced offline provide criti-cal signal beyond what the backbone model recovers from pretraining alone. 
+
+Structured state maintenance reduces uncertainty and stabilizes grounding. Disabling Mitosis and structured state updates reduces Recall@5 (0.5319 → 0.2637) and Pro-tocol Adherence (92.8% → 64.3%), while sharply increas-ing Auditor Activation (9.42% → 27.8%). This suggests that compact, structured patient state representations reduce uncertainty and prevent frequent escalation to verification. 7TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+Auditing stabilizes the agent loop beyond safety checks. 
+
+Removing the Auditor reduces Recall@5 to 0.2132 and lowers adherence to 81.2%. Although auditing is designed as a conditional safety mechanism, these results suggest it also stabilizes the overall agent loop by preventing low-confidence outputs from propagating into subsequent state updates. Auditor Activation Rate is undefined in this setting because the mechanism is removed. 
+
+Table 2. Ablation Study. Impact of removing the Global Protocol (PG), the Structured State ( PI ), and the Auditor.                
+
+> Configuration Recall@5 Adherence Auditor Act. TRACE (Llama-3.1-70B) 0.5319 92.8% 9.42%
+> w/o Global Protocol 0.2134 -14.5% w/o Mitosis (state) 0.2637 64.3% 27.8% w/o Auditor 0.2132 81.2% -
+
+6.3. Qualitative Analysis: Phase II Reasoning Trail 
+
+This example shows a short ICU trajectory in which a sep-sis protocol is executed across multiple timesteps using a serialized event stream. At t = 0 , an abnormal lactate mea-surement is observed, after which the system predicts the set of protocol-relevant actions, including fluid resuscitation and antibiotics. The prediction at this stage reflects recog-nition of a sepsis pattern rather than a direct reaction to a single event. As the trajectory progresses, observed interven-tions are incorporated step by step. After fluid resuscitation is recorded at t = 1 , the next predicted bundle advances to blood cultures, reflecting that fluids have already been administered while cultures have not yet occurred. At t = 2 ,once blood cultures are observed, the predicted next action becomes initiation of broad-spectrum antibiotics. Previ-ously completed interventions are not re-predicted, and the predicted actions change only as the execution state of the protocol changes. After all protocol-specified interventions are observed, the system produces no further predictions. Overall, the exam-ple illustrates stepwise execution of a multi-action clinical protocol over a longitudinal event stream, where each pre-diction depends on the cumulative set of actions already taken rather than on isolated recent events. 
+
+# 7. Conclusion 
+
+We introduced TRACE, a framework for long-horizon rea-soning with frozen large language models that replaces un-bounded context accumulation with explicit, structured state. Empirically, our results show that performance gains are primarily driven by the dual-memory design, which sepa-rates a static Global Protocol from a dynamic, structured Individual Protocol. Ablation studies indicate that removing either component substantially degrades Recall@5 and pro-
+
+Input event stream (single-type bundles) 
+
+E0 (Labs, abnormal ): Lactate 4.8 
+
+E1 (Medications ): Start IV fluids 30 ml/kg 
+
+E2 (Procedures ): Blood cultures 
+
+E3 (Medications ): Start broad-spectrum antibiotics 
+
+TRACE state at initialization ( t = 0 )
+
+Global protocol (frozen) :
+
+SEPSIS V1 : IF Lactate > 4 OR MAP < 65 THEN fluids + broad-spectrum antibiotics 
+
+Individual protocol state :active problems = [ ] — current meds = [ ] —trends = [ ] 
+
+Phase II stepwise execution 
+
+t = 0 (after observing E0): 
+
+Router : detects Lactate 4.8 → activates SEPSIS V1 Reasoner : enumerates protocol-mandated actions →{Start IV fluids 30 ml/kg , Start broad-spectrum antibi-otics }
+
+Auditor : checks safety constraints → PASS Steward : updates state →
+
+active problems=[suspected sepsis], current meds=[ ], trends=[lactate high] 
+
+t = 1 (after observing E1): 
+
+Router : remains on SEPSIS V1 Reasoner : predicts next unfulfilled bundle → { Blood cul-tures }
+
+Auditor : PASS Steward : updates medications → current meds=[IV fluids] 
+
+t = 2 (after observing E2): 
+
+Router : remains on SEPSIS V1 Reasoner : predicts next unfulfilled bundle → { Start broad-spectrum antibiotics }
+
+Auditor : PASS Steward : updates procedures → procedures=[blood cul-tures] 
+
+t = 3:Prediction matches observed E3 → Phase II completes successfully 
+
+Figure 2. Phase II qualitative example of protocol-grounded bundle execution. With the sepsis protocol fixed, TRACE in-crementally predicts the next required bundle as prior actions are observed and incorporated into state. 
+
+tocol adherence, highlighting the importance of explicitly representing both institutional rules and evolving state. The agentic inference loop supports this structure by en-abling trigger-based protocol selection and state-aware pro-gression across timesteps, while conditional auditing sta-bilizes predictions without constant verification. Together, these components enable reliable reasoning over long event streams with bounded inference cost. Although evaluated in the clinical domain, the design addresses a general challenge in sequential decision-making with LLMs where relevant context must be preserved and updated over extended hori-zons. 8TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+# Impact Statement 
+
+This work proposes TRACE, a framework for improving the reliability and transparency of LLMs in long-horizon, non-stationary reasoning settings by structuring and maintaining context explicitly rather than updating model parameters. While our experiments focus on the clinical domain, the primary contribution is methodological: TRACE introduces a general approach for deploying frozen LLMs in complex real-world environments where decisions must be made sequentially under evolving constraints. From a positive impact perspective, TRACE has the poten-tial to improve the safety, interpretability, and auditability of LLM-based decision-support systems. By representing both institutional knowledge (Global Protocol) and instance-specific state (Individual Protocol) in human-readable and editable form, the framework enables external inspection, correction, and alignment with domain-specific rules. This transparency is particularly important in high-stakes do-mains, where opaque or untraceable model behavior can lead to downstream harm. More broadly, the proposed de-sign pattern may benefit applications beyond healthcare, including scientific workflows, software maintenance, and operational decision support. At the same time, this work has important limitations. Our empirical evaluation relies on MIMIC-IV, a deidentified in-tensive care unit dataset with restricted access requirements. As a result, reproducibility is limited to researchers who are able to obtain appropriate data use approvals, and the dataset reflects the practices and patient population of a sin-gle healthcare system. Moreover, TRACE is not intended to function as an autonomous clinical decision-maker, and any deployment in real-world clinical settings would require rigorous validation, governance, and human oversight. Finally, like all LLM-based systems, TRACE may inherit bi-ases present in its LLM backbones and training data. While the framework emphasizes structured reasoning and explicit rule grounding, it does not eliminate the risk of biased or inappropriate predictions. We therefore emphasize that TRACE should be viewed as a research contribution toward safer and more interpretable LLM systems, rather than as a ready-to-deploy solution, and that careful domain-specific evaluation remains essential before use in practice. 
+
+# References 
+
+Agrawal, L. A., Tan, S., Soylu, D., Ziems, N., Khare, R., Opsahl-Ong, K., Singhvi, A., Shandilya, H., Ryan, M. J., Jiang, M., et al. Gepa: Reflective prompt evolution can outperform reinforcement learning. arXiv preprint arXiv:2507.19457 , 2025. Chen, Z., Cano, A. H., Romanou, A., Bonnet, A., Ma-toba, K., Salvi, F., Pagliardini, M., Fan, S., K ¨opf, A., Mohtashami, A., et al. Meditron-70b: Scaling medical pretraining for large language models. arXiv preprint arXiv:2311.16079 , 2023. Cuconasu, F., Trappolini, G., Siciliano, F., Filice, S., Cam-pagnano, C., Maarek, Y., Tonellotto, N., and Silvestri, F. The power of noise: Redefining retrieval for rag systems. In Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval , pp. 719–729, 2024. Cui, S. and Mitra, P. Automated multi-task learning for joint disease prediction on electronic health records. Advances in Neural Information Processing Systems , 37:129187– 129208, 2024. Fernando, C., Banarse, D., Michalewski, H., Osindero, S., and Rockt ¨aschel, T. Promptbreeder: self-referential self-improvement via prompt evolution. In Proceedings of the 41st International Conference on Machine Learning , pp. 13481–13544, 2024. Griot, M., Vanderdonckt, J., Yuksel, D., and Hemptinne, C. Pattern recognition or medical knowledge? the problem with multiple-choice questions in medicine. In Proceed-ings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pp. 5321–5341, 2025. He, H., Hao, W., Xi, Y., Chen, Y., Malin, B., and Ho, J. A flexible generative model for heterogeneous tab-ular {EHR } with missing modality. In The Twelfth International Conference on Learning Representations .https://openreview. net/forum? id= W2tCmRrj7H, 2024. Johnson, A. E., Bulgarelli, L., Shen, L., Gayles, A., Sham-mout, A., Horng, S., Pollard, T. J., Hao, S., Moody, B., Gow, B., et al. Mimic-iv, a freely accessible electronic health record dataset. Scientific data , 10(1):1, 2023. Li, T., Zhang, G., Do, Q. D., Yue, X., and Chen, W. Long-context llms struggle with long in-context learning. arXiv preprint arXiv:2404.02060 , 2024. Liu, J., Zhu, D., Bai, Z., He, Y., Liao, H., Que, H., Wang, Z., Zhang, C., Zhang, G., Zhang, J., et al. A comprehensive survey on long context language modeling. arXiv preprint arXiv:2503.17407 , 2025. Liu, N. F., Lin, K., Hewitt, J., Paranjape, A., Bevilacqua, M., Petroni, F., and Liang, P. Lost in the middle: How language models use long contexts. Transactions of the Association for Computational Linguistics , 12:157–173, 2024. 9TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+Madaan, A., Tandon, N., Gupta, P., Hallinan, S., Gao, L., Wiegreffe, S., Alon, U., Dziri, N., Prabhumoye, S., Yang, Y., et al. Self-refine: Iterative refinement with self-feedback. Advances in Neural Information Processing Systems , 36:46534–46594, 2023. Nori, H., King, N., McKinney, S. M., Carignan, D., and Horvitz, E. Capabilities of gpt-4 on medical challenge problems. arXiv preprint arXiv:2303.13375 , 2023. Packer, C., Fang, V., Patil, S., Lin, K., Wooders, S., and Gonzalez, J. Memgpt: Towards llms as operating systems. 2023. Poulain, R. and Beheshti, R. Graph transformers on ehrs: Better representation improves downstream performance. In The Twelfth International Conference on Learning Representations , 2024. Press, O., Smith, N., and Lewis, M. Train short, test long: Attention with linear biases enables input length extrapo-lation. In International Conference on Learning Represen-tations , 2022. URL https://openreview.net/ forum?id=R8sQPpGCv0 .Qu, Z. and F ¨arber, M. Medieval: A unified medical bench-mark for patient-contextual and knowledge-grounded rea-soning in llms. arXiv preprint arXiv:2512.20822 , 2025. Shinn, N., Cassano, F., Gopinath, A., Narasimhan, K., and Yao, S. Reflexion: Language agents with verbal rein-forcement learning. Advances in Neural Information Processing Systems , 36:8634–8652, 2023. Singhal, K., Azizi, S., Tu, T., Mahdavi, S. S., Wei, J., Chung, H. W., Scales, N., Tanwani, A., Cole-Lewis, H., Pfohl, S., et al. Large language models encode clinical knowledge. 
+
+Nature , 620(7972):172–180, 2023. Suzgun, M., Yuksekgonul, M., Bianchi, F., Jurafsky, D., and Zou, J. Dynamic cheatsheet: Test-time learning with adaptive memory. arXiv preprint arXiv:2504.07952 ,2025. Waxler, S., Blazek, P., White, D., Sneider, D., Chung, K., Nagarathnam, M., Williams, P., Voeller, H., Wong, K., Swanhorst, M., et al. Generative medical event models improve with scale. arXiv preprint arXiv:2508.12104 ,2025. Wornow, M., Xu, Y., Thapa, R., Patel, B., Steinberg, E., Fleming, S., Pfeffer, M. A., Fries, J., and Shah, N. H. The shaky foundations of large language models and foun-dation models for electronic health records. npj digital medicine , 6(1):135, 2023. Wornow, M., Bedi, S., Hernandez, M. A. F., Steinberg, E., Fries, J. A., R´ e, C., Koyejo, S., and Shah, N. H. Context clues: Evaluating long context models for clinical pre-diction tasks on ehrs. arXiv preprint arXiv:2412.16178 ,2024. Xia, P., Zhu, K., Li, H., Wang, T., Shi, W., Wang, S., Zhang, L., Zou, J., and Yao, H. MMed-RAG: Ver-satile multimodal RAG system for medical vision lan-guage models. In The Thirteenth International Confer-ence on Learning Representations , 2025. URL https: //openreview.net/forum?id=s5epFPdIW6 .Xu, R., Shi, W., Yu, Y., Zhuang, Y., Jin, B., Wang, M. D., Ho, J., and Yang, C. Ram-ehr: Retrieval augmentation meets clinical predictions on electronic health records. In Proceedings of the 62nd Annual Meeting of the Asso-ciation for Computational Linguistics (Volume 2: Short Papers) , pp. 754–765, 2024. Yang, C., Wang, X., Lu, Y., Liu, H., Le, Q. V., Zhou, D., and Chen, X. Large language models as optimizers. In 
+
+The Twelfth International Conference on Learning Repre-sentations , 2023. Zhang, Q., Hu, C., Upasani, S., Ma, B., Hong, F., Kamanuru, V., Rainton, J., Wu, C., Ji, M., Li, H., et al. Agentic con-text engineering: Evolving contexts for self-improving language models. arXiv preprint arXiv:2510.04618 ,2025. Zhong, Y., Wang, X., Wang, J., Zhang, X., Wang, Y., Huai, M., Xiao, C., and Ma, F. Synthesizing multimodal elec-tronic health records via predictive diffusion models. In 
+
+Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pp. 4607–4618, 2024. Zhou, Y., Muresanu, A. I., Han, Z., Paster, K., Pitis, S., Chan, H., and Ba, J. Large language models are human-level prompt engineers. In The eleventh international conference on learning representations , 2022. Zhou, Y., Liu, X., Ning, C., Zhang, X., and Wu, J. Re-liable and diverse evaluation of LLM medical knowl-edge mastery. In The Thirteenth International Confer-ence on Learning Representations , 2025. URL https: //openreview.net/forum?id=TXfzH933qV .Zuo, Y., Qu, S., Li, Y., Chen, Z.-R., Zhu, X., Hua, E., Zhang, K., Ding, N., and Zhou, B. MedxpertQA: Benchmark-ing expert-level medical reasoning and understanding. In Forty-second International Conference on Machine Learning , 2025. URL https://openreview.net/ forum?id=IyVcxU0RKI .10 TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+# A. Agent Prompt Templates 
+
+We provide the Jinja2-style Python templates used by the five agents in TRACE. All templates are model-agnostic and populated dynamically at runtime with the current patient context, memory contents, and protocol index. 
+
+A.1. Phase I Agent: Reflector (Offline) Reflector System Prompt Template 
+
+REFLECTOR_TEMPLATE = """ You are a Senior Medical Auditor responsible for improving institutional protocols. [SCENARIO] An AI clinical agent failed to predict the correct intervention for a patient. Patient History: {{ patient_history_text }} Ground Truth Action: {{ ground_truth_action }} AI Prediction (Incorrect): {{ ai_prediction }} [TASK] Analyze the gap. Why did the AI miss this? - Was it missing medical knowledge? - Was it missing an institutional rule (e.g., "IF Glucose > 180 THEN start insulin")? [INSTRUCTION] Propose a generalizable rule that would prevent this error in the future. - The rule must be conditional: "IF [Trigger] THEN [Action]". - Do not reference any patient identifiers. - Assign a medical category label (e.g., "ENDOCRINE_MGMT", "SEPSIS", "RENAL"). [OUTPUT FORMAT] Return ONLY a valid JSON object: {"error_analysis": "Brief explanation of the failure mode.", "proposed_rule": {"category": "ENDOCRINE_MGMT", "trigger_condition": "Blood Glucose > 180 mg/dL", "action_directive": "Initiate sliding scale insulin protocol", "rule_text": "IF Glucose > 180 mg/dL AND patient is NPO, THEN start basal insulin." }}""" 
+
+A.2. Phase II Agent: Router Router System Prompt Template 
+
+ROUTER_TEMPLATE = """ You are a Clinical Knowledge Router. Your goal is to select the most relevant clinical protocols for the current situation. [INPUT CONTEXT] Active Patient State: 
+
+11 TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+{{ patient_state_json }} Recent Events (Last 6 hours): {{ recent_events_text }} Available Protocol Index: {{ protocol_index_list }} [INSTRUCTION] Analyze the recent events and patient state for clinical triggers (e.g., Lactate > 4, Hypotension, New admission). Select up to 3 protocol IDs from the index that are critical for the immediate next steps. If no specific protocol applies, return an empty list. [OUTPUT FORMAT] Return ONLY a valid JSON object: {"reasoning": "Brief explanation of why these protocols are relevant.", "selected_protocol_ids": ["SEPSIS_01", "RENAL_03"] }""" 
+
+A.3. Phase II Agent: Reasoner Reasoner System Prompt Template 
+
+REASONER_TEMPLATE = """ You are TRACE, an expert clinical decision agent. Predict the next logical bundle of clinical actions. [MEMORY BANK] Institutional Rules (Global Protocol): {{ selected_rules_text }} Patient Tracker (Individual Protocol): {{ patient_state_json }} [SCENARIO] Patient event history: {{ event_stream_history }} [TASK] Predict the next Clinical Event Bundle. Use the following heuristic: - If the last bundle was primarily Observation (labs/vitals), the next is often Decision (meds/procedures). - If the last bundle was Intervention, the next is often Monitoring (labs). [CONSTRAINTS] Citations Required: You MUST cite a Rule ID (e.g., [R-01]) or a State ID (e.g., [S-05]) for every major decision. Precision: Use specific medication names and dose categories (e.g., "low-dose norepinephrine"), not generic classes (e.g., "vasopressors"). [OUTPUT FORMAT] Return ONLY a valid JSON object: {
+
+12 TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+"thought_process": "Short rationale grounded in cited facts/rules.", "next_bundle_type": "MEDICATIONS" | "LABS" | "PROCEDURES", "predicted_actions": ["Order 1L crystalloid bolus", "Start broad-spectrum antibiotics" ], "citations": ["S-01", "R-01"] }""" 
+
+A.4. Phase II Agent: Auditor Auditor System Prompt Template 
+
+AUDITOR_TEMPLATE = """ You are a Clinical Safety Sentinel. Review the proposed AI decision for safety violations. [CONTEXT] Proposed Actions: {{ proposed_actions_list }} Patient Contraindications / Problems: {{ active_problems_list }} Relevant Rules: {{ active_rules_text }} [CHECKLIST] - Contraindications: Does the patient have a condition that forbids the action (e.g., renal failure)? - Rule adherence: Does the action violate an institutional rule? - Hallucination: Does the AI cite a patient fact that is not present in the provided context? [OUTPUT FORMAT] Return ONLY a valid JSON object: {"status": "PASS" | "FAIL", "risk_level": "LOW" | "HIGH", "critique": "If FAIL, explain the violation and reference the conflicting rule/state. ", "corrected_action": "If FAIL, propose a safer alternative; otherwise leave empty." }""" 
+
+A.5. Phase II Agent: Steward Steward System Prompt Template 
+
+STEWARD_TEMPLATE = """ You are the State Manager. Update the structured patient record based on new raw events. [CURRENT STATE] {{ current_state_json }} 
+
+13 TRACE: Temporal Reasoning via Agentic Context Evolution for Streaming EHRs 
+
+[NEW RAW EVENTS] {{ new_event_bundle_text }} [INSTRUCTION] Perform a structured state update (mitosis): - Diagnoses: Add new confirmed diagnoses; move resolved ones to history. - Medications: Add new starts; if a medication is stopped/discontinued, remove it from current meds. - Trends: Update key lab/vital trends (e.g., creatinine, lactate). [OUTPUT FORMAT] Return ONLY the updated JSON state object. Do not summarize. Be precise with values and maintain a consistent schema. """ 
+
+14

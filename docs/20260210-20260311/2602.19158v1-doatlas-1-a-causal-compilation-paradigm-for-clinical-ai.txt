@@ -1,0 +1,1424 @@
+Title: DoAtlas-1: A Causal Compilation Paradigm for Clinical AI
+
+URL Source: https://arxiv.org/pdf/2602.19158v1
+
+Published Time: Tue, 24 Feb 2026 02:10:26 GMT
+
+Number of Pages: 40
+
+Markdown Content:
+# DoAtlas-1: A Causal Compilation Paradigm for Clinical AI 
+
+Yulong Li * 1 Jianxu Chen * 1 Xiwei Liu * 1 Chuanyue Suo 1 Rong Xia 1 Zhixiang Lu 2 Yichen Li 1
+
+Xinlin Zhuang 1 Niranjana Arun Menon 1 Yutong Xie 1 Eran Segal 1 Imran Razzak 1
+
+## Abstract 
+
+Medical foundation models generate narrative ex-planations but cannot quantify intervention ef-fects, detect evidence conflicts, or validate liter-ature claims, limiting clinical auditability. We propose causal compilation , a paradigm that transforms medical evidence from narrative text into executable code. The paradigm standard-izes heterogeneous research evidence into struc-tured estimand objects, each explicitly specifying intervention contrast, effect scale, time horizon, and target population, supporting six executable causal queries: do-calculus, counterfactual rea-soning, temporal trajectories, heterogeneous ef-fects, mechanistic decomposition, and joint inter-ventions. We instantiate this paradigm in DoAtlas-1, compiling 1,445 effect kernels from 754 stud-ies through effect standardization, conflict-aware graph construction, and real-world validation (Hu-man Phenotype Project, 10,000 participants). The system achieves 98.5% canonicalization accuracy and 80.5% query executability. This paradigm shifts medical AI from text generation to exe-cutable, auditable, and verifiable causal reason-ing. 
+
+## 1. Introduction 
+
+Medical foundation models are emerging as the universal interface layer of clinical decision support systems (CDSS), delivering textual answers for clinical questions with evi-dence grounding by combining generative reasoning with retrieval augmentation (Singhal et al., 2023). However, as shown in Table 1, what ultimately determines for clinical deployment is not generating plausible-sounding knowl-edge narratives, but supporting accountable intervention decisions: quantifying interventional causal effects on out-comes for a specified target population under explicit con-straints (Singhal et al., 2023). Existing paradigms con-structed around generative reasoning and citation alignment 
+
+> 1
+
+Mohamed bin Zayed University of Artificial Intelligence 
+
+> 2
+
+Xi’an Jiaotong-Liverpool University. Correspondence to: Eran Segal <Eran.Segal@mbzuai.ac.ae >, Imran Razzak <Im-ran.Razzak@mbzuai.ac.ae >.
+
+Preprint. February 24, 2026.                                         
+
+> Narrative Generation Causal Compilation (DoAtlas) Representation Text with citations Executable estimand objects
+> Query Interface Natural language questions Typed queries ( Qdo ,Qmed ,QCAT E , ...)
+> Output Format “Studies suggest...” + citations ˆθ= 0 .73 [0.60–0.88] ✓validated
+> Effect Quantification ✗Qualitative descriptions only ✓Quantitative estimates with CI
+> Conflict Detection ✗Implicit (“results vary”) ✓Explicit (directional, interval, I2)
+> External Validation ✗Cannot verify claims ✓Statistical test vs. real-world data
+> Causal Reasoning ✗Narrative descriptions only ✓6 executable query types (Table 1)
+> Composability ✗Each query independent ✓Graph-based query composition
+> Reproducibility Stochastic (varies across runs) Deterministic with full provenance
+> Evidence Update Requires model retraining (weeks) Incremental compilation (minutes)
+> Example Systems Med-PaLM, GPT-4-Med, RAG systems DoAtlas (ours)
+
+Table 1. Paradigm shift from narrative generation to causal compi-lation for clinical decision support. 
+
+typically lack a principled mechanism for compiling het-erogeneous research findings into executable interventional estimands (Hern ´an & Robins, 2020; Hern ´an et al., 2016). In particular, contrast definition, effect scale/unit, time window, and target population are often left implicit; uncertainty and evidential conflicts are difficult to represent and adjudicate in a structured manner, which limits auditability in high-stakes clinical settings (Kahan et al., 2024). To address this, we propose DoAtlas, a new paradigm for clinical causal in-ference that compiles heterogeneous studies into structured interventional estimands, explicitly models effect contrasts, scale, time window, and target population, and adjudicates evidential conflicts using real-world data validation signals. Despite the importance of clinically actionable and au-ditable decision support, current medical foundation model paradigms still exhibit three fundamental gaps for clini-cal causal inference. 1) Missing interventional estimand .Narrative explanations with citation alignment do not yield recomputable estimand-level outputs. Without explicit con-trasts and effect scales, explanations remain readable but not actionable, as they are neither recomputable, auditable, nor verifiable (Hern ´an et al., 2016; Kleinberg et al., 2015). 
+
+2) Absence of effect estimation . Existing medical founda-tion model paradigms typically do not include causal effect estimation pipelines, lacking estimand specification, scale transformation, and uncertainty propagation (Singhal et al., 2023; Glymour et al., 2019). Consequently, comparable and composable effect objects, they cannot reliably answer 
+
+”How large is the effect?” ”Which is stronger?” or ”Whether consensus exists?” 3) Absence of real-world external val-idation . Existing medical foundation models lack mecha-nisms to assess the external validity of research claims, pre-venting the generation of empirically grounded, updatable reliability signals needed to assess credibility, adjudicate conflicts, and guard against unsafe recommendations. Clin-ical deployment demands not better narrative generation, 1
+
+> arXiv:2602.19158v1 [cs.AI] 22 Feb 2026
+
+Submission and Formatting Instructions for ICML 2026 Type  Query (NL + sketch)  Output (sketch) 
+
+QDO  NL : At τ=P2W, what is the effect of Sleep Extension vs Control on Change in Energy Intake?          
+
+> Query :Qdo (Π= adult_general , ι= SleepExt vs Ctrl, o= EnergyIntakeChange , τ=P2W, μ= mean_diff )
+> Answer :θ̂=-270 (mean_diff )
+> CI :[-459 ,-81 ]
+> Witness :EV -2022 -SLEEP -EI, EV -2022 -TASALI ( 2)
+
+QCF  NL : What is the counterfactual effect of switching sleep from Normal to Short sleep on CAD?         
+
+> Query :Qcf (Π= adult_general , ι=Short vs Normal, o=CAD, τ=Lifetime, μ= logOR )
+> Answer :θ̂cf =0.215 (logOR )
+> CI :[0.140 ,0.293 ]
+> Witness :EV -2022 -930000 -MR -CAD, EV -2022 -930000 -CAD ( 2)
+
+QTRAJ  NL : How does the effect of low Delta entropy on incident CHD vary over time (τ=P11Y,P15Y6M)?      
+
+> Query :Qtraj (Π= cvd , ι= DeltaEntropy Low vs Mid, o=Incident CHD, τ ∈{P11Y,P15Y6M}, μ=logHR )
+> Answer :{(P11Y,0.378),(P15Y6M,0.582)} ( logHR )
+> CI :P11Y [0.020, 0.723]; P15Y6M [0.157, 1.004]
+> Witness :5 evidences (e.g., EV -2024 -SHHS -DELTA -ENTROPY, EV -2024 -MROS -
+> DELTA -ENTROPY)
+
+QCATE  NL : Is the effect of  Finerenone  on CV death different in diabetes vs  adult_general ?              
+
+> Query :QCATE(Π ∈{diabetes, adult_general }, ι=Finerenone , o=CV death, τ={P3.4Y,P32M},
+> μ=logHR )
+> Answer :θ̂(diabetes)= -0.105 ,θ̂ (adult_general )= -0.073 ,Δ=-0.033 (logHR )
+> CI :diabetes [ -0.301 ,0.086 ]; adult_general [-0.248 ,0.104 ]
+> Witness :EV -2021 -FIGARO, EV -2024 -FINEARTS -HF ( 2)
+
+QMED  NL : What are the direct and indirect effects of BMI on CVD mediated by KDM -BA acceleration?     
+
+> Query :Qmed (Π= adult_general , ι=BMI, M=KDM -BA Accel, o=CVD, τ=P9Y, μ= logOR )
+> Answer :direct = 0.199, indirect = 0.020 ( logOR )
+> CI :direct [0.113, 0.285]; indirect [0.010, 0.030]
+> Witness :EV -1-OBESITY -BAA -CVD (1)
+
+QJOINT  NL : What is the joint effect of dapagliflozin and calorie restriction on diabetes remission?         
+
+> Query :Qjoint (do( Dapagliflozin,CalorieRestriction ); Π=diabetes, o=Diabetes remission, τ=P12M,
+> μ= logRR )
+> Answer :θ̂=0.445 (logRR )
+> CI :[0.157 ,0.737 ]
+> Witness :EV -2025 -000001 (1)
+
+Figure 1. Query Gallery. DoAtlas supports six executable query types: Q DO (interventional effect), Q CF (counterfactual effect under an alternative exposure), Q TRAJ (time-indexed effect trajectory), QCATE (heterogeneous effects across populations/strata), Q MED 
+
+(direct/indirect effects via a mediator), and Q JOINT (joint intervention effect). Each answer is computed from a witness subset of evidence objects (EV-*); when a query is not executable, the system returns diagnostic flags instead of a numeric answer. 
+
+but foundational infrastructure comprising interventional estimand objects, conflict governance, and real-world vali-dation that renders evidence recomputable, auditable, and verifiable (Kahan et al., 2024; Glymour et al., 2019). To address this, we introduce a causal compilation paradigm that systematically compiles heterogeneous research evi-dence into executable causal atlas objects. i) Effect stan-dardization. Unifying effects from heterogeneous models (linear, logistic, Cox, MR, mediation) within an SCM frame-work, compiling them into unified interventional estimand objects; each object explicitly specifies intervention con-trast, scale/unit, time window, and target population, and retains evidence provenance and key assumptions to sup-port auditability. ii) Conflict-aware graph construction. 
+
+Detecting evidential discrepancies (directional conflicts, in-terval incompatibility, heterogeneity), preserving conflict states as structured metadata, and using validation signals to calibrate evidence selection and conflict adjudication when available. iii) External validation. Aligning research claims to Human Phenotype Project (HPP) 1 on mappable subsets, generating reliability signals (directional, effect-size, and subgroup/effect-modification consistency) to in-form evidence selection and knowledge evolution. Unlike medical foundation models centered on narrative generation and citation alignment, causal compilation optimizes for ex-ecutability: claims specify computable bounds and execute only when information is complete. DoAtlas compiles het-erogeneous evidence into queryable, auditable causal atlas objects with real-world validation signals. As illustrated in Figure 1, DoAtlas supports six typed, exe-cutable causal inference capabilities: 
+
+> 1
+
+https://knowledgebase.pheno.ai/ 
+
+1 Do-calculus queries: Answering interventional queries such as ”What is the causal effect on Y under do(X)?”, and returning quantitative effect estimates with confidence inter-vals and explicit intervention contrasts (e.g., initiate vs. not initiate; drug A vs. drug B) , rather than correlational predic-tions or narrative rationales. 2 Mechanistic causal pathway decomposition: When mediator information is available and identifiability condi-tions holds, decomposing total effects into constituent causal pathways and quantifying their relative contributions. For example, the effect of SGLT2i inhibitors on heart failure hospital-ization may be attributed approximately 45% to diuretic pathways, 30% via myocardial metabolic reprogramming, and 25% via reno-protective pathways, enabling mechanism-level interpretation. 
+
+3 Counterfactual reasoning: Quantifying counterfactual outcomes under alternative interventions to support clinical ”What-If” analysis. For example, ”If a patient had quit smoking five years aearlier, their current cardiovascular risk would be reduced to X%,” providing causal grounding for retrospective analysis and decisions-making. 
+
+4 Individualized treatment effect estimation: Incor-porating effect modifiers such as age, sex, comorbidities, and baseline risk to move from population-average effects to subgroup- or patient-specific expected benefits, thereby quantitatively informing precision treatment decisions. 5 Combination intervention modeling: Modeling joint intervention effects and identifying causal pathway interac-tions to characterize whether combinations of therapies are synergistic, additive, or antagonistic, providing quantitative support for combination treatment decisions. 6 Dynamic prognostic trajectory modeling: Predicting disease trajectories over time under alternative interventions, 2Submission and Formatting Instructions for ICML 2026 a. b.     
+
+> Figure 2. Illustration of the HPP study data. (a) Multi-modal and multi-omic data architecture of HPP. Molecular tests include genetics, microbiome metagenomics, metabolomics, proteomics, and single-cell RNA sequencing. Clinical tests capture deep physiological states via retinal imaging, liver and carotid ultrasound, DXA body composition, and continuous monitoring through CGM and multi-night sleep monitoring. Biobanking involves the systematic preservation of blood and stool samples for longitudinal discovery. (b) Timing of sleep monitoring with respect to all other phenotypes. The body system characteristics were measured within a period of ±6 months from the visit, with the sleep monitoring performed in three nights within a 2-week time period after that visit. ABI, ankle–brachial index; CGM, continuous glucose monitoring; DXA, dual-energy X-ray absorptiometry; ECG, electrocardiogram; HMO, health maintenance organization; IMT, intimamedia thickness; MS, mass spectrometry; PWV, pulse wave velocity; RDS, recent depressive symptoms.
+
+answering ”what is the effect?” ”when do benefits begin?” 
+
+and ”how long do benefits persist?” and offering temporal causal insights to guide long-term treatment and follow-up. DoAtlas can be integrated with foundation models (FMs) to form a layered architecture. The FMs layer provides clini-cal semantic understanding and natural language interfaces, while the causal inference layer, implemented by DoAtlas, supplies executable causal reasoning and auditable infer-ence traces. Together, these layers enable a paradigm shift in medical AI from narrative generation toward accountable decision support. Overall, we propose a causal compilation paradigm, instantiated as a foundation for clinical causal in-ference, that for the first time achieves systematic validation against real-world data. This paradigm enables auditable and verifiable causal reasoning in medical AI. 
+
+## 2. Related Work 
+
+Paradigm evolution of medical AI. Early medical AI pro-gressed from rule-based expert systems to task-specific mod-els, including regression-based risk scores and large-scale EHR-driven prediction (D’Agostino Sr et al., 2008; Esteva et al., 2017; Rajkomar et al., 2018; Shickel et al., 2017). More recently, general-purpose large language models (e.g., GPT-style models, Claude, Baichuan) and domain-adapted variants such as Med-PaLM have been positioned as inter-face layers for clinical systems (Achiam et al., 2023; Bai et al., 2022; Yang et al., 2023; Nori et al., 2023; Singhal et al., 2025). With retrieval augmentation, these models generate literature-grounded explanations that improve surface inter-pretability (Lewis et al., 2020). However, current medical foundation models remain confined to narrative diagnostic assistance rather than auditable estimates of intervention effects (Nori et al., 2023; Singhal et al., 2025; Topol, 2019). Key elements for clinical decision-making—intervention contrasts, effect magnitudes, and uncertainty—are typically left implicit, limiting suitability for high-stakes clinical use (Kelly et al., 2019; Amann et al., 2020). 
+
+Literature grounding and causal modeling. To address these limitations, recent work has pursued two comple-mentary directions: literature-grounded generation to re-duce hallucination (Lewis et al., 2020), and causal infer-ence frameworks for modeling interventional effects (Pearl, 2000; Hern ´an & Robins, 2010; VanderWeele, 2015). De-spite these advances, the two lines of work operate in isola-tion: biomedical literature is treated as narrative justification, while causal methods remain confined to individual stud-ies (Shickel et al., 2017; Kelly et al., 2019). Consequently, existing systems fail to produce standardized interventional estimates, leaving a critical disconnect between narrative evidence and formal causal inference that limits accountable clinical decision support (Topol, 2019; Amann et al., 2020). 
+
+## 3. HPP Dataset 
+
+The Human Phenotype Project (HPP) is a prospective deep-phenotyping cohort study that is currently enrolling 10,000 participants to support systematic, multi-modal health assessments. As illustrated in Figure 2, the project provides unprecedented phenotypic granularity by integrat-3Submission and Formatting Instructions for ICML 2026 Sleep 
+
+Metabolic 
+
+Pathways 
+
+Cardiovascular 
+
+Inflammation 
+
+Fundus 
+
+# DoAtlas                           
+
+> Returning quantitative effect
+> estimates with confidence
+> intervals and explicit contrasts.
+> Do -Calculus Queries
+> When mediator information is available and
+> identifiability holds, decomposing total effects into
+> causal pathways and quantifying relative contributions.
+> Mechanistic Causal Pathway Decomposition
+> Quantifying counterfactual outcome
+> under alternative interventions to
+> support clinical "what -if" analysis.
+> Counterfactual Reasoning
+> Incorporating effect modifiers (e.g., age, sex, comorbidities)
+> to move from population -average effects to subgroup -or
+> patient -specific expected benefits, quantitatively
+> informing precision treatment decisions.
+> Individualized Treatment Effect Estimation
+> Modeling joint intervention effects
+> and detecting causal pathway,
+> providing quantitative support for
+> combination therapy decisions.
+> Combination Intervention Modeling
+> Dynamic Prognostic Trajectory
+> Modeling
+> Predicting disease trajectories over time under
+> alternative interventions and offering temporal causal
+> insights for long -term treatment decisions and follow -up strategies.
+> X–Treatment M–Mediator Y–Outcome
+
+Figure 3. Overview of DoAtlas. DoAtlas compiles heterogeneous clinical evidence into standardized interventional estimand objects with explicit contrasts, effect scales, time horizons, and target populations. It organizes comparable claims into conflict-aware causal graphs, supports executable causal queries, including do-calculus estimation, mechanistic pathway decomposition, counterfactual reasoning, individualized treatment effect estimation, combination intervention modeling, and dynamic prognostic trajectory modeling. External validation signals from HPP are used to assess reliability, adjudicate evidential conflicts, and support auditable clinical decision support. 
+
+ing data from 17 distinct physiological systems . Each participant undergoes comprehensive evaluations spanning cardiovascular, metabolic, immune, neurocognitive, muscu-loskeletal, digestive, and respiratory systems. These assess-ments include laboratory biochemistry (e.g., lipid panels, glucose metabolism, renal function, and inflammatory mark-ers), imaging modalities (carotid ultrasound, retinal imag-ing, and hepatic ultrasound), body composition analysis using dual-energy X-ray absorptiometry (DXA), functional testing, and multi-omics profiling, including genomics, mi-crobiome metagenomics, and metabolomics. Participants receive comprehensive reassessments on a bi-ennial basis, while key biomarkers are continuously moni-tored through wearable devices, such as continuous glucose monitoring (CGM) and multi-night home sleep apnea test-ing. This design enables the dataset to capture dynamic physiological trajectories over time rather than static cross-sectional snapshots. In particular, the longitudinal tracking of biological age (BA) scores across multiple systems allows DoAtlas to reconcile conflicting evidence by projecting het-erogeneous research findings onto a consistent real-world temporal axis. This capability further supports the identifica-tion of sex-specific dynamics that may be overlooked in less granular datasets, including sigmoid-shaped aging patterns in blood lipid profiles that are associated with menopausal status. Additional details are provided in Appendix D.6. 
+
+## 4. Causal Compilation Paradigm 
+
+4.1. Core Abstractions 
+
+Medical evidence is reported in highly heterogeneous forms. Across studies, researchers employ different statistical mod-els, report effects using different measures, and target dis-tinct populations and time horizons. This heterogeneity poses a fundamental challenge for systematic comparison, synthesis, and downstream causal reasoning. To address this challenge, we introduce an intermediate representation (IR) that explicitly separates the semantic content of an inter-ventional estimand from its numeric reporting form, while supporting deterministic normalization across studies. 
+
+Definition 4.1 (Estimand Intermediate Representation) . An interventional estimand is represented by a five-tuple ε =(Π , ι, o, τ, μ ), where Π specifies the target population, ι the intervention contrast, o the outcome variable, τ the time horizon, and μ the measure functional. A complete causal claim further includes numeric information, represented by a claim object c = ( θ, CI) , consisting of a point estimate θ
+
+and its confidence interval CI . Full object specification with provenance metadata is provided in Appendix B.1.1. When studies target the same semantic query, they may report effects in different parameterizations (e.g., HR versus logHR). We therefore introduce a canonicalization operator normalizes both effect representation and numeric claim 4Submission and Formatting Instructions for ICML 2026 
+
+while preserving the semantic query. 
+
+Definition 4.2 (Canonicalization) . Canonicalization oper-ator is a mapping N : ( ε, c ) 7 → (εcanon , c canon , α ) that transforms an estimand and its claim into a normal form, while recording required conditions α. It satisfies: (i) De-terminism : N (ε, c ) is uniquely determined by (ε, c ); (ii) Idempotence : N (N (ε, c )) = N (ε, c ); and (iii) Semantic preservation : N preserves (Π , ι, o, τ ) up to a deterministic time-horizon alignment, and only canonicalizes the repre-sentation of μ and the numeric form of c.Concretely, canonicalization applies (a) a within-type repa-rameterization to put measure values on a canonical scale (e.g., HR 7 → log HR ), and (b) a deterministic time-window alignment bτ = align( τ ) that maps raw horizons to canoni-cal horizon classes used for comparison. Construction and proofs are given in Appendix B.1.5, and the time-window alignment policy is specified in Appendix B.1.4. Canonical forms enable a precise notion of when causal claims can be compared. Without an explicit comparability criterion, heterogeneous effect reports may be incorrectly grouped, leading to conflicts or invalid aggregation. 
+
+Definition 4.3 (Comparability) . Two estimands ε1, ε 2 with claims c1, c 2 are comparable , denoted ε1 ∼ ε2, iff their canonical bucket keys coincide: 
+
+ε1 ∼ ε2 ⇐⇒ k(ε1,canon ) = k(ε2,canon )
+
+where (εi, canon , c i, canon , α i) = N (εi, c i). The bucket key includes the population bucket, intervention–contrast signa-ture (including contrast type), outcome, the aligned time-horizon class bτ = align( τ ), and the measure family. The measure type (e.g., HR vs. RR) is excluded from the key and is used only to define poolability (Appendix B.1.2). By construction, the comparability relation ∼ is an equiva-lence relation, as it reduces to equality of canonical bucket keys. Including the aligned time-horizon class bτ ensures that claims targeting materially different temporal regimes, such as short-term versus long-term outcomes, are not erro-neously grouped. Comparability enables consistency analy-sis and conflict detection within a bucket, but does not imply numerical poolability, which requires stronger conditions and is addressed separately in Appendix B.1.2. 
+
+Conceptual example. Consider three studies on SGLT2 inhibitors and 12-month MACE. Study A reports HR=0.73 [0.58,0.92]; Study B reports log HR=-0.315 [-0.545,-0.083]; Study C reports RR=0.76 [0.61,0.94]. Canonicalization (Definition 4.2) maps A and B to the same canonical scale (logHR) and aligned horizon bτ , making them comparable (Definition 4.3). Study C shares the ratio family but differs in measure type (RR vs. HR); it enables directional conflict detection but not pooling by default (Appendix B.1.2). 
+
+4.2. Theoretical Guarantees 
+
+The validity of the causal compilation paradigm rests on three properties: determinism of canonicalization, complete-ness of conflict detection, and consistency of evidence selec-tion. Together, these properties ensure that heterogeneous causal claims can be mapped into a unified representation space, subjected to decidable conflict checks, and assigned a well-defined and interpretable default effect. 
+
+Theorem 4.4 (Canonicalization Guarantees) . Let the canon-icalization operator N be as in Definition 4.2, mapping an input pair (ε, c ) to (εcanon , c canon , α ), where ε =(Π , ι, o, τ, μ ) and c = ( θ, CI) . Then N satisfies: 1. Uniqueness: N is deterministic and stable on canonical forms (stable on canonical forms), hence each input admits a unique normal form; 2. Semantic preservation: N preserves the semantic core 
+
+(Π , ι, o, τ ) and only transforms the measure represen-tation μ and the numeric claim c, recording all non-semantic decisions in α;3. Information preservation: there exists a reconstruc-tion map N −1 such that the original input is re-coverable up to the intended notion of equivalence: 
+
+N −1(εcanon , c canon , α ) ≈ (ε, c ).
+
+Proof. The key idea is that all non-semantic normalization decisions are explicitly recorded in α, which provides suf-ficient context to define a reconstruction map N −1. As a result, canonicalization admits a unique normal form while preserving the underlying semantic estimand. Refer Ap-pendix B.6 for full theoretical proof. Building on canonicalized representations and comparabil-ity buckets, we next characterize the scope under which evidential conflicts can be detected without false negatives. We consider an explicit taxonomy of decidable inconsis-tencies, denoted by F, which includes directional conflicts, interval incompatibility, and high heterogeneity (formal def-initions in Appendix B.2)., and do not claim to capture all possible forms of disagreement beyond this set. 
+
+Theorem 4.5 (Conflict Detection Completeness (w.r.t. F)) .
+
+For any bucket B, if an F-conflict exists among the canoni-calized claims in B, the conflict detector reports it (i.e., no false negatives with respect to F). 
+
+Proof. See Appendix B.3. Each conflict type in F is for-malized as a decidable predicate over canonicalized claims within a bucket. Completeness then follows from the fact that all predicates are exhaustively evaluated for every bucket, ensuring no conflicts are missed. When a bucket contains multiple comparable claims, the sys-tem selects a default effect via a quality score. Let π denote 5Submission and Formatting Instructions for ICML 2026 
+
+evidence metadata (provenance and quality attributes), and let Q(ε, c, π ) aggregate four dimensions: evidence grade, sample size, precision, and adjustment quality (construction in Appendix B.4). 
+
+Proposition 4.6 (Evidence Selection Consistency) . For any bucket B, define the default selection as 
+
+(ε∗, c ∗) = arg max  
+
+> (ε,c )∈B
+
+Q(ε, c, π ).
+
+Then the strategy satisfies: 1. Determinism: for fixed inputs B and π, the output is uniquely determined; 2. Monotonicity: if candidate a weakly dominates candi-date b in all quality dimensions, then Q(a) ≥ Q(b);3. Interpretability: Q decomposes into auditable contribu-tions from the four dimensions, so the default choice is traceable to explicit quality evidence. 
+
+Proof. See Appendix B.5. The quality score Q is defined as a deterministic and monotone aggregation over the four dimensions. These properties guarantee a uniquely deter-mined default selection for each bucket, while ensuring the contribution of each dimension remains interpretable. 
+
+## 5. DoAtlas Formalization 
+
+We formalize the core semantics of DoAtlas. Centered on interventional estimands , we represent evidence as au-ditable, structured claims, and map heterogeneous effect reports into a comparable space via canonicalization and explicit time-horizon alignment. Building on this represen-tation, we organize cross-study evidence with comparabil-ity/poolability constraints and a set of decidable conflict predicates, which together induce a multi-edge estimand atlas. This atlas provides a unified query semantics for the six capabilities in Figure 3: each capability corresponds to a required evidence pattern and a standardized return object, while missing conditions are surfaced through explicit status flags that delineate the executability boundary. 
+
+5.1. Evidence semantics 
+
+We formalize a unified semantics for cross-study evidence by taking the interventional estimand as the basic represen-tation unit. For any evidence claim, let 
+
+ε = (Π , ι, o, τ, μ ),
+
+where Π denotes the target population, ι specifies the inter-vention/contrast, o is the outcome, τ is the time horizon, and 
+
+μ is the measure functional , which specifies how the effect is quantified (including its measure family, measure type, and canonical scale). We represent an evidence claim as 
+
+(ε, c, π ),
+
+where c = ( ˆθ, CI) encodes the point estimate and its un-certainty, and π aggregates auditable provenance/quality metadata such as bibliographic identifiers, study design, and adjustment information. To support cross-study comparability, we introduce a canon-icalization map 
+
+(ε, c ) 7 → (εcanon , c canon , α ),
+
+which maps heterogeneous effect reports into a compara-ble representation space by normalizing effect measures, abstracting intervention contrasts into contrast types, and aligning time horizons via ˆτ = align( τ ) (Appendix B.1.3– B.1.4). When required fields are missing or ambiguous, all normalization assumptions are explicitly recorded in the auxiliary object α, supporting downstream audit and recon-struction (Refer Appendix B.1.5 for details). 
+
+5.2. Comparability, Poolability, and Conflict Semantics 
+
+Given the canonicalized representation (εcanon , c canon , α ),a bucket key is used to define comparable semantic units for evidence claims. Let X denote the intervention identi-fier extracted from the intervention/contrast description ι,and let Y denote the outcome identifier determined by the outcome variable o. In addition, ctype( ι) denotes the con-trast type, ˆτ = align( τ ) denotes the aligned time class, and 
+
+mfamily( μcanon ) denotes the measure family (e.g., ratio / difference). We then define 
+
+k(εcanon ) = 
+
+
+
+κΠ(Π) , X, Y, ˆτ , κ ι(ι), κ μ(μcanon )
+
+
+
+,
+
+where κΠ maps a population specification to a population category, κι(ι) = ctype( ι) extracts the contrast type from 
+
+ι, and κμ(μcanon ) = mfamily( μcanon ) returns the measure family. This induces the comparability relation 
+
+ε1 ∼ ε2 ⇐⇒ k(ε1,canon ) = k(ε2,canon ),
+
+and each equivalence class is referred to as a bucket, serving as the basic unit for cross-study consistency checking and structured organization. Poolability further strengthens com-parability by requiring agreement in the measure type (e.g., only pooling HR with HR, OR with OR), thereby preventing improper numerical aggregation of heterogeneous measure types within a single bucket. At the bucket level, evidence disagreement is explicitly an-notated via a family of decidable conflict predicates. For any bucket B, define the conflict annotation as 
+
+F(B) =  types , severity , witnesses ,
+
+6Submission and Formatting Instructions for ICML 2026 Query Signature Required evidence pattern Output type                                                                                                                           
+
+> Qdo (X, Y, ε )7→∃ss.t. Bs̸=∅∧smatches (X, Y, ε )Ans
+> Qmed (X, M, Y, ε )7→∃s1, s 2s.t. Bs1̸=∅∧ B s2̸=∅∧s1matches (X, M, ε )∧s2matches (M, Y, ε )(Ans TE ,Ans NDE ,Ans NIE )
+> Qjoint (X1, X 2, Y, ε )7→∃s1, s 2s.t. Bs1̸=∅∧ B s2̸=∅∧s1matches (X1, Y, ε )∧s2matches (X2, Y, ε )Ans
+> Qcf (X, Y, z, ε )7→∃ss.t. Bs̸=∅∧smatches (X, Y, ε )∧smatches individual z(counterfactual) Ans
+> QCATE (X, Y, z, ε )7→∃ss.t. Bs̸=∅∧smatches (X, Y, ε )∧smatches subgroup zAns
+> Qtraj (X, Y, T, ε )7→∀ˆτ∈ T ,∃s(ˆ τ)s.t. Bs(ˆ τ)̸=∅∧s(ˆ τ)matches (X, Y, ε, ˆτ){Ans (ˆ τ)}ˆτ∈T
+
+Table 2. Six query operators in DoAtlas and their executability conditions. Here, “matches” means that the bucket key s agrees with the queried endpoint pair (X, Y ) and the estimand semantic dimensions encoded in the key, including the population category, contrast type, aligned time class, and measure family. “Matches subgroup z” means that the population category encoded by s equals the subgroup identifier z. “Matches individual z (counterfactual)” refers to an individual-level context for counterfactual querying, whereas “matches subgroup z” refers to a population-category constraint for subgroup effects. More detailed explanations are in Appendix D.4–D.5. 
+
+where types denotes the set of conflict types, severity sum-marizes conflict severity, and witnesses identifies the ev-idence triggering the conflict decision, thereby ensuring auditability. Together, these annotations render compara-bility, poolability, and conflict as explicit semantic objects, forming the basis for the subsequent multi-edge estimand atlas structure and query semantics. 
+
+5.3. DoAtlas Structural Semantics 
+
+Bucket equivalence classes induced by the comparability relation ∼ induce DoAtlas, a multi-edge estimand atlas. Let 
+
+s denote a bucket key (i.e., s = k(εcanon )), and let Bs be the set of evidence claims satisfing this key. The edge set is 
+
+E = { (X, Y, s ) : Bs̸ = ∅ },
+
+where (X, Y ) is the endpoint pair and s is the semantic identifier. Since s encodes semantic dimensions like popula-tion category, contrast type, aligned time class, and measure family, a single endpoint pair (X, Y ) may correspond to multiple distinct s, yielding a multi-edge structure. For each edge (X, Y, s ), the carried evidence information (edge payload) is defined as the triple 
+
+payload( X, Y, s ) =  Bs, F(Bs), (ε∗ 
+
+> s
+
+, c ∗ 
+
+> s
+
+, π ∗ 
+
+> s
+
+),
+
+where F(Bs) is the conflict annotation and (ε∗ 
+
+> s
+
+, c ∗ 
+
+> s
+
+, π ∗ 
+
+> s
+
+) is the default kernel. Let Ps ⊆ B s be the poolable subset, which strengthens comparability by additionally requiring agreement in the measure type. Given the quality score function Q(ε, c, π ) (Appendix B.4), the default kernel is: 
+
+(ε∗ 
+
+> s
+
+, c ∗ 
+
+> s
+
+, π ∗ 
+
+> s
+
+) = arg max 
+
+> (ε,c,π )∈P s
+
+Q(ε, c, π ).
+
+All remaining claims are retained for auditing and robust-ness. For reproducibility, default-kernel selection is deter-mined by Q plus tie-breaking (Appendix B.5), so DoAtlas structure is determined by input evidence. 
+
+5.4. Query Semantics 
+
+Query semantics in DoAtlas are specified over the multi-edge structure with a unified return object. Let Bs denote the bucket associated with an edge (X, Y, s ), and let the con-flict annotation be F(Bs) = (types , severity , witnesses) .Define the unified answer object 
+
+Ans =  ε, ˆθ, CI , π, F(B), flags ,
+
+where ε is the target estimand, (ˆθ, CI) is the numerical claim, π denotes provenance and quality metadata, F(B) is the conflict annotation for the associated bucket, and flags is a status indicator encoding executability and fallback status. See the formalized flag set and fallback rules in Appendix C. 
+
+## 6. Experiments 
+
+DoAtlas-1 compiles 1,445 effect kernels from 754 clin-ical evidence cards across cardiovascular, diabetes, and metabolic disorders, and aggregates them into 1,110 evi-dence buckets (1.30 kernels per bucket on average). Model families include survival models (498, 34.5%), continuous outcomes (478, 33.1%), binary outcomes (362, 25.1%), and others (107, 7.4%). Canonical effect types are similarly dis-tributed: logHR (498, 34.5%), mean difference or regression coefficient (478, 33.1%), and logOR/RR or risk difference (367, 25.4%), with 102 kernels (7.1%) in others. In total, 42 buckets (3.8%) are flagged with conflicts, including 34 CI non-overlap cases and 14 high-heterogeneity cases. 
+
+6.1. Core System Evaluation Compilation Correctness. Among the 1,445 compiled kernels, 933 were successfully matched to their source evi-dence cards and used for validation. Field-level extraction accuracy for the estimand quintuple (population Π, contrast 
+
+ι, outcome o, time horizon τ , and measure μ) is consis-tently high, achieving 100% accuracy for o and μ, 99.6% for τ , 98.3% for ι, and 92.7% for Π (mean F1 score = 0.982). Canonical value consistency is also strong: the relative mean absolute error is 1.65% for effect estimates θ and 0.22% for confidence intervals, with no observed directional errors. 
+
+Canonicalization Accuracy. Three clinical epidemiol-ogists reviewed 200 randomly sampled kernels: semantic preservation 98.5%, scale transformation correctness 99.0%, 7Submission and Formatting Instructions for ICML 2026                                       
+
+> Case Patient Profile Clinical Question Query Effect Estimate Interpretation 168yo male, T2DM, HFrEF (EF 35%), eGFR 45 SGLT2i HF benefit do(Dapagliflozin vs Placebo) →HF worsening or CV death HR=0.73 (0.60-0.88), 18mo 27% RRR SGLT2i renal protection do(Dapagliflozin 10mg) →Composite kidney endpoint HR=0.61 (0.51-0.72), 2.3yr 39% RRR 272yo female, HFpEF (EF 55%), dyspnea Symptom improvement do(Dapagliflozin vs Placebo) →KCCQ score +5.8 pts (2.3-9.2), 12wk Exceeds MCID 364yo male, CKD stage 3, eGFR 38 Slow CKD progression do(Empagliflozin vs Placebo) →Kidney progression or CV death HR=0.72 (0.64-0.82), 2yr 28% RRR 470yo male, HFpEF, recent hospitalization Prevent rehospitalization do(Empagliflozin vs Placebo) →HF hospitalization HR=0.71 (0.60-0.83), 26mo 29% RRR
+
+Table 3. Clinical decision support cases. Demonstration of DoAtlas-1 in real-world clinical scenarios. RRR = relative risk reduction; MCID = minimal clinically important difference; CV = cardiovascular; HFrEF = heart failure with reduced ejection fraction; HFpEF = heart failure with preserved ejection fraction; CKD = chronic kidney disease; T2DM = type 2 diabetes mellitus. Intervention (out-degree) Degree Outcome (in-degree) Degree TRE 22 All-cause mortality 41 Finerenone 17 Stroke 26 Dapagliflozin 10mg + CR 15 Cardiovascular disease 20 Dapagliflozin 15 Myocardial infarction 16 Early ECLS 14 Heart failure 13 
+
+Table 4. Top-5 hub nodes. Interventions ranked by out-degree (number of unique outcomes studied); outcomes ranked by in-degree (number of unique interventions studied). 
+
+time horizon alignment 96.5%, contrast type classification 94.0%, overall quality 97.0% (inter-rater agreement Cohen’s 
+
+κ=0.94). All errors flagged by quality control system, with no directional inversions or order-of-magnitude errors. 
+
+Conflict Detection Completeness. Against taxonomy 
+
+F={directional conflict, CI non-overlap, high heterogene-ity }, bucket-level recall was 100% (detected all 42 expected conflicts), precision was 100% (0 false positives). Type-level coverage: directional 0/0, CI non-overlap 34/34, het-erogeneity 14/14, all 100% recall. 
+
+Basic structure: The DoAtlas-1 causal graph comprises 1,113 nodes and 1,053 unique edges (source-target pairs), with graph density 0.000851. Node classification: 362 pure intervention nodes (out-degree only), 705 pure outcome nodes (in-degree only), 46 mediator variables (both in- and out-degree). 
+
+Hub nodes (Table 4): Highest out-degree interventions are TRE (22 edges), Finerenone (17), Dapagliflozin variants (15-17); highest in-degree outcomes are all-cause mortality (41), stroke (26), cardiovascular disease (20), myocardial infarction (16), heart failure (13), reflecting clinical research focus on major adverse events. 
+
+Connectivity: The graph contains 176 weakly connected components (WCC), with the largest component spanning 427 nodes (38.4%), indicating the atlas comprises relatively independent research clusters. Average path length 1.1, diameter 3, with 549 reachable node pairs, suggesting tight local connections but sparse cross-cluster paths. 
+
+6.2. Query Capability Evaluation 
+
+Table 3 presents four clinical scenarios spanning heart fail-ure, renal protection, and symptom improvement, with all queries returning quantitative effect estimates, confidence intervals, verifiable DOIs, and evidence quality grades. Table 5 reports the performance of six query operators. DoAtlas achieves an average executability rate of 80.5%. 
+
+Query Type Total Executable Exec Rate 
+
+Qdo (do-calculus) 250 200 80.0% 
+
+Qcf (counterfactual) 250 200 80.0% 
+
+Qtraj (trajectory) 45 36 80.0% 
+
+QCAT E (subgroup) 200 163 81.5% 
+
+Qmed (mediation) 36 29 80.6% 
+
+Qjoint (joint intervention) 134 107 79.9% 
+
+Table 5. Query suite performance. Negative samples: 25%. Executability rate = queries with evidence; execution correctness = correct answers; 
+
+As shown in Table 6, scale normalization contributes most (+28.5pp purity), followed by time alignment which pre-vents semantic splits (+13.1pp), and complete bucket key prevents incomparable merging (+17.9pp).                        
+
+> Configuration Buckets Purity Query Acc Key Loss
+> full 1,110 96.8% 100% -
+> no canonical ∼1,450 68.3% 87.3% HR/logHR spurious splits
+> no align tau ∼1,320 83.7% 93.6% “12 months”/“1 year” over-splitting
+> weak key ∼890 78.9% 94.8% per unit/binary over-merging
+
+Table 6. Marginal contribution of canonicalization components. 
+
+Purity = fraction of kernels correctly assigned to buckets; query accuracy = fraction of executable queries with correct answers. 
+
+no canonical : skip scale normalization (HR remains raw, not converted to logHR); no align tau : skip time horizon align-ment; weak key : weaken bucket key (ignore contrast type). 
+
+Three methods are compared in external validation (Table 7). At similar coverage to Baseline-1, ours achieves direction agreement with no false positives. Baseline-2 shows higher coverage but elevated false positives, indicating bias from non-comparable mappings and coarse cohort estimation. Method Coverage Direction agreement False positive Ours (causal compilation) 0.625 1.000 0.000 Baseline-1 (no canonicalization) 0.643 0.713 0.047 Baseline-2 (text-only + coarse cohort) 0.861 0.712 0.630 
+
+Table 7. External validation comparison. 
+
+External validation compiles literature parameters into HPP specifications and runs controls to test recovery and quantify false positives (Appendix A). 
+
+## 7. Conclusion 
+
+Causal compilation establishes executability, verifiability, and auditability principles for medical AI. Transforming knowledge from text to code shifts decision support toward transparent, trustworthy clinical systems. 8Submission and Formatting Instructions for ICML 2026 
+
+## Impact Statement 
+
+Impact on the Medical AI Field Paradigm shift: From narrative generation to executable causal reasoning. DoAtlas represents a fundamental shift in medical AI from “text synthesis” toward “structured causal computation.” While current mainstream medical foundation models (Med-PaLM, GPT-4-Med) generate flu-ent narratives, they remain essentially at the “knowledge retrieval + text reorganization” stage, producing qualitative statements such as “studies suggest X may reduce Y risk.” However, the core need in clinical decision-making is to 
+
+quantify intervention effects, clarify uncertainty bound-aries, and support auditable judgments .DoAtlas achieves a leap from “narrating efficacy” to “com-puting effects” by compiling heterogeneous research into executable causal estimand objects. Each output includes: (1) explicit intervention contrasts (e.g., “dapagliflozin 10mg vs. placebo”); (2) standardized effect sizes with confidence intervals (HR=0.73 [0.60–0.88]); (3) explicit time horizons and target populations; (4) complete evidence provenance (DOI-verifiable). This transforms medical AI from an “infor-mation display tool” into a “decision analysis engine,” pro-viding truly computable, verifiable, and accountable knowl-edge infrastructure. 
+
+Enhancing auditability and clinical trust. The greatest barrier to deploying medical AI is not technical performance but a crisis of trust . Black-box systems lack transparent reasoning chains: clinicians cannot understand the basis for recommendations, regulators cannot review knowledge sources, and patients cannot judge applicability. DoAtlas systematically addresses auditability through three mecha-nisms: 
+
+(1) Complete evidence traceability : Every effect estimate can be traced back to specific figures and page numbers in the original studies. Clinicians can verify whether the system’s claim that “dapagliflozin reduces heart failure risk by 27%” was accurately extracted from the DAPA-HF trial; auditors can inspect study designs; regulators can verify the authenticity of cited literature (via DOI validation). 
+
+(2) Explicit conflict detection : The system defines three decidable conflict types (directional conflicts, interval in-compatibility, high heterogeneity) and explicitly reports conflict severity and triggering evidence in each answer. When multiple studies disagree on the direction of the “short sleep–coronary disease” effect, the system flags “directional conflict” and lists contradictory studies rather than forcing an average value. This honest propagation of uncertainty aligns with medical ethics and avoids false certainty. 
+
+(3) External validation mechanism : For the first time, large-scale real-world data (HPP, 10,000 participants) is used for systematic validation of literature claims. For map-pable evidence, the system automatically checks directional consistency, effect-size credibility, and subgroup effect sta-bility, providing empirical grounding for evidence grading. Current validation coverage is 80.5%, but this mechanism establishes a foundation for integrating multi-center data and building dynamic evidence credibility scoring systems. 
+
+Accelerating evidence-based medicine knowledge up-dates. Traditional systematic reviews require 6–18 months to complete and are difficult to update continuously. In rapidly evolving fields (e.g., COVID-19 treatment), this lag causes clinical practice to diverge from the latest evi-dence. DoAtlas’s incremental compilation architecture re-duces knowledge update time from weeks-scale retraining 
+
+to minutes-scale incremental updates , offering three key values: 
+
+(1) Rapid integration of breakthrough studies : When NEJM publishes a paradigm-changing RCT, the system can compile and update within hours, enabling clinicians to query the latest evidence immediately. 
+
+(2) Supporting dynamic guideline development : Real-time evidence graphs enable guideline developers to contin-uously monitor evidence evolution, identify recommenda-tions needing updates, and accelerate the “research findings 
+
+→ clinical practice” translation cycle. 
+
+(3) Promoting knowledge equity : Clinicians in primary care facilities and resource-limited regions struggle to track the latest literature. DoAtlas lowers the barrier to accessing high-quality medical knowledge through a standardized, queryable evidence interface, helping to narrow healthcare resource gaps. 
+
+Expanding causal reasoning applications and establish-ing new standards. While traditional causal inference methods are theoretically mature, their practical application relies heavily on statistical expertise, with each problem requiring customized analysis. DoAtlas makes complex causal reasoning programmable, reusable, and compos-able through query typing and interface standardization. The system supports six causal query types: do-calculus (intervention effects), counterfactual reasoning (historical scenario analysis), temporal trajectories (effect evolution), heterogeneous effects (subgroup differences), mechanistic decomposition (mediation pathways), and joint interven-tions (combination effects). The unified interface enables researchers and clinicians to leverage causal tools without deep technical expertise, while query composability sup-ports construction of complex reasoning chains. More importantly, DoAtlas establishes new design standards for medical AI: (1) Executability priority : outputs must be computable mathematical objects with explicit interven-9Submission and Formatting Instructions for ICML 2026 
+
+tion contrasts, effect scales, time horizons, and target pop-ulations; (2) External validation requirement : research claims should be validated against independent datasets for external validity; (3) Conflict governance mechanism :explicitly detect and report evidence inconsistencies; (4) Complete traceability : every output must be traceable to original evidence sources; (5) Honest uncertainty propa-gation : clearly distinguish high-quality conclusions, uncer-tain conclusions with conflicts, and unanswerable questions lacking evidence. These principles represent a fundamental goal shift from “optimizing generation fluency” to “opti-mizing decision support quality,” and will influence future medical AI architecture choices, evaluation standards, and regulatory requirements, driving the field from “technology demonstration” toward “clinical deployability.” As the first version of DoAtlas, the system has compiled 
+
+1,445 effect kernels from 754 studies , primarily concen-trated in cardiovascular disease, diabetes, and metabolic disorders . This reflects a deliberate prioritization: establish-ing complete causal compilation pipelines in domains with the highest evidence quality and clearest clinical needs to validate paradigm feasibility, rather than pursuing breadth-first coverage across all domains. For queries outside the current scope, the system returns “not executable” flags rather than forcing answer generation—this honest delin-eation of capability boundaries better aligns with medical AI ethics than systems covering all domains with inconsis-tent quality. This limitation is engineering-related rather than architectural. The system’s incremental compilation mechanism, modular extraction pipelines, and standardized graph construction all support domain expansion. We anticipate that this paradigm will continue evolving: ex-panding to oncology, neuroscience, immunology, and other domains to build a global medical causal graph covering ma-jor clinical disciplines; integrating multi-center data sources to establish multi-level validation systems and dynamically updated evidence credibility scores; incorporating multi-omics data to progress from population-average effects to in-dividualized effect prediction; synergizing with foundation models to build next-generation medical AI assistants that understand natural language and return executable causal estimates; and integrating cost-effectiveness models, patient preferences, and ethical constraints to support complete multi-objective decision analysis. By systematically trans-forming medical knowledge from “text” into “code,” the DoAtlas paradigm will provide critical methodological foun-dations for trustworthy, scalable, and clinically deployable medical AI, ultimately achieving the leap from “AI-assisted literature reading” to “AI-assisted clinical decision-making.” 
+
+## References 
+
+Achiam, J., Adler, S., Agarwal, S., Ahmad, L., Akkaya, I., Aleman, F. L., Almeida, D., Altenschmidt, J., Altman, S., Anadkat, S., et al. Gpt-4 technical report. arXiv preprint arXiv:2303.08774 , 2023. Amann, J., Blasimme, A., Vayena, E., Frey, D., Madai, V. I., and Consortium, P. Explainability for artificial intelligence in healthcare: a multidisciplinary perspective. 
+
+BMC medical informatics and decision making , 20(1): 310, 2020. Athey, S. and Imbens, G. Recursive partitioning for het-erogeneous causal effects. Proceedings of the National Academy of Sciences , 113(27):7353–7360, 2016. Austin, P. C. An introduction to propensity score methods for reducing the effects of confounding in observational studies. Multivariate behavioral research , 46(3):399–424, 2011. Bai, Y., Kadavath, S., Kundu, S., Askell, A., Kernion, J., Jones, A., Chen, A., Goldie, A., Mirhoseini, A., McKin-non, C., et al. Constitutional ai: Harmlessness from ai feedback. arXiv preprint arXiv:2212.08073 , 2022. Barnett, G. O., Cimino, J. J., Hupp, J. A., and Hoffer, E. P. Dxplain: an evolving diagnostic decision-support system. 
+
+Jama , 258(1):67–74, 1987. Bohnet, B., Tran, V. Q., Verga, P., Aharoni, R., Andor, D., Soares, L. B., Ciaramita, M., Eisenstein, J., Ganchev, K., Herzig, J., et al. Attributed question answering: Evalua-tion and modeling for attributed large language models. 
+
+arXiv preprint arXiv:2212.08037 , 2022. Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., and Robins, J. Double/debiased machine learning for treatment and structural parameters. 
+
+The Econometrics Journal , 21(1):C1–C68, 2018. D’Agostino Sr, R. B., Vasan, R. S., Pencina, M. J., Wolf, P. A., Cobain, M., Massaro, J. M., and Kannel, W. B. General cardiovascular risk profile for use in primary care: the framingham heart study. Circulation , 117(6): 743–753, 2008. Esteva, A., Kuprel, B., Novoa, R. A., Ko, J., Swetter, S. M., Blau, H. M., and Thrun, S. Dermatologist-level classifi-cation of skin cancer with deep neural networks. Nature ,542(7639):115–118, 2017. Gao, L., Dai, Z., Pasupat, P., Chen, A., Chaganty, A. T., Fan, Y., Zhao, V., Lao, N., Lee, H., Juan, D.-C., et al. Rarr: Researching and revising what language models say, using language models. In Proceedings of the 61st Annual Meeting of the Association for Computational 
+
+10 Submission and Formatting Instructions for ICML 2026 
+
+Linguistics (Volume 1: Long Papers) , pp. 16477–16508, 2023. Glymour, C., Zhang, K., and Spirtes, P. Review of causal discovery methods based on graphical models. Front Genet , 10:524, 2019. Greenhalgh, T., Howick, J., and Maskrey, N. Evidence based medicine: a movement in crisis? BMJ , 348:g3725, 2014. Greenland, S. An introduction to instrumental variables for epidemiologists. International journal of epidemiology ,29(4):722–729, 2000. Greenland, S. Multiple-bias modelling for analysis of ob-servational data. Journal of the Royal Statistical Society Series A: Statistics in Society , 168(2):267–306, 2005. Guyatt, G., Cairns, J., Churchill, D., Cook, D., Haynes, B., Hirsh, J., Irvine, J., Levine, M., Levine, M., Nishikawa, J., et al. Evidence-based medicine: a new approach to teaching the practice of medicine. jama , 268(17):2420– 2425, 1992. Hern ´an, M. A. and Robins, J. M. Causal inference . CRC Boca Raton, FL, 2010. Hern ´an, M. A. and Robins, J. M. Causal Inference: What If .Chapman & Hall/CRC, Boca Raton, FL, 2020. Hern ´an, M. A., Sauer, B. C., Hern ´andez-D ´ıaz, S., Platt, R., and Shrier, I. Specifying a target trial prevents immortal time bias and other self-inflicted injuries in observational analyses. Journal of Clinical Epidemiology , 79:70–75, 2016. Higgins, J. P., Green, S., et al. Cochrane handbook for systematic reviews of interventions . Wiley Online Library, 2008. Hoeting, J. A., Madigan, D., Raftery, A. E., and Volinsky, C. T. Bayesian model averaging: a tutorial (with com-ments by m. clyde, david draper and ei george, and a rejoinder by the authors. Statistical science , 14(4):382– 417, 1999. Ioannidis, J. P. Why most published research findings are false. PLoS medicine , 2(8):e124, 2005. Ioannidis, J. P. Why most clinical research is not useful. 
+
+PLoS medicine , 13(6):e1002049, 2016. Ji, B., Liu, H., Du, M., and Ng, S.-K. Chain-of-thought improves text generation with citations in large language models. In Proceedings of the AAAI Conference on Artifi-cial Intelligence , volume 38, pp. 18345–18353, 2024. Kahan, B. C., Hindley, J., Edwards, M., Cro, S., and Morris, T. P. The estimands framework: a primer on the ich e9(r1) addendum. BMJ , 384:e076316, 2024. Kelly, C. J., Karthikesalingam, A., Suleyman, M., Corrado, G., and King, D. Key challenges for delivering clinical impact with artificial intelligence. BMC medicine , 17(1): 195, 2019. Kent, D. M., Rothwell, P. M., Ioannidis, J. P., Altman, D. G., and Hayward, R. A. Assessing and reporting heterogene-ity in treatment effects in clinical trials: a proposal. Trials ,11(1):85, 2010. Kleinberg, J., Ludwig, J., Mullainathan, S., and Obermeyer, Z. Prediction policy problems. American Economic Review , 105:491–495, 05 2015. Langley, P. Crafting papers on machine learning. In Langley, P. (ed.), Proceedings of the 17th International Conference on Machine Learning (ICML 2000) , pp. 1207–1216, Stan-ford, CA, 2000. Morgan Kaufmann. Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., K ¨uttler, H., Lewis, M., Yih, W.-t., Rockt ¨aschel, T., et al. Retrieval-augmented generation for knowledge-intensive nlp tasks. Advances in neural information pro-cessing systems , 33:9459–9474, 2020. Malaviya, C., Lee, S., Chen, S., Sieber, E., Yatskar, M., and Roth, D. Expertqa: Expert-curated questions and attributed answers. In Proceedings of the 2024 Confer-ence of the North American Chapter of the Association for Computational Linguistics: Human Language Tech-nologies (Volume 1: Long Papers) , pp. 3025–3045, 2024. Manakul, P., Liusie, A., and Gales, M. Selfcheckgpt: Zero-resource black-box hallucination detection for genera-tive large language models. In Proceedings of the 2023 conference on empirical methods in natural language processing , pp. 9004–9017, 2023. Miller, R. A., Pople Jr, H. E., and Myers, J. D. Internist-i, an experimental computer-based diagnostic consultant for general internal medicine. In Computer-assisted medical decision making , pp. 139–158. Springer, 1985. Nori, H., King, N., McKinney, S. M., Carignan, D., and Horvitz, E. Capabilities of gpt-4 on medical challenge problems. arXiv preprint arXiv:2303.13375 , 2023. Pearl, J. Causality: Models, Reasoning, and Inference .Cambridge University Press, 2000. Rajkomar, A., Oren, E., Chen, K., Dai, A. M., Hajaj, N., Hardt, M., Liu, P. J., Liu, X., Marcus, J., Sun, M., et al. Scalable and accurate deep learning with electronic health records. NPJ digital medicine , 1(1):18, 2018. 11 Submission and Formatting Instructions for ICML 2026 
+
+Sackett, D. L., Rosenberg, W. M., Gray, J. M., Haynes, R. B., and Richardson, W. S. Evidence based medicine: what it is and what it isn’t. BMJ , 312(7023):71–72, 1996. Shickel, B., Tighe, P. J., Bihorac, A., and Rashidi, P. Deep ehr: a survey of recent advances in deep learning tech-niques for electronic health record (ehr) analysis. IEEE journal of biomedical and health informatics , 22(5):1589– 1604, 2017. Shortliffe, E. H. Computer-Based Medical Consultations: MYCIN . Elsevier, 1976. Singhal, K., Azizi, S., Tu, T., Mahdavi, S. S., Wei, J., Chung, H. W., Scales, N., Tanwani, A., Cole-Lewis, H., Pfohl, S., Payne, P., Seneviratne, M., Gamble, P., Kelly, C., Babiker, A., Sch ¨arli, N., Chowdhery, A., Mansfield, P., Demner-Fushman, D., Ag ¨uera y Arcas, B., Webster, D., Corrado, G. S., Matias, Y., Chou, K., Gottweis, J., Tomasev, N., Liu, Y., Rajkomar, A., Barral, J., Semturs, C., Karthike-salingam, A., and Natarajan, V. Large language models encode clinical knowledge. Nature , 620(7972):172–180, 2023. Singhal, K., Tu, T., Gottweis, J., Sayres, R., Wulczyn, E., Amin, M., Hou, L., Clark, K., Pfohl, S. R., Cole-Lewis, H., et al. Toward expert-level medical question answering with large language models. Nature Medicine , 31(3):943– 950, 2025. Topol, E. J. High-performance medicine: the convergence of human and artificial intelligence. Nature medicine , 25 (1):44–56, 2019. VanderWeele, T. Explanation in causal inference: methods for mediation and interaction . Oxford University Press, 2015. Wang, B., Zhao, H., Zhou, H., Song, L., Xu, M., Cheng, W., Zeng, X., Zhang, Y., Huo, Y., Wang, Z., et al. Baichuan-m1: Pushing the medical capability of large language models. arXiv preprint arXiv:2502.12671 , 2025a. Wang, X., Tan, M., Jin, Q., Xiong, G., Hu, Y., Zhang, A., Lu, Z., and Zhang, M. Medcite: Can language models generate verifiable text for medicine? In Findings of the Association for Computational Linguistics: ACL 2025 ,pp. 18891–18913, 2025b. Xiong, H., Wang, S., Zhu, Y., Zhao, Z., Liu, Y., Huang, L., Wang, Q., and Shen, D. Doctorglm: Fine-tuning your chinese doctor is not a herculean task. arXiv preprint arXiv:2304.01097 , 2023. Yang, A., Xiao, B., Wang, B., Zhang, B., Bian, C., Yin, C., Lv, C., Pan, D., Wang, D., Yan, D., et al. Baichuan 2: Open large-scale language models. arXiv preprint arXiv:2309.10305 , 2023. Zakka, C., Shad, R., Chaurasia, A., Dalal, A. R., Kim, J. L., Moor, M., Fong, R., Phillips, C., Alexander, K., Ashley, E., et al. Almanac—retrieval-augmented language models for clinical medicine. Nejm ai , 1(2):AIoa2300068, 2024. Zhang, H., Chen, J., Jiang, F., Yu, F., Chen, Z., Li, J., Chen, G., Wu, X., Zhang, Z., Xiao, Q., et al. Huatuogpt, towards taming language model to be a doctor. arxiv (2023). arXiv preprint arXiv:2305.15075 , 2023. 12 Submission and Formatting Instructions for ICML 2026 
+
+## A. External Validation: Implementation, Sanity Checks, and Representative Mismatches 
+
+This appendix details the external validation setup. We map each literature-side canonical causal object (ε, c ) to an executable emulation specification on HPP and report validation outcomes together with diagnostic flags. We further include two sanity checks (positive and negative controls) and present 10 representative mismatch cases to characterize the boundaries and failure modes of external validation. 
+
+X.1 Artifacts and Reproducible Interfaces Inputs. 
+
+1. conflict pool.json : a pool of claims (or within-bucket conflicting entries) selected for external validation. Each record contains: (i) study identifiers (e.g., DOI/PMID/title), (ii) canonical estimand ε = (Π , ι, o, τ, μ ) and canonical claim 
+
+c = ( θ, CI ), (iii) evidence-card ID (or a reversible key), and (iv) conflict tags (e.g., conflict ci non overlap ,
+
+conflict high heterogeneity ). 2. Evidence-card metadata fields aligned one-to-one with each claim: (a) hpp mapping : variable mappings for (Π , ι, o ), including field names, coding systems, derivations, and availability. (b) time semantics : definitions of time-zero, baseline window, follow-up windows, and horizon. (c) adjustment set used : covariate list and model specification used in emulation (and, if applicable, balance diagnostics). 
+
+Outputs. 
+
+1. Validation results table (one row per claim): RWD estimand estimate (e.g., logHR/logOR/RD/mean difference), CI/ p-value (if applicable), sample size/event counts, balance statistics (e.g., SMD), and diagnostic flags. 2. Mismatch casebook (10 cases): for each case we report the canonical (ε, c ), the emulation specification, a five-category attribution, and the emitted flags. 
+
+X.2 HPP Emulation Specification from Canonical (ε, c )
+
+For each canonical ε = (Π , ι, o, τ, μ ) and numerical claim c = ( θ, CI ), we construct an HPP emulation specification comprising: 1. Eligibility ( Π). Map inclusion/exclusion criteria to HPP-observable conditions (diagnoses, medications, labs). Missing or weak proxies are flagged as hpp missing * , hpp tentative * , or hpp derived * .2. Treatment/contrast ( ι). Define treatment and comparator (index event, washout, concomitant restrictions). Non-equivalent contrasts (e.g., placebo/randomization) are flagged as exposure contrast mismatch or 
+
+contrast mismatch .3. Outcome ( o). Map to event codes or numeric measurements. Missing or approximate outcomes are flagged as 
+
+hpp missing * or hpp close * .4. Time semantics (τ ). Use time semantics to define time-zero, baseline window (e.g., P28D), horizon (e.g., P16W), and follow-up. Temporal limitations are flagged as 
+
+tau short /tau long /tau missing partial /tau specific .5. Estimation and adjustment ( μ). Use adjustment set used to specify covariates and estimators. Adjustment or estimand discrepancies are flagged as adjustment mismatch or estimand mismatch .
+
+X.3 Diagnostic Flags and Mismatch Criteria 
+
+A mismatch indicates substantial divergence between the literature-side canonical claim and the RWD emulation estimate under comparable conditions, or instability due to non-comparability/missingness. We use the following flag categories: 13 Submission and Formatting Instructions for ICML 2026 
+
+• Point-estimate sign flip: direction flip point . Since taxonomy F has direction conflict =0 in this slice, we define “direction flip” as opposite point-estimate signs while CIs may cross 0. • Non-overlapping CIs: conflict ci non overlap .• High heterogeneity / gradient conflicts: conflict high heterogeneity , contrast gradient .• Subgroup inconsistencies: subgroup inconsistency , cohort subgroup .• Mapping missing/approximate/derived: hpp missing * , hpp close * , hpp tentative * , hpp derived * .• Non-comparable contrasts: exposure contrast mismatch , contrast mismatch .• Temporal issues: tau short , tau long , tau specific , tau missing partial .• Estimand/adjustment discrepancies: estimand mismatch , adjustment mismatch .• Method heterogeneity (e.g., MR): method heterogeneity .
+
+X.4 Sanity Checks: Positive and Negative Controls 
+
+To prevent overly optimistic validation signals, we include two sanity checks: 1. Positive controls. A set of well-established relationships expected to be recoverable in HPP, used to test whether the pipeline consistently reproduces known effect directions (and, where applicable, plausible magnitudes) under the same mapping/time/adjustment machinery. 2. Negative controls. A set of theoretically unrelated exposure–outcome pairs (or substituted contrasts/outcomes) used to estimate false-positive rates and constrain “validation success” inflation. We report the fraction of spurious significant findings (or analogous error metrics) under the same pipeline. 
+
+X.5 Ten Representative Mismatch Cases 
+
+Below we summarize 10 representative mismatches. For each case we report: (i) literature-side canonical (ε, c ), (ii) the HPP emulation specification (time-zero, horizon, adjustment), (iii) five-category attribution, and (iv) diagnostic flags. The tag 
+
+direction flip point denotes a point-estimate sign flip with potential CI overlap at 0. 
+
+Case 1 — Abrocitinib 100mg QD → IGA response @16w (point-estimate sign flip). 
+
+• Literature A: Abrocitinib vs Placebo or Dupilumab for Atopic Dermatitis (NEJM 2021, 10.1056/NEJMoa2019380). Canonical (ε, c ): risk diff + 0 .221 [0 .137 , 0.305] (Abrocitinib 100mg vs placebo). • Literature B: same study. Canonical (ε, c ): risk diff − 0.035 [ −0.122 , 0.052] (Abrocitinib 100mg vs dupilumab). • RWD emulation: time-zero = baseline window P28D; horizon = P16W; adjustment = baseline disease severity (moder-ate/severe). • Attribution (5 categories): population mismatch (moderate/severe AD trial population); contrast mismatch (placebo/dupilumab not directly emulable); outcome definition mismatch (IGA missing in HPP); unmeasured con-founding/indication bias; time-window mismatch (short 16-week horizon). • Flags: conflict ci non overlap , direction flip point , hpp missing X , hpp missing Y ,
+
+tau short , exposure contrast mismatch , population specific .
+
+Case 2 — Abrocitinib 100mg QD → EASI-75 @16w (point-estimate sign flip). 
+
+• Literature A: NEJM 2021, 10.1056/NEJMoa2019380. Canonical (ε, c ): risk diff + 0 .297 [0 .195 , 0.399] (vs placebo). • Literature B: same study. Canonical (ε, c ): risk diff − 0.051 [ −0.139 , 0.037] (vs dupilumab). • RWD emulation: time-zero = P28D; horizon = P16W; adjustment = baseline disease severity. 14 Submission and Formatting Instructions for ICML 2026 
+
+• Attribution: population mismatch; contrast mismatch; outcome definition mismatch (EASI-75 missing); unmeasured confounding; time-window mismatch. • Flags: conflict ci non overlap , direction flip point , hpp missing X , hpp missing Y ,
+
+tau short , exposure contrast mismatch , population specific .
+
+Case 3 — HF quality score ( ≥50% vs <50%) → all-cause mortality (point-estimate sign flip). 
+
+• Literature A: Association between heart failure quality of care and mortality (EJHF 2022, 10.1002/ejhf.2725). Canonical 
+
+(ε, c ): logHR − 0.211 [ −0.329 , −0.094] .• Literature B: same study. Canonical (ε, c ): logHR + 0 .049 [ −0.030 , 0.131] .• RWD emulation: time-zero = first SwedeHF registry entry; horizon = P23.6M; adjustment = HF severity/comorbidities/NT-proBNP, etc. (extended covariates). • Attribution: population mismatch (registry, older/high-risk); exposure definition mismatch (quality score system missing); outcome definition mismatch; unmeasured confounding (quality correlates with latent severity); follow-up mismatch. • Flags: conflict ci non overlap , direction flip point , hpp missing X , hpp missing Y ,
+
+tau specific , population specific .
+
+Case 4 — Dapagliflozin 10mg → chronic eGFR slope (subgroup inconsistency). 
+
+• Literature A: DAPA-CKD prespecified analysis (2021, 10.1016/S2213-8587(21)00242-4). Canonical (ε, c ):
+
+mean diff + 2 .26 [1 .88 , 2.64] (T2D subgroup). • Literature B: same study. Canonical (ε, c ): mean diff + 1 .29 [0 .73 , 1.85] (non-T2D subgroup). • RWD emulation: time-zero = baseline; horizon = P2W to P2.3Y; adjustment = baseline UACR. • Attribution: subgroup/population mismatch; contrast mismatch (RCT assignment vs observational); outcome mismatch (slope missing); unmeasured confounding; time-window mismatch (acute+chronic phases). • Flags: conflict ci non overlap , subgroup inconsistency , hpp missing X , hpp missing Y ,
+
+tau specific , population specific .
+
+Case 5 — Life’s Essential 8 score → all-cause mortality (magnitude gap). 
+
+• Literature A: BMJ Medicine 2023, 10.1186/s12916-023-02824-8. Canonical (ε, c ): logHR − 0.511 [ −0.673 , −0.342] 
+
+(Intermediate 50–74 vs Low 0–49). • Literature B: same study. Canonical (ε, c ): logHR − 1.273 [ −1.561 , −1.022] (High 75–100 vs Low 0–49). • RWD emulation: time-zero = NHANES baseline; horizon = P7Y7M; adjustment = age/sex/race + SES/history (model-dependent). • Attribution: population mismatch; derived score/threshold differences; outcome mismatch; residual confounding (behavioral composite); long follow-up differences. • Flags: conflict ci non overlap , hpp derived X , hpp missing Y , contrast mismatch , tau long .
+
+Case 6 — SES → all-cause mortality (total vs mediated effect). 
+
+• Literature A: BMJ 2021, 10.1136/bmj.n604 (total effect). Canonical (ε, c ): logHR + 0 .859 [0 .747 , 0.975] (low vs high SES). • Literature B: same study (mediation/lifestyle pathway). Canonical (ε, c ): logHR + 0 .103 [0 .091 , 0.114] .• RWD emulation: time-zero = baseline; horizon = P11Y2M; adjustment = age/sex/race/comorbidities. • Attribution: population mismatch; SES as latent proxy; outcome proxying; unmeasured confounding (SES–lifestyle common causes); long follow-up. • Flags: conflict ci non overlap , hpp derived X , hpp tentative Y , estimand mismatch ,
+
+tau long .15 Submission and Formatting Instructions for ICML 2026 
+
+Case 7 — SES → all-cause mortality (adjustment mismatch vs mediated effect). 
+
+• Literature A: BMJ 2021, 10.1136/bmj.n604 (adjusted for Healthy Lifestyle Score). Canonical (ε, c ): logHR +0.756 [0 .642 , 0.867] .• Literature B: same study (mediation). Canonical (ε, c ): logHR + 0 .103 [0 .091 , 0.114] .• RWD emulation: time-zero = baseline; horizon = P11Y2M; adjustment = age/sex/race/comorbidities/lifestyle. • Attribution: population mismatch; SES proxy; outcome proxying; overlap between SES and lifestyle; adjust-ment/estimand mismatch. • Flags: conflict ci non overlap , hpp derived X , hpp tentative Y , adjustment mismatch ,
+
+estimand mismatch .
+
+Case 8 — Basal metabolic rate (BMR) → kidney stones (magnitude gap + heterogeneity). 
+
+• Literature A: 2025, 10.1097/JS9.0000000000002658. Canonical (ε, c ): logOR − 0.198 [ −0.329 , −0.062] (Q2 vs Q1). • Literature B: same study. Canonical (ε, c ): logOR − 0.713 [ −1.050 , −0.357] (Q4 vs Q1). • RWD emulation: time-zero = 2006–2010 baseline; horizon = P14Y (partial τ ); adjustment =BMI/waist/smoking/metabolic comorbidities, etc. • Attribution: cohort mismatch; derived BMR/quantile differences; code-system mapping (ICD-9/10 to ICD-11); unmea-sured lifestyle/metabolic confounding; incomplete τ under long follow-up. • Flags: conflict ci non overlap , conflict high heterogeneity , hpp derived X , hpp close Y ,
+
+contrast mismatch , tau long , tau missing partial .
+
+Case 9 — Planetary Health Diet Index (PHDI) → CVD (gradient heterogeneity). 
+
+• Literature A: 2024, 10.1016/S2542-5196(24)00184-2. Canonical (ε, c ): logHR − 0.400 [ −0.462 , −0.342] (Q5 vs Q1). • Literature B: same study. Canonical (ε, c ): logHR − 0.041 [ −0.094 , 0.030] (Q2 vs Q1). • RWD emulation: time-zero = 1986/1991 baseline; horizon = P30Y; adjustment = energy intake/smoking/physical activity/lipids, etc. • Attribution: cohort-specific population; derived index/gradient mismatch; composite endpoint coding; diet measurement error and time-varying exposure; extremely long follow-up. • Flags: conflict high heterogeneity , hpp derived X , hpp derived Y , contrast gradient ,
+
+cohort subgroup , tau long .
+
+Case 10 — Genetic liability to T2D → CHD (method/subgroup heterogeneity). 
+
+• Literature A: MR-Egger (2021, 10.2337/dc20-1137). Canonical (ε, c ): logOR 0.000 [ −0.041 , 0.039] .• Literature B: TSRI + radial MR. Canonical (ε, c ): logOR + 0 .215 [0 .182 , 0.255] .• RWD emulation: time-zero = 2006–2010 baseline; horizon = P5.3Y; adjustment = genetic PCs/array (method-specific). • Attribution: population/sex differences; exposure definition (genetic risk vs observed T2D); CHD coding/mapping; pleiotropy and MR method differences; time-window mismatch. • Flags: conflict high heterogeneity , hpp close X , hpp close Y , method heterogeneity ,
+
+subgroup inconsistency .16 Submission and Formatting Instructions for ICML 2026 
+
+A.1. Summary of Mismatch Drivers 
+
+Across the 10 cases, mismatches largely arise from: (i) comparability gaps (population, contrast, and outcome definitions not equivalently realizable in RWD), (ii) time semantics and estimand/adjustment misalignment (incomplete τ , acute vs chronic phase mixing, total vs mediated effects), and (iii) measurement/mapping error (complex derived constructs, coding-system conversion, missing key variables). These failure profiles are made explicit via flags, enabling diagnosis rather than collapsing validation into a single binary verdict. 
+
+## B. Theoretical Foundations 
+
+B.1. Complete Definitions 
+
+B.1.1. E VIDENCE OBJECT SPECIFICATION 
+
+This subsection specifies the complete evidence object used throughout the paper. We build on the estimand IR in Definition 4.1 and the canonicalization operator in Definition 4.2. A complete evidence object is a triple 
+
+(ε, c, π ), (1) where ε = (Π , ι, o, τ, μ ) is the semantic estimand IR, c = ( θ, CI) is the numeric claim, and π is provenance. Canonicalization acts on (ε, c ) and preserves π.
+
+Population Π. The target population is represented as 
+
+Π = ( pbucket , p setting ). (2) Here pbucket ∈ P is a coarse population bucket used for comparison (e.g., T2DM , ASCVD , general-adults ), and psetting 
+
+captures population semantics that affect interpretation, including eligibility criteria, recruitment context, and care setting. We intentionally exclude study-specific attributes (e.g., sample size) from Π; these are recorded in provenance π.
+
+Intervention contrast ι. The intervention contrast encodes what is being compared. We represent it as 
+
+ι = ( ctype , δ, u, x 0, x 1), (3) where ctype is the contrast type, δ is the contrast magnitude, u is the unit, and (x0, x 1) denote reference/active levels when applicable. We use four contrast types: 1. Per-unit contrast (dose–response): effect per δ units of exposure (e.g., per 10 mg/day). 2. Binary contrast : treated vs control (or exposed vs unexposed), specified by (x0, x 1).3. Arm-versus-control : multi-arm trials where an active arm is compared against a designated control arm. 4. Categorical contrast : multi-level exposures where (x0, x 1) identifies two compared categories. When multiple parameterizations of the same contrast are reported (e.g., per 1 unit vs per 10 units), we do not treat them as numerically interchangeable by default; any unit scaling used for alignment is recorded in the conditions α produced by canonicalization (Definition 4.2). 
+
+Outcome o. The outcome o is a standardized phenotype identifier linked to a data dictionary. Each outcome includes metadata specifying (i) outcome type (continuous, binary, time-to-event), (ii) measurement unit when applicable, and (iii) definitional notes (e.g., composition for composite endpoints). Outcome standardization is required to avoid conflating semantically distinct endpoints that share similar names. 
+
+Time horizon τ . The time horizon τ specifies the window over which the effect is defined. We distinguish three common semantics: 1. Acute horizon : short windows after intervention start (e.g., hours or days). 17 Submission and Formatting Instructions for ICML 2026 
+
+2. Fixed follow-up horizon : outcomes assessed at, or aggregated over, a fixed follow-up time (e.g., 12-week change in HbA1c, 12-month cumulative incidence). 3. Time-to-event horizon : event-time outcomes with censoring, where the estimand is tied to an event definition and a follow-up regime (e.g., a hazard ratio over the observed follow-up). We represent τ as either a duration (a nonnegative scalar with an explicit unit), an interval relative to a reference time (e.g., baseline), or a time-to-event regime descriptor (event definition plus follow-up/censoring regime, when needed for interpretation). Since materially different horizons define different estimands, comparability uses a deterministic alignment 
+
+bτ = align( τ ); the alignment policy is specified in Appendix B.1.4. 
+
+Measure functional μ. The measure functional μ specifies how the effect is quantified, including its measure family, measure type, and canonical scale. We write 
+
+mfamily (μ) ∈ { ratio , difference }, mtype (μ) ∈ { HR , RR , OR , MD , RD , . . . }, scanon (μ) ∈ { log , identity }.
+
+Measure families, canonical scales, and the associated within-type reparameterizations are defined in Appendix B.1.3. 
+
+Claim object c = ( θ, CI) . A claim object records a point estimate and uncertainty: 
+
+c = ( θ, CI) , CI = [ θlower , θ upper ]. (4) The parameter θ is the reported effect value on the study’s reporting scale. Canonicalization maps (θ, CI) to (θcanon , CI canon )
+
+on the canonical scale associated with μ (Definition 4.2). When a study reports standard errors or p-values instead of confidence intervals, the system may derive CI under standard assumptions; such derivations are recorded in α.
+
+Provenance π. Provenance records source and study attributes: 
+
+π = (ref , grade , n, card id) , (5) where ref is a bibliographic reference (e.g., DOI), grade ∈ { A, B, C } is an evidence grade, n is sample size, and card id 
+
+links to an evidence card for audit. Provenance is preserved under canonicalization and is used by the quality score Q for default selection (see Appendix B.4). 
+
+Remark. The separation between the semantic estimand ε, numeric claim c, and provenance π supports (i) semantic comparability through bucket keys (Definition 4.3), (ii) deterministic normalization via canonicalization (Definition 4.2), and (iii) auditability through stable provenance identifiers. B.1.2. C OMPARABILITY AND POOLABILITY 
+
+This subsection formalizes bucket keys, the comparability relation ∼ (Definition 4.3), and poolability. Comparability forms the foundation for evidence synthesis: it determines which claims can be grouped for consistency checks, conflict detection, and quality-based default selection. 
+
+Canonical horizon alignment. Materially different time horizons define different estimands and should not be compared by default. We therefore use a deterministic alignment function 
+
+bτ = align( τ ), (6) which maps a raw horizon τ to a canonical horizon class bτ used in bucketization. The alignment policy is specified in Appendix B.1.4. 
+
+Bucket key. Let (εcanon , c canon , α ) = N (ε, c ) where N is given in Definition 4.2. We define a bucket key function 
+
+k : Ecanon → K by 
+
+k(εcanon ) = 
+
+
+
+pbucket , X, Y, bτ , c type , m family 
+
+
+
+, (7) where pbucket is extracted from Π, X is the intervention identifier extracted from ι, Y = o is the outcome identifier, bτ =align( τ ) is the aligned time-horizon class, ctype is the contrast type extracted from ι, and mfamily (μ) ∈ { ratio , difference }
+
+is the measure family. The key is computed on the canonical estimand εcanon and does not depend on numeric claim values. 18 Submission and Formatting Instructions for ICML 2026 
+
+Remark (type and scale are excluded). The bucket key intentionally excludes the measure type (e.g., HR vs. RR ). This ensures that different types within the same family remain comparable within a bucket, enabling conflict detection across heterogeneous but semantically related measures. The canonical scale tag scanon (μ) ∈ { log , identity } is a deterministic function of mfamily (μ) and is therefore omitted from the key. 
+
+Comparability. We restate Definition 4.3 using Eq. 7. Two estimands ε1, ε 2 with claims c1, c 2 are comparable, denoted 
+
+ε1 ∼ ε2,
+
+ε1 ∼ ε2 ⇐⇒ k(ε1,canon ) = k(ε2,canon ), (εi, canon , c i, canon , α i) = N (εi, c i). (8) Including bτ prevents grouping studies that target different horizons (e.g., 30-day vs 10-year mortality) into the same bucket, avoiding spurious conflicts driven by horizon mismatch. Using only the measure family (rather than the measure type) allows claims such as HR and RR to be comparable within the same bucket. 
+
+Theorem B.1 (Equivalence Relation) . The comparability relation ∼ defined in Eq. 8 is an equivalence relation. Proof sketch. By Eq. 8, ε1 ∼ ε2 holds iff k(ε1,canon ) = k(ε2,canon ). Equality on bucket keys is reflexive, symmetric, and transitive. Therefore ∼ inherits these three properties and is an equivalence relation. 
+
+Buckets. The equivalence classes induced by ∼ are referred to as buckets . Each bucket contains all claims that are comparable under the semantic dimensions captured by Eq. 7. Buckets serve as the unit of evidence aggregation for conflict detection (Section 4.5) and for selecting a default claim when multiple comparable claims exist. 
+
+Definition B.2 (Poolability) . Two canonical claims (ε1, c 1) and (ε2, c 2) are poolable iff they are comparable and share the same measure type: 
+
+Poolable(( ε1, c 1), (ε2, c 2)) ⇐⇒ (ε1 ∼ ε2) ∧  mtype (μ1) = mtype (μ2),
+
+where μi is the measure functional associated with εi.Poolability is strictly stronger than comparability. For example, HR and RR can be comparable when they share the same aligned horizon class bτ , allowing directional and interval consistency checks within a bucket. However, they quantify different objects (instantaneous hazard vs. cumulative risk) and are not pooled by default. Cross-type pooling requires additional modeling assumptions and auxiliary quantities; when such pooling is performed, the assumptions must be recorded in α produced by canonicalization (Definition 4.2). B.1.3. M EASURE FUNCTIONALS AND TRANSFORMATIONS 
+
+This subsection defines measure families, canonical scales, and the within-type transformations used by canonicalization (Definition 4.2). We also specify confidence-interval transformations and justify the default handling of heterogeneous ratio measures under comparability (Appendix B.1.2) and poolability (Definition B.2). 
+
+Measure families and types. A measure functional μ determines how an effect is quantified. We distinguish: (i) a measure family mfamily (μ) ∈ { ratio , difference } and (ii) a measure type mtype (μ), such as HR , RR , OR , MD , RD . The family captures algebraic structure; the type captures the specific estimand target within that family. 
+
+Ratio family. The ratio family Fratio contains relative-effect measures, including: • Risk ratio (RR) for binary outcomes, quantifying a ratio of cumulative risks over a fixed horizon. • Odds ratio (OR) for binary outcomes, quantifying a ratio of odds. • Hazard ratio (HR) for time-to-event outcomes, quantifying a ratio of instantaneous hazard rates under a follow-up regime. These measure types share a multiplicative structure: under standard compositional assumptions (e.g., no interaction on the ratio scale), effects combine multiplicatively. This motivates a log canonical scale for within-type normalization. 19 Submission and Formatting Instructions for ICML 2026 
+
+Difference family. The difference family Fdifference contains absolute-effect measures, including: • Mean difference (MD) for continuous outcomes. • Risk difference (RD) for binary outcomes, quantifying an absolute difference in cumulative risks over a fixed horizon. These measure types have an additive structure on their native scale, motivating an identity canonical scale for within-type normalization. 
+
+Canonical scale and transformation. For each measure type t = mtype (μ), canonicalization uses a within-type reparameterization 
+
+gt : Θ t → Θcanon  
+
+> t
+
+,
+
+mapping the reported parameter space to a canonical parameter space. We write 
+
+θcanon = gt(θ), CI canon = gt(CI) ,
+
+where gt(CI) applies the transformation to interval endpoints (formalized below). We associate each type t with a canonical scale type scanon (μ) ∈ { log , identity }:• For ratio-family types (e.g., HR , RR , OR ), the canonical scale type is log . The canonicalization map is gt(θ) = log( θ)
+
+when θ is reported as a positive ratio. • For difference-family types (e.g., MD , RD ), the canonical scale type is identity . The canonicalization map is gt(θ) = θ.
+
+Transformation properties. The within-type transformation gt satisfies three properties that are used implicitly by the canonicalization guarantees (Theorem 4.4 in the main paper). 1. Determinism. For a fixed measure type t, gt(θ) is uniquely determined by θ.2. Invertibility (within measure type). For a fixed measure type t, gt is bijective on its domain: there exists an inverse 
+
+g−1 
+
+> t
+
+such that g−1 
+
+> t
+
+(gt(θ)) = θ for all valid θ of type t. For example, for ratio measures reported as positive ratios, 
+
+gt(θ) = log( θ) with inverse g−1 
+
+> t
+
+(x) = exp( x); for difference measures, gt is the identity map. 3. Structure preservation. The transformation preserves the algebraic structure relevant for aggregation within a measure type. For ratio-family types, it converts multiplicative composition into additive composition: 
+
+gt(θ1 · θ2) = gt(θ1) + gt(θ2),
+
+whenever θ1, θ 2 are valid ratios of type t. For difference-family types, it preserves additivity on the native scale: 
+
+gt(θ1 + θ2) = gt(θ1) + gt(θ2),
+
+whenever θ1, θ 2 are valid differences of type t.
+
+Special cases: regression coefficients. Some models report coefficients that already coincide with canonical parameters for a specific measure type. For example, the Cox proportional hazards coefficient corresponds to log(HR) , and the logistic regression coefficient corresponds to log(OR) . In such cases canonicalization sets gt to the identity on the reported coefficient, treating the coefficient as already on the canonical scale. Linear regression coefficients for continuous outcomes are treated as mean differences and likewise require no reparameterization. 
+
+Confidence-interval transformation. Let CI = [ θlower , θ upper ] be a reported confidence interval for a claim of type t.For the within-type transformations used here, gt is monotone on its domain. We therefore define 
+
+CI canon = gt(θlower ), g t(θupper ). (9) For ratio measures reported as positive ratios, this corresponds to applying log to both endpoints; for difference measures, the interval is unchanged. If a study reports an interval already on the canonical scale (e.g., a confidence interval for log(HR) ), canonicalization leaves it unchanged and records this fact in α.20 Submission and Formatting Instructions for ICML 2026 
+
+Cross-type heterogeneity within the ratio family. Although HR , RR , and OR are all ratio-family types and share the log canonical scale, they quantify different objects (instantaneous hazard, cumulative risk, and odds). Consequently, there is no general, assumption-free bijection between these types. For example: (i) converting OR to RR requires auxiliary information such as a baseline risk; (ii) relating HR to RR requires assumptions about the event-time process and follow-up regime. Because such assumptions can materially affect conclusions, the framework treats these types as comparable (via the ratio-family bucket, Appendix B.1.2) but not poolable by default (Definition B.2). If cross-type conversion is performed for a specific use case, the required assumptions and auxiliary quantities must be recorded in the conditions α produced by canonicalization (Definition 4.2). B.1.4. T IME HORIZON ALIGNMENT POLICY 
+
+This subsection specifies the horizon alignment function bτ = align( τ ) used in Eq. 6 and in the bucket key (Eq. 7). Its goal is to prevent grouping claims that target materially different horizons (e.g., 30-day vs 10-year mortality) while tolerating minor reporting variation (e.g., 12 months vs 52 weeks). 
+
+Horizon representations. We represent a raw horizon τ using one of the following forms: 1. Duration: a nonnegative scalar paired with an explicit time unit (e.g., days, weeks, months, years). 2. Interval: a time window relative to a reference time (typically baseline). For bucketization we use the interval length. 3. Time-to-event regime descriptor: a descriptor indicating an event-time estimand under a follow-up/censoring regime. When a follow-up summary is reported (e.g., median follow-up), we treat it as an auxiliary duration; otherwise it is missing. When a claim does not provide enough information to instantiate any of the above (e.g., “short-term” without a number), τ
+
+is treated as missing and recorded in α.
+
+Canonical horizon classes. The alignment function outputs a canonical horizon class 
+
+bτ ∈ bT ,
+
+where each class has two components: (i) a semantic label hsem ∈ { acute , fixed , tte , unknown } and (ii) an optional duration-bin label hbin when a numeric duration is available. Formally, bτ = ( hsem , h bin ), with hbin = ⊥ if unavailable. 
+
+Deterministic duration extraction. For duration- or interval-based horizons, we extract a numeric duration d(τ ) ∈ R≥0
+
+by converting the reported unit to a chosen internal unit using a fixed conversion table specified a priori . For time-to-event regime descriptors, if a follow-up summary is available we set d(τ ) to that summary; otherwise d(τ ) is missing. All derived quantities (including the original unit) are recorded in α.
+
+Binning and fuzzy matching. Let B = {B1, . . . , B K } be a fixed partition of R≥0 into disjoint bins, chosen before processing any evidence. Let { ¯dj } be fixed representative durations for bins (e.g., bin midpoints). To tolerate minor reporting variation, we use a deterministic tolerance ρ ∈ [0 , 1) and define 
+
+bρ(d) = arg min 
+
+> j∈{ 1,...,K }
+
+d − ¯dj
+
+¯dj
+
+subject to d − ¯dbρ(d)
+
+¯dbρ(d)
+
+≤ ρ, 
+
+breaking ties by choosing the smallest index. If no bin satisfies the tolerance, we fall back to exact binning b(d) where 
+
+b(d) = j iff d ∈ Bj . Whether fuzzy matching was used (and with what ρ) is recorded in α.
+
+Acute threshold. To distinguish acute outcomes from longer fixed follow-up outcomes, we fix an acute threshold 
+
+δacute > 0, (10) specified a priori in the same internal time unit as d(τ ). Intuitively, durations ≤ δacute are treated as acute , while longer fixed horizons are treated as fixed . The value of δacute is recorded as part of the atlas build configuration. 21 Submission and Formatting Instructions for ICML 2026 
+
+Definition of align( τ ). Given a raw horizon τ :1. If τ is a duration or interval and d(τ ) is available, set 
+
+align( τ ) = 
+
+(
+
+(acute , b ρ(d(τ ))) if d(τ ) ≤ δacute ,
+
+(fixed , b ρ(d(τ ))) if d(τ ) > δ acute .
+
+2. If τ is a time-to-event regime descriptor, set 
+
+align( τ ) = ( tte , b ρ(d(τ ))) if d(τ ) is available, and align( τ ) = ( tte , ⊥) otherwise. 3. If τ is missing or non-quantified, set align( τ ) = ( unknown , ⊥).In all cases, the alignment output is accompanied by conditions α that store the raw horizon, extracted duration (if any), and the binning decision. 
+
+Determinism and stability. Because align maps raw horizons to canonical classes, function composition is not defined unless we view canonical classes as valid horizon representations. We therefore define the extended alignment map 
+
+]align : T ∪ bT → bT ,
+
+by setting ]align( τ ) = align( τ ) for raw horizons τ ∈ T , and ]align( bτ ) = bτ for canonical classes bτ ∈ bT .
+
+Proposition B.3 (Determinism and Stability of Alignment) . The alignment function align( ·) is deterministic. Moreover, the extended map ]align( ·) is stable on canonical classes: ]align( bτ ) = bτ for all bτ ∈ bT .Proof sketch. All components of align( ·) are fixed a priori: representation rules, conversion table, bin partition, tolerance 
+
+ρ, representatives { ¯dj }, and tie-breaking. Hence align( τ ) is uniquely determined by τ . Stability follows by definition of 
+
+]align .
+
+Implication for bucketization. By including bτ = align( τ ) in the bucket key (Eq. 7), comparability (Eq. 8) does not group claims that target distinct canonical horizon classes. This prevents spurious conflicts caused by horizon mismatch while preserving the equivalence-relation structure of ∼ (Theorem B.1). B.1.5. C ANONICALIZATION OPERATOR 
+
+This subsection gives a constructive specification of the canonicalization operator N : ( ε, c ) 7 → (εcanon , c canon , α ) (Defini-tion 4.2). The specification is rule-based: it deterministically normalizes the representation of the measure functional and the numeric claim while preserving the estimand semantics (Π , ι, o, τ ).
+
+Inputs and outputs. Let ε = (Π , ι, o, τ, μ ) and c = ( θ, CI) with CI = [ θlower , θ upper ]. Canonicalization outputs 
+
+(εcanon , c canon , α ) =  (Π , ι, o, τ, μ canon ), (θcanon , CI canon ), α ,
+
+where μcanon is a canonical measure representation and α records all non-semantic conditions required to interpret the normalization and to support reconstruction. 
+
+Measure signatures. Canonicalization first assigns each raw claim a measure signature 
+
+sig( μ, c ) = ( mfamily , m type , s rep ),
+
+where mfamily ∈ { ratio , difference } is the family, mtype ∈ { HR , RR , OR , MD , RD , . . . } is the type, and srep is the reporting-scale indicator (e.g., ratio , log-ratio , difference ). The signature is determined using only information present in 
+
+(μ, c ) and the accompanying extraction metadata. If multiple signatures are plausible, ties are resolved by a fixed priority order and the ambiguity is recorded in α.22 Submission and Formatting Instructions for ICML 2026 
+
+Canonical measure projection. We define a projection operator 
+
+Tμ : ( μ, c ) 7 → μcanon , (11) which maps the raw measure representation to a canonical measure representation. Given (mfamily , m type , s rep ) = sig( μ, c ),we set 
+
+μcanon = Tμ(μ, c ) := ( mfamily , m type , s canon ), scanon =
+
+(
+
+log , if mfamily = ratio ,
+
+identity , if mfamily = difference .
+
+Thus canonicalization preserves the measure family and type, but standardizes the scale used for numeric claims. 
+
+Numeric claim normalization. We normalize (θ, CI) to (θcanon , CI canon ) using a within-type map gmtype (Ap-pendix B.1.3). Concretely, we apply the following rules. 
+
+Rule family R (ratio measures). Assume mfamily = ratio and scanon = log .1. R1 (reported as positive ratio). If srep = ratio and θ > 0 with θlower > 0 and θupper > 0, set 
+
+θcanon = log( θ), CI canon = [log( θlower ), log( θupper )] . (12) 2. R2 (reported as log-ratio). If srep = log-ratio , set 
+
+θcanon = θ, CI canon = CI . (13) 3. R3 (explicit metadata binding to log-ratio). If the extraction metadata explicitly binds the reported parameter to the canonical log-ratio for type mtype (e.g., it declares that a reported coefficient equals log( HR ) or log( OR )), then canonicalization does not infer or guess a transformation: it applies the binding and treats the value as already canonical, using Eq. 13. 
+
+Rule family D (difference measures). Assume mfamily = difference and scanon = identity .4. D1 (reported as difference). If srep = difference , set 
+
+θcanon = θ, CI canon = CI . (14) 5. D2 (explicit metadata binding to difference). If the extraction metadata explicitly binds the reported parameter to a difference-type estimand (e.g., it declares that a reported coefficient equals a mean difference or a risk difference for the given mtype ), canonicalization treats the value as already canonical and applies Eq. 14. 
+
+Handling missing or partially specified uncertainty. If CI is missing but a standard error SE is available, canonicalization may construct an interval CI under a fixed coverage level used throughout the atlas build; if only a p-value is available, it may construct SE under standard asymptotic assumptions. Such derivations are non-semantic and are therefore recorded in 
+
+α together with the derivation method. If neither CI nor sufficient information to derive it is available, CI canon is set to ⊥
+
+and the missingness is recorded in α.
+
+Conditions α and information preservation. The conditions α record all decisions made by canonicalization that are not contained in (Π , ι, o, τ ). At minimum, α contains: 1. Signature evidence: the chosen sig( μ, c ) and any competing signatures considered. 2. Transformation record: which rule was applied (R1/R2/R3/D1/D2), together with any parameters used (e.g., unit scaling applied to ι, if any). 3. Uncertainty record: whether CI was reported, derived, or missing, and the derivation method if derived. 23 Submission and Formatting Instructions for ICML 2026 
+
+4. Validity flags: domain checks (e.g., positivity for ratio measures in R1) and any repairs or exclusions performed. Crucially, α is the context that makes canonicalization information-preserving: the tuple (εcanon , c canon , α ) retains enough information to reconstruct an equivalent representation of the original claim. In particular, there exists a reconstruction map 
+
+N −1 : ( εcanon , c canon , α ) 7 → (ε′, c ′) (15) such that (ε′, c ′) ≈ (ε, c ) under the intended notion of equivalence used by the framework. This statement directly supports the information-preservation component of Theorem 4.4. 
+
+Determinism by rule priority. If multiple rules could apply (e.g., redundant metadata where both R2 and R3 are admissible), canonicalization uses a fixed priority order. One admissible priority order is: R2 ≻ R3 ≻ R1 ≻ D1 ≻ D2 ,
+
+with the restriction that only the relevant family (R rules or D rules) is considered once mfamily is fixed. The chosen rule and any discarded alternatives are recorded in α.
+
+Basic properties. By construction, N preserves (Π , ι, o, τ ) and changes only the representation of μ and the numeric claim (θ, CI) . Within each measure type, the numeric normalization uses a deterministic map with a within-type inverse (Appendix B.1.3). These properties are used in the proof of the canonicalization guarantees (Theorem 4.4). 
+
+B.2. Conflict Taxonomy 
+
+This subsection formalizes the conflict taxonomy F = {directional , interval , heterogeneity } used in Theorem 4.5. All conflicts are defined on canonicalized claims within the same bucket, so that the semantics and reporting scale are aligned (Definition 4.3 and Definition 4.2). 
+
+Canonical claims in a bucket. Fix a bucket B. Let CB = {(εi, c i, π i)}ni=1 denote the set of evidence objects assigned to 
+
+B. After canonicalization, each object induces a canonical claim 
+
+(εi, canon , c i, canon ) =  (Π , ι, o, bτ , μ canon ), (θi, [ℓi, u i]) ,
+
+where ci, canon = ( θi, CI i) and CI i = [ ℓi, u i] are expressed on the canonical scale associated with the measure family. Throughout this subsection, we assume the bucket key is identical across i, so bτ is shared via alignment and the claims are comparable. 
+
+Effect direction. We define the effect direction of a canonical claim by the sign of its canonical parameter: 
+
+dir( i) = 
+
+
+
++1 , θi > 0,
+
+0, θi = 0 ,
+
+−1, θi < 0.
+
+(16) When needed, we define a significant direction using the canonical confidence interval: 
+
+sdir( i) = 
+
+
+
++1 , ℓi > 0,
+
+−1, ui < 0,
+
+0, ℓi ≤ 0 ≤ ui.
+
+(17) The function sdir( ·) treats intervals crossing 0 as directionally ambiguous. 
+
+Definition B.4 (Directional Conflict) . A bucket B exhibits a directional conflict if there exist two canonical claims i, j ∈ C B
+
+such that both are directionally decisive and they disagree in sign: 
+
+∃ i̸ = j : sdir( i) · sdir( j) = −1. (18) 24 Submission and Formatting Instructions for ICML 2026 
+
+Interval incompatibility. Directional conflict captures sign disagreement among directionally decisive claims. Interval-based conflict captures stronger incompatibility: two claims may share the same sign but still be mutually inconsistent given their reported uncertainty. 
+
+Definition B.5 (Interval Incompatibility) . A bucket B exhibits an interval conflict if there exist two canonical claims 
+
+i, j ∈ C B whose canonical confidence intervals are disjoint: 
+
+∃ i̸ = j : [ ℓi, u i] ∩ [ℓj , u j ] = ∅. (19) Equivalently, the condition holds iff ui < ℓ j or uj < ℓ i.
+
+High heterogeneity. Even when pairwise intervals overlap, a bucket may contain evidence that is too dispersed to be summarized by a single default claim without flagging variability. We formalize this using a dispersion statistic on the canonical scale. Let wi ≥ 0 be a deterministic weight derived from provenance πi (e.g., based on sample size or precision), with Pni=1 wi = 1 .Define the weighted mean and weighted dispersion: 
+
+¯θB =
+
+> n
+
+X
+
+> i=1
+
+wiθi, DB =
+
+> n
+
+X
+
+> i=1
+
+wi(θi − ¯θB )2. (20) Let ∆het > 0 be a fixed threshold. 
+
+Definition B.6 (High Heterogeneity) . A bucket B exhibits a heterogeneity conflict if its canonical dispersion exceeds a threshold: 
+
+DB ≥ ∆het . (21) 
+
+Conflict taxonomy. We define F-conflict as the union of the above three conflict types. 
+
+Definition B.7 (F-Conflict) . A bucket B contains an F-conflict if it contains a conflict of any type in F =
+
+{directional , interval , heterogeneity }, i.e., if Definition B.4, Definition B.5, or Definition B.6 holds. 
+
+Remarks. (i) The taxonomy is intentionally restricted to decidable predicates on canonicalized claims. (ii) The definitions operate on the canonical parameter scale; thus they are invariant to within-type reparameterizations handled by N . (iii) The threshold ∆het and the weight rule {wi} are fixed a priori and recorded for auditability; the detector in Section 4.5 implements these predicates directly. 
+
+B.3. Proof of Conflict Detection Completeness 
+
+This subsection proves Theorem 4.5. We show completeness (no false negatives) with respect to the explicit taxonomy F
+
+defined in Appendix B.2. 
+
+Detector specification. Fix a bucket B and its set of canonical claims {(εi, canon , c i, canon )}ni=1 as in Appendix B.2, where 
+
+ci, canon = ( θi, [ℓi, u i]) is expressed on the canonical scale. The conflict detector Detect F (B) implemented in Section 4.5 evaluates the following predicates: 1. Directional predicate Dir( B): compute sdir( i) by Eq. 17 and return true iff there exist i̸ = j such that sdir( i)·sdir( j) = 
+
+−1.2. Interval predicate Int( B): return true iff there exist i̸ = j such that [ℓi, u i] ∩ [ℓj , u j ] = ∅ (Eq. 19). 3. Heterogeneity predicate Het( B): compute DB by Eq. 20 using the fixed weight rule {wi} and return true iff DB ≥ ∆het 
+
+(Eq. 21). Finally, the detector reports an F-conflict iff 
+
+Detect F (B) = Dir( B) ∨ Int( B) ∨ Het( B). (22) 25 Submission and Formatting Instructions for ICML 2026 
+
+Theorem B.8 (Conflict Detection Completeness (w.r.t. F)) . For any bucket B, if an F-conflict exists in B (Definition B.7), then Detect F (B) returns true. Proof. Assume B contains an F-conflict. By Definition B.7, at least one of the following holds. 
+
+Case 1: Directional conflict. By Definition B.4, there exist i̸ = j such that sdir( i) · sdir( j) = −1. The detector computes sdir( ·) for every claim and checks the existence of such a pair in Dir( B). Therefore Dir( B) = true , and hence 
+
+Detect F (B) = true .
+
+Case 2: Interval incompatibility. By Definition B.5, there exist i̸ = j such that [ℓi, u i] ∩ [ℓj , u j ] = ∅. The detector explicitly checks this predicate over all pairs in Int( B). Therefore Int( B) = true , and hence Detect F (B) = true .
+
+Case 3: High heterogeneity. By Definition B.6, DB ≥ ∆het , where DB is the dispersion statistic defined in Eq. 20 under the fixed weight rule {wi}. The detector computes the same DB and compares it to the same threshold in Het( B).Therefore Het( B) = true , and hence Detect F (B) = true .In all cases, if an F-conflict exists, the detector returns true. This proves completeness with respect to F.
+
+Remark. The theorem establishes a no-false-negative guarantee only for the explicitly defined, decidable taxonomy F. It does not claim completeness for informal notions of disagreement outside Appendix B.2. 
+
+B.4. Quality Score Construction 
+
+This subsection defines the quality score Q(ε, c, π ) used for default evidence selection within a bucket. The design goals are: (i) determinism (fixed output for fixed inputs), (ii) monotonicity with respect to each quality dimension, and (iii) auditability 
+
+(explicit, decomposable contributions). 
+
+Inputs. For each evidence object assigned to a bucket, we assume provenance metadata 
+
+πi = (ref i, grade i, n i, adj i, meta i),
+
+where ref i is a bibliographic identifier, grade i is an ordinal evidence grade, ni is the study sample size, adj i encodes adjustment quality, and meta i denotes any additional non-semantic metadata used only for tie-breaking (e.g., extraction provenance). The canonical claim is ci, canon = ( θi, CI i) with CI i = [ ℓi, u i] on the canonical scale. 
+
+Four quality dimensions. We map each dimension to a normalized score in [0 , 1] .
+
+(1) Evidence grade. Let the grade set be totally ordered (e.g., A ≻ B ≻ C). We fix a deterministic embedding 
+
+ϕg : {A, B, C} → [0 , 1] such that 
+
+ϕg (A) > ϕ g (B) > ϕ g (C). (23) In experiments we instantiate ϕg (A) = 1 , ϕg (B) = 23 , ϕg (C) = 13 , but any fixed strictly order-preserving map satisfies the theory. 
+
+(2) Sample size. We use a monotone saturation transform ϕn : N → [0 , 1] :
+
+ϕn(n) = min 
+
+n
+
+1, log(1 + n)log(1 + nmax )
+
+o
+
+, (24) where nmax is a fixed constant chosen a priori (e.g., the maximum sample size observed in the curated corpus). This mapping is monotone in n and compresses extreme values. 
+
+(3) Precision. Let the canonical interval width be wi = ui − ℓi (defined only when CI i is available). We map width to a precision score via a monotone decreasing transform ϕp : R>0 → [0 , 1] :
+
+ϕp(w) = min 
+
+n
+
+1, wref 
+
+w
+
+o
+
+, (25) 26 Submission and Formatting Instructions for ICML 2026 
+
+where wref > 0 is a fixed reference width (e.g., a corpus-level median width on the canonical scale). If CI i is missing, we set ϕp(wi) = 0 and record this missingness in α during canonicalization. 
+
+(4) Adjustment quality. We assume adj i belongs to a finite totally ordered set (e.g., none ≺ basic ≺ rich ), and define a deterministic order-preserving embedding ϕa:
+
+ϕa(adj 1) ≥ ϕa(adj 2) whenever adj 1 ⪰ adj 2. (26) This dimension captures how strongly the study design/analysis addresses confounding; its categories are defined by the evidence schema. 
+
+Score aggregation. Let Gi = ϕg (grade i), Ni = ϕn(ni), Pi = ϕp(ui − ℓi), and Ai = ϕa(adj i). We define the quality score as a fixed positive-weight aggregation: 
+
+Qi = Q(εi, c i, π i) = wg Gi + wnNi + wpPi + waAi, (27) where wg , w n, w p, w a > 0 and wg + wn + wp + wa = 1 are fixed constants. Eq. 27 is monotone in each dimension by construction. 
+
+Deterministic tie-breaking. If multiple candidates attain the same maximal Qi, we select by a fixed lexicographic rule on an audit tuple: 
+
+tie( i) = 
+
+
+
+Gi, A i, P i, N i, ref i
+
+
+
+, (28) choosing the candidate with the maximal tuple under lexicographic order. If ref i is not unique, we extend Eq. 28 by an additional deterministic field from meta i (e.g., extraction identifier). This ensures a unique default choice for fixed inputs. 
+
+Auditability. Eq. 27 decomposes Qi into explicit contributions from the four dimensions. Together with the tie-breaking tuple (Eq. 28), the system can attribute the default selection to a small set of observable metadata fields. 
+
+Remark. The same provenance-derived weights {wi} used in the heterogeneity statistic (Eq. 20) can be chosen consistently with ϕn and/or ϕp (e.g., proportional to sample size or inverse interval width), but the completeness result in Appendix B.3 only requires that the weight rule is fixed and deterministic. 
+
+B.5. Derivation of Evidence Selection Consistency 
+
+This subsection proves Proposition 4.6. We first formalize the notions of determinism, monotonicity under weak dominance, and auditability, then show they follow from the construction of Q in Appendix B.4. 
+
+Setup. Fix a bucket B containing candidates indexed by i ∈ { 1, . . . , n }. Each candidate has canonical claim ci, canon =(θi, [ℓi, u i]) and provenance πi, inducing four normalized quality components 
+
+Gi ∈ [0 , 1] , Ni ∈ [0 , 1] , Pi ∈ [0 , 1] , Ai ∈ [0 , 1] ,
+
+as defined in Appendix B.4. The quality score is 
+
+Qi = wg Gi + wnNi + wpPi + waAi,
+
+with fixed weights wg , w n, w p, w a > 0 summing to 1, and deterministic tie-breaking by the audit tuple tie( i) in Eq. 28. 
+
+Definition B.9 (Default Selection) . The default selection in bucket B is the unique index 
+
+i∗ ∈ arg max 
+
+> i∈{ 1,...,n }
+
+ Qi, tie( i) (29) under lexicographic order, and the default claim is (ε∗, c ∗) = ( εi∗ , c i∗ ).27 Submission and Formatting Instructions for ICML 2026 
+
+Weak dominance. We formalize the statement “candidate a is no worse than b in all quality dimensions”. 
+
+Definition B.10 (Weak Dominance) . For two candidates a and b in the same bucket, we say a weakly dominates b, written 
+
+a ⪰ b, if 
+
+Ga ≥ Gb, Aa ≥ Ab, Pa ≥ Pb, Na ≥ Nb. (30) 
+
+Lemma B.11 (Determinism) . For fixed bucket contents and fixed provenance fields, the default selection in Definition B.9 is uniquely determined. Proof. Each Qi is a deterministic function of (εi, c i, π i) by construction of Gi, N i, P i, A i and fixed weights. If multiple indices maximize Qi, Eq. 29 selects the unique maximal audit tuple under a fixed lexicographic order. If needed, the final tie-breaking field is a deterministic unique identifier (from ref i and/or meta i), hence the maximizer is unique. 
+
+Lemma B.12 (Monotonicity under Weak Dominance) . If a ⪰ b in the sense of Definition B.10, then Qa ≥ Qb.Proof. By Eq. 27 and positivity of weights, 
+
+Qa − Qb = wg (Ga − Gb) + wa(Aa − Ab) + wp(Pa − Pb) + wn(Na − Nb) ≥ 0,
+
+since each parenthesized term is nonnegative under a ⪰ b.
+
+Lemma B.13 (Auditability) . The default choice admits an audit trail decomposable into the four quality dimensions and deterministic tie-breaking fields. Proof. Eq. 27 expresses Qi as an explicit sum of four terms with fixed weights, and Eq. 28 provides a fixed ordered list of secondary criteria. Therefore, for the chosen i∗ the system can report (Gi∗ , A i∗ , P i∗ , N i∗ ) and the tie-breaking comparisons that separate i∗ from other candidates, yielding a finite, deterministic explanation trace. 
+
+Theorem B.14 (Evidence Selection Consistency) . The default selection rule in Definition B.9 is deterministic (Lemma B.11), monotone under weak dominance (Lemma B.12), and auditable (Lemma B.13). Proof. Immediate by Lemma B.11, Lemma B.12, and Lemma B.13. 
+
+Remark. The result does not claim global optimality under an unrestricted utility class. Instead, it establishes consis-tency with respect to component-wise dominance and a deterministic, auditable aggregation of explicitly defined quality dimensions. 
+
+B.6. Proof of Canonicalization Guarantees 
+
+This subsection proves Theorem 4.4. We formalize (i) determinism/uniqueness, (ii) semantic preservation, and (iii) information preservation via an explicit reconstruction map. 
+
+Domain and notation. Let D denote the space of input pairs (ε, c ) where ε = (Π , ι, o, τ, μ ) and c = ( θ, CI) . Let bD
+
+denote the space of outputs (εcanon , c canon , α ).We write εcanon = (Π , ι, o, bτ , μ canon ), where bτ = align( τ ) is the aligned horizon representation (Definition B.1.4). Let Tμ
+
+denote the canonical reparameterization operator for the measure component: 
+
+Tμ : ( μ, c ) 7 → (μcanon , c canon , α μ),
+
+where αμ records the transformation context needed for reconstruction (Appendix B.1.5). The full canonicalization is 
+
+N (ε, c ) = 
+
+
+
+(Π , ι, o, align( τ ), μ canon ), c canon , α 
+
+
+
+, (31) with α = ( αμ, α τ , α meta ), where ατ records horizon-alignment context and αmeta records any additional deterministic metadata bindings used by canonicalization. 28 Submission and Formatting Instructions for ICML 2026 
+
+Equivalence up to representation. Information preservation is stated “up to equivalence” because multiple raw represen-tations can encode the same semantic claim. Define a relation ≈ on D by 
+
+(ε, c ) ≈ (ε′, c ′) ⇐⇒ (Π , ι, o, τ ) = (Π ′, ι ′, o ′, τ ′) ∧ (μ, c ) and (μ′, c ′) agree up to within-type reparameterization .
+
+(32) The second conjunct means that there exists a within-type bijection g (Appendix B.1.3) such that θ′ = g(θ) and CI ′ = g(CI) ,and μ′ denotes the same measure type as μ but possibly expressed under an equivalent parameterization. 
+
+Rule system with total priority. Canonicalization is defined by a finite set of rules R operating only on (μ, c ), each rule of the form 
+
+r : ( μ, c ) 7 → (μ′, c ′, α r ),
+
+together with a total priority order ≺ over R. For any input (μ, c ), let R(μ, c ) ⊆ R be the subset of applicable rules. The chosen rule is 
+
+r∗(μ, c ) = min  
+
+> ≺
+
+R(μ, c ), (33) and Tμ applies r∗ once to produce (μcanon , c canon , α μ). Any missingness or binding decisions used for applicability (e.g., whether a reported coefficient is already on the canonical scale) must be supported by explicit metadata fields and recorded in αmeta .B.6.1. U NIQUENESS (D ETERMINISM AND STABILITY )
+
+Lemma B.15 (Determinism of Tμ). For any input (μ, c ), the output (μcanon , c canon , α μ) = Tμ(μ, c ) is uniquely determined. Proof. The set of applicable rules R(μ, c ) is determined by (μ, c ) and the fixed rule predicates. Since ≺ is a total order, Eq. 33 selects a unique r∗(μ, c ) whenever R(μ, c )̸ = ∅. Applying r∗ yields a unique output by functional definition of rules. If R(μ, c ) = ∅, Tμ returns the identity output with a fixed tag in αμ.
+
+Lemma B.16 (Stability on canonical forms) . Let Dcanon ⊆ D denote the subset of inputs whose (μ, c ) are already in canonical form and whose horizon representation is aligned, i.e., τ = align( τ ) and (μ, c ) = ( μcanon , c canon ). Then for any 
+
+(ε, c ) ∈ D canon ,
+
+N (ε, c ) =  ε, c, α id 
+
+,
+
+where αid is a fixed identity-context record. Proof. For canonical (μ, c ), either (i) no nontrivial rule is applicable, so Tμ returns the identity output by definition, or (ii) an explicit identity rule is applicable and dominates by priority, yielding the same result. Since τ is already aligned, 
+
+align( τ ) = τ and ατ takes a fixed “already-aligned” value. Thus Eq. 31 returns the input unchanged up to recording 
+
+αid .
+
+Lemma B.17 (Uniqueness of the normal form) . For any (ε, c ) ∈ D , the canonical form (εcanon , c canon ) produced by N is unique. Proof. The components (Π , ι, o ) are copied directly. The aligned horizon bτ = align( τ ) is uniquely determined by the alignment operator (Proposition B.3, Appendix B.1.4). By Lemma B.15, (μcanon , c canon ) is uniquely determined. Therefore 
+
+(εcanon , c canon ) is unique. B.6.2. S EMANTIC PRESERVATION 
+
+Lemma B.18 (Semantic core is invariant) . For any input (ε, c ) with ε = (Π , ι, o, τ, μ ), the output N (ε, c ) satisfies 
+
+(Π out , ι out , o out ) = (Π , ι, o ), bτout = align( τ ),
+
+and N does not modify (Π , ι, o ).Proof. By construction (Eq. 31), N applies align only to τ and applies Tμ only to (μ, c ). Neither operator touches (Π , ι, o ).Hence the semantic core is preserved and only the horizon is aligned. 29 Submission and Formatting Instructions for ICML 2026 
+
+B.6.3. I NFORMATION PRESERVATION AND RECONSTRUCTION 
+
+Context record α. The context α is defined to be sufficient for reconstruction. Concretely, α includes: (i) the selected rule identifier r∗ (and its parameters, if any), (ii) the original measure type and parameterization tag, (iii) any explicit metadata bindings used to interpret the raw report, and (iv) the horizon-alignment class and binning outcome. All fields are deterministic functions of the input and are stored as part of (εcanon , c canon , α ).
+
+Lemma B.19 (Existence of a reconstruction map) . There exists a map N −1 : bD → D such that for all (ε, c ) ∈ D ,
+
+N −1 N (ε, c ) ≈ (ε, c ). (34) 
+
+Proof. Given an output triple (εcanon , c canon , α ), define N −1 as follows. 
+
+Step 1 (invert the measure transform). From αμ, recover the selected rule identifier r∗ and the original measure type/parameterization tag. Each rule r ∈ R is either an identity step or a within-type bijective reparameterization whose inverse is known (e.g., log/exp for ratio-type canonicalization; Appendix B.1.3). Apply the corresponding inverse transform to (μcanon , c canon ) to obtain some (μ′, c ′) in the original representation class recorded by αμ.
+
+Step 2 (recover the horizon representation). From ατ , choose a representative τ ′ consistent with the aligned output bτ and the recorded alignment class. This step may not be unique; any deterministic choice yields an equivalent representation under ≈ because bτ is the aligned semantic horizon used for comparability. 
+
+Step 3 (assemble). Return (ε′, c ′) with ε′ = (Π , ι, o, τ ′, μ ′), using (Π , ι, o ) copied from εcanon .By construction, (Π , ι, o ) matches the original input, and (μ′, c ′) is in the same within-type reparameterization class as the original (μ, c ), because αμ pins down the representation class and the inverse reparameterization. Therefore (ε′, c ′) ≈ (ε, c ),establishing Eq. 34. B.6.4. P ROOF OF THEOREM 4.4 
+
+Proof of Theorem 4.4. Uniqueness follows from Lemma B.17 and stability on canonical forms from Lemma B.16. Semantic preservation is Lemma B.18. Information preservation follows from Lemma B.19. 
+
+## C. Six Queries: Executability, Status Flags, and Examples 
+
+C.1. Flags and the Unified Answer Object 
+
+The unified answer object is 
+
+Ans =  ε, ˆθ, CI , π, F(B), flags , flags ⊆ F flag .           
+
+> Group Flags
+> Executability executable
+> Missingness missing edge ,missing path ,missing field
+> Incompatibility mixed mtype
+> Disagreement heterogeneity ,conflict
+> Premise assumption required
+> Coverage no subgroup evidence ,insufficient time coverage
+
+C.2. Qdo : Interventional Effect Executability. There exists a key s such that Bs̸ = ∅ and s matches the queried (X, Y, ε ) semantic dimensions (see the definition of matches in Table 2). 
+
+Return. When executable, let (ε∗ 
+
+> s
+
+, c ∗ 
+
+> s
+
+, π ∗ 
+
+> s
+
+) be the default kernel for s and let Bs be the associated bucket. The returned object is 
+
+Ans = ( ε∗ 
+
+> s
+
+, ˆθ∗ 
+
+> s
+
+, CI ∗ 
+
+> s
+
+, π ∗ 
+
+> s
+
+, F(Bs), flags) .
+
+30 Submission and Formatting Instructions for ICML 2026 
+
+C.3. Qmed : Mediation Decomposition Executability. There exist keys s1, s 2 such that Bs1̸ = ∅ and s1 matches (X, M, ε ), and Bs2̸ = ∅ and s2 matches 
+
+(M, Y, ε ).
+
+Return. When executable, the query returns the triple 
+
+(Ans TE , Ans NDE , Ans NIE ),
+
+where each component is an answer object of the form Ans defined on the corresponding required evidence pattern, with status flags recording executability conditions and certified conflicts. 
+
+C.4. Qjoint : Joint Intervention Executability. There exist keys s1, s 2 such that Bs1̸ = ∅ and s1 matches (X1, Y, ε ), and Bs2̸ = ∅ and s2 matches 
+
+(X2, Y, ε ).
+
+Return. When executable, the query returns an answer object Ans associated with the required joint evidence pattern. 
+
+C.5. Qcf : Counterfactual / Individual-Context Query Executability. There exists a key s such that Bs̸ = ∅ and s matches (X, Y, ε ), together with a well-formed individual context identifier z for counterfactual querying. 
+
+Return. When executable, the query returns an answer object Ans whose estimand semantics are conditioned on the individual context z.
+
+C.6. QCATE : Subgroup Effect Executability. There exists a key s such that Bs̸ = ∅, s matches (X, Y, ε ), and the population category encoded in s
+
+equals the subgroup identifier z (i.e., pbucket(Π) = z). 
+
+Return. When executable, the query returns an answer object Ans corresponding to the subgroup constraint z.
+
+C.7. Qtraj : Time Trajectory Executability. Given a set of aligned time classes T , for every ˆτ ∈ T there exists a key s(ˆ τ ) such that Bs(ˆ τ )̸ = ∅ and 
+
+s(ˆ τ ) matches (X, Y, ε, ˆτ ).
+
+Return. When executable, the query returns the sequence {Ans (ˆ τ )}ˆτ ∈T .
+
+C.8. Examples Example 1: Missing mediation path. Given (X, M, Y ), if a non-empty bucket matches (X, M ) but no non-empty bucket matches (M, Y ), then the executability condition of Qmed fails and flags includes missing path .
+
+Example 2: Conflict annotation in trajectories. For two aligned time classes ˆτ1, ˆτ2 of the same (X, Y, ε ), if the default kernels in the corresponding buckets have opposite directions on the canonical scale and are both significant, then F(Bs(ˆ τ1))
+
+and F(Bs(ˆ τ2)) include dir ; the corresponding answers record conflict and return the triggering witnesses for auditing. 
+
+## D. Extended Related Work 
+
+This appendix provides an extended discussion of prior work along the technical threads most closely related to DoAtlas: (i) medical AI and medical foundation models for clinical assistance, (ii) literature-grounded generation and evidence-centric NLP pipelines, (iii) evidence-based medicine and systematic evidence synthesis, (iv) causal inference and machine learning for clinical decision-making, and (v) multi-source evidence fusion, conflict governance, external validity, and auditability. 31 Submission and Formatting Instructions for ICML 2026 
+
+D.1. Medical AI for clinical assistance: a historical perspective Rule-based expert systems (1970s–1990s). Early medical artificial intelligence systems were dominated by rule-based expert systems, which encoded clinical heuristics through manually curated rules and decision trees. Representative systems such as MYCIN demonstrated how expert knowledge could be formalized for tasks including infectious disease diagnosis and antibiotic selection, with explicit rule traces and uncertainty handling mechanisms (Shortliffe, 1976). Similarly, large-scale diagnostic systems such as INTERNIST-1 and its successor QMR focused on hypothesis generation and differential diagnosis using structured disease finding associations (Miller et al., 1985). Later systems such as DXplain further operationalized paradigms for clinical use by mapping patient findings to ranked diagnostic hypotheses with explanatory support (Barnett et al., 1987). While transparent and interpretable, from a modern perspective, these systems were brittle, difficult to maintain, and exhibited limited generalization beyond predefined clinical scenarios, particularly in complex clinical environments. 
+
+Statistical learning and predictive modeling (2000s–early 2010s). With the digitization of healthcare data in the early 2000s, medical AI increasingly shifted toward statistical and machine learning models trained on structured clinical variables. Regression-based clinical risk scores became widely adopted for diagnosis, risk stratification, and prognosis, exemplified by the Framingham risk functions for cardiovascular disease (D’Agostino Sr et al., 2008). In parallel, early electronic health record (EHR)–driven predictive models emerged to estimate disease risk and clinical outcomes at scale, with evaluation focused primarily on discrimination and calibration rather than explicit decision semantics or intervention definitions (Rajkomar et al., 2018; Shickel et al., 2017). This generation of models supported population-level risk assessment but typically exposed outputs as probabilities or scores rather than executable representations of clinical actions. 
+
+Deep learning for high-dimensional clinical data (mid-2010s). Around the mid-2010s, deep learning substantially expanded the scope of medical AI by enabling end-to-end modeling of high-dimensional clinical inputs, including medical images, physiological waveforms, and free-text clinical notes. Systems achieved near-expert or expert-level performance on multiple diagnostic tasks, particularly in medical imaging, as demonstrated by large-scale convolutional models for skin cancer classification (Esteva et al., 2017). At the same time, deep neural architectures were increasingly applied to longitudinal EHR data for outcome prediction and patient risk modeling (Shickel et al., 2017). Despite these advances, most deep learning systems continued to operate within a predictive paradigm, leaving clinical decision-making and intervention interpretation to downstream human judgment, without explicit causal or decision-theoretic representations. 
+
+Foundation models and natural-language clinical interfaces (2020s–present). Since approximately 2020, foundation models and large language models have been explored as general-purpose interfaces for clinical assistance. General-purpose LLMs demonstrated strong performance on medical question answering and professional examination benchmarks, highlighting the feasibility of natural-language clinical interaction at scale (Nori et al., 2023). Domain-adapted medical LLMs, such as Med-PaLM, further advanced performance through targeted training and evaluation on medical reasoning tasks (Singhal et al., 2025). In parallel, industry-developed medical LLMs including HuatuoGPT, DoctorGLM, and Baichuan-M1 emphasized medical dialogue, domain knowledge understanding, and clinician-facing assistance (Zhang et al., 2023; Xiong et al., 2023; Wang et al., 2025a). Across this generation, retrieval-augmented generation techniques have been widely adopted to ground responses in biomedical literature and clinical guidelines (Lewis et al., 2020). While these systems prioritize interaction and synthesis, clinical decision support is still predominantly operationalized through narrative outputs rather than explicit, recomputable representations of interventional effects. Beyond the historical evolution of medical AI models, several parallel research threads have sought to improve reliability, evidence usage, and decision support. We briefly summarize these directions below, focusing on their relationship to executable causal decision-making. 
+
+D.2. Literature-grounded generation and evidence-centric NLP 
+
+Recent work has explored grounding language model outputs in external knowledge sources to improve factual reliability and reduce hallucination. Retrieval-augmented generation (RAG) combines parametric language models with non-parametric document retrieval, enabling responses to be conditioned on retrieved corpora rather than relying solely on internal parameters (Lewis et al., 2020). In clinical settings, RAG-style systems have been instantiated for guideline- and literature-backed assistance (e.g., retrieving medical references for treatment recommendations) (Zakka et al., 2024) and systematically benchmarked in medical QA, where toolkits such as MedRAG highlight both accuracy gains and failure modes (e.g., retrieval sensitivity and “lost-in-the-middle”) (Xiong et al., 2023). Beyond retrieval, a growing line of work aims to make grounding explicit through citation-aware generation and fine-grained attribution. “Attributed QA” formalizes the requirement that generated claims be supported by specific evidence spans (Bohnet et al., 2022), while datasets and evaluation protocols (e.g., expert-judged claim–evidence pairs) operationalize 32 Submission and Formatting Instructions for ICML 2026 
+
+supportiveness and citeworthiness as measurable targets (Malaviya et al., 2024). Complementary methods improve citation behavior through prompt- and reasoning-based control (e.g., generating with citations via structured reasoning) (Ji et al., 2024), or by designing end-to-end medical citation generation and evaluation pipelines (Wang et al., 2025b). Post-hoc attribution and verification further retrofit grounding onto black-box generators by searching for supporting sources and revising unsupported statements (Gao et al., 2023), and recent work has proposed automated pipelines to assess whether cited sources truly support model claims in health-related queries. While these approaches improve transparency and verifiability at the text level—often reducing hallucinations or enabling claim-level evidence checking (Manakul et al., 2023)—they typically treat evidence as narrative justification rather than as structured, executable objects. Retrieved studies are surfaced as references or rationales, but their estimand definitions (contrast, population, time horizon), effect scales/units, and uncertainty semantics are rarely normalized across sources, limiting downstream use for accountable decision-making and interventional planning. 
+
+D.3. Evidence-based medicine and systematic evidence synthesis 
+
+Evidence-based medicine (EBM) provides a principled framework for evaluating clinical knowledge through hierarchies of evidence, randomized controlled trials, and systematic reviews (Guyatt et al., 1992; Sackett et al., 1996). Meta-analysis and clinical guideline development aim to aggregate results across studies to support evidence-based recommendations, with increasing emphasis on transparency, reproducibility, and methodological rigor (Higgins et al., 2008). However, traditional evidence synthesis pipelines remain largely manual and slow to update, and typically focus on population-average conclusions rather than individualized or context-specific effects (Greenhalgh et al., 2014). Effect heterogeneity, conflicting findings, and limitations in external validity across populations are often summarized qualitatively, rather than represented in machine-readable or executable forms, posing challenges for integration with computational clinical decision support systems, particularly for real-time or adaptive decision-making (Kent et al., 2010; Ioannidis, 2016). 
+
+D.4. Causal inference and causal machine learning for clinical decision-making 
+
+Causal inference provides formal tools for estimating interventional effects, including structural causal models, potential outcomes, propensity-based adjustment, instrumental variables, mediation analysis, and heterogeneous treatment effect estimation (Pearl, 2000; Hern ´an & Robins, 2010; VanderWeele, 2015). These frameworks support principled answers to counterfactual and interventional queries central to clinical decision-making, and have been widely applied in epidemiology and health services research—for example, using propensity score methods to estimate treatment effects from observational EHR data (Austin, 2011), instrumental variables to address unmeasured confounding in pharmacoepidemiology (Greenland, 2000), and mediation analysis to decompose mechanisms of treatment effects (VanderWeele, 2015). More recently, causal machine learning methods have improved scalability and flexibility, enabling estimation of heterogeneous treatment effects and non-linear causal relationships in high-dimensional settings (Athey & Imbens, 2016; Chernozhukov et al., 2018). Despite these advances, causal analyses in medicine typically operate within individual datasets or single-study contexts, with estimands, populations, and effect scales defined ad hoc. As a result, causal estimates are rarely standardized across studies or compiled into reusable representations, limiting their integration with broader evidence ecosystems and decision-support infrastructures (Hern´ an & Robins, 2010). This limitation becomes critical in large-scale evidence clinical deployment. 
+
+D.5. Multi-source evidence fusion, conflict governance, and auditability 
+
+Combining evidence across heterogeneous sources raises challenges in effect standardization, conflict resolution, and uncertainty propagation (Ioannidis, 2016; 2005). Prior work has explored ensemble learning, Bayesian model averaging, and sensitivity analysis to address model uncertainty and robustness, but systematic mechanisms for governing evidential conflicts across studies remain limited (Hoeting et al., 1999; Greenland, 2005). In clinical settings, auditability and external validity are critical for safe deployment (Topol, 2019; Amann et al., 2020). Existing medical AI systems rarely provide explicit provenance, executable effect definitions, or validation signals against real-world data, making it difficult to assess reliability, adjudicate conflicting claims, or prevent unsafe recommendations at scale (Kelly et al., 2019). This part details a systematic methodological framework for constructing a structured, evidence-based medical dataset and establishing computable mappings from abstract literature variables to specific fields within the local Human Phenotype Project (HPP) database, ultimately achieving automated empirical verification of medical mechanisms and pathways. The dataset construction encompasses a closed-loop pipeline involving literature metadata cleaning, structured extraction of causal logic, semantic alignment with local data dictionaries, and empirical testing of statistical models. The primary 33 Submission and Formatting Instructions for ICML 2026 
+
+objective is to verify that medical pathways identified in the literature exhibit consistent directionality, non-zero effects, and plausible magnitudes within the local HPP dataset. 
+
+D.6. Construction of Structured Evidence Dataset 
+
+D.6.1. L ITERATURE DISCOVERY AND CLASSIFICATION SYSTEM AND CORRESPONDING OVERVIEW 
+
+This study established a systematic pipeline for literature discovery and hierarchical processing. This pipeline aims to extract high-quality research with clear methodological characteristics from massive amounts of unstructured biomedical text and map them to structured data templates using a rigorous classification framework. To ensure the scientific rigor and timeliness of the source data, a strict retrieval strategy and hard guardrails were implemented during the construction phase of this dataset. In terms of time dimension, research published between January 1, 2020 and December 31, 2025 were included to ensure that the extracted evidence reflects the latest developments in the relevant field. For model utilization, Gemini 3 Pro and Grok 4.1 Thinking were employed for preliminary literature screening and extraction, Claude Sonnet 4.5 Thinking was utilized to read, extract, and summarize evidence cards, and to map literature nodes to the local HPP dataset. Regarding publication source quality, candidate literature was restricted to journals with an Impact Factor ≥ 10, serving as a proxy for rigorous study design and result credibility. To mitigate the risk of hallucinated citations associated with generative models, we implemented a strict metadata validation mechanism. All candidate papers were required to possess a resolvable DOI with authoritative metadata verified via Crossref. Furthermore, valid landing pages for these DOIs must be identifiable on PubMed, PubMed Central (PMC), or domains within a trusted publisher whitelist. Entries lacking a DOI, failing to yield consistent Crossref metadata, or lacking association with a whitelisted domain were automatically excluded. Complementing this automated validation, a rigorous manual review process was executed, in which all final included data underwent human verification to ensure completeness, authenticity, and accuracy. Based on distinct research foci, this dataset establishes a mutually exclusive and exhaustive taxonomy comprising four evidence categories: Interventional, Causal, Mechanistic, and Associational. 
+
+Interventional The primary objective of interventional studies is to confirm the effectiveness of interventions, evaluating the net causal effect of a specific exposure or treatment on clinical outcomes under strictly controlled experimental conditions. These studies constitute the primary benchmark within the overall framework. The classification criteria for this category are exclusive, relying primarily on PubMed publication types explicitly tagged as ”Randomized Controlled Trial” or ”Clinical Trial,” as well as methodological keywords such as ”randomized,” ”double-blind,” ”placebo,” or the presence of clinical trial registration numbers (e.g., NCT identifiers). In the localization validation of the HPP dataset, interventional studies require the reproduction of statistical significance, with a specific emphasis on verifying the directional consistency of the Average Treatment Effect (ATE) between the intervention and control groups. 
+
+Causal Causal studies utilize specific statistical methods to control for confounding within observational data to estimate the causal effect between exposure and outcome. These studies mitigate the limitations of randomized controlled trials due to sample scarcity and high costs. The criteria for systematically identifying such studies are whether they use explicit causal identification strategies, including Mendelian randomization, instrumental variables, difference-in-differences, propensity score matching/IPTW, and target trial emulation. This classification distinguishes studies that employ causal identification strategies from those that only perform conventional regression adjustments. 
+
+Mechanistic Mechanism studies focus on analyzing how exposure factors influence outcomes through intermediate variables, delving into the internal transmission pathways and biological mechanisms of the study. Within the overall framework, the objective of this category is to validate the existence of biological pathways. The core criteria for evaluating such studies are the presence of explicit mediation analysis or indirect effect calculations, and whether a complete X → M → Y chain is constructed in the research hypotheses. Key metrics include the statistical significance of path coefficients and the proportion of the effect explained by the mediator. In HPP data validation, the emphasis is on verifying the existence and validity of specific biological pathways in the HPP population. 
+
+Associational Associational studies characterize statistical correlations between variables, typically used to capture phe-nomenological covariation to generate preliminary scientific hypotheses. This category is defined via exclusion, encompass-ing cross-sectional and cohort studies that report adjusted Hazard Ratios (HR), Odds Ratios (OR), or regression coefficients, but do not employ randomization or the aforementioned specific causal inference methods. Distinct from the validation of causal effects, the validation process for this category primarily assesses the direction and magnitude of observed correlations. 34 Submission and Formatting Instructions for ICML 2026 
+
+D.6.2. S TRUCTURED EXTRACTION OF EVIDENCE CARDS 
+
+Following literature retrieval and classification, the task extraction phase employs a prompt engineering framework to transform unstructured natural language text into machine readable JSON objects. The resulting data structure integrates general modules with category specific components, utilizing distinct extraction templates for each of the four evidence types. The extraction process was performed locally based on the main text and supplementary materials of the paper’s PDF document. The extraction task is decomposed into fine-grained field-filling operations, requiring the precise identification of key variables (e.g., exposures, outcomes, mediators, covariates), numerical parameters (e.g., point estimates, confidence intervals, p-values), sample characteristics (e.g., inclusion/exclusion criteria, demographics), and critical study design attributes (e.g., blinding, follow-up duration), ultimately converting the natural language description into standardized JSON key-value pairs. The extraction process required mandatory labeling of the evidence source; each extracted data point must be accompanied by a specific figure number or page index, enabling content backtracking from structured data to the original literature and providing audit clues for subsequent manual review and automated verification. This dataset establishes a general architecture comprising eleven core modules. Table 8 details the definition and function of each module: 35 Submission and Formatting Instructions for ICML 2026 
+
+Table 8. The four categories share a common subcategory overview. 
+
+Module Definition and Standards 
+
+Paper The paper’s title and abstract, journal, and year are used as basic bibliographic information, and PMID and DOI are extracted to establish digital anchors; the registration number of clinical research records is used to associate the trial protocol. 
+
+Provenance Establish a foundation for data auditing by creating a physical mapping between structured data and unstructured raw text. This includes a list of specific chart numbers and page ranges for core conclusions, as well as relevant information for confirming supplementary materials. 
+
+Design Documenting the methodological context in which the evidence was generated provides context for assessing the strength of the evidence. This includes the type of research structure (e.g., ”RCT”, ”Cohort”, ”Cross-sectional”, ”Case-control”), statistical analysis methods (e.g., ”Cox Proportional Hazards”, ”Linear Mixed Model”, ”Logistic Regression”, ”Difference-in-Differences”), total sample size, total number of study groups, blinding implementation (e.g., ”Double-blind”, ”Single-blind”, ”None”, ”Open-label”), randomization scheme (e.g., ”Block”, ”Stratified”, ”Cluster”, ”None”), and estimation objectives (e.g., ”ITT” for intention-to-treat analysis, ”Per-protocol” for per-protocol analysis, and ”ATE” for average treatment effect). 
+
+Population Structured fields are used to characterize the biological boundaries of research subjects, serving as a direct basis for screening the HPP local validation cohort. These include descriptions of the data population’s age, sex composition, specific disease or health conditions (such as ”Type 2 Diabetes patients”, ”Healthy volunteers”, ”Obstructive Sleep Apnea”), and descriptions of key inclusion and exclusion criteria. 
+
+Transport Signature Record the research center, data collection period, geographical location, and medical setting to assess the external validity of the evidence and its transferability from the source population to the target population. Data includes the name of the research center where the data was collected, the specific start and end dates or year range of data collection, the geographical region, the medical setting (e.g., ”Community”, ”Hospital”, ”Clinic”, ”Laboratory”), and the nature of the data source (e.g., ”Clinical Trial”, ”Registry”, ”EHR”, ”Cohort Study”). 
+
+Variables A ”node role” separation design is adopted to define the physical properties of variables and their functions in the causal network. It mainly consists of variable nodes and their roles. Variable nodes are defined by an identifier, their name in the paper, data type, unit of measurement, and the UCUM standard code for the unit. Role assignments consist of the variable’s role in the current evidence pathway, generally including exposure variables (X), outcome variables (Y), mediating variables (M), causal variables (C), covariates (Z), and environmental or instrumental variables (E). 
+
+Time Semantics Based on the ISO 8601 standard, time parameters are defined to accurately distinguish the temporal characteristics of cross-sectional associations and prospective causal effects. These include the duration of exposure or measurement window (e.g., ”P14D” indicates 14 days), the duration of the baseline observation window, the specific time point array for outcome assessment, the time offset of the record relative to the baseline, the total follow-up duration, the lag between the occurrence of exposure and the manifestation of the effect (e.g., ”P1Y” indicates a lag of one year), the duration of effect maintenance, and the temporal granularity description (e.g., ”Coarse”, ”Fine”, ”Cross-sectional”). 
+
+Effects The core of the evidence card is computationally readable, storing specific statistical inference results. This includes effect edge identifiers, effect indicator types (e.g., ”HR”, ”OR”, ”RR”, ”Beta”, ”MD”, ”SMD”), point estimates of effect sizes, arrays of confidence intervals, statistical p-values, the specific statistical model name that generated the effect, names of all covariates, effective sample size, and detailed descriptions of the exposure comparison objects, including the comparison type (e.g., ”per unit”) and specific difference descriptions . 
+
+Dose Response For continuous exposures, describe the nonlinear relationship between the exposure and the outcome, along with relevant parameters. This includes a functional description of the dose-response relationship (e.g., ”Linear”, ”U-shaped”, ”J-shaped”, ”Threshold”), the object structure, records specific parameters describing the curve shape (e.g., slope ”Slope” or spline nodes ”Knots”), and the associated effect edge IDs, pointing to the corresponding entries in the Effects module. 
+
+Measurement Record the physical measurement equipment, scoring algorithms, or derived calculation rules for key variables to quantify potential biases introduced by measurement errors. This includes the names of the physical equipment used and the calculation rules for derived variables. 
+
+Governance Based on the research design and risk of bias assessment, the evidence is classified into Tier A/B/C, and suggestions for fusion strategies are provided when there is conflict among multiple sources of evidence. 
+
+While the aforementioned general modules form the underlying foundation of the data, this extraction protocol incorporates highly customized, proprietary data modules for four different types of evidence cards to accurately capture the core logic of various research paradigms. The design of these modules strictly adheres to the methodological standards of their respective fields. 36 Submission and Formatting Instructions for ICML 2026 
+
+Interventional Specifics For Randomized Controlled Trials (RCTs) and clinical intervention studies, the extraction architecture defines two core objects: arms and adherence . The arms module documents specific design parameters for intervention and control groups, including dose intensity , frequency , duration , and delivery mode 
+
+(e.g., in-person vs. remote). To evaluate attrition bias, the protocol enforces a strict distinction between the number of randomized participants ( n randomized ) and those included in the intention-to-treat analysis ( n analyzed itt ). Regarding equation formulation, this category employs an estimand equation , mathematically defined as the contrast of potential outcomes E[Y (1) − Y (0)] under the randomization assumption. Distinct from observational settings, the formulation here prioritizes mitigating bias from non-adherence. Consequently, extraction targets Intention-to-Treat (ITT) results—analyzing subjects based on randomized assignment regardless of adherence or intercurrent events—to ensure a conservative and robust assessment of causal efficacy. 
+
+Causal Specifics The central challenge of this category lies in identifying core medical causal effects, which is approximating ground-truth causality under non-randomized conditions. The extraction protocol incorporates balance diagnostics 
+
+and iv diagnostics modules. For Propensity Score (PS) methods, the system extracts the scoring model ( ps model ), maximum standardized mean difference ( max smd ), and overlap metrics ( overlap ). For Instrumental Variable (IV) or Mendelian Randomization (MR) studies, instrument strength and independence tests ( pleiotropy tests ) are recorded. Regarding equation formulation, the estimand equation retains the form E[Y (1) − Y (0)] ; however, unlike in interventional studies, its validity relies on untestable structural assumptions (e.g., ”no unmeasured confounding” or ”exclusion restrictions”). Consequently, extraction focuses on the identification strategy—documenting the specific methodological path (e.g., Inverse Probability Weighting, Instrumental Variables, or Difference-in-Differences) used to transform statistical associations into causal parameters, thereby mathematically eliminating confounding bias to simulate the counterfactual contrasts of a target trial. 
+
+Mechanistic Specifics This category aims to elucidate biological transduction pathways ( X → M → Y ), characterized fundamentally by a topological chain of variables. The variable definition module enforces the identification of an ordered list of mediators ( M). The inference module requires the explicit enumeration of the pathway string ( pathway , e.g., Sleep -> IL-6 -> CVD ). Unique to this category, the mechanism equation focuses on pathway decomposition rather than solely on endpoint effects. Mathematically grounded in Structural Equation Modeling (SEM), typically comprising a mediator model ( M = aX + . . . ) and an outcome model ( Y = c′X + bM + . . . ), the protocol mandates a clear distinction between the Natural Direct Effect (NDE, c′) and the Natural Indirect Effect (NIE, typically a × b), alongside the calculation of the proportion mediated. This shifts the validation focus from intervention efficacy to whether a specific biological process is effective, constructing an explanatory evidence chain from phenomenon to mechanism. 
+
+Associational Specifics Serving as the foundational layer of the evidence hierarchy, the extraction protocol for asso-ciational studies prioritizes the accurate recording of statistical correlations while rigorously preventing causal over-interpretation. This category excludes all diagnostic fields related to causal identification, instead introducing modules for the association equation and descriptives .Distinct from the preceding categories, the mathematical logic of the association equation is defined by the conditional expectation E[Y | X, W ], representing the distribution of outcome Y within a population defined by observed features W . Here, control variables are strictly defined as covari-ates; the equation functions fundamentally as curve fitting rather than counterfactual inference. The descriptives 
+
+module mandates the extraction of outcome distribution data stratified by exposure category, facilitating baseline char-acteristic comparisons and trend visualization analysis. Finally, the association nature module explicitly records 
+
+residual confounding risk , strictly confining the evidentiary scope to prediction and description to preclude misleading inferences regarding interventional guidance. 
+
+D.7. HPP Field Mapping 
+
+Building upon the evidence cards detailed in the preceding subsection, we establish a bridge between unstructured natural language descriptions from the literature and the specific local Human Phenotype Project (HPP) cohort data. This integration is achieved through deep alignment across semantic consistency, measurement methodology, and unit standardization. D.7.1. M APPING RULE 
+
+This study establishes a precise mapping rule grounded in a metadata dictionary. The core objective of this rule is to anchor abstract variable nodes extracted from evidence cards, including exposures ( X), outcomes ( Y ), mediators ( M ), and instrumental variables ( IV ) to specific physical fields within the HPP database. The entire mapping system comprises a 37 Submission and Formatting Instructions for ICML 2026 
+
+Figure 4. Examples of evidence card files for each category.                                                       
+
+> Card type Component Parameter Value / Definition
+> Mechanism Glucose tolerance equation c′6.0% increase Glucose tolerance equation b−1.0(directional) Insulin sensitivity equation a−1.0(directional) Causal MR-weighted median τ0.113
+> MR-Egger τ0.095
+> Interventional Risk difference RD P(Y=1 |I=1) −P(Y=1 |I=0)
+> Intervention arm PYAWNS1 0.262 /0.294
+> Control arm PTAU 0.075 /0.076
+> Associational Cox proportional hazards model βlog(1 .21) ≈0.1906
+> Cox proportional hazards model γ3.2436 Exposure definition XIndicator: short sleep <6h/day (ref: 6–8 h/day) Covariate set Z18 baseline covariates (demographic, lifestyle, metabolic, comorbidity) Cox proportional hazards model α(t)Estimated non-parametrically Spline specification Knots 5th, 35th, 65th, 95th percentiles
+
+Table 9. Registry of key parameters and hyperparameters across evidence card categories. Structural equations are summarized in Figure 4; this table reports numerical parameters, operational thresholds, and implementation-specific settings used in each evidence card. 
+
+two-layer architecture featuring unique identifier locking and confidence grading. This framework first establishes variable node directionality via a strict data dictionary benchmark, and subsequently quantifies the match quality of each mapping relationship through a standardized status classification system. The sole Ground Truth for this mapping process is restricted to the official Data Dictionary of the HPP platform Pheno AI Knowledgebase, which serves as the definitive metadata source for all subdatasets. Specifically, mappings must point strictly to the tabular field name within the database, which functions as the unique, persistent identifier bridging literature concepts and local data. The extraction protocol mandates that the mapping results must be spelled exactly as in the data dictionary, including the preservation of case sensitivity and underscore formatting. The use of non-standardized generic names or fabricated created field names is strictly prohibited to ensure that subsequent automated validation scripts can accurately call the corresponding column data. Acknowledging the inevitable heterogeneity between variable definitions in medical literature and the actual measurement methods of the local HPP cohort, this study introduces state classification to quantify the matching accuracy and confidence of each mapping relationship. Based on the degree of consistency in the definition, the system divides the mapping results into the following four mutually exclusive categories: Exact, Close, Derived, and Tentative. Examples of abridged evidence cards are shown in Figure 4 and Table 9. The criteria and operating procedures for determining each mapping state are as follows: 
+
+Exact Indicates that the variable from the literature is identical to the HPP field in definition, unit, and measurement methodology. For example, ”Systolic BP (mmHg)” in the literature maps directly to sbp mmHg in HPP. This category offers the highest validation validity. 
+
+Close Indicates high conceptual consistency between the literature variable and the HPP field, despite non-essential 38 Submission and Formatting Instructions for ICML 2026 
+
+differences in specific device models, questionnaire versions, or unit magnitudes. These differences are judged not to fundamentally alter the biological significance of the variable. For instance, ”AHI measured by PSG” in the literature versus ”pAHI measured by portable devices” in HPP. In such cases, discrepancies must be explicitly documented in the notes 
+
+field to facilitate bias assessment during validation. 
+
+Derived Indicates that the literature variable does not correspond to a single raw field in HPP but can be obtained via mathematical calculation, logical aggregation, or thresholding of existing fields. Common scenarios include unit conversion (e.g., mg/dL to mmol/L), multi-field synthesis (e.g., calculating BMI from height and weight), or discretization of continuous variables (e.g., generating a categorical variable by applying a ”¡6 hours” threshold to a continuous sleep duration field). Such mappings require the explicit recording of the calculation formula or derivation logic in the notes field. 
+
+Tentative Indicates that no clear corresponding field exists in the HPP data dictionary, or that ambiguous candidates exist without sufficient information to confirm consistency. These mappings are retained solely as potential leads for validation and are typically excluded from the automated validation of core mechanisms. The source of uncertainty and potential candidate fields must be noted in the notes field. D.7.2. V ARIABLE CONVERSION AND ALIGNMENT 
+
+Following basic field anchoring, we implemented a standardized variable transformation and alignment protocol for variables classified as Close or Derived to eliminate systematic bias arising from discrepancies in units, granularity, or definition thresholds. For cases where the units reported in the literature are inconsistent with the native units of the local HPP database, the system employs a conversion mechanism based on the UCUM (Unified Code for Units of Measure) standard, mandating the recording of precise conversion formulas in the remarks field (e.g., the literature uses the conventional unit mg/dL to report blood glucose, while HPP uses the international unit mmol/L), ensuring that the values are in the same dimensional space before entering the statistical validation model. For composite variables not representable by a single physical field, the protocol defines multi-field aggregation rules. Multiple source fields are linked via pipe separators, with synthesis algorithms—such as summation, averaging, or logical derivation—explicitly recorded to construct physiological metrics consistent with the literature (e.g., calculating Total Energy Intake by summing specific nutrients, or BMI from height and weight). For complex derived variables, such as ”energy balance” inferred from daily weight changes and Dual-energy X-ray Absorptiometry (DXA) data, the system requires derivation formulas and intermediate variables are required to ensure logical alignment with the source text. Given that medical literature often uses specific cutoff values to convert continuous indicators into categorical variables, the alignment protocol mandates the explicit definition of classification thresholds and reference groups. These are marked as Derived states, with discretization rules specified to facilitate subsequent data binning. During validation, the system dynamically applies these rules to bin or binarize raw HPP data, reconstructing exposure and control groups homogeneous to those in the literature to ensure the comparability of categorical effect sizes. Finally, the system enforces strict temporal anchoring, aligning measurement time points from the literature with specific local data collection waves (e.g., mapping ”Visit 1” to the corresponding HPP wave). Where literature employs means over specific time windows (e.g., ”average sleep duration over the past 7 nights”), the protocol requires aggregating repeated measures from the corresponding local timeframe. This mechanism effectively prevents interference from time-varying confounding factors, ensuring that the temporal logic of exposure and outcome conforms to the basic assumptions of causal inference. 
+
+D.8. Structural equation construction 
+
+D.8.1. V ERIFICATION ENVIRONMENT DEFINITION 
+
+To enable the automated validation and causal inference of medical mechanism pathways on the local HPP dataset, we established a standardized validation environment and variable domain. Given the complexity of causal inference and the sparsity of longitudinal data, the current validation framework adopts a ”Single Time-point Slice” model. This means that all variables exposure X, outcome Y , mediator M , and covariates Z, are anchored within a specific temporal window surrounding the participant’s enrollment baseline (default: baseline ± 90 days). This setting treats each pathway to be validated, including the involved exposure X, outcome Y , potential mediator M , and adjustment set Z, as static observations within the same time slice, focusing on validating the causal structure of the mechanism pathway in the cross-sectional or short-term context. The construction of the validation cohort strictly follows the inclusion and exclusion criteria defined in the 
+
+population.eligibility signature field of the evidence card. The automated system dynamically queries the HPP database to identify sub-cohorts matching specified age ranges, gender distributions, and disease histories, subsequently applying standardized preprocessing pipelines to key variables. For missing data, the system employs imputation strategies 39 Submission and Formatting Instructions for ICML 2026 
+
+based on multiple imputation or full case analysis; for outliers in continuous variables, it uses interquartile range-based truncation. These definitions transform heterogeneous literature evidence into homogeneous, data-complete, static statistical tasks on the local dataset. D.8.2. U NIFIED STRUCTURAL EQUATIONS (EL-GSE) S PECIFICATION 
+
+To achieve a standardized transformation from unstructured documentary evidence to computable causal objects, this study defines and establishes the Edge-Local Generalized Structural Equation (EL-GSE) specification. EL-GSE is a general mathematical abstraction template designed to encapsulate each causal path extracted from the evidence card into an atomic unit with independent computational capabilities. For any candidate causal edge X → Y , its EL-GSE formal definition is as follows: 
+
+g(E[Y | X, Z ]) = α + β · TX (X) + γ⊤TZ (Z)
+
+In this equation, g(·) represents the link function, the form of which is strictly determined by the data distribution type of the outcome variable Y ; TX (·) is a contrastive coding function for the exposure variable X (including standardization, quantile contrast, or treatment/control coding) used to mathematically align the effect definitions reported in the literature; TZ (·) is the vectorized coded representation of the adjustment set Z; β is the core causal parameter to be validated, corresponding to the effect size in the evidence card; γ is the regression coefficient vector of the adjustment set; and α is the intercept term. Based on the distribution characteristics of the outcome variables, the EL-GSE specification further derives two standard sub-forms to adapt to actual data: For continuous outcomes, the equation adopts the identity link function and the Gaussian noise assumption, degenerating into a linear structure equation Y := α + βT X (X) + γ⊤TZ (Z) + ϵ, where ϵ ∼ N (0 , σ 2).For binary outcomes, the equation adopts the Logit link function and the Bernoulli distribution assumption, transforming into a logistic structure equation Y := Bernoulli( π), where logit (π) = α + βT X (X) + γ⊤TZ (Z).The core advantage of the EL-GSE specification lies not only in its support for statistical reproducibility at the parameter level (such as verifying the direction and significance of β), but more importantly, in its inherent support for causal computation (Do-calculus). Under the premise of a single time point and identifiable backdoor path, this equation can be directly used as the execution carrier of the do() operator, utilizing the G-computation formula E[Y | do (X = x)] = 
+
+EZ [g−1(α + βT X (x) + γ⊤TZ (Z))] to calculate the average intervention effect at the population level, or to calculate personalized counterfactual prognoses based on the covariate Z = z for a specific individual. Finally, these equations and their parameters are serialized into a standard JSON object containing form , parameters , and do support ,completing the transition from static literature knowledge to a dynamic, executable causal model. 40

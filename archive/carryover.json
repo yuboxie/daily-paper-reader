@@ -1,6 +1,124 @@
 {
-  "generated_at": "2026-03-06T19:11:18.471356+00:00",
-  "updated_date": "20260306",
+  "generated_at": "2026-03-11T03:14:39.283559+00:00",
+  "updated_date": "20260210-20260311",
   "carryover_days": 9,
-  "items": []
+  "items": [
+    {
+      "id": "2602.21168v1",
+      "title": "Sequential Counterfactual Inference for Temporal Clinical Data: Addressing the Time Traveler Dilemma",
+      "abstract": "Counterfactual inference enables clinicians to ask \"what if\" questions about patient outcomes, but standard methods assume feature independence and simultaneous modifiability -- assumptions violated by longitudinal clinical data. We introduce the Sequential Counterfactual Framework, which respects temporal dependencies in electronic health records by distinguishing immutable features (chronic diagnoses) from controllable features (lab values) and modeling how interventions propagate through time. Applied to 2,723 COVID-19 patients (383 Long COVID heart failure cases, 2,340 matched controls), we demonstrate that 38-67% of patients with chronic conditions would require biologically impossible counterfactuals under naive methods. We identify a cardiorenal cascade (CKD -> AKI -> HF) with relative risks of 2.27 and 1.19 at each step, illustrating temporal propagation that sequential -- but not naive -- counterfactuals can capture. Our framework transforms counterfactual explanation from \"what if this feature were different?\" to \"what if we had intervened earlier, and how would that propagate forward?\" --  yielding clinically actionable insights grounded in biological plausibility.",
+      "authors": [
+        "Jingya Cheng",
+        "Alaleh Azhir",
+        "Jiazi Tian",
+        "Hossein Estiri"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-02-24T18:11:23+00:00",
+      "link": "https://arxiv.org/pdf/2602.21168v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "temporal dependencies in electronic health records",
+      "llm_evidence_cn": "电子健康记录中的时间依赖性",
+      "llm_evidence": "电子健康记录中的时间依赖性",
+      "canonical_evidence": "电子健康记录中的时间依赖性",
+      "llm_tldr_en": "A framework for sequential counterfactual inference that respects temporal dependencies in longitudinal EHR data.",
+      "llm_tldr_cn": "一种序列因果推断框架，遵循纵向EHR数据中的时间依赖性。",
+      "llm_tldr": "一种序列因果推断框架，遵循纵向EHR数据中的时间依赖性。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2602.21168v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.04142v1",
+      "title": "A Multi-Agent Framework for Interpreting Multivariate Physiological Time Series",
+      "abstract": "Continuous physiological monitoring is central to emergency care, yet deploying trustworthy AI is challenging. While LLMs can translate complex physiological signals into clinical narratives, it is unclear how agentic systems perform relative to zero-shot inference. To address these questions, we present Vivaldi, a role-structured multi-agent system that explains multivariate physiological time series. Due to regulatory constraints that preclude live deployment, we instantiate Vivaldi in a controlled, clinical pilot to a small, highly qualified cohort of emergency medicine experts, whose evaluations reveal a context-dependent picture that contrasts with prevailing assumptions that agentic reasoning uniformly improves performance. Our experiments show that agentic pipelines substantially benefit non-thinking and medically fine-tuned models, improving expert-rated explanation justification and relevance by +6.9 and +9.7 points, respectively. Contrarily, for thinking models, agentic orchestration often degrades explanation quality, including a 14-point drop in relevance, while improving diagnostic precision (ESI F1 +3.6). We also find that explicit tool-based computation is decisive for codifiable clinical metrics, whereas subjective targets, such as pain scores and length of stay, show limited or inconsistent changes. Expert evaluation further indicates that gains in clinical utility depend on visualization conventions, with medically specialized models achieving the most favorable trade-offs between utility and clarity. Together, these findings show that the value of agentic AI lies in the selective externalization of computation and structure rather than in maximal reasoning complexity, and highlight concrete design trade-offs and learned lessons, broadly applicable to explainable AI in safety-critical healthcare settings.",
+      "authors": [
+        "Davide Gabrielli",
+        "Paola Velardi",
+        "Stefano Faralli",
+        "Bardh Prenkaj"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-04T14:55:46+00:00",
+      "link": "https://arxiv.org/pdf/2603.04142v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "interpreting multivariate physiological time series",
+      "llm_evidence_cn": "解释多变量生理时间序列",
+      "llm_evidence": "解释多变量生理时间序列",
+      "canonical_evidence": "解释多变量生理时间序列",
+      "llm_tldr_en": "Vivaldi is a multi-agent system that translates complex physiological time series into clinical narratives.",
+      "llm_tldr_cn": "Vivaldi是一个多智能体系统，可将复杂的生理时间序列转化为临床叙述。",
+      "llm_tldr": "Vivaldi是一个多智能体系统，可将复杂的生理时间序列转化为临床叙述。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.04142v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2602.22771v1",
+      "title": "ClinDet-Bench: Beyond Abstention, Evaluating Judgment Determinability of LLMs in Clinical Decision-Making",
+      "abstract": "Clinical decisions are often required under incomplete information. Clinical experts must identify whether available information is sufficient for judgment, as both premature conclusion and unnecessary abstention can compromise patient safety. To evaluate this capability of large language models (LLMs), we developed ClinDet-Bench, a benchmark based on clinical scoring systems that decomposes incomplete-information scenarios into determinable and undeterminable conditions. Identifying determinability requires considering all hypotheses about missing information, including unlikely ones, and verifying whether the conclusion holds across them. We find that recent LLMs fail to identify determinability under incomplete information, producing both premature judgments and excessive abstention, despite correctly explaining the underlying scoring knowledge and performing well under complete information. These findings suggest that existing benchmarks are insufficient to evaluate the safety of LLMs in clinical settings. ClinDet-Bench provides a framework for evaluating determinability recognition, leading to appropriate abstention, with potential applicability to medicine and other high-stakes domains, and is publicly available.",
+      "authors": [
+        "Yusuke Watanabe",
+        "Yohei Kobashi",
+        "Takeshi Kojima",
+        "Yusuke Iwasawa",
+        "Yasushi Okuno",
+        "Yutaka Matsuo"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.DB"
+      ],
+      "published": "2026-02-26T09:03:41+00:00",
+      "link": "https://arxiv.org/pdf/2602.22771v1",
+      "tags": [
+        "keyword:EHR TR",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Benchmarking LLM judgment and reasoning in clinical decision-making scenarios",
+      "llm_evidence_cn": "在临床决策场景中基准测试LLM的判断和推理能力",
+      "llm_evidence": "在临床决策场景中基准测试LLM的判断和推理能力",
+      "canonical_evidence": "在临床决策场景中基准测试LLM的判断和推理能力",
+      "llm_tldr_en": "Evaluates LLMs on their ability to determine if clinical information is sufficient for making medical decisions.",
+      "llm_tldr_cn": "评估LLM在临床决策中判断现有信息是否充分的能力。",
+      "llm_tldr": "评估LLM在临床决策中判断现有信息是否充分的能力。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "carryover_cache",
+      "paper_id": "2602.22771v1",
+      "carry_days": 1
+    }
+  ]
 }

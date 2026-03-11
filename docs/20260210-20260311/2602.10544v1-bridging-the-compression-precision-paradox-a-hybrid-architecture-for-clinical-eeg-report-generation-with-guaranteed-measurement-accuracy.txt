@@ -1,0 +1,508 @@
+Title: Bridging the Compression-Precision Paradox: A Hybrid Architecture for Clinical EEG Report Generation with Guaranteed Measurement Accuracy
+
+URL Source: https://arxiv.org/pdf/2602.10544v1
+
+Published Time: Thu, 12 Feb 2026 01:37:14 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# Bridging the Compression-Precision Paradox: A Hybrid Architecture for Clinical EEG Report Generation with Guaranteed Measurement Accuracy 
+
+## Wuyang Zhang ∗
+
+zhang.noc@northeastern.edu Northeastern University Boston, MA, USA 
+
+## Zhen Luo 
+
+luo.zhe@northeastern.edu Northeastern University Boston, MA, USA 
+
+## Chuqiao Gu 
+
+chuqiaog@alumni.cmu.edu Carnegie Mellon University Pittsburgh, PA, USA 
+
+## Jianming Ma 
+
+ma.jianming@northeastern.edu Northeastern University Boston, MA, USA 
+
+## Yebo Cao 
+
+yeboc@alumni.cmu.edu Carnegie Mellon University Pittsburgh, PA, USA 
+
+## Wangming Yuan 
+
+yuan.wangming@gmu.edu George Mason University Fairfax, VA, USA 
+
+## Yinzhi Jin 
+
+yinzhij@alumni.cmu.edu Carnegie Mellon University Pittsburgh, PA, USA 
+
+Abstract 
+
+Automated EEG monitoring requires clinician-level precision for seizure detection and reporting. Clinical EEG recordings exceed LLM context windows, requiring extreme compression (400:1+ ra-tios) that destroys fine-grained temporal precision. A 0.5 Hz error distinguishes absence epilepsy from Lennox-Gastaut syndrome. LLMs lack inherent time-series comprehension and rely on sta-tistical associations from compressed representations. This dual limitation causes systems to hallucinate clinically incorrect mea-surement values. We separate measurement extraction from text generation. Our hybrid architecture computes exact clinical values via signal pro-cessing before compression, employs a cross-modal bridge for EEG-to-language translation, and uses parameter-efficient fine-tuning with constrained decoding around frozen slots. Multirate sampling maintains long-range context while preserving event-level preci-sion. Evaluation on TUH and CHB-MIT datasets achieves 60% fewer false alarms, 50% faster detection, and sub-clinical measurement precision. This is the first system guaranteeing clinical measure-ment accuracy in automated EEG reports. 
+
+CCS Concepts 
+
+• General and reference → Design ; • Computing methodolo-gies → Neural networks ; • Applied computing → Health care information systems ; Computer-assisted instruction . 
+
+> ∗Corresponding author
+> This work is licensed under a Creative Commons Attribution 4.0 International License.
+> ICPHDS 2025, Yantai, China
+> ©2025 Copyright held by the owner/author(s). ACM ISBN 979-8-4007-2072-7/2025/11 https://doi.org/10.1145/3789537.3789570
+
+Keywords 
+
+EEG analysis, Clinical report generation, Large language models, Cross-modal learning, Medical AI, Seizure detection, Hybrid archi-tecture, Value extraction 
+
+ACM Reference Format: 
+
+Wuyang Zhang, Zhen Luo, Chuqiao Gu, Jianming Ma, Yebo Cao, Wangming Yuan, and Yinzhi Jin. 2025. Bridging the Compression-Precision Paradox: A Hybrid Architecture for Clinical EEG Report Generation with Guaranteed Measurement Accuracy. In 2025 4th International Conference on Public Health and Data Science (ICPHDS 2025), November 21–23, 2025, Yantai, China. ACM, New York, NY, USA, 7 pages. https://doi.org/10.1145/3789537.3789570 
+
+1 Introduction 
+
+50 million people worldwide live with epilepsy [1] . Severe shortage of epileptologists creates care gaps, particularly in low- and middle-income countries with 80% of patients [1] . Automated EEG analysis will transform care access through scalable monitoring and diagnos-tic reporting. However, a fundamental barrier blocks deployment: loss of diagnostic precision under extreme compression required for LLM-based report generation. Clinical EEG recordings exceed LLM context windows, requiring compression ratios exceeding 400:1. This destroys fine-grained tem-poral precision. A 0.5 Hz error distinguishes 3 Hz absence epilepsy from 3.5 Hz Lennox-Gastaut syndrome, altering treatment decisions. LLMs lack inherent time-series comprehension and rely on statisti-cal associations from compressed representations. This compression-precision paradox is a mathematical necessity imposed by context window constraints. Existing approaches are inadequate. EEG-GPT [2] , BENDR [3] , and biosignal-to-text systems [4] compress signals into neural represen-tations before text generation, destroying clinical measurement precision and producing hallucinated values. With human inter-rater reliability at 𝜅 =0.29-0.73 [5] and FDA demanding traceable measurements, clinical deployment requires guaranteed accuracy.  
+
+> arXiv:2602.10544v1 [cs.LG] 11 Feb 2026 ICPHDS 2025, November 21–23, 2025, Yantai, China Zhang et al.
+
+Our key insight separates measurement extraction from text generation. We compute exact clinical values via signal processing 
+
+before neural compression, preserving accuracy while retaining neural model flexibility for narrative composition. Multirate sam-pling maintains long-range context while preserving event-level precision. Every measurement includes full provenance. 
+
+Contributions. (i) We formalize the compression-precision para-dox and prove end-to-end neural learning cannot preserve clini-cal measurements under LLM context constraints. (ii) We present the first hybrid architecture separating measurement extraction from text generation, combining signal processing guardrails with cross-modal EEG-to-language translation and parameter-efficient LLM adaptation. (iii) Evaluation demonstrates clinically significant improvements: reduced false alarms, faster detection, and measure-ment precision within clinical tolerance. (iv) We demonstrate clini-cal deployability with FDA-compliant traceability and sub-minute latency. 
+
+2 Related Work 
+
+Existing approaches fail to address dual limitations: (1) extreme compression destroying measurement precision, and (2) language models lacking time-series comprehension. 
+
+2.1 EEG and Time-Series Foundation Models 
+
+Recent foundation models (EEG-GPT [2] , BENDR [3] , EEGFormer [6] )compress multi-channel data into compact representations, de-stroying fine-grained measurements needed to distinguish diag-nostic boundaries. Time-series models (Chronos-2 [7] , PatchTST [8] ,TimesFM [9] ) demonstrate strong forecasting but do not guarantee measurement precision. A 0.5 Hz error is statistically minor but clinically catastrophic. We adopt architectural principles (patching, group attention) but introduce measurement-first signal processing and graph-aware layers. 
+
+2.2 Medical Report Generation 
+
+Vision-language models generate radiology reports from static im-ages [10–12] , but successes do not transfer to dynamic multi-channel EEG. Fitting hours of high-frequency data into LLM context win-dows requires 400:1+ compression, destroying measurement preci-sion [13] . FDA guidance requires traceable outputs [14] . With human inter-rater reliability at 𝜅 = 0.3–0.7 [5] , automated systems must guarantee measurement accuracy. 
+
+3 Problem Formulation 3.1 Task Definition 
+
+Given multi-channel EEG X ∈ R𝐶 ×𝑇 , we generate report R =
+
+(T , V) where T is narrative text and V = {( 𝑣 𝑖 , 𝑐 𝑖 , 𝑠 𝑖 )} 𝑚 𝑖 =1 contains precise measurements with provenance. Diagnostic boundaries re-quire 𝜖 𝑓 = 0.1 Hz (frequency), 𝜖 𝑑 = 0.5 s (duration), 𝜖 𝑎 = 5 𝜇 V (am-plitude). We use hierarchical sampling: low-rate X(𝐿 ) (256–512 Hz) for context, high-rate X(𝐻 ) (≥1 kHz) for events, with channel graph 
+
+𝐺 = (𝑉 , 𝐸 ) for spatial inference. 
+
+Figure 1: Hybrid architecture: hierarchical sampling balances context and precision; signal processing extracts measure-ments before compression; cross-modal bridge translates to language space; constrained decoder generates reports around frozen slots. 
+
+3.2 The Compression-Precision Paradox 
+
+Compressing |X| = 322 , 560 to 𝑑 ∈ { 512 , 1024 } yields 𝜌 > 300 com-pression, bounded by 𝐼 (X; z) ≤ log 2 (|Z|) . Frequency resolution 
+
+Δ𝑓 min ≈ 0.74 Hz exceeds clinical 𝜖 𝑓 = 0.1 Hz by 7 ×, and temporal quantization Δ𝑡 min ≈ 2.1 s exceeds 𝜖 𝑑 = 0.5 s. 
+
+3.3 Fundamental Limitations of End-to-End Learning 
+
+When compression destroys precise values, LLMs generate training distribution modes, causing systematic hallucination. 
+
+Theorem 1. For any encoder 𝑓 𝜃 : R𝐶 ×𝑇 → R𝑑 with 𝜌 > 100 , distinct signals X1, X2 with |𝑣 1 −𝑣 2 | > 𝜖 clinical satisfy || 𝑓 𝜃 (X1) − 𝑓 𝜃 (X2)|| 2 < 𝛿 
+
+for arbitrarily small 𝛿 .Proof. By pigeonhole principle, 2𝐶 ×𝑇 ×𝑏 inputs map to ≈ 2𝑑 ×𝑏 ′
+
+em-beddings, so clinically distinct signals become indistinguishable. 
+
+□
+
+4 Methodology 4.1 Solution Overview 
+
+Our hybrid architecture (Figure 1) separates measurement extrac-tion from text generation to resolve the compression-precision paradox. The key insight: compute exact clinical values via signal processing before neural compression, then use language models solely for narrative composition around frozen measurement slots. 
+
+Pipeline. (1) Hierarchical multirate sampling maintains syn-chronized low-rate (256–512Hz) and high-rate ( ≥1kHz) streams. Low-rate provides hours of context; high-rate windows (Eq. (2) )capture event-level precision only where needed, avoiding compu-tational explosion. (2) Measurement-first guardrails compute exact values (frequency via Welch PSD Eq. (7) , duration, amplitude, localization) with full provenance before any neural processing. These frozen slots are immutable. (3) Graph-aware modeling pro-cesses dual-view inputs (time-domain patches, transform-domain bandpower) using group attention augmented with channel-graph structure (Eq. (3) ) and linear-time SSM layers for ultra-long se-quences. (4) Output heads include quantile forecasting (pinball loss Eq. (4) ), seizure detection, and EMD-aware value prediction Bridging the Compression-Precision Paradox: A Hybrid Architecture for Clinical EEG Report Generation with Guaranteed Measurement Accuracy ICPHDS 2025, November 21–23, 2025, Yantai, China 
+
+Table 1: Key hyperparameters (defaults; vary by dataset/ab-lation). 
+
+Component Setting Sampling Low: 256–512Hz; High: ≥1kHz Event windows 𝑊 = 2–10s; margins ±2s Welch PSD 8 segments; 50% overlap Patches Coarse 64; fine 256 Backbone 𝑑 = 512 ; 8 heads; 4 layers Forecasting 9 quantiles; horizon 64 Calibration 𝑛 𝑐𝑎𝑙 = 256 ; 𝛼 = 0.9
+
+(Eq. (5) ) with conformal calibration (Eq. (6) ). (5) Cross-modal bridge maps EEG features to language-compatible semantic space via progressive expansion with learnable clinical anchors. (6) Con-strained generation uses LoRA-adapted LLM with schema-first decoding: structured JSON populates from frozen slots, then narra-tive generation with hard constraints preventing numeric halluci-nation. 
+
+Hyperparameters. Table 1 summarizes key settings (tuned on validation data). 
+
+4.2 Feature Extraction and Neural Architecture 
+
+Hierarchical multirate sampling. We maintain synchronized low-rate (256–512Hz) and high-rate ( ≥1kHz) streams after standard preprocessing (notch 50/60Hz, bandpass 0.5–80Hz). The low-rate stream continuously captures hours of context. High-rate windows with temporal margins ( ±2s) are extracted around candidate events detected via energy, kurtosis, and spectral peaks with spatial con-sensus [15] . This avoids processing hours at high sampling rates while preserving event-level precision. 
+
+Measurement-first guardrails. Before neural processing, we com-pute exact values via Welch PSD (Eq. (7) ) for dominant frequency 
+
+arg max 𝜔 ˆ𝑆 𝑥𝑥 (𝜔 ), hysteresis thresholding for durations, median absolute deviation for amplitudes, and graph-based asymmetry in-dices for lateralization. These frozen slots carry full provenance and serve as immutable supervision targets. 
+
+Neural architecture. Models process dual-view inputs (time-domain patches and transform-domain bandpower), plus channel graph structure and covariates. Group attention [7] shares information within channel sets, augmented with graph attention (Eq. (3) ) for spatial coherence. SSM layers (S4/Mamba [16,17] ) provide linear-time long-range modeling, interleaved with attention for local detail. Output heads include quantile forecasting (pinball loss Eq. (4) ), seizure detection, and EMD-aware value prediction (Eq. (5)). 
+
+4.3 Cross-Modal Bridge 
+
+The cross-modal bridge translates EEG features into language-compatible semantic space while preserving measurement fidelity. EEG encoder outputs zEEG ∈ R768 must interface with LLM se-mantic spaces ( 𝑑 𝐿 ≈ 4096 ). Rather than direct projection, we use progressive expansion 𝑓 bridge : R768 → R4096 with intermediate lay-ers (768 →1536 →2816 →4096) to prevent information bottlenecks. Learnable semantic anchors {a𝑘 }𝐾 𝑘 =1 guide the mapping from electrophysiological patterns to clinical concepts (seizure status, temporal characteristics, type, severity, spatial patterns). Initialized from medical terminology embeddings, these anchors are refined via contrastive alignment [18,19] using temperature-scaled InfoNCE loss, encouraging EEG embeddings to align with semantically simi-lar clinical descriptions. The complete representation concatenates bridge output, frozen measurements, and context: 
+
+hcomplete = [hbridge ; mfrozen ; ccontext ] (1) where mfrozen contains exact values (frequency, duration, amplitude, location) from signal processing. Special formatting signals the decoder to copy these values verbatim, ensuring measurement fidelity while leveraging neural models for narrative fluency. 
+
+4.4 Value Extraction and Calibration 
+
+DSP routines compute exact clinical values and insert them as im-mutable slots with full provenance (method, window, parameters). The text generator is constrained to copy these values, not generate them. Low-confidence events trigger rule-based fallback phrasing. For neural value prediction, discretized outputs (frequency/du-ration bins) use EMD-aware supervision (Eq. (5) ) that penalizes cumulative distribution discrepancies [20,21] , reducing regression-by-classification artifacts. Conformalized quantile regression (Eq. (6)) guarantees coverage for probabilistic forecasts under distribution shift [22] . Change-point tests trigger adaptive recalibration during nonstationarity. Post-hoc constraints enforce physiologic plausibil-ity (nonnegative amplitudes, band-consistent frequencies); viola-tions trigger re-measurement or abstention. 
+
+4.5 Report Generation 
+
+We employ parameter-efficient LoRA adaptation [23] (𝑟 = 16 , 𝛼 = 32 )to specialize a pretrained LLM for clinical reporting. Generation proceeds in two stages: (i) emit structured JSON schema with frozen measurement slots; (ii) condition on schema to generate narrative. Constrained beam search with custom masking restricts numeric generation to copying from frozen slots, preventing hallucination. Every value carries full provenance (algorithm, window, channels) for traceability and compliance. 
+
+4.6 Mathematical Formulation 
+
+Hierarchical sampling. Low-rate stream X(𝐿 ) ∈ R𝐶 ×𝑇 𝐿 and high-rate stream X(𝐻 ) ∈ R𝐶 ×𝑇 𝐻 are synchronized. Gating function G
+
+selects event windows W = {[ 𝑡 (𝑚 ) 
+
+> 𝑠
+
+, 𝑡 (𝑚 ) 
+
+> 𝑒
+
+]} 𝑚 from X(𝐿 ) via ener-gy/kurtosis/spectral peaks. High-rate crops: 
+
+Z(𝐻 ) 
+
+> 𝑚
+
+= X(𝐻 ) [:, 𝑡 (𝑚 ) 
+
+> 𝑠
+
+: 𝑡 (𝑚 ) 
+
+> 𝑒
+
+] , 𝑚 = 1, . . . , |W| (2) yield dual-view representation: low-rate context, high-rate preci-sion. 
+
+Graph-aware attention. Channel-graph bias B (from montage adjacency/distances) augments attention: 
+
+L = QK ⊤
+
+√𝑑 + 𝛽 B , A = softmax (L) , Attn (·) = AV (3) where 𝛽 controls spatial bias strength. ICPHDS 2025, November 21–23, 2025, Yantai, China Zhang et al. 
+
+Losses. Quantile forecasting uses pinball loss: 
+
+Lpinball =
+
+> 𝐻
+
+∑︁ 
+
+> ℎ=1
+> 𝐾
+
+∑︁ 
+
+> 𝑘 =1
+
+𝜌 𝛼 𝑘 
+
+ 𝑦 𝑡 +ℎ −𝑞 𝛼 𝑘 ,ℎ (x1: 𝑡 ) , 𝜌 𝛼 (𝑢 ) = 𝑢 (𝛼 −I[𝑢 < 0]) 
+
+(4) Discretized values use EMD loss comparing cumulative distribu-tions: 
+
+LEMD =
+
+> 𝐵
+
+∑︁ 
+
+> 𝑏 =1
+
+𝐹 p (𝑏 ) − 𝐹 y (𝑏 ) , 𝐹 p (𝑏 ) =∑︁  
+
+> 𝑖 ≤𝑏
+
+𝑝 𝑖 , 𝐹 y (𝑏 ) = I[𝑏 ≥ 𝑗 ]
+
+(5) reducing regression-by-classification artifacts. 
+
+Calibration and measurement. Conformalized quantiles guaran-tee coverage: 
+
+˜𝑞 𝛼 (x) = ˆ𝑞 𝛼 (x) + Quantile 1−𝛼 
+
+ {𝑟 𝑖 (𝛼 )} 𝑛 𝑖 =1
+
+ (6) with online updates per recording. Welch PSD averages over 𝑈 
+
+segments: 
+
+ˆ𝑆 𝑥𝑥 (𝜔 ) = 1
+
+𝑈 
+
+> 𝑈
+
+∑︁ 
+
+> 𝑢 =1
+
+DFT {𝑤 · 𝑥 𝑢 }( 𝜔 ) 2 (7) Dominant frequency: arg max 𝜔 ˆ𝑆 𝑥𝑥 (𝜔 ); duration: hysteresis thresh-olding; amplitude: median absolute deviation. 
+
+5 Experiments 5.1 Datasets and Tasks 
+
+We evaluate on TUH EEG [24] , TUSZ [25] , and CHB-MIT [26] datasets (Table 2(a)), both US-based corpora, using patient-wise splits to prevent leakage. We assess three core tasks: (i) seizure detection (false alarms/24h, latency), (ii) value extraction (frequency, dura-tion, amplitude MAE), and (iii) localization (lateralization accuracy, spatial overlap). Results are stratified by sampling rate (low ≤256Hz, mid 384–512Hz, high ≥1kHz) to assess precision-rate tradeoffs. 
+
+5.2 Baselines and Protocol 
+
+We compare against classical detectors (energy/rhythm threshold-ing), deep EEG models (EEGNet [27] , DeepConvNet [28] , BENDR [3] ,EEGFormer [6] ), and Chronos-2-style forecasting [7] . Ablations re-move individual components: graph attention, SSM layers, hierar-chical sampling, measurement guardrails, and conformal calibra-tion. We use patient-wise cross-validation with early stopping. Class imbalance is handled via focal loss for detection and EMD-aware supervision for discretized values. Online conformal calibration ensures coverage guarantees. All experiments use fixed seeds (42), PyTorch 2.3, and run on NVIDIA A100 GPUs. 1
+
+6 Results 
+
+Results use patient-wise paired tests (Wilcoxon signed-rank) with per-corpus stratification. 
+
+> 1Full reproducibility details, hyperparameters, and code will be released upon publication.
+
+6.1 Detection, Localization, and Value Extraction 
+
+Table 2(b) and Figure 5 show our method achieves 0.51 FA/24h on TUH (vs. 1.16 for EEGNet) with 10.5s latency (vs. 24.2s). Hierarchi-cal sampling enables early detection without inflating false alarms, while SSM layers handle extended contexts. For value extraction (Ta-ble 2(c), Figure 4(a)), measurement-first guardrails achieve 0.18 Hz frequency MAE—within clinical tolerance (0.1 Hz) and 62% better than EEGNet. EMD-aware supervision reduces errors near critical boundaries (3.0 vs. 3.5 Hz). Graph-aware modeling improves later-alization to 85%+ accuracy and Jaccard overlap >0.7 (Figure 4(b)), particularly for multi-focal patterns. 
+
+6.2 Ablations and Efficiency 
+
+Figure 2(a) quantifies component contributions. Removing guardrails degrades value MAE by 44%, removing graph attention reduces localization by 24%, removing SSM increases latency by 22%, re-moving hierarchical sampling cuts precision by 23%, and remov-ing calibration causes 31% undercoverage. Our hierarchical design achieves sub-minute end-to-end latency with manageable memory (Figure 2(b)), enabling clinical deployment. Orthonormal coefficient computation preserves bandpower within 2% error while reducing storage 10 × (Figure 2(c)). 
+
+6.3 Robustness and Sampling Rate Analysis 
+
+Under artifact injection (EOG/EMG/line noise) and missing chan-nels, FA/24h increases <30% and value errors <25% (Figure 3(a)). Measurement guardrails prevent implausible outputs in contami-nated segments. Performance scales with sampling rate (Figure 3(b)): high-rate data ( ≥1kHz) improves detection latency and value pre-cision substantially, while low-rate ( ≤256Hz) suffices for routine monitoring. 
+
+7 Discussion 
+
+Our hybrid architecture addresses critical gaps in automated EEG analysis by separating measurement extraction from text genera-tion. The combination of signal processing guardrails, hierarchical sampling, and graph-aware modeling enables both clinical mea-surement accuracy and scalable long-context processing. 
+
+Limitations and future work. Several limitations warrant consid-eration. First, our dual-stream architecture targets clinical worksta-tions; edge deployment on bedside monitors or wearables requires optimization through model pruning and quantization to meet memory and power constraints. Second, frozen measurement slots prioritize numeric fidelity over natural language flexibility, limiting nuanced uncertainty phrasing and institution-specific terminol-ogy—future work could explore adaptive template selection while preserving accuracy guarantees. Third, evaluation datasets (TUH, CHB-MIT) are US-based with limited demographic diversity and underrepresent certain seizure subtypes (myoclonic, focal with pre-served awareness, absence in adults); international multi-center val-idation across diverse populations is needed. Additional challenges include fully automating artifact handling and montage changes. Promising directions include subject-specific graph construction, adaptive calibration for rapid regime shifts, and semi-supervised Bridging the Compression-Precision Paradox: A Hybrid Architecture for Clinical EEG Report Generation with Guaranteed Measurement Accuracy ICPHDS 2025, November 21–23, 2025, Yantai, China Coverage_err 
+
+> FA/24h
+> Freq_MAE
+> Latency_s
+> metric
+> 0
+> 10
+> 20
+> 30
+> 40
+> Relative change (%) (higher is worse)
+> Ablation
+> -SSM
+> -calibration
+> -graph
+> -guardrails
+> -hierarchical
+
+(a) Ablation impacts Ours  
+
+> EEGNet
+> DeepConvNet
+> BENDR
+> Chronos2-baseline
+> 0
+> 100
+> 200
+> 300
+> 400
+> 500
+> 600
+> Latency (ms)
+> 0
+> 2
+> 4
+> 6
+> 8
+> Memory (GB)
+
+(b) Latency and memory raw  
+
+> dwt-keep
+> dct-keep
+> multirate-base
+> multirate+events
+> sketch
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.10
+> Relative error
+> Bandpower rel. error
+> PSD rel. error
+
+(c) Compression sensitivity Figure 2: Ablations, efficiency, and compression analysis. (a) Percentage change in metrics when removing each component. (b) End-to-end latency and memory usage. (c) Bandpower error on coefficients vs. reconstruction. none 
+
+> line_noise
+> emg
+> eog
+> missing_ch
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> FA/24h
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> Aggregate value error (relative)
+
+(a) Robustness to artifacts low mid high 
+
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+
+FA/24h (det.) (lower is better)   
+
+> BENDR
+> EEGNet
+> Ours
+> low mid high
+> 0.275
+> 0.300
+> 0.325
+> 0.350
+> 0.375
+> 0.400
+> 0.425
+
+Value MAE (lower is better)   
+
+> low mid high
+> 0.24
+> 0.26
+> 0.28
+> 0.30
+
+Forecast WQL (lower is better) (b) Sampling rate sensitivity Figure 3: Robustness analysis and sampling rate impact on performance. Table 2: Datasets and performance metrics. (a) Evaluation datasets with sampling rates. (b) False alarm rate and detection latency. (c) Mean absolute error for frequency, duration, and amplitude measurements. (a) Datasets 
+
+Corpus Hz TUH/TUSZ 250–512 CHB-MIT 256 iEEG ≥1k 
+
+(b) Detection metrics 
+
+Model FA/24h Lat.(s) Ours 0.51 10.5 
+
+EEGNet 1.16 24.2 BENDR 0.81 20.3 
+
+(c) Value extraction MAE 
+
+Model Hz s 𝜇 VOurs 0.18 1.16 3.83 
+
+EEGNet 0.48 2.32 7.59 BENDR 0.41 2.05 6.83 Ours 
+
+> EEGNet
+> DeepConvNet
+> BENDR
+> -guardrails
+> -ordinal
+
+0.0 
+
+0.2 
+
+0.4 
+
+Frequency MAE (Hz) 
+
+> Ours
+> EEGNet
+> DeepConvNet
+> BENDR
+> -guardrails
+> -ordinal
+
+0
+
+1
+
+2
+
+3
+
+Duration MAE (s) 
+
+> Ours
+> EEGNet
+> DeepConvNet
+> BENDR
+> -guardrails
+> -ordinal
+
+0.0 
+
+2.5 
+
+5.0 
+
+7.5 
+
+10.0 
+
+Amplitude MAE ( V) 
+
+(a) Value error distributions Ours  
+
+> EEGNet
+> DeepConvNet
+> BENDR
+> -graph
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Lateralization Acc
+> Jaccard Overlap
+
+(b) Localization accuracy Figure 4: Performance on value extraction and localization tasks. (a) Value error distributions show measurement accuracy. (b) Localization accuracy across different spatial patterns. 
+
+pretraining on unlabeled corpora. The measurement-first paradigm generalizes beyond EEG to any high-frequency biosignal domain where precise quantitative values are as critical as descriptive text. 
+
+Ethics and deployment. We use publicly available, de-identified datasets (TUH, CHB-MIT) with IRB approval and HIPAA compli-ance. Clinical deployment requires local IRB approval, encrypted ICPHDS 2025, November 21–23, 2025, Yantai, China Zhang et al. 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 
+
+> False alarms per 24 h (lower is better)
+> 10
+> 12
+> 14
+> 16
+> 18
+> 20
+> 22
+> 24
+> Median detection latency (s)
+> -graph-CHB-MIT
+> -graph-TUH
+> BENDR-CHB-MIT
+> BENDR-TUH
+> DeepConvNet-CHB-MIT
+> DeepConvNet-TUH
+> EEGNet-CHB-MIT
+> EEGNet-TUH
+> Ours-CHB-MIT
+> Ours-TUH
+
+Figure 5: Detection trade-off: FA/24h vs. latency. Lower-left is better. 
+
+storage (HIPAA/GDPR), audit trails, patient consent, and human oversight. Our provenance tracking ensures every value is trace-able for clinical and legal accountability [29] . Beyond performance, structured reports with frozen measurements can assist clinical education by highlighting diagnostic features (3 Hz vs. 3.5 Hz spike-wave, focal vs. generalized spread, HFOs) and providing concrete scaffolds for learning electrophysiology. 
+
+8 Conclusion 
+
+We resolve the compression-precision paradox through a hybrid ar-chitecture separating measurement extraction from text generation. Signal processing extracts exact clinical values before neural com-pression, while language models compose narratives around frozen measurements. Evaluation on TUH and CHB-MIT datasets demon-strates substantial reductions in false alarms and detection latency while achieving measurement precision within clinical tolerance. This measurement-first paradigm generalizes to high-frequency biosignal domains requiring precise quantitative values alongside descriptive text, enabling trustworthy clinical decision support with full traceability. 
+
+References 
+
+[1] World Health Organization. Epilepsy fact sheet, February 2024. URL https: //www.who.int/news-room/fact-sheets/detail/epilepsy. [2] Jonathan W. Kim, Ahmed Alaa, and Danilo Bernardo. EEG-GPT: Exploring capabilities of large language models for EEG classification and interpretation. 
+
+arXiv preprint arXiv:2401.18006 , abs/2401.18006, 2024. URL https://arxiv.org/abs/ 2401.18006. [3] Demetres Kostas, Stephane Aroca-Ouellette, and Frank Rudzicz. BENDR: Using transformers and a contrastive self-supervised learning task to learn from massive amounts of EEG data. Frontiers in Human Neuroscience , 15:653659, 2021. doi: 10.3389/fnhum.2021.653659. URL https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2021.653659/full. [4] Jiyeon Lee, Gyeongmin Kim, and Kwanhyung Hong. Automated medical report generation for ECG data: Bridging medical text and signal processing with deep learning. arXiv preprint arXiv:2412.04067 , abs/2412.04067, 2024. URL https: //arxiv.org/abs/2412.04067. [5] Arthur C. Grant, Samah G. Abdel-Baki, Jeremy Weedon, Vanessa Arnedo, Geetha Chari, Ewa Koziorynska, Catherine Lushbough, Douglas Maus, Tresa McSween, Katherine A. Mortati, Alina Reznikov, and Ahmet Omurtag. EEG interpretation reliability and interpreter confidence: A large single-center study. Epilepsy & Behavior , 32:102–107, 2014. doi: 10.1016/j.yebeh.2014.01.011. URL https://pubmed. ncbi.nlm.nih.gov/24531133/. [6] Yuqi Chen, Kan Ren, Kaitao Song, Yansen Wang, Yifan Wang, Dongsheng Li, and Lili Qiu. EEGFormer: Towards transferable and interpretable large-scale EEG foundation model. arXiv preprint arXiv:2401.10278 , abs/2401.10278, 2024. URL https://arxiv.org/abs/2401.10278. [7] Abdul Fatir Ansari, Oleksandr Shchur, Jaris Küken, Andreas Auer, Boran Han, Pedro Mercado, Syama Sundar Rangapuram, Huibin Shen, Lorenzo Stella, Xiyuan Zhang, Mononito Goswami, Shubham Kapoor, Danielle C. Maddix, Pablo Guerron, Tony Hu, Junming Yin, Nick Erickson, Prateek Mutalik Desai, Hao Wang, Huzefa Rangwala, George Karypis, Yuyang Wang, and Michael Bohlke-Schneider. Chronos-2: From univariate to universal forecasting. arXiv preprint arXiv:2510.15821 , abs/2510.15821, 2025. URL https://arxiv.org/abs/2510.15821. [8] Yuqi Nie, Nam H Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam. A time series is worth 64 words: Long-term forecasting with transformers. arXiv preprint arXiv:2211.14730 , abs/2211.14730, 2023. URL https://arxiv.org/abs/2211.14730. [9] Abhimanyu Das, Weihao Kong, Andrew Leach, Shaan Mathur, Rajat Sen, and Rose Yu. A decoder-only foundation model for time-series forecasting. arXiv preprint arXiv:2310.10688 , abs/2310.10688, 2024. URL https://arxiv.org/abs/2310.10688. [10] Zhihong Chen, Yan Song, Tsung-Hui Chang, and Xiang Wan. Generating ra-diology reports via memory-driven transformer. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP) ,pages 1439–1449, Online, 2020. Association for Computational Linguistics. doi: 10.18653/v1/2020.emnlp-main.112. URL https://aclanthology.org/2020.emnlp-main.112/. [11] Fenglin Liu, Xian Wu, Shen Ge, Wei Fan, and Yuexian Zou. Exploring and distilling posterior and prior knowledge for radiology report generation. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recog-nition , pages 13753–13762, Virtual, 2021. IEEE. URL https://openaccess.thecvf. com/content/CVPR2021/papers/Liu_Exploring_and_Distilling_Posterior_and_ Prior_Knowledge_for_Radiology_Report_CVPR_2021_paper.pdf. [12] Jing Wu, Yuli Wang, Zhengliang Zhong, et al. Vision-language foundation model for 3D medical imaging. npj Artificial Intelligence , 1:17, 2025. doi: 10.1038/s44387-025-00015-9. URL https://www.nature.com/articles/s44387-025-00015-9. [13] Naftali Tishby and Noga Zaslavsky. Deep learning and the information bottleneck principle. In 2015 IEEE Information Theory Workshop (ITW) , pages 1–5, Jerusalem, Israel, 2015. IEEE. doi: 10.1109/ITW.2015.7133169. URL https://ieeexplore.ieee. org/document/7133169/. [14] U.S. Food and Drug Administration. Clinical decision support soft-ware: Guidance for industry and food and drug administration staff, 2022. URL https://www.fda.gov/regulatory-information/search-fda-guidance-documents/clinical-decision-support-software. [15] Xiaosong Li, Yueming Zhou, Nicha Dvornek, Meiyi Zhang, and James Duncan. Graph-informed neural networks for spatial and temporal modeling of EEG sig-nals in seizure detection. IEEE Transactions on Neural Systems and Rehabilitation Engineering , 31:2154–2163, 2023. [16] Albert Gu, Karan Goel, and Christopher Ré. Efficiently modeling long sequences with structured state spaces. In International Conference on Learning Representa-tions , Virtual, 2022. OpenReview.net. URL https://arxiv.org/abs/2111.00396. [17] Albert Gu and Tri Dao. Mamba: Linear-time sequence modeling with selective state spaces. arXiv preprint arXiv:2312.00752 , abs/2312.00752, 2024. URL https: //arxiv.org/abs/2312.00752. [18] Aaron van den Oord, Yazhe Li, and Oriol Vinyals. Representation learning with contrastive predictive coding. arXiv preprint arXiv:1807.03748 , abs/1807.03748, 2018. URL https://arxiv.org/abs/1807.03748. [19] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervision. In 
+
+International Conference on Machine Learning , pages 8748–8763, Virtual, 2021. PMLR. URL https://arxiv.org/abs/2103.00020. [20] Ignacio Díaz, Manuel J. Marín-Jiménez, and Fernando de la Torre. Soft labels for ordinal regression. In IEEE/CVF Conference on Computer Vi-sion and Pattern Recognition , pages 4738–4747, Long Beach, CA, USA, 2019. IEEE. URL https://openaccess.thecvf.com/content_CVPR_2019/papers/Diaz_ Soft_Labels_for_Ordinal_Regression_CVPR_2019_paper.pdf. [21] Michaël Perrot and Zaid Harchaoui. The earth mover’s pinball loss: Quantiles for histogram-valued regression. arXiv preprint arXiv:2106.02051 , abs/2106.02051, 2021. URL https://arxiv.org/abs/2106.02051. [22] Chen Xu and Yao Xie. Conformal time-series forecasting. In Advances in Neural Information Processing Systems , pages 11865–11877, Virtual, 2021. Curran Associates, Inc. URL https://proceedings.neurips.cc/paper/2021/file/ 312f1ba2a72318edaaa995a67835fad5-Paper.pdf. [23] Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. LoRA: Low-rank adaptation of large language models. In International Conference on Learning Representations , Virtual, 2022. OpenReview.net. URL https://arxiv.org/abs/2106.09685. [24] Iyad Obeid and Joseph Picone. The temple university hospital EEG data cor-pus. Frontiers in Neuroscience , 10:196, 2016. doi: 10.3389/fnins.2016.00196. URL https://www.frontiersin.org/journals/neuroscience/articles/10.3389/fnins. 2016.00196/full. [25] Vinit Shah, Eva von Weltin, Silvia Lopez, James R. McHugh, Lydia Veloso, Meysam Golmohammadi, Iyad Obeid, and Joseph Picone. The temple university hospital seizure detection corpus. Frontiers in Neuroinformatics , 12:83, 2018. doi: 10.3389/ fninf.2018.00083. URL https://www.frontiersin.org/journals/neuroinformatics/ articles/10.3389/fninf.2018.00083/full. Bridging the Compression-Precision Paradox: A Hybrid Architecture for Clinical EEG Report Generation with Guaranteed Measurement Accuracy ICPHDS 2025, November 21–23, 2025, Yantai, China 
+
+[26] Ali Shoeb and John Guttag. Application of machine learning to epileptic seizure detection. In Proceedings of the 27th International Conference on Machine Learning (ICML) , pages 975–982, Haifa, Israel, 2010. Omnipress. URL https://physionet. org/content/chbmit/1.0.0/. [27] Vernon J. Lawhern, Amelia J. Solon, Nicholas R. Waytowich, Stephen M. Gordon, Chou P. Hung, and Brent J. Lance. EEGNet: a compact convolutional neural network for EEG-based brain–computer interfaces. Journal of Neural Engineering ,15(5):056013, 2018. doi: 10.1088/1741-2552/aace8c. URL https://pubmed.ncbi.nlm. nih.gov/29932424/. [28] Robin T. Schirrmeister, Jost T. Springenberg, Lukas D. J. Fiederer, Martin Glasstet-ter, Katharina Eggensperger, Michael Tangermann, Frank Hutter, Wolfram Bur-gard, and Tonio Ball. Deep learning with convolutional neural networks for EEG decoding and visualization. Human Brain Mapping , 38(11):5391–5420, 2017. doi: 10.1002/hbm.23730. URL https://pubmed.ncbi.nlm.nih.gov/28782865/. [29] Boris Bačić, Claudiu Vasile, Chengwei Feng, and Marian G. Ciucă. Towards nation-wide analytical healthcare infrastructures: A privacy-preserving augmented knee rehabilitation case study. arXiv preprint arXiv:2412.20733 , abs/2412.20733, 2024. URL https://arxiv.org/abs/2412.20733.
