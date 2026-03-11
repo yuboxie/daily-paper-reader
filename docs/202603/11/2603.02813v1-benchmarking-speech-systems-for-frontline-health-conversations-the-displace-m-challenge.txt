@@ -1,0 +1,217 @@
+Title: Benchmarking Speech Systems for Frontline Health Conversations: The DISPLACE-M Challenge
+
+URL Source: https://arxiv.org/pdf/2603.02813v1
+
+Published Time: Wed, 04 Mar 2026 01:51:05 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Benchmarking Speech Systems for Frontline Health Conversations: The DISPLACE-M Challenge 
+
+# Dhanya E 1, Ankita Meena 1, Manas Nanivadekar 1, Noumida A 1, Victor Azad 1, Ashwini Nagaraj Shenoy 2, Pratik Roy Chowdhuri 2, Shobhit Banga 3, Vanshika Chhabra 3, Chitralekha Bhat 4, Shareef babu Kalluri 5, Srikanth Raj Chetupalli 6, Deepu Vijayasenan 2, Sriram Ganapathy 11 LEAP lab, EE, Indian Institute of Science, Bangalore, India 
+
+2 National Institute of Technology Karnataka, India 
+
+3 Josh Talks, India 
+
+4 TANUH AI Center of Excellence, IISc, Bangalore, India 
+
+5 UPES, India 
+
+6 Indian Institute of Technology Bombay, India 
+
+dhanyae@iisc.ac.in 
+
+# Abstract 
+
+The DIarization and Speech Processing for LAnguage understanding in Conversational Environments - Medical (DISPLACE-M) challenge introduces a conversational AI benchmark focused on understanding goal-oriented, real-world medical dialogues collected in the field. The challenge ad-dresses multi-speaker interactions between healthcare workers and seekers characterized by spontaneous, noisy and overlap-ping speech across Indian languages and dialects. As part of the challenge, medical conversational dataset comprising 25 hours of development data and 10 hours of blind evaluation recordings was released. We provided baseline systems within a unified end-to-end pipeline across 4 tasks - speaker diarization, auto-matic speech recognition, topic identification and dialogue sum-marization - to enable consistent benchmarking. System perfor-mance is evaluated using established metrics such as diariza-tion error rate (DER), time-constrained minimum-permutation word error rate (tcpWER), and ROUGE-L. During this evalua-tion (Phase-I), 12 teams, across the globe, actively participated pushing the baseline systems on these metrics. However, even with a 6 − 8 week dedicated effort from various participants, the task is shown to be substantially challenging, and the ex-isting systems are significantly short of healthcare deployment readiness. 
+
+Index Terms : speaker diarization, speech recognition, conver-sational systems 
+
+# 1. Introduction 
+
+Speech processing tools for the understanding of conversations from healthcare domain can have transformative effects on pub-lic health systems, especially in community healthcare settings. Existing speech datasets in this domain are mostly recorded in controlled environments such as hospitals, involve structured clinician-patient conversations, and are predominantly in En-glish. AI-driven tools developed using such datasets often fail to perform when deployed in real-world setups involving com-munity healthcare workers. Further, there is a lack of research 
+
+This work was funded by Ministry of Electronics and Information Technology (MeitY), Government of India through the National Lan-guage Translation Mission (NLTM): BHASHINI project, SP/MITO-22-001 grant. The data collection was funded by Ministry of Education through AI Center of Excellence in Health grants. 
+
+in low-resource languages, in particular in Indian languages. To catalyze the research efforts in this space, we collected and released an annotated corpus of conversations between com-munity health workers and healthcare seekers in informal set-tings in Hindi. Using the data, we hosted an open leaderboard-style challenge - “The DI arization and Speech Processing for 
+
+LA nguage understanding in Conversational Environments -Medical (DISPLACE-M) challenge”. DISPLACE-M makes three main contributions: 1. A new benchmark built from Hindi health conversations cap-turing spontaneous, code-mixed, multi-speaker interactions recorded in unconstrained natural settings. 2. A unified evaluation framework covering four interconnected tasks - (i) speaker diarization, (ii) automatic speech recogni-tion (ASR), (iii) topic identification, and (iv) dialogue sum-marization, to perform end-to-end assessment of conversa-tional speech-understanding systems. 3. Baseline systems and evaluation frameworks to support re-producible research and a leaderboard platform to propel sub-sequent phases of the challenge. 
+
+# 2. Related Work 
+
+ASR research has seen significant progress in conversational settings, particularly for meetings, call centers, and other multi-party environments. Datasets such as the ICSI Meeting Corpus [1] and the AMI Meeting Corpus [2] have been widely used to study spontaneous multi-speaker conversational speech. How-ever, the conversations in these datasets differ significantly from those in frontline healthcare settings, where conversations are goal-driven, medically grounded, and often involve nuanced contextual information. Topic classification has been widely studied for meetings, call centers, and online discussions, while dialogue summarization datasets have largely been derived from customer support conversations, news interviews, or scripted meeting scenarios [3, 4]. Research in spoken conversation processing in healthcare has primarily focused on data collected in clinical or hospital environments. Resources such as MIMIC [5] and i2b2 [6] have enabled extensive work on clinical documentation and infor-mation extraction, but these datasets are predominantly English and reflect formal clinical workflows rather than informal front-line interactions [7]. Similarly, prior ASR efforts have focused 
+
+> arXiv:2603.02813v1 [eess.AS] 3 Mar 2026
+
+on physician dictation or structured clinical interviews recorded under relatively clean acoustic conditions with limited speaker variability [8]. These works largely focus on ASR evaluations and do not probe goal-oriented conversational metrics. In the Indian context, there has been a growing interest in developing ASR systems for low-resource and multilingual set-tings. However, existing datasets are restricted to isolated utter-ances or short conversational clips [9, 10, 11, 12], which limits their suitability for studying long-form, dialogue centric ASR systems. Further, there are no public datasets covering the con-versations in the healthcare domain. Despite substantial progress in medical NLP and conver-sational ASR, there is still no benchmark that captures the complexity of real-world frontline healthcare interactions. The DISPLACE-M Challenge addresses these limitations by in-troducing a multi-task benchmark spanning diarization, ASR, topic identification, and dialogue summarization. The Phase-I of the DISPLACE-M evaluations was orga-nized between January 1, 2026 to February 27, 2026. The de-tails of the dataset (Section 3), tracks and metrics (Section 4), baseline systems (Section 5) and challenge results (Section 6) are described below. 
+
+# 3. DISPLACE-M Corpus 
+
+3.1. Data Collection 
+
+We recorded around 50 hours of annotated healthcare con-versational speech from rural and semi-urban areas, collected through field deployments in the Indian states of Haryana and Bihar. Data collection was conducted by 80 frontline com-munity health workers across 20 administrative blocks span-ning 10 districts. The primary participants were NPHWs (non-physician health workers) - ASHA and Anganwadi Sevikas . Recordings captured natural NPHW–participant conversations occurring during routine community healthcare interactions. These interactions took place in real care environments such as Primary Health Centres (PHCs), Anganwadi centers, pri-mary schools, open village meeting spaces (chaupals), house-hold visits and community outreach settings. In our recordings, Hindi served as the primary language with code-switching to Indian English and with heavy use of regional dialects, includ-ing Haryanvi, Bhojpuri, and Magahi, reflecting natural linguis-tic practices. The recorded conversations include speakers from differ-ent age groups. Each recording ranges from 5-30 minutes, typically involving goal-oriented conversations between two participants - NPHW and a healthcare seeker. The conversa-tions, which include nature field ambiance, primarily focused on topics such as General Health and Constitutional Symptoms (e.g., weakness, fatigue, weight loss, low hemoglobin/blood loss), Women’s Health and Gynecological Issues (e.g., men-strual problems, pregnancy, family planning), Acute Illnesses and Infections (e.g., fever, cough, cold, typhoid, dengue), and Preventive Care and Diagnostics (e.g., routine check-ups, blood tests, ultrasounds). All audio recordings were captured using the built-in microphone of a mobile device. The recording for-mat is WAV using 16 -bit PCM at 16 kHz sampling rate.  
+
+> ASHA (Accredited Social Health Activists) workers, who are government-appointed female community health workers serving as the first point of contact for healthcare seekers (HS) Anganwadi sevikas are frontline workers under India’s Integrated Child Development Services (ICDS) program.
+
+3.2. Annotation 
+
+All recordings were processed through a structured, multi-stage annotation pipeline prior to dataset finalization. We performed a multi-stage quality check to ensure quality of the audio files, accuracy of the time-markers, as well as the correctness of the ASR transcripts. Further, the clinical summary is given by an expert clinician (Doctor) who had access to the audio and ground-truth rich transcriptions. The workflow was organized into distinct segmentation, transcription, and quality assurance phases to ensure traceability and reproducibility. We include the details of the dataset, pre-processing steps, and quality-check in the supplementary material. 
+
+3.3. Development and Evaluation set 
+
+The development and evaluation set contains 35 hours of Hindi medical conversations involving 260 unique speakers, compris-ing both HS and NPHWs. The speakers span a broad age range from 19 -80 years. For Tracks 1 (speaker diarization) and 2 (ASR), the data is split into 25 hours for development and 10 hours for blind evaluation. The development data was released in two phases: Dev Set 1 ( 15 hours) and Dev Set 2 ( 10 hours). For Tracks 3 (topic identification) and Track 4 (dialogue summarization), a separate curated subset of about 15 hours is provided, with 10 
+
+hours for development and 5 hours for evaluation. Each track has a separate set of reference annotations. The output hypothesis generated by the challenge participants were instructed to follow a specific format (like RTTM, json) for each task in order to enable the evaluation in the open-leaderboard. 
+
+# 4. Challenge Tracks and Metrics 
+
+We define four interconnected tasks -: 1. Track 1 - Speaker Diarization (SD) aims to determine “who spoke when,” by automatically segmenting the audio into speaker-homogeneous regions. The performance metric is the diarization error rate (DER). 2. Track 2 - Automatic Speech Recognition (ASR) system transcribes multi-speaker, mono-lingual (Hindi) and code-mixed (with English words) healthcare conversations. Sys-tems are expected to generate time-marked word-level tran-scriptions for the spontaneous conversational speech. The performance metric is character error rate (CER), word-error rate (WER) and tcpWER (Time-Constrained minimum-Permutation Word Error Rate) [13]. The tcpWER extends standard WER to multi-speaker settings by computing the minimum WER over all possible permutations of reference and hypothesized speaker streams after concatenating each speaker’s utterances [13] with constraints along the temporal axis for alignment. It therefore jointly reflects transcription quality and speaker assignment consistency, making it suit-able for evaluating end-to-end diarization-aware ASR. 3. Track 3 - Topic Identification (TI) aims to identify the un-derlying topics discussed between the NPHW and the HS. This is similar to topic modeling in NLP applications. The performance metric is the Rouge-1 (R-1) and Rouge-L (R-L) [14]. Specifically, R-1 measures the overlap of individ-ual clinical keywords (unigrams), while R-L identifies the 
+
+> https://www.codabench.org/ competitions/13833/?secret_key= 1b714e64-0f0d-4e0f-8a3c-be9b3d10f00c# Track 1
+> Diarization
+> Track 2
+> ASR
+> Track 3
+> Topic Identification
+> Track 4
+> Medical Dialogue
+> Summarization DER Reference
+> RTTM
+> Predicted
+> RTTM
+> tcpWER Reference
+> speaker-wise
+> transcripts
+> Predicted speaker-
+> wise trancripts
+> Rouge-L
+> Reference
+> summaries
+> Rouge-1
+> Reference
+> Topics
+> Predicted
+> topics
+> Predicted
+> summaries
+> Raw audio
+> (health conversation)
+
+Figure 1: DISPLACE-M Baseline system development pipeline which involves a cascaded approach of speaker diarization (SD), ASR and topic identification / summarization modules. 
+
+longest common subsequence to account for sentence struc-ture and word order. 4. Track 4 - Dialogue Summarization (DS) focuses on gen-erating concise and informative summaries of multi-speaker conversations, preserving the essential medical context. The performance metric is the Rouge-L score [14]. 
+
+# 5. Baseline Systems 
+
+For the baseline system development, we follow a cascaded system approach, illustrated in Fig. 1. Given raw conversa-tional audio, we first perform speaker diarization to obtain time-stamped speaker segments. These segments are subsequently used to guide the ASR module, which generates speaker-attributed transcripts. The resulting transcripts then serve as inputs to topic identification and dialogue summarization. 
+
+5.1. Track-1: Speaker Diarization (SD) 
+
+The speaker diarization system is the base variant of the Di-ariZen model [15, 16, 17], which closely follows the pyan-note [18] pipeline. The pipeline follows a two-stage process, in which an end-to-end neural diarization (EEND) model first computes the local diarization results on segments of 8s du-ration, followed by an Agglomerative Hierarchical Clustering (AHC) stage, where the segment-wise speaker embeddings are grouped to produce the final diarization output. DiariZen uses a custom architecture for the EEND model trained using the powerset loss [19], and ResNet34-LM trained on the VoxCeleb2 dataset [20] to extract the speaker embeddings. AHC is carried out with the number of clusters set to 2, the minimum cluster size set to 13 , and an AHC threshold of 0.6. This system is refered to as Baseline-1. For the DISPLACE-M baseline, DiariZen was evaluated under two setups—zero-shot inference and supervised fine-tuning with the development data. The fine-tuning was done with the AHC threshold set to 0.7 and minimum cluster size set to 30 . This system is referred to as Baseline-2. 
+
+5.2. Track-2: Automatic Speech Recognition (ASR) 
+
+We released two baseline systems based on i) IndicConformer and ii) Whisper-large-v3. 
+
+> https://github.com/BUTSpeechFIT/DiariZen https://github.com/AI4Bharat/IndicConformerASR https://huggingface.co/openai/whisper-large-v3
+
+1. IndicConformer: This model was developed by the AI4Bharat initiative. We used indic-conformer-600m-multilingual model, a Conformer-based end-to-end ASR model trained on large-scale multilingual Indian speech cor-pora covering 22 Indian languages [12] for the first baseline. 2. Whisper-large-v3: The second baseline uses Whisper-large-v3 [21], a 1550-M parameter multilingual encoder–decoder speech foundation model trained on web-scale weakly super-vised audio. Similar to Track-1, both the models were evaluated with and with-out fine-tuning on the development set. 
+
+5.3. Track-3: Topic Identification (TI) 
+
+We employ an ASR–LLM cascade pipeline to identify medical topics in healthcare conversations. This approach first converts spontaneous speech into text using ASR systems, followed by an LLM, medgemma-1.5-4b-it [22] prompting (described in the supplementary material) to generate the relevant health topics. 
+
+5.4. Track 4: Dialogue Summarization (DS) 
+
+Similar to the topic identification pipeline, we used the ASR transcript for the dialogue summarization (DS) task. For the summarization stage, we used LLAMA-3.2-3B model [23] as the text based summarization model in a zero-shot setting. The prompt used for summarization is described in the supplemen-tary material. 
+
+# 6. Challenge Results 
+
+The DISPLACE-M Challenge received registrations from mul-tiple teams across academia and industry, demonstrating a broad interest in the proposed benchmark. 12 international teams ac-tively participated in the Phase-I leaderboard evaluations. We also evaluated state-of-the-art closed-source models as reference systems. In particular, we evaluated Gemini 2.5 Pro [24] across all four tracks and Sarvam AI’s Saaras v3 for Track 1 (Speaker Diarization) and Track 2 (Automatic Speech Recog-nition).       
+
+> https://dashboard.sarvam.ai/speech-to-text T1
+> T2
+> T3
+> T4
+> T5
+> T6
+> T7
+> T8
+> T9
+> Baseline-1
+> Baseline-2
+> Sarvam AI
+> Gemini
+> Challenge Teams / Baselines / Closed Models
+> 0
+> 5
+> 10
+> 15
+> 20
+> DER
+> 7.38 7.56 7.65 7.70
+> 9.21 9.25 9.55 9.64
+> 11.07
+> 8.31
+> 20.79
+> 9.31
+> 8.20
+> Challenge Teams
+> Baseline
+> Closed Model
+
+Figure 2: Comparison of Diarization Error Rate (DER %) for Track 1 Evaluation Phase 1 across submitted teams 
+
+6.1. Track 1: Speaker Diarization 
+
+Figure 2 illustrates the Eval Phase-1 results for the speaker di-arization (SD) track. A total of 9 teams participated in Phase-1 evaluation. The top four systems achieved moderate improve-ments over Baseline-2, as indicated by the green bars in the figure. T1 used a hybrid end-to-end system trained on multiple datasets and fine-tuned it on the development sets. They also employed a Dynamic Logits Fusion strategy to combine 5 com-plementary systems, and obtained their best results. T2 and T3 fine-tuned the large variant of DiariZen with the WavLM model. T2 used Dev-1 for training and Dev-2 for validation, and obtained their best results with learning rates of 10 −3 and 
+
+2×10 −5 for the conformer blocks and WavLM, respectively. In contrast, T3 used a mix of both the development sets, employ-ing a 80 : 20 train-validation split. They utilize a three-stage progressive fine-tuning strategy with different hyperparameter values in each stage. 
+
+6.2. Track 2: ASR 
+
+The ASR track (Track-2) received 4 submissions, of which two teams outperformed the baseline system. Table 1 presents the Eval Phase-1 results for the ASR track. Among the baselines described in Section 5.2, fine-tuning significantly improved per-formance over the zero-shot setting. The fine-tuned Indic-Conformer achieved a tcpWER of 20 .23 % compared to 26 .78 %in the zero-shot setup, indicating the importance of in-domain adaptation. Team 1 (T1) fine-tuned the Qwen3-ASR-1.7B model [25] using approximately 1,800 hours of open-source Hindi speech data, along with the challenge development set, to better adapt to domain-specific conversational speech. An LLM-based post-processing module using GPT-4.1 was further employed for er-ror correction, with a particular focus on improving the recogni-tion of medical terminology. Team 2 (T2) followed an approach similar to our Baseline-2 system, fine-tuning IndicConformer model on the challenge development set. 
+
+6.3. Track 3: Topic Identification 
+
+Table 2 presents the results for both Track 3 and Track 4. Track 
+
+3 received two submissions in Eval Phase-1 and both the teams outperformed the baseline system described in Sec. 5.4. Team 1 (T1) achieved the highest ROUGE scores, obtain-ing a ROUGE-1 of 0.46 and a ROUGE-L of 0.44 , by using Table 1: ASR Track (Track-2) Results on Eval Phase-1; ZS = Zero-shot inference, FT = Fine-tuned on challenge dev-set                            
+
+> System CER (%) WER (%) tcpWER(%)
+> Challenge Submissions
+> T1 10.59 18.15 18.63 T2 11.92 19.26 20.10 T3 15.19 26.13 27.50
+> Open-source models
+> ZS IndicConformer (Baseline-1) 15.03 25.56 26.78 FT IndicConformer (Baseline-2) 11.40 19.01 20.23 FT Whisper-large-v3 14.07 23.60 26.32
+> Closed-source models
+> Gemini 2.5 Pro 10.76 19.60 –Sarvam AI (Saaras v3) 14.20 24.60 26.63
+
+Table 2: Results for Track-3 and Track-4.                       
+
+> Track-3 Track-4 Team R-1 R-L Team R-L
+> T1 0.46 0.44 T1 0.20
+> T2 0.36 0.35 T2 0.19 T3 0.16 Baseline 0.15 0.14 Baseline 0.18 Gemini 2.5 Pro 0.395 0.392 Gemini 2.5 Pro 0.21
+
+the Gemini 3 Pro end-to-end model operating directly on raw audio in a zero-shot configuration. Team 2 (T2) enhanced the baseline ASR-LLM pipeline by improving translation, topic ex-traction and incorporating auxiliary patient information. They included supplementary cues from raw speech, such as vocal characteristics, to refine topic prediction; for instance, knowl-edge of a patient’s sex may help distinguish between stomach pain and menstrual pain. They replaced the baseline transla-tion model with Llama 3.1 70B Instruct and increased the de-coding length to 2048 to better capture conversational context. For topic extraction, they employed Llama3.1-Aloe-Beta-8B, a model fine-tuned for medical reasoning with prompts refined it-eratively and guided by a reference list of development-set top-ics while allowing open-set outputs. Additionally, diarization outputs were used to isolate patient speech, from which age and biological sex were estimated using a Wav2Vec2-based model. These attributes were appended to the prompt to enable age- and sex-aware topic identification. Their approach relies entirely on pre-trained models without additional fine-tuning, using only the released development sets for validation. 
+
+6.4. Track 4: Dialogue Summarization 
+
+Track 4 received three submissions in Eval Phase-1, of which two teams outperformed the baseline system described in Sec. 5.3. The top-performing team (T1) proposed an end-to-end pipeline combining VAD [26], speech translation and LLM-based summarization. Audio was segmented using Silero VAD, translated from Hindi to English using AudioX-North Whisper [27] and summarized with GPT-4o-mini [28] using a structured clinical prompt. Team 2 (T2) used the Gemini 3 Pro end-to-end model in a 6-shot configuration, where raw audio was di-rectly provided as input without an intermediate ASR step and the model was guided by six example transcript–summary pairs from the challenge development set. 
+
+# 7. Discussion and Conclusion 
+
+The DISPLACE-M challenge aims to study and investigate the difficulties that state-of-the-art systems face in transcribing and understanding front-line health conversations. Our results indi-cate that upstream tasks such as speaker diarization and auto-matic speech recognition still require work to enable seamless understanding of these conversations. The best ASR system achieves a WER of 18 .2 % (and tcpWER of 18 .65 %). Fur-ther, downstream tasks such as topic identification and dialogue summarization remain significantly more challenging due to their domain-specific nature and the complexity of interactions. Among the evaluated tasks, dialogue summarization is the most challenging and we observe that even large closed-source mod-els struggle to generate reliable and clinically accurate medical summaries. One key reason is the conversational structure of health worker-seeker interactions, as they often contain implicit symptoms, fragmented descriptions and context-dependent di-alogue, which require deeper reasoning to interpret correctly. Generating accurate summaries requires domain knowledge and multi-step reasoning to interpret symptoms and identify medi-cally relevant information. Since the timeline was only about 
+
+6 weeks, we have initiated a Phase-II plan for this evaluation which allows 10 more weeks of open-leaderboard style eval-uation. The Phase-II evaluation will include more languages (beyond Hindi) and will likely attract more participation. In summary, we designed a benchmark to advance conver-sational AI for frontline health dialogue understanding. The evaluation framework consists of four tracks - Speaker Diariza-tion, Automatic Speech Recognition, Topic identification and Dialogue Summarization, allowing a comprehensive evaluation pipeline from speech processing to higher-level conversational understanding. We also described the data collection and an-notation process, as well as baseline systems for the proposed tasks. Further, the paper summarized the key findings from the Phase-I evaluation. 
+
+# 8. References 
+
+[1] A. Janin, D. Baron, J. Edwards, D. Ellis, D. Gelbart, N. Mor-gan, B. Peskin, T. Pfau, E. Shriberg, A. Stolcke, and C. Wooters, “The icsi meeting corpus,” in 2003 IEEE International Confer-ence on Acoustics, Speech, and Signal Processing, 2003. Proceed-ings. (ICASSP ’03). , vol. 1, 2003, pp. I–I. [2] S. Renals, T. Hain, and H. Bourlard, “Recognition and under-standing of meetings the ami and amida projects,” in 2007 IEEE Workshop on Automatic Speech Recognition and Understanding (ASRU) , 2007, pp. 238–247. [3] B. Gliwa, I. Mochol, M. Biesek, and A. Wawer, “SAMSum corpus: A human-annotated dialogue dataset for abstractive summarization,” in Proceedings of the 2nd Workshop on New Frontiers in Summarization , L. Wang, J. C. K. Cheung, G. Carenini, and F. Liu, Eds. Hong Kong, China: Association for Computational Linguistics, Nov. 2019, pp. 70–79. [Online]. Available: https://aclanthology.org/D19-5409/ [4] M. Zhong, D. Yin, T. Yu, A. Z. Zaidi, M. Mutuma, R. Jha, A. H. Awadallah, A. Celikyilmaz, Y. Liu, X. Qiu, and D. R. Radev, “Qmsum: A new benchmark for query-based multi-domain meet-ing summarization,” in North American Chapter of the Associa-tion for Computational Linguistics , 2021. [5] A. E. W. Johnson, L. Bulgarelli, L. Shen, A. Gayles, A. Shammout, S. Horng, T. J. Pollard, S. Hao, B. Moody, B. Gow, L.-w. H. Lehman, L. A. Celi, and R. G. Mark, “Mimic-iv, a freely accessible electronic health record dataset,” 
+
+Scientific Data , vol. 10, no. 1, p. 1, 2023. [Online]. Available: https://doi.org/10.1038/s41597-022-01899-x [6] I. for Integrating Biology and the Bedside (i2b2), “i2b2 nlp data sets,” 2021, accessed: 2024-02-19. [Online]. Available: https://www.i2b2.org/NLP/DataSets/Main.php [7] ¨O. Uzuner and A. Stubbs, “Practical applications for natural lan-guage processing in clinical research: The 2014 i2b2/uthealth shared tasks,” Journal of Biomedical Informatics , vol. 58, no. Suppl, pp. S1–S5, Dec. 2015, supplement issue. [8] C.-C. Chiu, A. Tripathi, K. Chou, C. Co, N. Jaitly, D. Jaunzeikare, A. Kannan, P. Nguyen, H. Sak, A. Sankar, J. Tansuwan, N. Wan, Y. Wu, and X. Zhang, “Speech Recognition for Medical Conver-sations,” in Interspeech 2018 , 2018, pp. 2972–2976. [9] K. Bhogale, A. V. Raman, T. Javed, S. Doddapaneni, A. Kunchukuttan, P. Kumar, and M. M. Khapra, “Effectiveness of mining audio and text pairs from public data for improving asr systems for low-resource languages,” ICASSP 2023 - 2023 IEEE International Conference on Acoustics, Speech and Signal Pro-cessing (ICASSP) , pp. 1–5, 2022. [10] K. Bhogale, S. Sundaresan, A. Raman, T. Javed, M. M. Khapra, and P. Kumar, “Vistaar: Diverse Benchmarks and Training Sets for Indian Language ASR,” in Interspeech 2023 , 2023, pp. 4384– 4388. [11] R. Nithya, S. Malavika, F. Jordan, A. Gangwar, J. MetildaN, S. Umesh, R. Sarab, A. K. Dubey, G. Divakaran, K. Samudrav-ijaya, and S. V. Gangashetty, “Spring-inx: A multilingual indian language speech corpus by spring lab, iit madras,” ArXiv , vol. abs/2310.14654, 2023. [12] T. Javed, J. Nawale, E. George, S. Joshi, K. Bhogale, D. Mehen-dale, I. Sethi, A. Ananthanarayanan, H. Faquih, P. Palit, S. Rav-ishankar, S. Sukumaran, T. Panchagnula, S. Murali, K. Gandhi, A. R, M. M, C. Vaijayanthi, K. Karunganni, P. Kumar, and M. Khapra, “IndicVoices: Towards building an inclusive multi-lingual speech dataset for Indian languages,” in Findings of the Association for Computational Linguistics: ACL 2024 , Bangkok, Thailand, Aug. 2024, pp. 10 740–10 782. [13] T. von Neumann, C. Boeddeker, M. Delcroix, and R. Haeb-Umbach, “MeetEval: A Toolkit for Computation of Word Er-ror Rates for Meeting Transcription Systems,” in 7th Interna-tional Workshop on Speech Processing in Everyday Environments (CHiME 2023) , 2023, pp. 27–32. [14] C.-Y. Lin, “ROUGE: A package for automatic evaluation of summaries,” in Text Summarization Branches Out . Barcelona, Spain: Association for Computational Linguistics, Jul. 2004, pp. 74–81. [Online]. Available: https://aclanthology.org/W04-1013/ [15] J. Han, F. Landini, J. Rohdin, A. Silnova, M. Diez, and L. Burget, “Leveraging self-supervised learning for speaker diarization,” in 
+
+ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE, 2025, pp. 1–5. [16] J. Han, F. Landini, J. Rohdin, A. Silnova, M. Diez, J. Cernocky, and L. Burget, “Fine-tune before structured pruning: Towards compact and accurate self-supervised models for speaker diariza-tion,” arXiv preprint arXiv:2505.24111 , 2025. [17] J. Han, P. P´ alka, M. Delcroix, F. Landini, J. Rohdin, J. Cernock` y, and L. Burget, “Efficient and generalizable speaker diarization via structured pruning of self-supervised models,” arXiv preprint arXiv:2506.18623 , 2025. [18] H. Bredin, “pyannote. audio 2.1 speaker diarization pipeline: prin-ciple, benchmark, and recipe,” in 24th Interspeech Conference (INTERSPEECH 2023) . ISCA, 2023, pp. 1983–1987. [19] A. Plaquet and H. Bredin, “Powerset multi-class cross en-tropy loss for neural speaker diarization,” arXiv preprint arXiv:2310.13025 , 2023. [20] J. S. Chung, A. Nagrani, and A. Zisserman, “Voxceleb2: Deep speaker recognition,” arXiv preprint arXiv:1806.05622 , 2018. [21] A. Radford, J. W. Kim, T. Xu, G. Brockman, C. McLeavey, and I. Sutskever, “Robust speech recognition via large-scale weak supervision,” in International conference on machine learning .PMLR, 2023, pp. 28 492–28 518. [22] A. Sellergren, S. Kazemzadeh, T. Jaroensri, A. Kiraly, M. Tra-verse, T. Kohlberger, S. Xu, F. Jamil, C. Hughes, C. Lau et al. ,“Medgemma technical report,” arXiv preprint arXiv:2507.05201 ,2025. [23] I. Mansha, “Resource-efficient fine-tuning of llama-3.2-3b for medical chain-of-thought reasoning,” arXiv preprint arXiv:2510.05003 , 2025. [24] G. Comanici, E. Bieber, M. Schaekermann, I. Pasupat, N. Sachdeva, I. Dhillon, M. Blistein, O. Ram, D. Zhang, E. Rosen 
+
+et al. , “Gemini 2.5: Pushing the frontier with advanced reasoning, multimodality, long context, and next generation agentic capabil-ities,” arXiv preprint arXiv:2507.06261 , 2025. [25] X. Shi, X. Wang, Z. Guo, Y. Wang, P. Zhang, X. Zhang, Z. Guo, H. Hao, Y. Xi, B. Yang, J. Xu, J. Zhou, and J. Lin, “Qwen3-ASR technical report,” arXiv preprint arXiv:2601.21337 , 2026. [26] S. Team, “Silero vad: pre-trained enterprise-grade voice activity detector (vad), number detector and language classifier,” https:// github.com/snakers4/silero-vad, 2024. [27] JiviAI, “Audiox-north: Multilingual speech-to-text model for indic languages,” 2024, accessed: 2026. [Online]. Available: https://huggingface.co/jiviai/audioX-north-v1 [28] J. Achiam, S. Adler, S. Agarwal, L. Ahmad, I. Akkaya, F. L. Ale-man, D. Almeida, J. Altenschmidt, S. Altman, S. Anadkat et al. ,“Gpt-4 technical report,” arXiv preprint arXiv:2303.08774 , 2023.

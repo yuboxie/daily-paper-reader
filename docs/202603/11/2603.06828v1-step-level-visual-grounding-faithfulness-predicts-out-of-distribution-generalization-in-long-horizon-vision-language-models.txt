@@ -1,0 +1,331 @@
+Title: Step-Level Visual Grounding Faithfulness Predicts Out-of-Distribution Generalization in Long-Horizon Vision-Language Models
+
+URL Source: https://arxiv.org/pdf/2603.06828v1
+
+Published Time: Tue, 10 Mar 2026 00:10:09 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# Step-Level Visual Grounding Faithfulness Predicts Out-of-Distribution Generalization in Long-Horizon Vision-Language Models 
+
+Md Ashikur Rahman 1, Md Arifur Rahman 1, Niamul Hassan Samin 1, Abdullah Ibne Hanif Arean 1,2, and Juena Ahmed Noshin 3 
+
+> 1
+
+The KOW Company  
+
+> 2
+
+University of Dhaka  
+
+> 3
+
+American International University - Bangladesh (AIUB) 
+
+Abstract. We uncover a behavioral law of long-horizon vision-language models: models that maintain temporally grounded beliefs gen-eralize better . Standard benchmarks measure only final-answer accu-racy, which obscures how models use visual information; a model can guess correctly while its step-by-step reasoning is entirely unanchored to the visual input. We formalize this as behavioral faithfulness over long horizons , an empirically measurable property that quantifies whether a model’s intermediate reasoning remains consistent with the evolving visual state. Across eight models on three long-horizon benchmarks, we demonstrate that temporal grounding quality is a lead-ing indicator of robustness: the Step Grounding Rate (SGR) predicts out-of-distribution retention with r=0 .83 (permutation test p=0 .003 ), a relationship that holds within capacity-matched models and cannot be explained by scale or in-distribution accuracy. Critically, grounding qual-ity varies by up to 10.8pp within parameter-matched 7B models despite similar accuracy, revealing it as an independent axis of model capabil-ity. Multiple robustness checks confirm the signal reflects genuine visual reliance: counterfactual traces drop SGR by 26–41pp, cross-architecture verifiers agree at ρ=0 .96 , random reasoning scores near chance ( ≈18%), and the predictor remains strong even without explicit reasoning disclo-sure ( r=0 .78 ). 
+
+Keywords: Visual reasoning · Long horizon tasks · Behavioral faithful-ness · Vision-language models 
+
+# 1 Introduction 
+
+Vision-language models (VLMs) have shown empirical results on long-horizon tasks such as video question answering [26], embodied navigation [3], and in-struction following [47] all of which require integrating visual information over extended sequences. Yet standard benchmarks measure only whether the final answer is correct [10]. This collapses a rich, multi-step reasoning process into a single bit of information, leaving a critical question unanswered: does the model’s reasoning actually depend on the visual input?  
+
+> arXiv:2603.06828v1 [cs.CV] 6 Mar 2026 2M. A. Rahman et al.
+
+It does not have to. During video QA, a model can exploit dataset statis-tics [13], language priors [1], or temporal pattern correlations to arrive at the correct answer without ever truly attending to the visual content. Accuracy, as a metric, cannot distinguish a model that reasons faithfully from one that guesses well. This distinction matters: shortcut-reliant models generalize poorly when linguistic biases no longer apply. We show that this distinction is not merely theoretical, it has a measur-able, predictive consequence. We formalize behavioral faithfulness over long horizons as the degree to which a model’s step-by-step reasoning remains an-chored to the evolving visual state. Unlike prior grounding and attribution meth-ods [45, 60], which assess instantaneous saliency, behavioral faithfulness tracks 
+
+belief integrity across time : does the model update its beliefs when the visual evidence changes, and does it stay consistent when it does not? Reasoning traces are treated as observable behavioral artifacts that can be verified, tracked, and perturbed, not as explanations to be trusted at face value. We demonstrate that temporal grounding quality functions as a leading indicator of robustness : models that maintain visually grounded beliefs gen-eralize better to out-of-distribution settings. This relationship, SGR → OOD, 
+
+r=0 .83 , permutation p=0 .003 , holds within capacity-matched models (7B clus-ter: r=0 .78 , N=15), controlling for scale and in-distribution accuracy. Within that cluster, grounding varies by up to 10.8pp despite near-identical accuracy ranges, demonstrating that visual grounding quality is an independent axis of model capability , not a proxy for overall strength. We make three contributions. (1) Conceptual: We introduce behavioral faithfulness over long horizons as a measurable construct orthogonal to accuracy and scale, a new axis for characterizing VLM capability. (2) Empirical Discov-ery: We uncover a strong predictive relationship between temporal grounding quality and OOD generalization ( r=0 .83 , p=0 .003 ), establishing that step-level visual faithfulness is a structural predictor of robustness. (3) Independence from Capacity: We demonstrate that grounding quality varies substantially within parameter-matched models and predicts OOD retention beyond scale, capturing a genuinely distinct behavioral property. 
+
+# 2 Related Work 
+
+Long Horizon Visual Tasks. Previous work in embodied navigation [3, 4, 23, 44], video question answering [17,21,25,26,49,59], and instruction following [33, 47, 48] focuses on scenarios where models must track visual information over time instead of depending on a single frame or observation. 
+
+Evaluation of VLMs. Although models often exploit language biases [1, 13], dataset artifacts [15, 19], or other spurious patterns [39], most evaluation metrics still focus on whether the final task is completed correctly [3, 10, 50]. To investigate particular capabilities, previous work has introduced diagnostic datasets [18,61] and counterfactual evaluation [7,20]. In contrast, we extend these concepts to step-level reasoning diagnostics across a variety of long-horizon tasks. More recent robustness tests [42, 57] rely on counterfactual edits. Step-Level Visual Grounding Faithfulness in Long-Horizon VLMs 3Visual Sequence                
+
+> V={v1, ..., v T}Query qVLM fθ
+> 1. Reasoning
+> Extraction
+> 2. Grounding
+> Verification
+> 3. Belief
+> Tracking
+> 4. Controlled
+> Perturbations Steps RBeliefs B
+> SGR TCS HR VRS
+> Behavioral Diagnostics
+> Fig. 1: Four-stage operationalization of behavioral faithfulness. (1) Extract reasoning traces; (2) verify grounding against visual evidence; (3) track belief consistency; (4) ap-ply controlled perturbations. Outputs: SGR, TCS, HR, VRS.
+
+Interpretability. Gradient-based attribution [6, 45] and attention visual-ization [2, 60] highlight the important frames that influence model predictions. However, they do not capture reasoning consistency over time. Natural language explanations [14, 37, 58] and CoT [22, 53] focus on generating reasoning but not 
+
+evaluating its faithfulness over time . Current visual grounding evaluation [38,43] methods concentrate on static entity localization in individual photos. 
+
+Faithful Reasoning. A significant portion of the NLP literature focuses on post-hoc rationalizations without considering visual grounding or temporal reasoning evolution [16,24,51,54]. Most faithfulness work in VLMs focuses on hal-lucination detection at the object or sentence level [29, 32], and recent efforts on video understanding evaluation [11, 28] still aggregate performance at the task level. Process reward models [30] provide step-level feedback in mathematical reasoning but do not address visual grounding over time. Concurrent evaluation work [9, 52] probes temporal video understanding capacity but does not mea-sure intermediate reasoning faithfulness or its relationship to out-of-distribution generalization. Our work bridges these threads by proposing a behavioral cri-terion, temporal grounding fidelity, and demonstrating that it predicts model robustness in a way that accuracy alone cannot. 
+
+# 3 Operationalizing Behavioral Faithfulness 
+
+Behavioral faithfulness is a property of a model’s reasoning process, not of its outputs. To measure it, we need to observe intermediate beliefs, check whether they are grounded in the current visual state, track how they evolve, and test whether behavior actually changes when the visual evidence changes. We oper-ationalize this through four stages: reasoning extraction, grounding verification, 4 M. A. Rahman et al. 
+
+belief tracking, and controlled perturbations. Together, these stages instantiate the behavioral criterion; no single stage alone is sufficient (Sec. 6). 
+
+3.1 Reasoning Extraction 
+
+We handle reasoning traces as visible behavioral artifacts that may be examined, confirmed, and challenged. There are some intermediate reasoning steps that each models follow, R = {r1, r 2, . . . , r N } in addition to its ultimate response. These steps describe visual observations, refer to temporal locations, draw inter-mediate conclusions, and explain how each step is guided by those observations. We employ a CoT-style prompting method [53], modified for problems involving temporal and visual reasoning. 
+
+3.2 Visual Grounding Verification Pipeline 
+
+We verify whether the corresponding visual input for each reasoning step ri
+
+supports the given visual observations, 1. Parse visual references . We use spaCy dependency parsing (91% preci-sion, 84% recall on 200 annotated steps) to extract entities, actions, temporal cues, and spatial relations from ri.2. Identify visual segments . Temporal references are aligned with the ap-propriate frames in V.3. Verify visual support . Object detection (Faster R-CNN [41]), tracking [55], and action recognition [12] are used to verify visual evidence; alternative de-tectors (e.g., DETR [5]) are evaluated in ablations. 4. Assign labels . Each step is labeled as Supported, Unsupported, or Unver-ifiable. Instead of determining absolute truth, the verifier determines whether each step is consistent with the visual evidence that is currently accessible. 86% agree-ment with the automatic labels ( κ = 0 .79 ) is found in a human validation study using two annotators and 120 steps. Ablations with alternative verifiers produce comparable correlations with out-of-distribution performance ( r = 0 .78 –0.83), despite ±8% variation in SGR, suggesting that the evaluation is still reasonably reliable (for parsing and validation details, see supplementary Sections ?? –?? ). 
+
+Verification for Embodied Tasks Verifying ego-motion claims is necessary for embodied tasks, such as turning left. When explicit pose information is unavailable, we augment the RGB input with depth maps, optical flow, and agent pose metadata from trajectory logs (R2R) or simulator state information (TEACh). In total, 18.4% of R2R steps and 12.5% of TEACh steps contain ego-motion assertions. And 78% of them can be verified with the metadata that is currently available. A detailed analysis on the full methodology can be found in the supplementary Section ?? .Step-Level Visual Grounding Faithfulness in Long-Horizon VLMs 5
+
+Handling Unverifiable Steps Abstract claims (42%), occlusions (31%), un-clear references (18%), and complex relations (9%) are among the stages that cannot be confirmed (14.2% average). We exclude unverifiable steps from SGR/TCS by default. The robustness of our approach is confirmed by the nearly identical model rankings ( ρ = 0 .98 ) and similar OOD correlations ( r = 0 .79 –0.82) that result from alternative handling strategies, such as penalizing these cases as un-supported or assigning neutral scores (see supplementary Section ?? for detailed category analysis and metric computation). 
+
+3.3 Visual Belief Tracking 
+
+We maintain a belief log B = {b1, b 2, . . . , b N } which keeps track of the description of the visual scenes. As the scene changes, the reasoning also shifts and updates the belief. The current understanding of a model includes the references, spatial arrangements, temporal status, and the relationships between entities. These are all denoted by bi at each step ri. When the visual context is stable, the model should retain the current understandings and update the belief appropriately when a new visual scene is presented. 
+
+3.4 Faithfulness in Reasoning Step Grounding Rate (SGR) . SGR is the percentage of reasoning steps with supported visual grounding, 
+
+SGR = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+g(ri), g(ri) = # verified claims in ri
+
+total # claims in ri
+
+(1) For steps with a single claim, g(ri) ∈ { 0, 1}. The claims are verified in multi-claim steps which is denoted by g(ri). The higher the value of g(ri) is, the stronger visual support for expressed reasoning will be. For missing or unsup-ported visual claims, the values will be lower. For instance, the grounding score reaches g(ri) = 0 .67 , if a reasoning step mentioning a red chair, a blue table, and a green bulb is correctly identified in the visual input. Concurrently, the grounding score decreases to g(ri) = 0 .5
+
+because it lacks a visual claim if a step mentions only a red chair and a blue table, but only the chair is observed. (supplementary Table ?? ). 
+
+Temporal Consistency Score (TCS) . Belief coherence across time with graded similarity, 
+
+TCS = 1
+
+N − 1 
+
+> N−1
+
+X
+
+> i=1
+
+sim (bi, b i+1 ) · j(bi, b i+1 , v i:i+1 ) (2) where sim (bi, b i+1 ) is the cosine similarity of Sentence-BERT embeddings [40] (all-MiniLM-L6-v2 ) of the two consecutive belief states, capturing semantic rather than lexical similarity. The binary indicator j ∈ { 0, 1} assesses whether the belief transition is visually justified: j = 1 if either (1) beliefs are similar 6 M. A. Rahman et al. 
+
+(sim > 0.8, i.e., stable belief) and the visual evidence at ti+1 supports the cur-rent belief bi (maintenance), or (2) beliefs differ (sim ≤ 0.8, i.e., belief update) and evidence at ti+1 contradicts bi but supports bi+1 (justified revision); oth-erwise j = 0 (unjustified change). The threshold τ =0 .8 is calibrated on 100 held-out step pairs labelled by two annotators as same or changed ; it achieves 89% classification accuracy (supplementary Section ?? ). 
+
+Hallucination Rate (HR) . Proportion of reasoning steps that contain at least one unsupported visual claim (i.e., the step-level verdict is unsupported), 
+
+HR = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+⊮[∃ unsupported claim in ri] (3) HR and SGR are complementary, not redundant : SGR operates at the claim level within each step ( g(ri) ∈ [0 , 1] for multi-claim steps), while HR operates at the step level (binary per step). For a step with three claims where one is hallucinated, SGR assigns g(ri)=0 .67 (partial credit) whereas HR flags the entire step ( ⊮=1 ). SGR thus quantifies the degree of grounding across all claims, while HR captures the prevalence of steps containing any hallucination. Empirically, the Pearson r between per-step HR and 1−SGR is 0.61 (not 1.0), confirming meaningful divergence for multi-claim steps. 
+
+Visual Reliance Score (VRS) .
+
+VRS = clip 
+
+ ∆relevant /|Prelevant |
+
+∆irrelevant /|Pirrelevant | + ϵ , 0, 10 
+
+
+
+(4) 
+
+|P·| denotes the perturbation magnitude for each condition. ∆relevant is the mean SGR drop under task-relevant perturbations; ∆irrelevant is the drop un-der irrelevant edits. Two design choices require justification. (i) Smoothing constant ϵ=0 .01 : prevents division-by-zero when a model is fully robust to ir-relevant changes ( ∆irrelevant ≈0). A sensitivity analysis over ϵ ∈ { 0.001 , 0.01 , 0.1}
+
+shows model rankings vary by at most ∆ρ =0 .01 and absolute VRS by ±0.03 ,confirming the choice is inconsequential (supplementary Table ?? ). (ii) Upper clip at 10 : prevents a small number of extreme-ratio outliers from dominating comparisons when ∆irrelevant is very small but non-zero. Analysis over clip values 
+
+∈ { 5, 10 , 20 } yields consistent rankings ( ρ=0 .97 –1.0). VRS is reported with boot-strap 95% confidence intervals to reflect sample variability across perturbation instances. 
+
+3.5 Controlled Visual Perturbations 
+
+For each of the following perturbations, we measure changes in final accuracy, SGR, and their respective reasoning adaptations. 
+
+Object position perturbations : Modify spatial locations of key objects. Visual reasonings are reflected in the changes. 
+
+Temporal order perturbations . Frames are shuffled or reordered. Rea-soning adapts to altered sequences. Step-Level Visual Grounding Faithfulness in Long-Horizon VLMs 7
+
+Visibility perturbations . Occlude or remove objects at specific timesteps. Reasoning should acknowledge absence. 
+
+Irrelevant perturbations . Modify elements unrelated to the task (control condition). 
+
+Counter-causal controls . We use a two-way perturbation experiment. Ei-ther we alter the visuals while keeping the language query unchanged, or we paraphrase the language while keeping the visuals fixed. Models that genuinely rely on visual input show a much larger drop in SGR ( ∆SGR = -18.2%) when the visuals are changed than when the language is paraphrased ( ∆SGR = -3.1%), even though accuracy drops by a similar amount in both cases ( ∆Acc ≈ -8%). 
+
+# 4 Experimental Setup 
+
+4.1 Datasets and Benchmarks STAR [56] contains 60,000 pairs of questions with answers taken from 22,000 short video clips. Each clips averages about 8.5 seconds in length. R2R [3] has 7189 navigation paths from 90 indoor environments. TEACh [36] has multi-step instructions of longer interactions, where each episode runs for 180 sec-onds. OOD splits has no overlap between the 2,400 samples in STAR-OOD’s three action and five object categories. R2R-OOD consists of unseen houses (1,021 paths) with zero overlap in building instances. Recipes are displayed using TEACh-OOD (312 tasks, zero recipe overlap). Splits maintain similar complexity (δ=+0.09 to +0.14) and have a strong correlation across difficulty (r=0.76-0.82). 
+
+4.2 Models Evaluated 
+
+We evaluate eight models spanning a wide range of architectures, parame-ter counts (151M to GPT-4o scale), and training generations: CLIP-ViL [46] (151M), VideoChat [27] (7.2B), Video-LLaVA [62] (7.0B), VideoLLaMA [63] (7.1B), LLaVA-1.6 [31] (7B), InternVL2-7B [8] (7B), GPT-4V [34], and 
+
+GPT-4o [35]. This selection covers a lightweight vision-encoder baseline, multi-ple generations of open-source 7B instruction-tuned video models, and two state-of-the-art proprietary models. The parameter-matched 7B cluster (VideoChat, Video-LLaVA, VideoLLaMA, LLaVA-1.6, InternVL2-7B) allows capacity-controlled comparison of grounding quality within the same scale, enabling tests of whether SGR captures behavioural properties beyond overall model strength. 
+
+4.3 Implementation Details 
+
+Structured prompts are used for reasoning extraction, Faster R-CNN [41] used for detection, DeepSORT [55] for tracking, and SlowFast [12] is used for action recognition. All the codes, prompts, configurations, annotations, and OOD split specifications will be released upon acceptance. However, complete implementa-tion details, hardware specifications, model configurations, and computational costs are provided in the supplementary (Section ?? ). 8 M. A. Rahman et al. 
+
+Table 1: Main results on three benchmarks (N=8 models). We report task accuracy (Acc), Step Grounding Rate (SGR), Temporal Consistency Score (TCS), and Hallu-cination Rate (HR ↓, lower is better). SGR uses proportional multi-claim weighting (Eq. 1) and excludes unverifiable steps (14.2% avg.; see Sec. 3.2). † = 7B open-source cluster enabling capacity-controlled comparison. Best results in bold .Model STAR (Video-QA) R2R (Navigation) TEACh (Instruction) Acc SGR TCS HR ↓ SR SGR TCS HR ↓ SR SGR TCS HR ↓                                                         
+
+> CLIP-ViL 62.3 48.2 51.4 34.1 55.8 42.7 47.9 38.6 41.2 39.8 44.3 42.3 VideoChat †67.8 54.6 58.3 28.7 59.2 51.3 54.6 31.2 48.5 47.2 51.8 35.8 Video-LLaVA †71.4 62.1 65.8 22.3 62.7 58.4 61.2 25.4 52.8 54.6 58.9 28.1 VideoLLaMA †68.9 57.8 60.2 26.4 60.4 53.9 57.3 29.7 50.1 51.2 55.4 31.6 LLaVA-1.6 †73.2 65.4 68.9 20.8 64.1 61.2 64.7 22.9 54.7 57.4 61.3 25.8 InternVL2-7B †72.1 63.8 67.2 21.7 63.4 59.7 63.1 24.1 53.6 55.9 59.8 27.3 GPT-4V 74.6 68.3 71.5 18.9 65.1 63.7 67.4 21.2 56.4 60.8 64.7 23.5 GPT-4o 77.3 71.8 74.9 16.2 67.8 66.4 70.1 18.7 59.2 63.7 67.4 20.9
+
+4.4 Baselines 
+
+We compare our approach with accuracy-only, attention-based [60], gradient-based (Grad-CAM [45]), and perturbation-only baselines. 
+
+# 5 Results and Analysis 
+
+5.1 Main Results 
+
+Table 1 presents results across three benchmarks. Key findings: 
+
+Finding 1 . Across all eight models, task accuracy consistently exceeds vi-sual grounding (SGR), revealing systematic accuracy–grounding dissociation. The gap ranges from 6.3pp (GPT-4o) to 14.1pp (CLIP-ViL), suggesting weaker models rely more heavily on language shortcuts. 
+
+Finding 2 . Within the capacity-matched 7B cluster ( †), SGR varies by up to 10.8pp (LLaVA-1.6: 65.4 vs. VideoChat: 54.6 on STAR) despite similar accuracy ranges (67.8–73.2). This within-cluster variation confirms that SGR captures grounding properties that are not reducible to model scale. 
+
+Finding 3 . Models with higher TCS generally achieve higher accuracy (Pear-son r = 0 .87 , N=8). TCS and SGR are moderately correlated ( r = 0 .79 ), con-firming they measure complementary aspects of temporal faithfulness. 
+
+5.2 Correlation with Out-of-Distribution Generalization 
+
+We evaluate models on out-of-distribution (OOD) test sets and analyze correla-tion between our metrics and OOD performance. Table 2 shows results. 
+
+Finding 4 (Behavioral Law). Temporal grounding quality strongly pre-dicts OOD retention: r=0 .83 (N=24, 95% CI: 0.76–0.91; permutation p=0 .003 ). This structural link replicates across all three task types (STAR r=0 .81 , R2R 
+
+r=0 .85 , TEACh r=0 .82 ), confirming it is not benchmark-specific. 
+
+Finding 5 (Grounding is an Independent Capability Axis). Three analyses rule out capacity as a confound. (i) Within the 7B cluster : SGR Step-Level Visual Grounding Faithfulness in Long-Horizon VLMs 9
+
+Table 2: Out-of-distribution performance (N=8 models × 3 benchmarks = 24 data points). We test on unseen environments (R2R: 1,021 paths), novel object compositions (STAR: 2,400 samples), and new task configurations (TEACh: 312 tasks). ∆ = drop from in-distribution. SGR–OOD correlation: r=0 .83 (95% CI: 0.76–0.91; permutation test p=0 .003 ). † = 7B capacity-matched cluster. Model STAR-OOD R2R-OOD TEACh-OOD Acc ∆ SR ∆ SR ∆                                          
+
+> CLIP-ViL 48.7 -13.6 42.3 -13.5 31.8 -9.4 VideoChat †55.9 -11.9 47.8 -11.4 39.2 -9.3 Video-LLaVA †62.8 -8.6 54.1 -8.6 45.6 -7.2 VideoLLaMA †58.4 -10.5 50.7 -9.7 42.3 -7.8 LLaVA-1.6 †64.9 -8.3 55.7 -8.4 47.2 -7.5 InternVL2-7B †63.2 -8.9 54.3 -9.1 46.1 -7.5 GPT-4V 67.7 -6.9 58.3 -6.8 49.8 -6.6 GPT-4o 71.4 -5.9 62.7 -5.1 53.8 -5.4
+
+Table 3: Perturbation sensitivity on STAR benchmark (N=8 models, 5 perturbation samples per type). We report change in accuracy ( ∆ Acc) and SGR ( ∆ SGR). VRS uses Eq. 4 with bootstrap 95% CIs. † = 7B capacity-matched cluster. Key diagnos-tic : |∆SGR | > |∆Acc | for all relevant perturbation types across all models, showing grounding is more sensitive than accuracy to visual changes. Model Position Temporal Visibility Irrelevant (ctrl.)                                                                                
+
+> ∆Acc ∆SGR ∆Acc ∆SGR ∆Acc ∆SGR ∆Acc ∆SGR CLIP-ViL -8.4 -12.7 -11.2 -15.8 -14.6 -18.3 -6.2 -8.1 VideoChat †-10.7 -16.4 -13.8 -19.2 -17.3 -22.6 -5.1 -6.8 Video-LLaVA †-12.3 -18.9 -15.4 -21.7 -19.8 -25.4 -3.8 -4.2 VideoLLaMA †-11.5 -17.6 -14.2 -20.3 -18.4 -23.8 -4.5 -5.6 LLaVA-1.6 †-12.8 -19.4 -15.9 -22.3 -20.3 -26.1 -3.7 -4.0 InternVL2-7B †-12.1 -18.7 -15.1 -21.4 -19.6 -25.3 -4.0 -4.4 GPT-4V -13.8 -20.4 -16.9 -23.1 -21.4 -27.2 -2.9 -3.1 GPT-4o -14.2 -21.3 -17.4 -24.2 -22.1 -28.4 -2.6 -2.8
+
+varies 10.8pp (LLaVA-1.6: 65.4 vs. VideoChat: 54.6) despite accuracy span-ning only 67.8–73.2%, and within-cluster SGR predicts OOD retention ( r=0 .78 ,N=15). (ii) Accuracy-matched pairs : for every pair within ±1% accuracy, the higher-SGR model incurs 4–7% less OOD degradation. (iii) Partial cor-relation : controlling for accuracy, SGR retains independent predictive power (rpartial =0 .68 , p< 0.05 ). Visual grounding quality is not reducible to scale or ac-curacy. 
+
+5.3 Perturbation Analysis 
+
+Table 3 shows model sensitivity to different perturbation types. 
+
+Finding 6 . GPT-4o achieves the highest VRS (6.31 ±0.38) and lowest irrele-vant sensitivity (-2.6%), while CLIP-ViL has the lowest VRS (1.66 ±0.28), indi-cating weak differentiation between task-relevant and irrelevant visual changes. Crucially, within the 7B capacity-matched cluster, VRS still varies substantially 10 M. A. Rahman et al.                            
+
+> (a) Visual Reliance Score (VRS) for all 8models (Eq. 4). GPT-4o (VRS =6.31 ±0.38) shows 3.8×
+> higher visual reliance than CLIP-ViL (1.66 ±0.28). Within the 7B cluster, VRS spans 2.14–4.73. Error bars: bootstrap 95% CI.
+> (b) (a) SGR degrades with task progress across all bench-marks (N=8). R2R steepest (22.4%) due to spatial reasoning demands. (b) SGR–OOD correlation ( r=0 .83 , N=24, 95% CI: 0.76–0.91, p=0 .003 ). Within-7B-cluster: r=0 .78 (N=15), ruling out capacity confound.
+
+Fig. 2: Results overview. Left : Models with higher SGR rely more selectively on vi-sual evidence (VRS). Right : Temporal grounding degrades over task progress, yet in-distribution SGR strongly predicts OOD retention, a relationship that holds within the capacity-matched 7B cluster. 
+
+(VideoChat: 2.14 vs. LLaVA-1.6: 4.73), confirming VRS captures reliance quality beyond scale (Figure 2a). 
+
+Finding 7 (Causal Visual Dependence). For all eight models and all relevant perturbation types, |∆SGR | > |∆Acc |: the grounding signal is more sensitive to visual disruption than final-answer accuracy. Under visibility per-turbation, GPT-4o’s SGR drops 28.4% vs. accuracy 22.1%. Combined with the counter-causal controls ( ∆SGR = −18.2% for visual changes vs. −3.1% for lan-guage paraphrasing), this provides empirical evidence of causal visual depen-dence: behavior changes because the visual evidence changed, not because the question changed. 
+
+5.4 Temporal Analysis 
+
+We analyze the temporal dynamics of visual grounding by computing SGR at early (first 25%), middle (25–75%), and late (final 25%) stages of each task. 
+
+Finding 8 . SGR is highest at task onset (71.2% in the first quartile) and degrades progressively, reaching 52.8% in the final quartile (Figure 2b). 
+
+Finding 9 . R2R shows the steepest SGR drop (22.4%) from early to late stages vs. video-QA (18.4%), reflecting greater cumulative spatial demands. Step-Level Visual Grounding Faithfulness in Long-Horizon VLMs 11 
+
+# 6 Ablation Studies 
+
+Targeted ablation studies verify each component and its robustness (full details in supplementary ?? ). 
+
+Component ablations (N=8) . Grounding verification is most critical ( 0.83 →0.41 ), followed by reasoning extraction ( 0.83 →0.53 ). Full framework synergies yield 
+
+0.83 vs. 0.59 –0.65 for two-component pairs (supplementary Table ?? ). 
+
+Prompt sensitivity . OOD correlation is stable at r=0 .79 –0.83 across min-imal/neutral/verbose prompts, with consistent model rankings ( ρ=0 .94 ). A nat-ural response condition (no CoT prompt; 200 STAR samples) yields r=0 .81 
+
+correlation with forced-CoT SGR ( ρ=1 .0 on rankings), confirming robustness to prompt style (supplementary Tables ?? , ?? ). 
+
+Verifier robustness . Threshold changes affect absolute SGR by ±8% but OOD correlation by at most ±0.04. Under 10% injected perception noise the cor-relation is r=0 .74 ; real-world detection tools have 2–8% error rates, well within the robust regime (supplementary Table ?? ). 
+
+Optimal granularity . Six to eight reasoning steps yield the best stabil-ity–cost trade-off ( r=0 .83 , 3.4s/sample vs. r=0 .68 for 2–3 steps; supplementary Table ?? ). 
+
+Baseline comparison . Our framework achieves substantially higher OOD correlation ( 0.83 vs. 0.34 –0.56 for attention/gradient/perturbation-only base-lines) with step-level interpretability (supplementary Table ?? ). 
+
+Non-disclosure control . SGR-lite (structured belief states, no reasoning) yields ρ=0 .96 –0.98 rankings and r=0 .78 OOD correlation, confirming the metric does not reward verbosity (supplementary Table ?? ). 
+
+VRS hyperparameters . Ablation over ϵ ∈ { 0.001 , 0.01 , 0.1} and clip ∈{5, 10 , 20 } confirms VRS model rankings are stable ( ρ=0 .97 –1.0) across all com-binations (supplementary Table ?? ). 
+
+Independence verification . Counterfactual traces (inverted spatial/tem-poral/entity labels) reduce SGR by 26–41pp across all 8 models. Three architec-turally diverse verifiers maintain ρ=0 .96 rankings and r=0 .79 –0.83 OOD correla-tions. Null-hypothesis test: random grammatical reasoning achieves SGR random =18 .3±2.1% , far below all models ( p< 0.001 ). 
+
+Qualitative Analysis . SGR=0.67 and HR=0.33 are grounding failures that accuracy alone overlooks when a model properly answers "Red" despite mak-ing unsubstantiated assertions (e.g., a person "crosses" the street when just strolling). Despite finishing the objective, a model in navigation that claims the chair is "now on my right" after turning left—which is geometrically im-possible—drops TCS to 0. While low-SGR models continue to hold false ideas, high-SGR models adjust their thinking in response to visual changes. These pat-terns are highlighted in Figure 3, and lists of failure types and further qualitative examples are provided in Supplementary Section ?? .12 M. A. Rahman et al.    
+
+> Fig. 3: High accuracy with imperfect grounding. The model correctly answers “Red” but Step 2 is unsupported (person walks , not crosses ). Standard evaluation misses this failure; our framework reveals SGR =0.67, HR =0.33.
+
+# 7 Discussion 
+
+7.1 Key Insights Temporal grounding as a behavioral law. The degree to which a model maintains visually grounded beliefs during a task predicts its OOD robust-ness ( r=0 .83 , p=0 .003 ), a structural relationship that replicates across all three benchmarks, survives capacity controls, and holds without explicit reasoning disclosure. We interpret this as a behavioral law: shortcut learning manifests temporally , accumulating across steps until it degrades generalization. 
+
+Accuracy–grounding dissociation. High accuracy masks systematic ground-ing failures. The gap between accuracy and SGR ranges from 14.1pp (CLIP-ViL) to 6.3pp (GPT-4o), and it is widest for the models most prone to language short-cuts. This dissociation is precisely why accuracy-only evaluation is insufficient: it is blind to the mechanism by which a model reaches its answer. 
+
+Grounding quality as an independent capability axis. Within the capacity-matched 7B cluster, SGR varies 10.8pp despite identical parameter count and narrow accuracy range, predicts OOD retention ( r=0 .78 ), and survives partial correlation controls ( rpartial =0 .68 ), positioning it as a third, independent dimension of VLM capability alongside accuracy and scale. 
+
+Temporal degradation. Grounding erodes over the course of a task (Fig-ure 2b, left), with the steepest decline in embodied navigation (R2R: 22.4pp). This indicates that maintaining visual attention is not merely a perception prob-lem — it is a sequential reasoning problem that compounds with task length. 
+
+Empirical causal probing. VRS and the counter-causal controls together provide behavioral evidence that high-SGR models genuinely depend on visual Step-Level Visual Grounding Faithfulness in Long-Horizon VLMs 13 
+
+input: they are more sensitive to relevant visual changes than to language para-phrasing, in a ratio that low-SGR models do not exhibit. 
+
+7.2 CoT Prompting and Measurement Validity 
+
+Our framework elicits reasoning via structured CoT prompts, raising the concern that measured grounding quality may reflect prompt compliance (instruction-following ability) rather than genuine visual reliance. We address this in three ways. 
+
+SGR-lite as non-disclosure control. The SGR-lite variant (supplemen-tary Table ?? ) elicits only structured belief states at key timesteps with no expla-nation requested. Its OOD correlation ( r=0 .78 ) and model rankings ( ρ=0 .96 –
+
+0.98 ) are nearly identical to full SGR, confirming the signal is not driven by verbosity or explanation fluency. 
+
+Natural response condition. We additionally collect model outputs under a free-form prompt (“Answer the question”) for a 200-sample subset of STAR, then extract whatever reasoning is present. SGR computed on these natural traces correlates r=0 .81 with forced-CoT SGR (supplementary Table ?? ), and model rankings are identical ( ρ=1 .0), indicating the metric is not sensitive to prompt style. 
+
+CLIP-ViL exception. CLIP-ViL (151M) was not trained for instruction following and produces minimal reasoning traces under CoT prompting. Its SGR should therefore be interpreted as a lower bound; its consistently weak perfor-mance across all conditions is consistent with this interpretation. 
+
+7.3 Addressing Verification Circularity 
+
+Visual verification depends on perception models and these models can make mistakes. We address this through multiple independence analyses: 
+
+Counterfactual discrimination . If verification only rewarded grammatical coherence, then deliberately wrong reasoning would still score high on SGR. To mitigate this, we generate counterfactual traces by systematically inverting spatial relations (“left” →“right”), swapping entities (“red car” →“blue car”), and reversing temporal order. As a result SGR decreases 26–39 pp for counterfactuals (GPT-4V: 68.3 →29.4, CLIP-ViL: 48.2 →22.1). 
+
+Architectural diversity . We use three verifiers with fundamentally dif-ferent inductive biases: rule-based bounding-box geometry, CNN-based detec-tion (Faster R-CNN), and semantic similarity (CLIP). Despite ±8% variation in absolute SGR values, all three produce consistent model rankings ( ρ=0 .96 )and strong OOD correlations ( r=0 .79 –0.83 ). This cross-architecture agreement strongly suggests the metric captures a genuine property of the models’ reason-ing, not an artifact of any specific perception tool. Additionally, the detection vocabulary (COCO: 80 classes; Kinetics: 400 actions) covers the majority of en-tities and actions appearing in STAR/R2R/TEACh; out-of-vocabulary claims are handled by the unverifiable category (14.2%) and excluded from SGR com-putation, preventing vocabulary mismatch from inflating or deflating scores. 14 M. A. Rahman et al. 
+
+Statistical validation . Random reasoning (sampled objects, relations, and timestamps) yields SGR random = 18 .3 ± 2.1% . Every model scores significantly higher than this ( p < 0.001 ), confirming that SGR measures genuine visual grounding rather than trivial verification. 
+
+7.4 Limitations Verification accuracy . Human agreement is 86%. For random reasoning, SGR was approximately 18% which is quite low in comparison to the norms (48–68%). It is also not very resilient to moderate-to-high noise (r=0.74 at 10% noise). It also faces a decline for counterfactual traces (-32.0pp). 
+
+Sample size and coverage . Our analysis covers 8 models across 3 bench-marks (N=24 data points for the main OOD correlation). Although we expand coverage to include multiple model generations and capacity-matched clusters, the absolute number of distinct model families remains limited. Future work should evaluate a broader range of architectures, including diffusion-based and state-space video models, to further consolidate the SGR–OOD relationship. 
+
+Human performance contextualization. A human baseline (25 exam-ples, two domain experts; supplementary material) provides an upper bound. Ex-pert annotators achieve SGR human =91 .4% and HR human =7 .1% ; the best model (GPT-4o: SGR =71.8%) lags by ∼20pp, indicating substantial headroom for im-provement. 
+
+Reasoning representation . The framework evaluates expressed, observ-able behavior rather than internal latent representations. Without explicit CoT, it cannot directly probe internal computations; however, the SGR-lite control (structured belief states without explanation) shows the metric remains predic-tive ( r=0 .78 ) even in this setting, suggesting it captures genuine visual reliance rather than explanation quality. 
+
+# 8 Conclusion 
+
+We have shown that temporal grounding quality is a leading indicator of ro-bustness in long-horizon vision-language models. Across eight models and three benchmarks, the Step Grounding Rate predicts out-of-distribution retention (r=0 .83 , p=0 .003 ) in a relationship that persists within capacity-matched clus-ters, survives controls for accuracy, and holds even without explicit reasoning disclosure. High task accuracy routinely masks step-level grounding failures; fail-ures that erode throughout a task and ultimately degrade generalization. These findings establish behavioral faithfulness as an independent axis of model capability, distinct from scale and in-distribution accuracy. The 10.8pp spread in SGR within the 7B parameter-matched cluster, and its predictive power over OOD retention ( rpartial =0 .68 ), demonstrate that how a model uses 
+
+visual evidence matters as much as what it knows . Achieving robust performance on long-horizon visual tasks requires maintaining visually grounded beliefs as context evolves, not just producing correct final answers. Step-Level Visual Grounding Faithfulness in Long-Horizon VLMs 15 
+
+# References 
+
+1. Agrawal, A., Batra, D., Parikh, D., Kembhavi, A.: Don’t just assume; look and answer: Overcoming priors for visual question answering. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 4971–4980 (2018) 2 2. Anderson, P., He, X., Buehler, C., Teney, D., Johnson, M., Gould, S., Zhang, L.: Bottom-up and top-down attention for image captioning and visual question answering. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 6077–6086 (2018) 3 3. Anderson, P., Wu, Q., Teney, D., Bruce, J., Johnson, M., Sünderhauf, N., Reid, I., Gould, S., Van Den Hengel, A.: Vision-and-language navigation: Interpreting visually-grounded navigation instructions in real environments. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 3674–3683 (2018) 1, 2, 7 4. Batra, D., Gokaslan, A., Kembhavi, A., Maksymets, O., Mottaghi, R., Savva, M., Toshev, A., Wijmans, E.: Objectnav revisited: On evaluation of embodied agents navigating to objects. arXiv preprint arXiv:2006.13171 (2020) 2 5. Carion, N., Massa, F., Synnaeve, G., Usunier, N., Kirillov, A., Zagoruyko, S.: End-to-end object detection with transformers. In: Eur. Conf. Comput. Vis. pp. 213–229 (2020) 4 6. Chattopadhay, A., Sarkar, A., Howlader, P., Balasubramanian, V.N.: Grad-cam++: Generalized gradient-based visual explanations for deep convolutional networks. In: IEEE Winter Conf. Appl. Comput. Vis. pp. 839–847 (2018) 3 7. Chen, L., Yan, X., Xiao, J., Zhang, H., Pu, S., Zhuang, Y.: Counterfactual samples synthesizing for robust visual question answering. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 10800–10809 (2020) 2 8. Chen, Z., Wu, J., Wang, W., Su, W., Chen, G., Xing, S., Zhong, M., Zhang, Q., Zhu, X., Lu, L., et al.: InternVL: Scaling up vision foundation models and aligning for generic visual-linguistic tasks. arXiv preprint arXiv:2312.14238 (2024) 7 9. Chen, Z., Li, S., Li, P., Gao, C., Shan, Y., Zheng, L.: How far are we from intelligent video understanding? arXiv preprint arXiv:2406.07689 (2024) 3 10. Das, A., Datta, S., Gkioxari, G., Lee, S., Parikh, D., Batra, D.: Embodied question answering. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 1–10 (2018) 1, 2 11. Fang, X., Mao, K., Duan, H., Zhao, X., Zhang, Y., Lin, D., Chen, K.: MMBench-Video: A long-form multi-shot benchmark for holistic video understanding. arXiv preprint arXiv:2406.14515 (2024) 3 12. Feichtenhofer, C., Fan, H., Malik, J., He, K.: Slowfast networks for video recogni-tion. In: Int. Conf. Comput. Vis. pp. 6202–6211 (2019) 4, 7 13. Goyal, Y., Khot, T., Summers-Stay, D., Batra, D., Parikh, D.: Making the v in vqa matter: Elevating the role of image understanding in visual question answering. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 6904–6913 (2017) 2 14. Hendricks, L.A., Akata, Z., Rohrbach, M., Donahue, J., Schiele, B., Darrell, T.: Generating visual explanations. In: Eur. Conf. Comput. Vis. pp. 3–19 (2016) 3 15. Hudson, D.A., Manning, C.D.: Gqa: A new dataset for real-world visual reason-ing and compositional question answering. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 6700–6709 (2019) 2 16. Jacovi, A., Goldberg, Y.: Towards faithfully interpretable nlp systems: How should we define and evaluate faithfulness? In: Proc. Annu. Meet. Assoc. Comput. Lin-guist. pp. 4198–4205 (2020) 3 17. Jang, Y., Song, Y., Yu, Y., Kim, Y., Kim, G.: Tgif-qa: Toward spatio-temporal rea-soning in visual question answering. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 2758–2766 (2017) 2 16 M. A. Rahman et al. 18. Johnson, J., Hariharan, B., Van Der Maaten, L., Fei-Fei, L., Lawrence Zitnick, C., Girshick, R.: Clevr: A diagnostic dataset for compositional language and elemen-tary visual reasoning. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 2901–2910 (2017) 2 19. Kafle, K., Kanan, C.: Challenges and prospects in vision and language research. Frontiers in Artificial Intelligence 2, 28 (2019) 2 20. Kaushik, D., Hovy, E., Lipton, Z.: Learning the difference that makes a difference with counterfactually-augmented data. In: Int. Conf. Learn. Represent. (2020) 2 21. Kim, K.M., Heo, M.O., Choi, S.H., Zhang, B.T.: Deepstory: Video story qa by deep embedded memory networks. In: IJCAI. pp. 2016–2022 (2017) 2 22. Kojima, T., Gu, S.S., Reid, M., Matsuo, Y., Iwasawa, Y.: Large language models are zero-shot reasoners. Adv. Neural Inform. Process. Syst. 35 , 22199–22213 (2022) 323. Krantz, J., Wijmans, E., Majumdar, A., Batra, D., Lee, S.: Beyond the nav-graph: Vision-and-language navigation in continuous environments. In: Eur. Conf. Com-put. Vis. pp. 104–120 (2020) 2 24. Lanham, T., Chen, A., Radhakrishnan, A., Steiner, B., Denison, C., Hernandez, D., Li, D., Durmus, E., Hubinger, E., Kernion, J., et al.: Measuring faithfulness in chain-of-thought reasoning. arXiv preprint arXiv:2307.13702 (2023) 3 25. Lei, J., Berg, T.L., Bansal, M.: Revealing single frame bias for video-and-language learning. In: Proc. Annu. Meet. Assoc. Comput. Linguist. pp. 1029–1041 (2022) 2 26. Lei, J., Li, L., Zhou, L., Gan, Z., Berg, T.L., Bansal, M., Liu, J.: Less is more: Clip-bert for video-and-language learning via sparse sampling. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 7331–7341 (2021) 1, 2 27. Li, K., He, Y., Wang, Y., Li, Y., Wang, W., Luo, P., Wang, Y., Wang, L., Qiao, Y.: Videochat: Chat-centric video understanding. arXiv preprint arXiv:2305.06355 (2023) 7 28. Li, K., Wang, Y., He, Y., Li, Y., Wang, Y., Liu, Y., Wang, Z., Xu, J., Chen, G., Luo, P., et al.: MVBench: A comprehensive multi-modal video understanding benchmark. arXiv preprint arXiv:2311.17005 (2023) 3 29. Li, Y., Du, Y., Zhou, K., Wang, J., Zhao, W.X., Wen, J.R.: Evaluating object hal-lucination in large vision-language models. Proc. Conf. Empirical Methods Natural Language Process. (2023) 3 30. Lightman, H., Kosaraju, V., Burda, Y., Edwards, H., Baker, B., Lee, T., Leike, J., Schulman, J., Sutskever, I., Cobbe, K.: Let’s verify step by step. arXiv preprint arXiv:2305.20050 (2023) 3 31. Liu, H., Li, C., Li, Y., Li, B., Zhang, Y., Shen, S., Lee, Y.J.: LLaVA-NeXT: Im-proved reasoning, ocr, and world knowledge. https://llava-vl.github.io/blog/ 2024-01-30-llava-next/ (2024) 7 32. Liu, T., Guan, T., Zhu, Q., Zhang, X., et al.: Hallusionbench: An advanced di-agnostic suite for entangled language hallucination and visual illusion in large vision-language models. arXiv preprint arXiv:2310.14566 (2023) 3 33. Min, S.Y., Chaplot, D.S., Ravikumar, P., Bisk, Y., Salakhutdinov, R.: Film: Follow-ing instructions in language with modular methods. In: Int. Conf. Learn. Represent. (2021) 2 34. OpenAI: Gpt-4v(ision) system card. https://openai.com/research/gpt- 4v-system-card (2023) 7 35. OpenAI: Hello GPT-4o. https://openai.com/index/hello-gpt-4o/ (2024) 7 36. Padmakumar, A., Thomason, J., Shrivastava, A., Lange, P., Narayan-Chen, A., Piramuthu, S., Yin, D., Ramanathan, D.H.T.: Teach: Task-driven embodied agents that chat. In: AAAI. pp. 2017–2025 (2022) 7 Step-Level Visual Grounding Faithfulness in Long-Horizon VLMs 17 37. Park, D.H., Hendricks, L.A., Akata, Z., Rohrbach, A., Schiele, B., Darrell, T., Rohrbach, M.: Multimodal explanations: Justifying decisions and pointing to the evidence. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 8779–8788 (2018) 3 38. Plummer, B.A., Wang, L., Cervantes, C.M., Caicedo, J.C., Hockenmaier, J., Lazeb-nik, S.: Flickr30k entities: Collecting region-to-phrase correspondences for richer image-to-sentence models. In: Int. Conf. Comput. Vis. pp. 2641–2649 (2015) 3 39. Ramakrishnan, S., Agrawal, A., Lee, S.: Overcoming language priors in visual ques-tion answering with adversarial regularization. In: Adv. Neural Inform. Process. Syst. pp. 1541–1551 (2018) 2 40. Reimers, N., Gurevych, I.: Sentence-bert: Sentence embeddings using siamese bert-networks. In: Proc. Conf. Empirical Methods Natural Language Process. pp. 3982– 3992 (2019) 5 41. Ren, S., He, K., Girshick, R., Sun, J.: Faster r-cnn: Towards real-time object de-tection with region proposal networks. In: Adv. Neural Inform. Process. Syst. pp. 91–99 (2015) 4, 7 42. Ribeiro, M.T., Wu, T., Guestrin, C., Singh, S.: Beyond accuracy: Behavioral testing of nlp models with checklist. In: Proc. Annu. Meet. Assoc. Comput. Linguist. pp. 4902–4912 (2020) 2 43. Rohrbach, A., Rohrbach, M., Hu, R., Darrell, T., Schiele, B.: Grounding of textual phrases in images by reconstruction. In: Eur. Conf. Comput. Vis. pp. 817–834 (2016) 3 44. Savva, M., Kadian, A., Maksymets, O., Zhao, Y., Wijmans, E., Jain, B., Straub, J., Liu, J., Koltun, V., Malik, J., et al.: Habitat: A platform for embodied ai research. In: Int. Conf. Comput. Vis. pp. 9339–9347 (2019) 2 45. Selvaraju, R.R., Cogswell, M., Das, A., Vedantam, R., Parikh, D., Batra, D.: Grad-cam: Visual explanations from deep networks via gradient-based localization. In: Int. Conf. Comput. Vis. pp. 618–626 (2017) 2, 3, 8 46. Shen, S., Li, L., Tan, H., Bansal, M., Rohrbach, A., Chang, K.W., Yao, Z., Keutzer, K.: How much can clip benefit vision-and-language tasks? In: Int. Conf. Learn. Represent. (2022) 7 47. Shridhar, M., Thomason, J., Gordon, D., Bisk, Y., Han, W., Mottaghi, R., Zettle-moyer, L., Fox, D.: Alfred: A benchmark for interpreting grounded instructions for everyday tasks. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 10740–10749 (2020) 1, 2 48. Suhr, A., Yan, C., Schluger, J., Yu, S., Khader, H., Mouallem, M., Zhang, I., Artzi, Y.: Situated mapping of sequential instructions to actions with single-step reward observation. In: Proc. Annu. Meet. Assoc. Comput. Linguist. pp. 2072–2082 (2019) 249. Tapaswi, M., Zhu, Y., Stiefelhagen, R., Torralba, A., Urtasun, R., Fidler, S.: Movieqa: Understanding stories in movies through question-answering. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 4631–4640 (2016) 2 50. Thomason, J., Murray, M., Cakmak, M., Zettlemoyer, L.: Vision-and-dialog navi-gation. In: Conf. Robot Learn. pp. 394–406 (2020) 2 51. Turpin, M., Michael, J., Perez, E., Bowman, S.: Language models don’t always say what they think: Unfaithful explanations in chain-of-thought prompting. Adv. Neural Inform. Process. Syst. (2023) 3 52. Wang, K., He, Y., Wang, Y., Li, Y., Li, K., Qian, R., Luo, P., Wang, Y., Qiao, Y.: VideoInstruct: Towards detailed video understanding via instruction tuning. arXiv preprint arXiv:2312.17225 (2024) 3 18 M. A. Rahman et al. 53. Wei, J., Wang, X., Schuurmans, D., Bosma, M., Xia, F., Chi, E., Le, Q.V., Zhou, D., et al.: Chain-of-thought prompting elicits reasoning in large language models. Adv. Neural Inform. Process. Syst. 35 , 24824–24837 (2022) 3, 4 54. Wiegreffe, S., Marasović, A., Smith, N.A.: Measuring association between labels and free-text rationales. Proc. Conf. Empirical Methods Natural Language Process. pp. 10266–10284 (2021) 3 55. Wojke, N., Bewley, A., Paulus, D.: Simple online and realtime tracking with a deep association metric. In: IEEE Int. Conf. Image Process. pp. 3645–3649 (2017) 4, 7 56. Wu, B., Yu, S., Chen, Z., Tenenbaum, J.B., Gan, C.: Star: A benchmark for situated reasoning in real-world videos. In: Adv. Neural Inform. Process. Syst. (2021) 7 57. Wu, J., Li, Y., Chen, A., Liu, Z.: REvAL: A benchmark for robust evaluation of vision-language models. arXiv preprint arXiv:2304.08958 (2023) 2 58. Wu, Z., Wang, Y., Lu, J., Zhou, J.: Visual question answering with attention-based explanation. In: IEEE Conf. Comput. Vis. Pattern Recog. pp. 4358–4367 (2021) 3 59. Xu, D., Zhao, Z., Xiao, J., Wu, F., Zhang, H., He, X., Zhuang, Y.: Video question answering via gradually refined attention over appearance and motion. In: ACM Int. Conf. Multimedia. pp. 1645–1653 (2017) 2 60. Xu, K., Ba, J., Kiros, R., Cho, K., Courville, A., Salakhudinov, R., Zemel, R., Bengio, Y.: Show, attend and tell: Neural image caption generation with visual attention. In: Int. Conf. Mach. Learn. pp. 2048–2057 (2015) 2, 3, 8 61. Yi, K., Gan, C., Li, Y., Kohli, P., Wu, J., Torralba, A., Tenenbaum, J.B.: Clevrer: Collision events for video representation and reasoning. In: Int. Conf. Learn. Rep-resent. (2020) 2 62. Zhang, B., Lin, B., Yang, X., Zhang, S., Liu, X., Wang, J.: Video-llava: Learn-ing united visual representation by alignment before projection. arXiv preprint arXiv:2311.10122 (2023) 7 63. Zhang, H., Li, X., Bing, L.: Video-llama: An instruction-tuned audio-visual lan-guage model for video understanding. arXiv preprint arXiv:2306.02858 (2023) 7

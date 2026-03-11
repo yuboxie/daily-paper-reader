@@ -1,0 +1,1243 @@
+Title: MedClarify: An information-seeking AI agent for medical diagnosis with case-specific follow-up questions
+
+URL Source: https://arxiv.org/pdf/2602.17308v1
+
+Published Time: Fri, 20 Feb 2026 01:43:59 GMT
+
+Number of Pages: 65
+
+Markdown Content:
+# MedClarify: An information-seeking AI agent for medical diagnosis with case-specific follow-up questions 
+
+Hui Min Wong 1, Philip Heesen 1,2,3 , Pascal Janetzky 1,2 , Martin Bendszus 3, and Stefan Feuerriegel 1,2 
+
+> 1
+
+LMU Munich, Munich, Germany 
+
+> 2
+
+Munich Center for Machine Learning, Germany 
+
+> 3
+
+Department of Neuroradiology, Heidelberg University, Heidelberg, Germany 
+
+Abstract 
+
+Large language models (LLMs) are increasingly used for diagnostic tasks in medicine. In clin-ical practice, the correct diagnosis can rarely be immediately inferred from the initial patient presentation alone. Rather, reaching a diagnosis often involves systematic history taking, dur-ing which clinicians reason over multiple potential conditions through iterative questioning to resolve uncertainty. This process requires considering differential diagnoses and actively ex-cluding emergencies that demand immediate intervention. Yet, the ability of medical LLMs to generate informative follow-up questions and thus reason over differential diagnoses remains underexplored. Here, we introduce MedClarify, an AI agent for information-seeking that can generate follow-up questions for iterative reasoning to support diagnostic decision-making. Specifically, MedClarify computes a list of candidate diagnoses analogous to a differential diagnosis, and then proactively generates follow-up questions aimed at reducing diagnostic uncertainty. By selecting the question with the highest expected information gain, MedClarify enables targeted, uncertainty-aware reasoning to improve diagnostic performance. In our ex-periments, we first demonstrate the limitations of current LLMs in medical reasoning, which 
+
+1
+
+> arXiv:2602.17308v1 [cs.AI] 19 Feb 2026
+
+often yield multiple, similarly likely diagnoses, especially when patient cases are incomplete or relevant information for diagnosis is missing. We then show that our information-theoretic reasoning approach can generate effective follow-up questioning and thereby reduces diagnos-tic errors by ∼27 percentage points (p.p.) compared to a standard single-shot LLM baseline. Altogether, MedClarify offers a path to improve medical LLMs through agentic information-seeking and to thus promote effective dialogues with medical LLMs that reflect the iterative and uncertain nature of real-world clinical reasoning. 
+
+2Introduction 
+
+Large language models (LLMs) are increasingly integrated into clinical workflows [1–3], espe-cially to assist with diagnostic decision-making [4–18]. By synthesizing patient information and suggesting probable diagnoses, LLMs may not only support clinicians in managing complex and rare diseases, but also prevalent conditions where fast and accurate diagnosis is critical [13–16]. This potential is particularly important given that diagnostic errors remain a major source of harm in medicine, leading to an estimated 800,000 cases of death or permanent disability each year in the U.S. alone [19]. A central challenge in medical diagnosis is that the information obtained during initial history taking is often incomplete, creating substantial uncertainty for diagnostic decision-making [20,21]. This extends beyond the patient history alone: physical examination findings, laboratory results, and imaging may be unavailable, pending or only available through active clinical inquiry. Patients typically report only their primary presenting symptom, but oftentimes leave out important details such as symptom timeline, contextual factors, relevant medical history, or medication intake which clinicians must actively inquire [22–26]. Missing or ambiguous information broadens the differ-ential diagnosis and increases the risk of misdiagnosis, especially when some conditions cannot yet be ruled out [27]. To resolve this uncertainty, clinicians commonly ask targeted follow-up questioning to clarify symptoms and distinguish among competing diagnoses [28–31]. For ex-ample, when evaluating unexplained chest pain, a clinician may probe specifically for exertional symptoms, radiation patterns, or risk factors to differentiate cardiac from non-cardiac cause [32]. Similarly, when assessing a patient suspected of type 2 diabetes, physicians will also inquire about dietary habits and physical activity [33]. By continually seeking additional information, physicians can systematically narrow down the set of possible diseases and update the probability of various differential diagnoses [28–31]. Automating this iterative, question-driven reasoning process repre-sents a promising direction for AI-assisted diagnosis. However, current medical LLMs are not designed to follow the information-seeking approach 3that is common in clinical practice. Instead, existing medical LLM systems [8, 13–15, 34–41] are typically designed to follow a static input-output paradigm with a single-shot prediction: given the description of a patient case, the LLM produces a single diagnosis or a list of potential diagno-sis. Yet, many of the generated diagnoses are incorrect [42, 43], and the correct diagnosis often cannot be identified without additional follow-up questions. Hence, a common limitation [11] of medical LLMs is that these cannot identify relevant but missing information and then generate case-specific follow-up questions to reduce diagnostic uncertainty and guide reasoning toward the correct diagnosis. While there are some methods to generate confirmatory questions for a single diagnosis [44, 45], similar approaches that identify the correct diagnosis out of a pool of multiple candidate diagnoses through follow-up questions are missing. To overcome these limitations of current LLM approaches, we here introduce MedClarify, an AI agent for information-seeking that generates follow-up questions during a diagnostic workflow (see Figure 1). MedClarify first computes a set of candidate diagnoses, analogous to a differ-ential diagnosis, and then proactively proposes follow-up questions aimed at reducing diagnostic uncertainty. For this, we propose a novel information gain formulation—called diagnostic ex-pected information gain (DEIG)—to quantify how much a follow-up question reduces the entropy of the potential, case-specific diagnosis distribution, which we then integrate into MedClarify in a Bayesian framework. As a result, MedClarify iteratively identifies which question would most effectively reduce diagnostic uncertainty to arrive at the correct diagnosis. Thereby, MedClarify offers a path to improve medical LLMs through active information-seeking and to thus promote effective dialogues consistent with the iterative and uncertain nature of real-world clinical reason-ing. We evaluate MedClarify through an agentic framework using several medical datasets for di-agnostic benchmarking, namely, the NEJM Image Challenge [46], MediQ [42], and MedQA [38], and assess its information-seeking capabilities. We implement MedClarify using an open-source LLM, namely, Llama 3.3-70B [47] as the primary backbone, but later also provide a comparison with alternative LLM backbones. Our experiments show that off-the-shelf LLMs struggle when 4key information in patient cases is missing; even state-of-the-art LLMs generate frequent mis-diagnoses, which increases diagnostic errors by up to 10–15 p.p. This also reveals a weakness of current benchmarking practices, which typically assume complete and fully specified patient cases—an assumption that rarely holds in routine clinical settings. In clinical practice, important information is often missing or unknown at first presentation, making single-shot predictions prone to diagnostic errors. In contrast, we find that MedClarify substantially improves diagnostic accu-racy by generating informative follow-up questions that reduce diagnostic uncertainty and guide reasoning toward the correct diagnosis. Across our experiments, we find improvements in diag-nostic accuracy by up to ∼27 p.p. compared to single-shot LLM prediction on incomplete patient cases, which correspond to reductions in diagnostic errors by ∼48%. 5Results 
+
+MedClarify for information-seeking in medical LLMs 
+
+MedClarify is an agentic, information-seeking system for LLMs that takes a patient case as input and then identifies the most informative follow-up question to refine a differential diagnosis (Fig-ure 1a). For this, MedClarify iteratively asks a series of case-specific follow-up questions during patient interview in order to identify the correct diagnosis from a set of candidate diagnoses. At its core, MedClarify implements a principled, data-driven query-selection strategy that prioritizes questions expected to reduce diagnostic uncertainty and rule out competing diagnoses (Figure 1b). To quantify diagnostic uncertainty, MedClarify estimates the entropy [48] of the LLM’s distribu-tion over candidate diagnoses, but where we extend the standard entropy formulation to incorporate the semantic relatedness of diagnoses such that related conditions contribute less to overall uncer-tainty than entirely distinct ones. Specifically, the MedClarify system maps the predicted medical diagnoses onto ICD codes (i.e., the International Classification of Diseases [ICD-11], 11th Revi-sion [49]) and then measures the semantic proximity between potential conditions. This accounts for how diseases are medically related and thus enables MedClarify to generate follow-up ques-tions that can more effectively rule out entire branches of related conditions. An example dialogue with case-specific follow-up questions is shown Figure 2 (further examples are in Extended Fig-ure 2 and 3). 6Figure 1: Overview of MedClarify, an AI agent for medical diagnosis that optimizes the ques-tion selection strategy. a , The system generates a set of differential diagnoses with corresponding confidence scores, which are then adjusted using a Bayesian update that combines knowledge from old and new evidence. Based on this improved differential diagnosis, MedClarify selects the optimal follow-up question through optimizing information gain, thus reducing uncertainty. This question is then used to interview the patient, and the patient’s response is integrated into the patient’s case. This iterative diagnostic refinement process is repeated until specific thresholds are met, and eventually outputs a final diagnosis. b, The question selection strategy and technical overview of MedClarify. 7Figure 2: Example with proactive, case-specific follow-up questions for medical diagnosis. The figure presents an example patient case with clinical information (top), as well an the diagnostic dialogue generated by the naïve multi-turn baseline system (middle) and by MedClarify (bottom) for the same patient case. Additional dialogues are in Extended Figure 2 and 3. To evaluate the performance of MedClarify, we simulate patient interviews using an agentic evaluation framework. The evaluation framework allows MedClarify to perform iterative diagnos-tic reasoning by asking follow-up questions, updating its differential diagnosis, and converging toward the correct condition through interaction with a simulated patient and their clinical records. The evaluation framework comprises components: (i) a P ATIENT agent that responds to questions; 8(ii) a D OCTOR agent that performs diagnostic reasoning using MedClarify and queries the P A- 
+
+> TIENT
+
+agent to retrieve more information; (iii) a U PDATE agent that updates the patient case with the newly retrieved information; and (iv) an E VALUATOR agent that assesses the correctness of the final diagnosis while accounting for variations in medical terminology. Together, these compo-nents create a controlled setting for evaluating how well MedClarify gathers missing information and improves diagnostic accuracy. MedClarify uses an entropy–based information-seeking strategy (which we call diagnostic ex-pected information gain [DEIG]) to identify follow-up questions that most effectively reduce diag-nostic uncertainty. For each candidate question, DEIG evaluates how the distribution over possible diagnoses is expected to change and selects the question that rules out incorrect alternatives while shifting probability toward the true diagnosis. Intuitively, DEIG favors questions that meaning-fully narrow the differential diagnosis—questions whose answers eliminate broad sets of condi-tions rather than only distinguishing between minor variants (Figure 3a). For example, when the LLM is uncertain between pneumonia, pulmonary embolism, and myocardial ischemia, a question about pleuritic chest pain can collectively rule out several non-pulmonary causes, thereby concen-trating probability on the correct diagnostic branch. Because MedClarify incorporates ICD-based semantic similarity, it treats closely related diagnoses, such as different pneumonia subtypes, as belonging to the same broader group. This prevents inflated uncertainty from minor wording dif-ferences and allows follow-up questions to eliminate entire clusters of related conditions. At each step, MedClarify applies a Bayesian update to the diagnostic distribution so that the newly acquired evidence systematically reweights the probabilities rather than leaving them static (Figure 3b). MedClarify is evaluated on a total of 469 patient cases from the NEJM Image Challenge( n =170 cases) [46], MediQ ( n = 129 ) [42], and MedQA ( n = 170 ) [38]. These cases span a broad range of diseases across eight medical specialties: cardiology, pulmonology, gastroenterology, neurology, dermatology, endocrinology, hematology/oncology, and urology/nephrology (Extended Figure 4). We assess MedClarify using a state-of-the-art open-source LLM backbone, namely, Llama 3.3-70B [47]. The model is evaluated with MedClarify and compared against a standard 9single-shot approach, where the LLM directly generates a diagnosis from the initial case descrip-tion without asking any follow-up questions. 10 aQ1 for supporting ectopic pregnancy 
+
+and refuting appendicitis: 
+
+Is the pregnancy test positive, with one-
+
+sided pelvic pain and missed period? 
+
+Q2 for supporting pelvic 
+
+inflammatory disease and refuting 
+
+appendicitis: 
+
+Is there vaginal discharge, STI history, or 
+
+cervical motion tenderness? 
+
+Q3 for supporting urinary tract 
+
+infection and refuting appendicitis: 
+
+Does she have dysuria, urinary frequency 
+
+or urgency, and a urinalysis with 
+
+leukocytes or nitrites? 
+
+Q4 for supporting menstrual cramps 
+
+and refuting appendicitis: 
+
+Is the pain crampy, related to menses, 
+
+relieved by NSAIDs, and without 
+
+localized peritoneal signs? 
+
+Q5 for exploring the alternatives apart from the five predicted diseases :
+
+Does the pain follow fatty meals, localize 
+
+to the right upper quadrant, and show a 
+
+positive Murphy sign? 
+
+Differential Diagnosis 
+
+ICD-11 code  Probability 
+
+Appendicitis 
+
+DB10.Z 
+
+Ectopic pregnancy 
+
+3A20.0 
+
+Pelvic inflammatory disease 
+
+GA05.Z 
+
+Urinary tract infection 
+
+GC08.7 
+
+Menstrual cramps 
+
+GA34.3 
+
+0.307 
+
+0.268 
+
+0.206 
+
+0.147 
+
+0.073 
+
+Focus on ICD-11 Chapter 13 (D) conditions 
+
+(Diseases of the digestive system )
+
+Question Generation 
+
+Yes 
+
+No 
+
+Yes 
+
+No 
+
+Diagnostic Simulations 
+
+Patient response: 
+
+Yes 0.402 
+
+0.233 
+
+0.169 
+
+0.113 
+
+0.083 
+
+Highest Information Gain Selection 
+
+Yes 
+
+No 
+
+Yes 
+
+No 
+
+Yes 
+
+No 
+
+Differential Diagnosis 
+
+ICD-11 code  Probability 
+
+Ectopic pregnancy 
+
+3A20.0 
+
+Threatened pregnancy loss 
+
+JA8D.Z 
+
+Molar pregnancy 
+
+JA02.Z 
+
+Ovarian torsion 
+
+GA18.5 
+
+Appendicitis 
+
+DB10.Z 
+
+0.338 
+
+0.206 
+
+0.179 
+
+0.152 
+
+0.124 
+
+Focus on ICD-11 Chapter 18 (J) conditions 
+
+(Pregnancy, childbirth or the puerperium )
+
+bDifferential diagnosis 
+
+ICD-11 code  Probability 
+
+Menstrual cramps 
+
+GA34.3 
+
+Urinary tract infection 
+
+GC08.Z 
+
+Appendicitis 
+
+DB10.Z 
+
+Ectopic pregnancy 
+
+JA01.Z 
+
+Cholecystitis 
+
+DC12.Z 
+
+0.586 
+
+0.166 
+
+0.099 
+
+0.080 
+
+0.068 
+
+Menstrual cramps 
+
+GA34.3 
+
+Urinary tract infection 
+
+GC08.Z 
+
+Appendicitis 
+
+DB10.Z 
+
+Cholecystitis 
+
+DC12.Z 
+
+Ectopic pregnancy 
+
+JA01.Z 
+
+0.8 
+
+0.4 
+
+0.3 
+
+0.3 
+
+0.2 
+
+Differential diagnosis 
+
+ICD-11 code  Probability 
+
+Bayesian-updated  probability Naive  LLM predicted  probability 
+
+A 17-year-old girl presents with 18 hours of abdominal pain. 
+
+Patient case 
+
+Is the pain crampy in the lower abdomen? 
+
+Menstrual cramps 
+
+GA34.3 
+
+Urinary tract infection 
+
+GC08.Z 
+
+Appendicitis 
+
+DB10.Z 
+
+Cholecystitis 
+
+DC12.Z 
+
+Pancreatitis 
+
+DC31.Z 
+
+0.8 
+
+0.4 
+
+0.3 
+
+0.2 
+
+0.1 
+
+Disease probability 
+
+ICD-11 code  Probability 
+
+Yes. 
+
+Menstrual cramps:  0.8 x 0.8 = 0.64 
+
+Urinary tract infection:  0.4 x 0.4 = 0.16 
+
+Appendicitis:  0.3 x 0.3 = 0.09 
+
+Cholecystitis:  0.3 x 0.2 = 0.06 
+
+Ectopic pregnancy:  [(0.8 + 0.4 + 0.3 + 0.2 + 0.1) / 5] x 0.2 = 0.08 
+
+Bayesian update 
+
+Menstrual cramps : 0.64 1/ T
+
+Urinary tract infection:  0.16 1/ T
+
+Appendicitis:  0.09 1/ T
+
+Cholecystitis:  0.06 1/ T
+
+Ectopic pregnancy:  0.072 1/ T
+
+Temperature ( T ) scaling 
+
+Averaging 
+
+Figure 3: Overview of Bayesian update and question selection in MedClarify. a, Question selection strategy in MedClarify can shift LLM focus to alternative condition groups, encouraging to rule out a wider range of diseases for a more reliable final diagnosis. The process begins by generating targeted questions for each predicted disease to refute the highest-probability condition and confirm low-ranked alternatives, plus an additional explorative question. Afterwards, the sys-tem selects the question with the highest information gain. In this example, although the initial hypothesis was related to ICD-11 Chapter 13 (disease of the digestive system), MedClarify selects a question that effectively confirms Chapter 18 (pregnancy, childbirth, or the puerperium), leading to the correct diagnostic pathway, which the baseline system would have missed. b, Bayesian up-date prevents static entropy by incorporating historical diagnoses and temperature scaling. 11 Diagnostic performance degrades under incomplete patient cases 
+
+To assess how missing clinical information (such as missing symptoms, missing laboratory tests, etc.) affects LLM diagnostic accuracy, we conducted feature masking experiments using the pa-tient cases from the NEJM, MediQ, and MedQA datasets. We categorized clinical information from the patient cases into six feature categories: symptoms, social history, past medical history, physical examination, laboratory tests, and imaging results. Then, we masked each feature cate-gory individually to simulate scenarios where incomplete patient information is presented to the diagnostic LLM. Diagnostic accuracy on each masked case was then compared against perfor-mance on the corresponding complete case. Masking clinical information led to systematic degradation in diagnostic accuracy (Figure 4). The performance decrease varied substantially across feature categories: masking laboratory find-ings led to the largest drop ( −19.8 percentage points [p.p.]), followed by imaging results ( −16.6 p.p.) and symptoms ( −7.2 p.p.) and physical examinations ( −7.1 p.p.). This pattern is consistent with clinical diagnostic workflows, in which test results are commonly used to refine or revise diagnoses after an initial clinical assessment [50]. These findings motivate the need for follow-up questioning strategies, such as in MedClarify, that actively recover diagnostically relevant infor-mation when such features are missing at first presentation. 12 a bLaboratory Imaging Symptoms Physical      
+
+> examination
+> Social history Past medical
+> history
+> 40
+> 50
+> 60
+> 70
+> Top-1 accuracy (%)
+> Single-shot (complete case)
+> Single-shot (incomplete case) Laboratory Imaging Symptoms Physical
+> examination
+> Social
+> history
+> Past medical
+> history
+> 0
+> 10
+> 20
+> Performance drop (%)
+> 19.8%
+> (n=355)
+> 16.6%
+> (n=314)
+> 7.2%
+> (n=519) 7.1%
+> (n=472)
+> 3.2%
+> (n=321)
+> 1.1%
+> (n=399)
+
+Figure 4: Decrease in LLM diagnostic accuracy under incomplete patient cases. a , Diagnos-tic accuracy of Llama-3.3-70B in single-shot without inquiries on complete cases (green) and on cases with a single clinical feature masked (striped), evaluated across all datasets (NEJM, MediQ, and MedQA) for each feature category (laboratory findings, imaging results, symptoms, physical examinations, social history, and past medical history). b, Decrease in diagnostic accuracy (in p.p.) for masked cases relative to the corresponding complete cases across different feature categories (This shows the subtraction of striped bars from solid green bars across feature categories in a). 
+
+MedClarify improves diagnostic accuracy under incomplete patient cases 
+
+To evaluate whether follow-up questions generated by MedClarify improve diagnostic accuracy under incomplete patient information, we compared three LLM-based diagnostic systems: (i) a 
+
+single-shot baseline that predicts diagnoses directly from masked patient cases without follow-up questioning (analogous to the experiments above), (ii) a naïve multi-turn baseline that generates follow-up questions heuristically without explicit optimization, and (iii) MedClarify , which selects questions using an information-theoretic criterion. All systems employ the same multi-agent archi-tecture and are evaluated on identical patient cases and masking strategies, so the only difference is their approach to question selection. Under incomplete clinical information, MedClarify consistently improved top-1 diagnostic ac-curacy relative to both baselines across all masked feature categories (Figure 5). When individual feature categories were masked, the naïve multi-turn baseline achieved only limited improvement over the single-shot baseline with feature masking, suggesting that the heuristic approach to ques-tions selection is of limited diagnostic utility. In contrast, MedClarify achieved higher top-1 ac-13 curacy across all feature categories, with particularly pronounced gains when diagnostically infor-mative features such as laboratory tests and imaging results were missing. Here, when laboratory findings were masked, MedClarify improved top-1 accuracy by 11.5 p.p. over the single-shot base-line and by 9.8 p.p. over the naïve multi-turn baseline; imaging masking demonstrated improve-ments of 23.7 p.p. and 22.8 p.p., respectively. These results indicate that information-theoretic question selection enables effective retrieval of diagnostically relevant information often reaching the potential performance of the evaluation on complete cases. The corresponding results for the top-3 accuracy show consistent trends (Extended Figure 6). 14 0 20 40 60 80 
+
+Top-1 accuracy (%)   
+
+> Laboratory
+> (n=82)
+> Imaging
+> (n=66)
+> Symptoms
+> (n=170)
+> Physical
+> examination
+> (n=135)
+> Social history
+> (n=32)
+> Past medical
+> history
+> (n=95)
+> 34.1%
+> 43.9%
+> 32.4%
+> 34.8%
+> 57.6%
+> 33.9%
+> 38.2%
+> 44.7%
+> 39.1%
+> 37.0%
+> 46.7%
+> 33.6%
+> 50.0%
+> 46.9%
+> 30.0%
+> 38.9%
+> 43.2%
+> 41.5%
+> Single-shot (incomplete case) Baseline (incomplete case) MedClarify (incomplete case)
+
+Figure 5: MedClarify improves diagnostic accuracy under incomplete patient cases. Top-1 di-agnostic accuracy is shown for three LLM-based diagnostic systems on the NEJM dataset: a single-shot baseline (striped), a naïve multi-turn baseline with heuristic follow-up questions (orange), and MedClarify with information-theoretic question selection (purple). All LLM-based systems are instantiated with Llama-3.3-70B. Patient cases are evaluated under single-feature masking, where one clinical feature group (laboratory tests, imaging results, symptoms, physical examination, so-cial history, or past medical history) is removed at a time. All systems are evaluated on the same masked patient cases using an identical multi-agent architecture and differ only in their question selection strategy. 15 Diagnostic accuracy under joint masking of all clinical features 
+
+We next extend the evaluation to a more challenging setting in which all clinical feature cate-gories are masked concurrently. This setting provides a stricter numerical experiments, primarily to better understand when and where information-seeking through follow-up questioning is most effective. Across all three datasets, MedClarify consistently outperformed the naïve multi-turn baseline (Figure 6a). For example, the top-1 accuracy increased from 28.0% to 36.1% (+8.1 p.p.; NEJM dataset), from 41.2% to 46.1% (+4.9 p.p.; MediQ); and from 44.3% to 48.4% (+4.1 p.p.; MedQA). Aggregated across datasets, MedClarify improved the top-1 diagnostic accuracy by 5.7 p.p. relative to the baseline multi-turn system. For comparison, we also report the improvement relative to a single-shot LLM (+26.9 p.p.; Extended Table 1). Overall, MedClarify required fewer follow-up questions to reach the correct diagnosis in the challenging setting where all clinical feature categories were masked. Specifically, MedClarify averaged 8.96 questions per case compared with 9.81 questions for the naïve multi-turn base-line, indicating more efficient information acquisition through targeted questioning (Extended Fig-ure 7). In addition, we evaluated the candidate diagnoses based on the higher Mean Reciprocal Rank (MRR), which measures how early the correct diagnosis appears in the ranked differential diagnosis lis (Extended Figure 8). MedClarify consistently achieved a higher MRR than the naïve multi-turn baseline across all datasets. On average, MedClarify improved the MRR over the naïve baseline by 0.08 (NEJM), 0.05 (MediQ), and 0.05 (MedQA), respectively, which confirms that the correct diagnosis is closer to the top of the ranked list with candidate diagnoses. 
+
+Diagnostic accuracy across medical specialties 
+
+Diagnostic performance varied across medical specialties (Figure 6b). MedClarify yielded the largest relative gains in endocrinology, where top-1 accuracy increased from 20.0% to 56.7% (+36.7 p.p.). The performance of the baseline was comparative low in this specialty, suggesting that structured follow-up questioning is particularly effective in domains where diagnoses depend on targeted clarifications of laboratory-related findings. In contrast, more modest improvements were 16 observed, for example, in dermatology and neurology. In dermatology, accurate diagnosis often depends on visual inspection and pattern recognition from images, which are not captured in text-only patient cases and therefore are challenging for medical LLMs [51]. Similarly, neurological diagnoses frequently rely on detailed neurological examinations, imaging, or electrophysiological studies, which are difficult to reconstruct through conversational follow-up alone. More broadly, the performance of MedClarify across medical specialties also reflects the underlying difficulty of the evaluated datasets (Figure 6c). 17 a0
+
+20 
+
+40 
+
+60 
+
+80   
+
+> Accuracy (%)
+> 36.1%
+> 46.1% 48.4%
+> 39.8%
+> 53.7%
+> 57.6%
+> 44.0%
+> 57.2%
+> 62.0%
+> 28.0%
+> 41.2% 44.3%
+> 35.3%
+> 49.0%
+> 54.3%
+> 39.4%
+> 53.1%
+> 57.1%
+> 42.0%
+> 55.4%
+> 59.2%
+> 46.9%
+> 45.3%
+> 60.7%
+> 58.3%
+> 65.5%
+> 61.2%
+> **
+> *
+> *
+
+NEJM MediQ MedQA        
+
+> MedClarify Baseline MedClarify Baseline MedClarify Baseline
+> Top-klevels
+> Top-1 Top-2 Top-3 Top-4 Top-5
+
+bHematology/Oncology  
+
+> Gastroenterology
+> Cardiology
+> Pulmonology
+> Neurology
+> Dermatology
+> Urology/Nephrology
+> Endocrinology
+> 20%
+> 40%
+> MedClarify
+> Baseline
+
+cHematology/Oncology 
+
+> Gastroenterology
+> Cardiology
+> Pulmonology
+> Neurology
+> Dermatology
+> Urology/Nephrology
+> Endocrinology
+> 20%
+> 40%
+> 60%
+> NEJM
+> MedQA
+> MediQ
+
+Figure 6: Diagnostic accuracy under joint masking of all feature categories. The experiments are based on a more challenging setting in which all clinical feature categories are masked con-currently, which provides a stricter numerical benchmark to assess when and where information-seeking through follow-up questioning is most effective. a, Comparison of top-k accuracy of Med-Clarify (instantiated with Llama-3.3-70B as the LLM backbone) and the baseline across the NEJM, MediQ, and MedQA datasets. Statistical significance was tested using 95% confidence intervals (∗: p ≤ 0.05 ; ∗∗ : p ≤ 0.01 ; ∗∗∗ : p ≤ 0.001 ). b, Top-1 diagnostic accuracy of MedClarify (instan-tiated with Llama-3.3-70B) stratified by medical specialty under joint feature masking, comparing MedClarify with the naïve multi-turn baseline. Overall, MedClarify has a strong performance gain across all medical specialties, but with particularly large relative gains for endocrinology. c, Top-1 diagnostic accuracy of MedClarify (instantiated with Llama-3.3-70B) under joint feature masking to demonstrate the overall difficulty of patient cases across datasets. 18 Performance gain is robust across different LLM backbones 
+
+We demonstrate the robustness of MedClarify across various LLM backbones. Here, we again draw upon the experiment setting where all feature categories are masked jointly. These results confirm that performance gain from MedClarify is robust across different LLM backbones, in-cluding GPT-5.1, Deepseek-R1-0528, and Llama-3.3-70B (Figure 7). Across the NEJM, MediQ, and MedQA datasets, MedClarify consistently leads to large performance improvements over the naïve multi-turn baseline. For instance, on the MediQ dataset, the top-1 accuracy increases from 48.1% to 50.4% (+2.3 p.p.; GPT-5.1), 33.3% to 41.1% (+7.8 p.p.; Deepseek-R1-0528), and 41.2% to 46.1% (+4.9 p.p.; Llama-3.3-70B). The findings remain consistent even when reducing the num-ber of turns in the evaluation (see Extended Figure 10 for results with a maximum of five turns). 19 aBaseline MedClarify  
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> Top-1 accuracy (%)
+> 32.9% 34.7%
+
+GPT-5.1 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 31.2%
+> 33.5%
+
+DeepSeek-R1-0528 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 27.8%
+> 36.1%
+
+Llama-3.3-70B 
+
+bBaseline MedClarify  
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> Top-1 accuracy (%)
+> 48.1% 50.4%
+
+GPT-5.1 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 33.3%
+> 41.1%
+
+DeepSeek-R1-0528 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 41.2%
+> 46.1%
+
+Llama-3.3-70B 
+
+cBaseline MedClarify  
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> Top-1 accuracy (%)
+> 44.1% 45.3%
+
+GPT-5.1 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 37.1%
+> 41.8%
+
+DeepSeek-R1-0528 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 44.3%
+> 48.4%
+
+Llama-3.3-70B 
+
+Figure 7: Overview of the diagnostic accuracy of MedClarify across different LLM back-bones. Here, MedClarify is compared when instantiated with different LLM backbones, namely, GPT-5.1, Deepseek-R1-0528, and Llama-3.3-70B. Reported is the top-1 accuracy of MedClarify (purple) in comparison the naïve multi-turn system across different datasets: a, NEJM; b, MediQ; and c, MedQA. 20 Diagnostic belief updating in MedClarify 
+
+To examine whether the information-theoretic follow-up questions in MedClarify lead to effective diagnostic belief updating, we measured the reduction in Shannon entropy (in bits) of the diag-nostic probability distribution over different turns in the conservation. Here, entropy quantifies the concentration of beliefs across candidate diagnoses, with lower entropy indicating stronger con-centration on a smaller set of plausible conditions. We computed the reduction in entropy relative to the initial state (round 0), where all candidate diagnoses are initialized with equal probabil-ity (Figure 8a). Evidently, MedClarify exhibited a consistently larger entropy reduction than the naïve mult-turn baseline. This pattern reflects the combined effect of information-theoretic ques-tion selection and Bayesian belief updating in MedClarify and indicates that diagnostic beliefs concentrate more rapidly on a single candidate diagnosis as evidence accumulates compared to the naïve mult-turn baseline system. The entropy reduction is also consistent across different datasets (Figure 8b,c). 21 1 2 3 4 5 6 7 8 9 10                   
+
+> Iteration
+> 1.6
+> 1.7
+> 1.8
+> 1.9
+> 2.0
+> 2.1
+> 2.2
+> Average entropy
+> a
+> NEJM
+> MediQ
+> MedQA
+> 12345678910
+> Iteration
+> 1.6
+> 1.7
+> 1.8
+> 1.9
+> 2.0
+> 2.1
+> 2.2
+> Average entropy
+> b
+> NEJM
+> MediQ
+> MedQA
+> 12345678910
+> Iteration
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> Entropy reduction
+> c
+> Baseline
+> MedClarify
+> Baseline advantage
+> MedClarify advantage
+
+Figure 8: Analysis of diagnostic belief updating in MedClarify quantified through entropy reduction. We evaluate Shannon entropy (in bits) of the diagnostic probability distribution across successive turns in the diagnostic dialogue. Entropy measures the concentration of probability mass across candidate diagnoses, with lower values indicating stronger belief concentration. En-tropy reduction is computed relative to the initial state (round 0), where all candidate diagnoses are initialized with equal probability. Comparison of the average entropy stratified by dataset (NEJM, MediQ, MedQA) for a, MedClarify vs. b, the naïve multi-turn LLM as a baseline. c, Average reduction in entropy per iteration over turns. MedClarify is more effective due to Bayesian belief updating, reflected by a faster concentration of diagnostic beliefs as evidence accumulates. A key strength of MedClarify is that it produces confidence scores that is clinically meaningful and aligned with diagnostic performance. To demonstrate this, we analyzed how the confidence scores evolve across diagnostic iterations and how well they correspond to the actual diagnostic accuracy (Extended Figure 9a). Compared to the naïve multi-turn baseline, MedClarify yields confidence estimates that are better calibrated with the observed accuracy, which indicates not only 22 more effective belief updating but also that the confidence scores can be informative for decision-making in clinical practice. To quantify the alignment between confidence and accuracy, we further computed the Expected Calibration Error (ECE) [52], which measures the discrepancy between predicted confidence and empirical diagnostic accuracy. The naïve multi-turn baseline exhibited a high ECE of 0.37, indicating poor calibration and confidence scores that frequently remain high despite incorrect diagnoses. In contrast, MedClarify achieved an ECE of 0.16, corresponding to a 56.8% reduction in calibration error relative to the naïve multi-turn baseline. Overall, these results indicate that MedClarify produces confidence estimates that more reliably track diagnostic correctness and avoids overconfident predictions compared to the naïve baseline. 23 Discussion 
+
+LLMs are increasingly used for diagnostic decision-making [1–17, 34–43], but, in clinical prac-tice, not all required information is available at the initial patient encounter; hence, LLMs rarely have access to all the information needed for an accurate diagnosis. Rather, missing details create diagnostic uncertainty, so physicians routinely ask follow-up questions to rule out competing con-ditions. To address this, we developed MedClarify, a novel information-seeking AI agent to ask 
+
+targeted follow-up questions. MedClarify offers a paradigm shift by asking proactive questions. For this, MedClarify creates a list of potential candidate diagnoses, computes the probability for each, and then formulates targeted follow-up questions to reduce diagnostic uncertainty. Across several medical datasets, MedClarify increases diagnostic accuracy by 26.9 p.p. compared to a tra-ditional LLM with a single-shot answer and by 5.7 p.p. compared to an LLM with naïve follow-up questions, which corresponds to a reduction in diagnostic errors by 32.3% and by 9.1%, respec-tively. Existing evaluations of medical LLMs typically assume that all relevant patient information is fully provided and that each case can be solved uniquely from the case description [8,14, 15]. This is in sharp contrast to actual clinical practice, where patient information is often incomplete due to various reasons [24, 26]: patients may accidentally omit accompanying symptoms, symptom timelines, or comorbidities, while, in other situations, additional examinations or diagnostic tests may be required. As a result, current benchmarks test LLMs only under idealized conditions that rarely reflect actual diagnostic workflows. Our experiments show that state-of-the-art LLMs frequently fail for cases with incomplete information, and, as a result, diagnostic accuracy drops by ∼29 p.p., corresponding to a relative increase in misdiagnoses by ∼54%. Such a magnitude of diagnostic error is clinically unacceptable and underscores the need for approaches that can handle incomplete patient information. Furthermore, these findings indicate that current evaluation practices overlook an important source of diagnostic error and show the need for more realistic benchmarking. While recent work in medical AI agents moves in this direction [4, 7, 53–57], 24 standardized benchmarks that reflect the incomplete and iterative nature of real patient encounters are needed to advance the development and evaluation of reliable diagnostic systems. Our work extends prior research on medical LLMs and, more broadly, methods for clinical question answering. Unlike existing medical LLMs, which typically operate in a single-shot with-out interactive reasoning [7, 17, 34–40, 55, 56, 58, 59], our work introduces a principled framework for making diagnostic refinements in a multi-turn setting. For this, we formulate a novel DEIG, which quantifies how much a follow-up question is expected to reduce diagnostic uncertainty with respect to a specific disease. While entropy-based question selection has been explored in natural language processing and question answering [60–63], these methods generally ignore the hierar-chical structure of medical diagnoses. In contrast, we present a tailored approach that accounts for how closely related different diagnoses are, which allows MedClarify to prioritize follow-up ques-tions that collapse or target entire branches of related conditions. In our experiments, we show that a naïve entropy guidance without such adaptation for medical diagnoses is suboptimal, whereas our tailored formulation leads to more effective information seeking and overall better diagnostic accuracy. MedClarify offers several strengths for clinical practice. First, the system is model-agnostic and thus flexible; it can be used with different LLM backbones, including open-source and cus-tomized medical LLMs, making it easy to deploy MedClarify across medical institutions with varying computational or regulatory constraints. Second, MedClarify allows for built-in inter-pretability: at each step, it produces an explicit list of differential diagnoses and computes the associated confidence for each, allowing clinicians to track how the diagnostic reasoning evolves and to intervene or override when needed. As such, MedClarify can be used to support clini-cians and agentic applications of LLMs in medical workflows. Third, MedClarify is robust across datasets and medical specialties, which enables seamless integration into clinical workflows even where case formats may differ. Fourth, additional domain knowledge can be integrated in a prin-cipled manner through the choice of the prior. Fifth, MedClarify’s approach aligns closely with established principles of clinical reasoning taught in medical education. The systematic generation 25 of differential diagnoses, iterative hypothesis testing through targeted questioning, and Bayesian updating of diagnostic probabilities mirror the cognitive processes that physicians are trained to de-velop. This conceptual alignment offers potential advantages for clinical adoption, as the system’s reasoning process may be more intuitive and interpretable to clinicians compared to black-box di-agnostic algorithms. Furthermore, MedClarify could serve as an educational tool, demonstrating effective diagnostic questioning strategies to medical trainees and providing a framework for struc-tured clinical reasoning that reinforces best practices in history taking. Together, these strengths make MedClarify a versatile tool for improving the real-world applicability of medical LLMs with the aim of improving diagnostic reasoning capabilities through information-seeking. The observed performance differences across medical specialties reflect fundamental limita-tions of text-based diagnostic systems rather than merely dataset characteristics. Dermatological diagnosis relies heavily on visual pattern recognition—the morphology, distribution, and evolution of skin lesions often cannot be adequately conveyed through verbal description alone. Similarly, neurological diagnosis depends substantially on direct observation and physical examination, in-cluding assessment of gait, reflexes, tone, coordination, and subtle findings such as fasciculations or nystagmus that are difficult to capture textually. These limitations suggest that text-based diag-nostic LLMs, including MedClarify, which showed poorer accuracy in those medical specialties, may be inherently less suited for specialties where visual and physical examination findings con-stitute the primary diagnostic evidence. Medical imaging represents a particularly salient example of this challenge: radiological diagnoses depend on the integrated interpretation of multiple imag-ing parameters (including lesion morphology, signal characteristics, topographic distribution, and dynamic contrast behavior), which are shaped by acquisition protocol and anatomical context in ways that resist reduction to textual description. Incorporating such multi-parametric imaging data into an LLM-based diagnostic framework therefore poses challenges that go beyond simply adding another input modality. MedClarify differs fundamentally from traditional clinical decision support systems (CDSS) in its active, information-seeking approach. Conventional CDSS [64–66] typically operate passively, 26 providing alerts or suggestions based on data already entered into the medical record—for example, flagging potential drug interactions or suggesting diagnoses consistent with documented findings. These systems depend entirely on the completeness and accuracy of information that clinicians choose to document. In contrast, MedClarify actively identifies gaps in diagnostic information and proposes targeted questions to address them, potentially surfacing relevant clinical details that might otherwise remain unelicited. This shift from passive decision support to active diagnostic partnership represents a novel approach that could complement existing CDSS infrastructure. Fur-thermore, whereas traditional CDSS often suffer from alert fatigue due to excessive, non-specific notifications, MedClarify’s information-theoretic approach ensures that suggested questions are targeted and relevant to the specific diagnostic context, potentially improving signal-to-noise ratio and clinician engagement with system recommendations. This study has several limitations that will need to be addressed to further improve agentic LLMs such as MedClarify in medical workflows. First, our evaluation relies on simulated patient interviews, which approximate—but do not fully capture—the variability, ambiguity, and commu-nication patterns encountered in real clinical encounters. In our simulation, we assume that patients provide clear, binary responses to questions, whereas, in reality, patient answers are often ambigu-ous, uncertain, or qualified. Patients may respond with partial information, express uncertainty about their own symptoms, or provide contradictory statements across the course of an encounter. Furthermore, real patients frequently volunteer unsolicited information that may be diagnostically relevant or, alternatively, distracting and tangential; the constraint that our Patient Agent may reveal only one piece of information per question does not reflect the nature of all clinical conversations. These simplifications may overestimate MedClarify’s performance in real-world settings where information extraction from patients is itself a substantial challenge. Second, although MedClarify is model-agnostic, the performance depends on the underlying LLM backbone; frontier models may behave differently as they evolve. As a cautionary note, we emphasize that all LLMs remain susceptible to hallucination or generating fabricated content, which can influence differential di-agnosis generation, follow-up questioning, and thus the accuracy of the final diagnosis. Third, our 27 experiments use benchmark datasets that, despite spanning multiple medical specialties [67], may not reflect the full diversity of real-world patient cases, including multimorbidity, atypical presen-tations, or incomplete histories. Fourth, our approach focuses on textual patient cases and does not yet incorporate additional modalities such as imaging, which are essential for many clinical decisions; future work could extend our framework to these data sources. Fifth, while MedClarify improves information-seeking behavior, it does not evaluate the clinical appropriateness, safety, or downstream consequences of the suggested follow-up questions. As with other medical appli-cations of LLMs, full clinical validation would likely require rigorous evidence from prospective studies or randomized controlled trials. Nevertheless, our experiments provide an important ini-tial step toward developing, evaluating, and comparing LLM-based diagnostic systems through numerical experiments. Together, these limitations indicate that broader validation in real clinical environments and across more diverse datasets is needed to fully assess the effectiveness and safety of medical LLMs systems such as MedClarify in practice. MedClarify demonstrates that information-seeking behavior can strengthen the diagnostic per-formance of medical LLMs, particularly when patient information is incomplete. As medical AI agents continue to evolve, structured approaches to question selection and uncertainty reduction will likely become central to safe and reliable clinical deployment. Integrating agentic systems such as MedClarify that enable interactive diagnostic dialogues into real clinical workflows offers a promising path toward more accurate AI-assisted diagnosis, improved patient interactions, and reduced misdiagnosis. 28 Methods 
+
+Datasets 
+
+We evaluated MedClarify using 469 diagnostic cases from three datasets: the NEJM Image Chal-lenge [46], MediQ [42], and MedQA [58]. We included only cases that (i) focus on diagnostic reasoning (i.e., rather than general questions aimed at probing clinical knowledge such as “What is the most likely organism?”) and (ii) provide sufficient clinical detail to simulate a doctor–patient interaction (i.e., cases with sufficient length and detail). We thus excluded cases that focus on gen-eral disease management, treatment, prognosis, or other non-diagnostic tasks. From the 400 cases published between September 2017 to May 2025 as part of the NEJM Image Challenge, 170 met these criteria. From the 1,272 and 1,272 cases in the MediQ and MedQA datasets, 129 and 170 cases were included, respectively. The identifiers for the cases are provided in the code reposi-tory. Overall, the cases span eight medical specialties: cardiology, pulmonology, gastroenterology, neurology, dermatology, endocrinology, hematology/oncology, and urology/nephrology (Extended Figure 4). We preprocessed the patient cases to avoid confounding due to differences in formatting and to be able to analyze the effect of missing clinical information. For this, we converted each case into a structured case arranged in a JSON format using DeepSeek-R1-0528. Each case is organized into six predefined medical feature categories: symptoms, social history, past medical history, physical examination, laboratory tests, and imaging results. This structure allows us to use feature masking in our experiments later to assess the effect of different features on the overall diagnostic accuracy while ensuring otherwise comparable input across models and datasets. Importantly, not all cases contain all six features (e.g., social history is frequently missing), and, if so, the corresponding features are then simply left empty. Summary statistics are in Extended Table 2. An example of a structured case is given in Extended Listing 1. 29 MedClarify for information-seeking in medical AI agents 
+
+MedClarify performs multi-turn diagnostic refinement by taking an initial patient case as input and then producing differential diagnoses (i.e., a set of candidate diagnoses) that are iteratively updated as new information becomes available. In each turn t, MedClarify asks a clarification question, and, based on the patient’s response, updates the internal belief state to make a refined diagnosis (Figure 1a). Methodologically, MedClarify operates in four steps: (1) computing a candidate list of diag-noses with corresponding probabilities, where a broad probability distribution reflects diagnostic uncertainty ( assessment of candidate diagnoses ); (2) generating candidate follow-up questions de-signed to refute individual diagnoses or to explore previously unconsidered conditions ( question generation ); (3) selecting the follow-up question expected to reduce that uncertainty using DEIG (question selection ); (4) updating the probability distribution through a Bayesian framework, so that the posterior distribution reflects the newly gathered evidence ( Bayesian updating ). These steps are repeated until the system reaches sufficient confidence in a single diagnosis (Figure 1b). Each step is detailed in the following. In MedClarify, LLMs are used at two points in the above process: in Step 1 to compute the candidate list of diagnoses with associated probabilities, in Step 2 to generate candidate follow-up questions, and in Step 3 to select the highest DEIG question among the candidate questions. Importantly, the choice of LLM backbone is flexible, and we later evaluate MedClarify using several state-of-the-art models. Step 1: Assessment of candidate diagnoses MedClarify takes the current patient case Ct during turn t as input and then produces a dif-ferential diagnosis represented as a set of candidate diseases with confidence score, i.e., Dt =
+
+{(di, π i)}ki=1 , where πi ∈ [0 , 1] denotes a confidence score that disease di is the true diagnosis. The candidates are sorted by confidence score (i.e., π1 ≥ π2 ≥ . . . ), so that d1 is the top-ranked diagnosis at turn t.To compute the differential diagnoses, an LLM is prompted with the patient case Ct. Here, we 30 instruct the LLM to produce a differential diagnosis using a JSON schema with k candidate dis-eases, each accompanied by a confidence score πi indicating how strongly the model believes that disease di matches the true underlying condition. As we show in our experiments, it is sufficient that the confidence scores provide only a meaningful ranking of candidate diagnoses; the scores do not need to be well-calibrated probabilities. This flexibility allows MedClarify to operate with both general-purpose and specialized medical LLMs, many of which do not produce calibrated probability estimates. Nevertheless, if desired, the framework could be extended to incorporate calibrated probabilities [68–70]; in our case, we use temperature scaling [71, 72] for this purpose. The prompt is stated in the following. Therein, we make use of chain-of-thought reasoning [73], which has been shown to improve the reasoning accuracy of medical LLMs [74, 75]. The confidence score is generated with a lower bound of 0.1 instead of 0.0 to include only plausible diagnoses. 
+
+Prompt for generating differential diagnosis                                           
+
+> Your goal is to give adifferential diagnosis and assign each aconfidence score [0.1 - 1] based on <Task> and further information from <Inquiries History> if there is. Your diagnoses should be aspecific disease name, not a general diagnosis. Try to rule out diseases in your previous <Differential Diagnosis> if possible. Output avalue of 0.9-1.0 if the disease is expected to be the correct diagnosis; 0.6-0.9 if it is a possible diagnosis; and below 0.6 if it is unlikely. Here are some examples: <Peripheral neuropathy> -> too general, <Guillain-Barre syndrome> -> specific <Hemolytic anemia> --> too general, <Sickle Cell Disease> --> specific
+
+In our experiments, we use k = 5 differential diagnoses. Our choice for k = 5 differential diagnoses was guided by clinical practice to offer a reasonable tradeoff between clinical practicality for physicians and potential gains in diagnostic accuracy. In particular, this choice was previously validated in medical LLM [76, 77] where it gives a good empirical performance, but where large values lead to only marginal incremental gains. Further, Step 3 requires 2 × k prompts, so the choice of k = 5 offers a good trade-off in terms of computational scalability. 31 Step 2: Question generation In the question generation step, MedClarify uses the current set of candidate diagnoses Dt to produce a set of candidate follow-up questions Qt = {q1, . . . , q n}. For this, an LLM is prompted in two ways: (i) to generate questions q1, . . . , q n−1 for which the answers will help refute or support a specific diagnostic alternative, and (ii) to generate an exploratory question qn to account for conditions that are not considered in Dt.For (i), the idea is to generate ‘discriminatory’ questions that primarily compare the most likely disease d1 against potential alternatives d2, d 3, . . . Hence, we design questions that compare the top-ranked disease against the different diagnoses as follows: • Question 1 ( q1) differentiates between the top-1 disease ( d1) and the top-2 disease ( d2), aim-ing to refute d1 and support d2;• Question 2 ( q2) differentiates between the top-1 disease ( d1) and the top-3 disease ( d3), aim-ing to refute d1 and support d3; etc. Here, we make again use of chain-of-thought reasoning [73] to guide the model to carefully reflect the available evidence. The corresponding prompt is as follows: 
+
+Prompt for generating confirmatory or refuting questions                                    
+
+> Generate aquestion to help eliminate <Disease A> but confirm <Disease B> for <Patient Case>. The question should be bite-sized and not more than 1 sentence. Do not repeat the questions you have asked before in <Inquiries History> and <Questions>. You are not allowed to reveal explicitly your diagnosis that you guessed. <Patient Case>: {} <Disease A>: {} <Disease B>: {} <Inquiries History>: {} Output your answer concisely in the following format: Thought: [Your thought process here] Response: [Your question here]
+
+32 For (ii), we prompt the LLM to explore alternatives that go beyond the existing diagnoses 
+
+d1, . . . , d k. Here, we also make use of chain-of-thought reasoning [73] to make the reasoning process transparent and to guide the model in carefully comparing potential candidates beyond the currently proposed candidate diagnoses. 
+
+Prompt for generating exploratory questions                                  
+
+> Generate aquestion to discover other possible diseases apart from < Current Diagnosis> for <Patient Case>. The question should be bite-sized and not more than 1 sentence. Do not repeat the questions you have asked before in <Inquiries History> and <Questions>. You are not allowed to reveal explicitly your diagnosis that you guessed. <Patient Case>: {} <Current Diagnosis>: {} <Inquiries History>: {} Output your answer concisely in the following format: Thought: [Your thought process here] Response: [Your question here]
+
+Step 3: Question selection MedClarify selects the question q∗ that is expected to reduce diagnostic uncertainty the most. Formally, MedClarify evaluates each candidate question q ∈ Qt using our so-called diagnostic expected information gain (DEIG). The DEIG is an information-theoretic score that quantifies how informative the question is with respect to the current differential diagnosis. For this, MedClarify simulates how the diagnostic distribution would change under two hypothetical responses to the question. For each candidate question, the system queries the LLM twice: (a) Confirmatory case Diag +: the LLM is prompted under the assumption that the patient an-swers “yes” (i.e., the information supports the targeted diagnosis). Under this assumption, the LLM generates a new differential diagnosis Diag + and an updated posterior distribution 
+
+P (Dt+1 | support) .(b) Refute case Diag −: the LLM is prompted under the assumption that the patient answers 33 “no” (i.e., the information refutes the targeted diagnosis). Under this assumption, the LLM produces a new differential diagnosis Diag − and a posterior distribution P (Dt+1 | refute) .The two simulated posteriors reflect how the diagnostic landscape would evolve depending on the patient’s answer. The DEIG then quantifies how much diagnostic uncertainty is expected to decrease across these two outcomes. The question with the highest DEIG is selected and posed to the patient agent in the interactive diagnostic loop. This allows the system to rule out competing hypotheses or explore new diagnostic possibilities in a principled manner. 
+
+Diagnostic expected information gain (DEIG) 
+
+At a high level, DEIG builds on classical entropy-based information gain, which is a well-established concept in information theory and machine learning, and is often used in question an-swering and active learning [62, 78, 79]. However, MedClarify extends this principle in two main ways: (i) by incorporating how related disease codes are, which allows MedClarify to prioritize questions that rule out entire branches of related conditions; and (ii) by introducing a regulariza-tion term that encourages sufficient exploration, thereby ensuring broader diagnostic coverage and reducing the risk of overlooking rare conditions. Formally, the optimal question under the DEIG is given by 
+
+q∗ = arg max 
+
+> q inQ t
+
+[α · IG( q) + β · Div( q) + γ · Con( q)] , (1) where IG is the standard information gain, Div is a divergence term that measures the semantic similarity between ICD codes, and Con quantifies the ‘concentration’ in the distribution of the con-fidence scores to balance exploration, with parameters α, β, γ . Intuitively, the latter term avoids potential confirmation bias during information-seeking by also explicitly considering potential di-agnoses that are not yet among the selected candidates. We specify the different components in the following: • Information gain (IG) follows the standard entropy-based definition [80, 81]. In our med-ical setting, it quantifies how much a candidate question is expected to reduce diagnostic uncertainty. Let H define the (statistical) entropy given by H(X) = − P 
+
+> x∈X
+
+p(x) log p(x).34 Accordingly, we compute the entropy over the distribution of the confidence scores in both hypothetical cases (a) and (b); that is, H(P (Dt | support)) denotes the entropy under sup-porting evidence, and H(P (Dt | refute)) denotes the entropy under refuting evidence. Let 
+
+P (Dt) denote the distribution of the confidence scores before asking the question. Then, the IG is defined by 
+
+IG = H(P (Dt)) −
+
+12 · H(P (Dt | support)) + 12 · H(P (Dt | refute)) 
+
+
+
+. (2) The information gain is positive when entropy decreases, meaning the confidence scores be-come more concentrated around fewer diseases. MedClarify prioritizes questions with high IG because these are expected to produce the greatest reduction in diagnostic uncertainty, i.e., by making the distribution of the confidence scores concentrated on only a few likely diagnoses. • Relatedness of ICD codes (Div). This is a divergence term that captures how different the diagnoses are under the two hypothetical outcomes of a clinical question (support vs. refute). This term favors questions for which the answers lead to very different diagnoses (that is, diagnoses that are less related), so that, essentially, questions are favored that can also rule out related conditions. It is defined as 
+
+Div = 1 − similarity( Diag +, Diag −) (3) where Diag + and Diag −, respectively, represent the sets of candidate diagnoses for support-ing and refuting responses to the simulated question. Details about the similarity computa-tion are provided later. • Concentration around (Con). This term measures how ‘concentrated’ the candidate di-agnoses are and thus allows to encourage answers that promote broader exploration. We 35 quantify the concentration using the Gini coefficient over the hypothetical outcomes, i.e., 
+
+Con = 12
+
+(1 − Gini( Diag +)) + (1 − Gini( Diag −))  , (4) where the Gini coefficient is defined as 
+
+Gini = 
+
+Pnk=1 (2 k − (n + 1)) xk
+
+n Pnk=1 xk
+
+. (5) The Gini coefficient ranges from 0 (i.e., perfectly uniform distribution, meaning that all diagnoses are equally likely) to 1 (i.e., maximum concentration, meaning that the diagnoses are concentrated on a single condition). Lower Gini values therefore indicate that diagnoses span multiple medical areas, which helps MedClarify to encourage exploration where needed to support a more comprehensive diagnostic search that also accounts for rare conditions. For calculating Div and Con, the MedClarify system uses a medical terminology lookup that maps the predicted diseases to standardized disease codes based on ICD-11 [49], and then measures how related the conditions are based on the chapter categories. Importantly, this mapping also ensures that potential synonyms for conditions are mapped onto standardized disease names. Here, we use the ICD-11 search API [49] for retrieving the disease codes. For estimating ICD hierarchical relationships based on their chapter categories, we ask LLMs to generate approximations of ICD chapter similarities (see Table 1). The generated similarities are pre-recorded for computational efficiency. The similarity computation is as follows: similarity (Diag +, Diag −) = 1
+
+|Diag +| × | Diag −|
+
+X 
+
+> d+
+> i∈Diag +
+
+X 
+
+> d−
+> j∈Diag −
+
+sim  chapter( d+ 
+
+> i
+
+), chapter( d− 
+
+> j
+
+),
+
+(6) which simply adds up the pre-recorded similarity for every pair ( d+ 
+
+> i
+
+,d− 
+
+> j
+
+) and takes its mean, where 
+
+Diag + = {d+1 , . . . , d + 
+
+> i
+
+} and Diag − = {d− 
+
+> 1
+
+, . . . , d − 
+
+> j
+
+}. The example of the operation of sim (·) is as follows: sim (c1, c 5) = 0 .20 , sim (c3, c 2) = 0 .50 , etc. 36 Table 1: LLM-generated similarity matrix for example of ICD chapters 1–5 which enter MedClar-ify as domain knowledge. Chapter ( ci) c1 c2 c3 c4 c5
+
+c1 1.00 0.35 0.35 0.65 0.20 
+
+c2 0.35 1.00 0.50 0.40 0.25 
+
+c3 0.35 0.50 1.00 0.60 0.30 
+
+c4 0.65 0.40 0.60 1.00 0.40 
+
+c5 0.20 0.25 0.30 0.40 1.00 Step 4: Bayesian updating After receiving a new patient response at turn t, MedClarify updates the diagnostic belief state by computing a posterior distribution over the candidate diagnoses. This update follows Bayes’ rule [61, 62], allowing the system to incorporate new evidence e while retaining information from previous turns. Formally, 
+
+P (d | e) ∝ P (e | d) · P (d), (7) where P (d) is the prior, representing the current belief about the differential diagnosis before incorporating the new evidence; P (e | d) is the likelihood, quantifying how probable the newly obtained evidence is under each candidate in differential diagnosis; and P (d | e) is the posterior, representing the updated confidence for each diagnosis after integrating the prior belief with the new evidence. One might expect that simply appending new information to the case description of a patient would be sufficient for refining the differential diagnosis, since the LLM receives a more com-plete case description at each turn. However, updating the case alone does not guarantee that the confidence scores evolve in an evidence-consistent manner where the confidence scores reflect the probability of each diagnosis. The reason is that, because the confidence scores are generated inde-pendently at every turn, LLMs tend to anchor on the same few salient parts of the case description; as a result, a naïve approach may disregard previously inferred diagnostic information. This can lead to inconsistent diagnosis rankings across turns and hinders how support or refuting evidence is accumulated. By contrast, Bayesian updating explicitly integrates the new evidence with the 37 existing diagnostic distribution, ensuring that the belief state reflects both the updated patient case and the updated probability of each disease, given the past patient dialogue. Further, the patient case is updated with the new evidence, which is later controlled by the U PDATE agent. To avoid penalizing newly introduced diagnoses at turn t, we assign their confidence score 
+
+πi (i.e., prior probability) as the average prior over the existing diagnoses rather than setting it to zero or an arbitrarily small value. After the Bayesian update, we apply temperature scaling to smooth the posterior distribution and prevent overly peaked probability assignments. Temperature scaling [71, 72] is defined as 
+
+Pi = ezi/T 
+
+P 
+
+> j
+
+ezj /T , (8) where zi denotes the unnormalized log-probability for diagnosis di and T > 0 is the temperature parameter. After each turn, the system evaluates whether to terminate the diagnostic refinement. The pro-cess stops when one of the following criteria is met: the maximum number of turns is reached (here: 
+
+t = 10 ), the top-ranked diagnosis exceeds a confidence threshold (here: Pmax > 0.97 ), or the con-fidence gap between the top-1 and top-2 diagnoses exceeds a defined threshold ( ∆Pmax > 0.85 ). When the multi-turn process is terminated, MedClarify returns a differential diagnosis consisting of the top five diseases along with their calibrated confidence scores. 
+
+Implementation details 
+
+In our main experiments, we set the weights of the three DEIG components to α = 0 .5 (information gain), β = 0 .35 (semantic discrimination), and γ = 0 .15 (diagnostic breadth). These values were chosen to balance reducing diagnostic uncertainty, separating competing differential diagnoses, and maintaining diagnostic breadth. We further conducted a sensitivity analysis by varying each weight while holding the others fixed, and found that the overall performance of MedClarify was largely robust to these choices. After each Bayesian update, we apply temperature scaling with T =1.1 to smooth the posterior distribution and prevent the probability of the top-ranked diagnosis from becoming overly peaked, thereby delaying termination based on the stopping criterion ( Pmax >
+
+38 0.97 ). The underlying LLM in our system uses an open-source model from Meta’s Llama family, specifically Llama-3.3-70B-Instruct-Turbo, hosted by DeepInfra. In the LLM configuration, the temperature was set to 0.3, minimum p to 0.1, top-p to 0.9, the repetition penalty to 0.9, and the random seed to 42. 
+
+Agentic evaluation framework 
+
+We evaluate MedClarify using an agentic evaluation framework that simulates multiple turns of doctor–patient interactions. The evaluate is based on four LLM-based agents: (i) a P ATIENT agent that responds to questions; (ii) a D OCTOR agent that performs diagnostic reasoning with MedClar-ify, generating differential diagnoses and follow-up questions; (iii) a U PDATE agent that integrates the newly retrieved information into the patient case; and (iv) an E VALUATOR agent that assesses whether the final diagnosis is correct while accounting for variations in medical terminology. To-gether, these components create a controlled setting for evaluating how well MedClarify gathers new evidence from patients’ responses and improves diagnostic accuracy as a result. PATIENT agent The P ATIENT agent simulates the patient and is provided with the full case description (i.e., including the clinical details that may be masked in the experiments). The agent is instructed to answer the questions from the D OCTOR agent strictly based on factual information from the case description. To ensure fair and controlled evaluations, we impose several constraints: the P ATIENT 
+
+agent may reveal only one piece of information per question, must not mention disease names explicitly (i.e., so that the solution is not revealed), and may not provide speculative or interpretive statements. The following prompt is used: 39 PATIENT agent (to answer clinical question) 
+
+You are a patient who only answers the Doctor's <Question> based on your given conditions <Task>. Things you must NOT do: - Reveal your disease explicitly - Give an answer that is not the fact based on your given conditions < Task> - Have any bias in your answer Here is an example: **Example task**: She was a lifetime nonsmoker and reported no fevers, joint aches, eye pain, or rashes. Doctor: "Do you smoke or have a history of smoking?" Response: "No, I've never smoked." Doctor: "Any recent fevers or chills?" Response: "No fevers or chills." Doctor: "Are you having any joint pain or stiffness?" Response: "No joint aches or pain." Doctor: "Any recent weight loss or night sweats?" Response: "There is no information mentioned about weight loss or night sweats." Output your answer concisely in the following format: Response: [Your answer here] 
+
+DOCTOR agent The D OCTOR agent triggers the MedClarify framework and executes one turn of the diagnostic process. As such, it generates differential diagnoses, generates candidate questions, and selects a follow-up question (using the MedClarify framework from above). After receiving the response from the P ATIENT agent, the D OCTOR agent also updates the diagnostic probabilities through the Bayesian updating step inside MedClarify. When the termination condition is met, the D OCTOR 
+
+agent outputs the final differential diagnosis for evaluation (i.e., via the E VALUATOR agent). UPDATE agent The U PDATE agent appends the newly retrieved information to the patient case. For this, each question–answer pair is converted into a single concise sentence and appended to the case 40 description. During this process, the agent filters out irrelevant, misleading, or non-informative responses (e.g., “I am not sure”) to prevent noise that could interfere with diagnostic reasoning. The following prompt is used: 
+
+UPDATE agent (to update patient cases)               
+
+> Your task is to summarize the following question-answer pairs into a single string. If the answer stated no information provided, only output "None" as your response; otherwise, output the summarized string. {'Q: <Question1> A: <Answer1>', ...}
+
+EVALUATOR agent The E VALUATOR agent assesses whether the final diagnosis is correct by comparing the pre-dicted disease names with the ground truth, while accounting for variations in medical terminology and synonymous expressions. The following prompt is used: 
+
+EVALUATOR agent (to assess the correctness of diagnoses)                        
+
+> Evaluate the following diagnosis for correctness compared to the given ground truth. You should be evaluating only the given diagnosis; you should not attempt to solve the task. Respond: "true" if the diagnoses is correct, and "false" if the diagnosis are incorrect. Ground truth: {} Diagnosis to evaluate: {}
+
+Experimental setup 
+
+Our experiments use a multi-agent simulation of clinical patient interviews. To reflect the diagnos-tic uncertainty from real-world clinical settings, we apply masking strategies to the patient cases, so that specific clinical information is hidden before the case is provided to the agents. We then evaluate all diagnostic systems on the same, masked (i.e., incomplete) patient cases. We use the following experiment designs: 1. Single-feature masking: To assess the diagnostic robustness to missing information, we mask 41 one clinical feature category at a time in the structured case. Specifically, we mask one of the six categories: symptoms, social history, past medical history, physical examination, laboratory tests, or imaging results. 2. All-features masking: To evaluate the information-seeking ability of a diagnostic system, we mask all clinical feature categories in the patient case, except for the patient’s demographics and the primary presenting symptom. In other words, all of the following categories are omitted at the same time: social history, past medical history, physical examination, labora-tory tests, and imaging results. This setting is thus considerably more challenging than the single-feature masking. For comparison, we also include a baseline that operates on the full, unmasked patient case without any question asking, which serves as an upper bound on the performance of off-the-shelf LLMs. 
+
+Baselines. We include the following baselines: • Naïve question generation: Here, the D OCTOR agent generates follow-up questions with-out any explicit question selection via MedClarify. Instead, inspired by previous research [77], the following prompt is used to generate differential diagnoses based on which the first question is used: 
+
+DOCTOR agent (to ask clinical question)                             
+
+> Your goal is to ask aquestion to rule out the <Differential diagnosis> based on <Task>. The question should be bite-sized and not more than 1 sentence. Do not repeat the questions you have asked before in <Inquiries History>. You are not allowed to ask directly if your diagnosis is correct or reveal your guess diagnosis explicitly. Output your answer concisely in the following format: Thought: [Your thought process here] Response: [Your question here]
+
+• Question selection with naïve entropy: This refers to an ablation of MedClarify where 42 DEIG is used without Div and Con components. In other words, this implements the Med-Clarify process from step 1 (assessment of candidate diagnoses), step 2 (question gener-ation), and step 3 (question selection), but using the standard expected information gain (EIG) formula: 
+
+q∗ = arg max 
+
+> q∈Qt
+
+[IG( q)] . (9) In contrast to the MedClarify system, the baseline obtains diagnostic probabilities directly from the LLM without performing Bayesian updates across iterations. The multi-agent ar-chitecture and all prompts are otherwise identical to MedClarify. Thereby, we can quantify the contribution of our diagnosis-tailored information gain to obtain case-specific follow-up questions. Each experiment is repeated across five runs with different random seeds to account for vari-ability. Results are reported using mean and standard deviation across the five runs. 43 Data availability 
+
+NEJM cases were downloaded from https://www.nejm.org/image-challenge, MediQ cases were downloaded from https://github.com/stellalisy/mediQ, and MedQA cases were downloaded from https://github.com/jind11/MedQA. 
+
+# Code availability 
+
+All code to replicate our analyses will be made publicly available upon acceptance. 44 References 
+
+[1] Thirunavukarasu, A. J. et al. Large language models in medicine. Nature Medicine 29 ,1930–1940 (2023). [2] Williams, C. Y. K., Miao, B. Y., Kornblith, A. E. & Butte, A. J. Evaluating the use of large language models to provide clinical recommendations in the emergency department. Nature Communications 15 , 8236 (2024). [3] Clusmann, J. et al. The future landscape of large language models in medicine. Communica-tions Medicine 3, 141 (2023). [4] Moor, M. et al. Foundation models for generalist medical artificial intelligence. Nature 616 ,259–265 (2023). [5] Tu, T. et al. Towards conversational diagnostic artificial intelligence. Nature 642 , 442–450 (2025). [6] Chen, X. et al. Enhancing diagnostic capability with multi-agents conversational large lan-guage models. npj Digital Medicine 8, 159 (2025). [7] Tang, X. et al. MedAgents: Large language models as collaborators for zero-shot medical reasoning. In Ku, L.-W., Martins, A. & Srikumar, V. (eds.) Findings of the Association for Computational Linguistics: ACL , 599–621 (2024). [8] Kanjee, Z., Crowe, B. & Rodman, A. Accuracy of a generative artificial intelligence model in a complex diagnostic challenge. JAMA 330 , 78–80 (2023). [9] Eriksen, A. V., Möller, S. & Ryg, J. Use of GPT-4 to diagnose complex clinical cases. NEJM AI 1, AIp2300031 (2024). [10] Goh, E. et al. Large language model influence on diagnostic reasoning: A randomized clinical trial. JAMA Network Open 7, e2440969 (2024). 45 [11] Hager, P. et al. Evaluation and mitigation of the limitations of large language models in clinical decision-making. Nature Medicine 30 , 2613–2622 (2024). [12] Goh, E. et al. GPT-4 assistance for improvement of physician performance on patient care tasks: A randomized controlled trial. Nature Medicine 31 , 1233–1238 (2025). [13] Liu, X. et al. A generalist medical language model for disease diagnosis assistance. Nature Medicine 31 , 932–942 (2025). [14] Olmo, J. d., Logroño, J., Mascías, C., Martínez, M. & Isla, J. Assessing DxGPT: Diagnosing rare diseases with various large language models (2024). URL https://www.medrxiv.org/ content/10.1101/2024.05.08.24307062v1. [15] Chen, X. et al. RareBench: Can LLMs serve as rare diseases specialists? In Proceedings of the ACM SIGKDD Conference on Knowledge Discovery and Data Mining , KDD, 4850–4861 (2024). [16] Abdullahi, T., Singh, R. & Eickhoff, C. Learning to make rare and complex diagnoses with generative AI assistance: Qualitative study of popular large language models. JMIR Medical Education 10 , e51391 (2024). [17] Johri, S. et al. An evaluation framework for clinical use of large language models in patient interaction tasks. Nature Medicine 31 , 77–86 (2025). [18] Truhn, D. et al. Artificial intelligence agents in cancer research and oncology. Nature Reviews Cancer 1–14 (2026). [19] Newman-Toker, D. E. et al. Burden of serious harms from diagnostic error in the USA. BMJ Quality & Safety 33 , 109–120 (2024). [20] Alegría, M. et al. How missing information in diagnosis can lead to disparities in the clinical encounter. Journal of Public Health Management and Practice 14 , S26–S35 (2008). 46 [21] Graber, M. L., Franklin, N. & Gordon, R. Diagnostic error in internal medicine. Archives of Internal Medicine 165 , 1493–1499 (2005). [22] Bhise, V. et al. Defining and measuring diagnostic uncertainty in medicine: A systematic review. Journal of General Internal Medicine 33 , 103–115 (2018). [23] Wagner, M. M., Hogan, W. R., Chapman, W. W. & Gesteland, P. H. Chief complaints and ICD codes. Handbook of Biosurveillance 333–359 (2006). [24] Raven, M., Lowe, R. A., Maselli, J. & Hsia, R. Y. Comparison of presenting complaint vs. discharge diagnosis for identifying “non-emergency” emergency department visits. JAMA : the journal of the American Medical Association 309 , 1145–1153 (2013). [25] Engebretsen, E., Heggen, K., Wieringa, S. & Greenhalgh, T. Uncertainty and objectivity in clinical decision making: A clinical case in emergency medicine. Medicine, Health Care, and Philosophy 19 , 595–603 (2016). [26] Han, P. K. J., Klein, W. M. P. & Arora, N. K. Varieties of uncertainty in health care: A conceptual taxonomy. Medical Decision Making 31 , 828–838 (2011). [27] Cook, C. E. & Décary, S. Higher order thinking about differential diagnosis. Brazilian Journal of Physical Therapy 24 , 1–7 (2020). [28] Leeds, F. S. et al. Teaching heuristics and mnemonics to improve generation of differential diagnoses. Medical Education Online 25 , 1742967 (2020). [29] Gatens-Robinson, E. Clinical judgment and the rationality of the human sciences. The Jour-nal of Medicine and Philosophy: A Forum for Bioethics and Philosophy of Medicine 11 ,167–178 (1986). [30] Elstein, A. S., Schulman, L. S. & Sprafka, S. A. Medical problem solving: An analysis of clinical reasoning , 3 (Harvard University Press, Cambridge, Massachusetts, 1978). 47 [31] Mandin, H., Jones, A., Woloschuk, W. & Harasym, P. Helping students learn to think like experts when solving clinical problems. Academic Medicine: Journal of the Association of American Medical Colleges 72 , 173–179 (1997). [32] Gulati, M. et al. 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR guideline for the evalu-ation and diagnosis of chest pain: A report of the American College of Cardiology/American Heart Association Joint Committee on clinical practice guidelines. Circulation 144 , e368– e454 (2021). [33] Kalyani, R. R., Neumiller, J. J., Maruthur, N. M. & Wexler, D. J. Diagnosis and treatment of type 2 diabetes in adults: A review. JAMA 334 , 984–1002 (2025). [34] Wu, C., Lin, Z., Fang, W. & Huang, Y. A medical diagnostic assistant based on LLM. In Xu, H. et al. (eds.) Health Information Processing. Evaluation Track Papers , 135–147 (2024). [35] Seki, T. et al. Assessing the performance of zero-shot visual question answering in multi-modal large language models for 12-lead ECG image interpretation. Frontiers in Cardiovas-cular Medicine 12 , 1458289 (2025). [36] Zhuang, Y. et al. Learning to be a doctor: Searching for effective medical agent architectures. In Proceedings of the ACM International Conference on Multimedia , 6996–7005 (2025). [37] Takita, H. et al. A systematic review and meta-analysis of diagnostic performance compari-son between generative AI and physicians. npj Digital Medicine 8, 175 (2025). [38] Jin, D. et al. What disease does this patient have? A large-scale open domain question answering dataset from medical exams. Applied Sciences 11 , 6421 (2021). [39] Gao, Y. et al. Leveraging medical knowledge graphs into large language models for diagnosis prediction: Design and application study. Jmir Ai 4, e58670 (2025). [40] Shieh, A. et al. Assessing ChatGPT 4.0’s test performance and clinical diagnostic accuracy on USMLE STEP 2 CK and clinical case reports. Scientific Reports 14 , 9330 (2024). 48 [41] Zhou, S. et al. Uncertainty-aware large language models for explainable disease diagnosis. 
+
+npj Digital Medicine 8, 690 (2025). [42] Li, S. S. et al. MEDIQ: question-asking LLMs and a benchmark for reliable interactive clinical reasoning. In Proceedings of the International Conference on Neural Information Processing Systems , 37, 28858–28888 (2024). [43] Wang, Z. et al. HealthQ: Unveiling questioning capabilities of LLM chains in healthcare conversations. Smart Health 36 , 100570 (2025). [44] Mahajan, A., Obermeyer, Z., Daneshjou, R., Lester, J. & Powell, D. Cognitive bias in clinical large language models. npj Digital Medicine 8, 428 (2025). [45] Elston, D. M. Confirmation bias in medical decision-making. Journal of the American Academy of Dermatology 82 , 572 (2020). [46] Image challenge | the New England Journal of Medicine. URL https://www.nejm.org/ image-challenge. [47] Touvron, H. et al. LLaMA: Open and efficient foundation language models (2023). URL http://arxiv.org/abs/2302.13971. [48] He, S. et al. Entropy removal of medical diagnostics. Scientific Reports 14 , 1181 (2024). [49] Drösler, S. E., Weber, S. & Chute, C. G. ICD-11 extension codes support detailed clinical ab-straction and comprehensive classification. BMC Medical Informatics and Decision Making 
+
+21 , 278 (2021). [50] Mandell, B. F. & Wasserman, M. R. Clinical decision-making strategies. In MSD Manual Professional Edition (Merck & Co., Inc., 2024). Accessed: 2025-11-20. [51] Mijares, J., Jairath, N., Zhang, A. & Que, S. K. T. Validation of a dermatology-focused multimodal large language model in classification of pigmented skin lesions. Diagnostics 15 ,2808 (2025). 49 [52] Pakdaman Naeini, M., Cooper, G. & Hauskrecht, M. Obtaining well calibrated probabilities using Bayesian binning. Proceedings of the AAAI Conference on Artificial Intelligence 29 
+
+(2015). [53] Kühl, N. et al. A human-centered approach to designing large language models in medicine (2025). URL https://papers.ssrn.com/abstract=5569098. [54] Zakka, C. et al. Almanac — Retrieval-augmented language models for clinical medicine. 
+
+NEJM AI 1 (2024). [55] Gatto, J. et al. Follow-up question generation for enhanced patient-provider conversations. In Che, W., Nabende, J., Shutova, E. & Pilehvar, M. T. (eds.) Proceedings of the Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , 25222– 25240 (2025). [56] Schmidgall, S. et al. AgentClinic: a multimodal agent benchmark to evaluate AI in simulated clinical environments (2024). URL http://arxiv.org/abs/2405.07960. [57] Fleming, S. L. et al. MedAlign: A clinician-generated dataset for instruction following with electronic medical records. Proceedings of the AAAI Conference on Artificial Intelligence 38 ,22021–22030 (2024). [58] Jin, Q., Dhingra, B., Liu, Z., Cohen, W. & Lu, X. PubMedQA: A dataset for biomedical research question answering. In Inui, K., Jiang, J., Ng, V. & Wan, X. (eds.) Proceedings of the Conference on Empirical Methods in Natural Language Processing and the International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , 2567–2577 (2019). [59] Pal, A., Umapathi, L. K. & Sankarasubbu, M. MedMCQA: A large-scale multi-subject multi-choice dataset for medical domain question answering. In Proceedings of the Conference on Health, Inference, and Learning , 248–260 (2022). 50 [60] Mazzaccara, D., Testoni, A. & Bernardi, R. Learning to ask informative questions: Enhanc-ing LLMs with preference optimization and expected information gain. In Al-Onaizan, Y., Bansal, M. & Chen, Y.-N. (eds.) Findings of the Association for Computational Linguistics: EMNLP , 5064–5074 (2024). [61] Handa, K. et al. Bayesian preference elicitation with language models (2024). URL http: //arxiv.org/abs/2403.05534. [62] Smith, F. B. et al. Prediction-oriented Bayesian active learning. In Proceedings of the Inter-national Conference on Artificial Intelligence and Statistics , 7331–7348 (2023). [63] Rothe, A., Lake, B. M. & Gureckis, T. M. Question asking as program generation. In Pro-ceedings of the International Conference on Neural Information Processing Systems , 1046– 1055 (2017). [64] Sutton, R. T. et al. An overview of clinical decision support systems: benefits, risks, and strategies for success. npj Digital Medicine 3, 17 (2020). [65] Belard, A. et al. Precision diagnosis: a view of the clinical decision support systems (CDSS) landscape through the lens of critical care. Journal of Clinical Monitoring and Computing 
+
+31 , 261–271 (2017). [66] Kawamoto, K., Houlihan, C. A., Balas, E. A. & Lobach, D. F. Improving clinical practice using clinical decision support systems: a systematic review of trials to identify features critical to success. BMJ 330 , 765 (2005). [67] Bedi, S. et al. Testing and evaluation of health care applications of large language models: A systematic review. JAMA 333 , 319–328 (2025). [68] Farquhar, S., Kossen, J., Kuhn, L. & Gal, Y. Detecting hallucinations in large language models using semantic entropy. Nature 630 , 625–630 (2024). 51 [69] Nakkiran, P. et al. Trained on tokens, calibrated on concepts: The emergence of semantic calibration in LLMs (2025). URL http://arxiv.org/abs/2511.04869. [70] Hekler, A., Brinker, T. J. & Buettner, F. Test time augmentation meets post-hoc calibration: Uncertainty quantification under real-world conditions. Proceedings of the AAAI Conference on Artificial Intelligence 37 , 14856–14864 (2023). [71] Guo, C., Pleiss, G., Sun, Y. & Weinberger, K. Q. On calibration of modern neural networks. In 
+
+Proceedings of the 34th International Conference on Machine Learning , 1321–1330 (PMLR, 2017). [72] Yu, Y., Bates, S., Ma, Y. & Jordan, M. Robust calibration with multi-domain temperature scaling. Advances in Neural Information Processing Systems 35 , 27510–27523 (2022). [73] Wei, J. et al. Chain-of-thought prompting elicits reasoning in large language models. In Pro-ceedings of the International Conference on Neural Information Processing Systems , 24824– 24837 (2022). [74] Savage, T., Nayak, A., Gallo, R., Rangan, E. & Chen, J. H. Diagnostic reasoning prompts re-veal the potential for large language model interpretability in medicine. npj Digital Medicine 
+
+7, 20 (2024). [75] Zhou, S. et al. Large language models for disease diagnosis: a scoping review. npj Artificial Intelligence 1, 9 (2025). [76] McDuff, D. et al. Towards accurate differential diagnosis with large language models. Nature 
+
+642 , 451–457 (2025). [77] Spitzer, P. et al. The effect of medical explanations from large language models on diagnostic decisions in radiology (2025). URL https://www.medrxiv.org/content/10.1101/2025.03.04. 25323357v1. 52 [78] Hu, Z. et al. Uncertainty of thoughts: Uncertainty-aware planning enhances information seeking in large language models (2024). URL http://arxiv.org/abs/2402.03271. [79] Lindley, D. V. On a measure of the information provided by an experiment. The Annals of Mathematical Statistics 27 , 986–1005 (1956). [80] Shannon, C. E. A mathematical theory of communication. Bell System Technical Journal 27 ,379–423 (1948). [81] Cover, T. M. & Thomas, J. A. Entropy, relative entropy, and mutual information. In Elements of Information Theory , 13–55 (John Wiley & Sons, Ltd, 2005). 53 Acknowledgments 
+
+SF acknowledges funding via the Swiss National Science Foundation (SNSF), Grant 186932. 
+
+# Author contributions 
+
+H.M.W. implemented the code and performed the analysis. P.J. checked the code. H.M.W. and S.F. contributed to conceptualization and manuscript writing. P.H. and M.B. edited the draft. All authors approved the manuscript. 
+
+# Competing interests 
+
+The authors declare no competing interests. 54 Supplementary Figures 
+
+Extended Listing 1 – Structured patient case 
+
+{"Patient_Case": {"Patient_Information": {"Demographics": "44-year-old man", "History": ["The pain is felt in the retrosternal area and radiates up to his left shoulder and arm", "The pain worsens on inspiration and is relieved when he is leaning forward"], "Symptoms": {"Primary_Symptom": "sudden chest pain", "Secondary_Symptoms": ["difficulty breathing"]}, "Past_Medical_History": "", "Social_History": "", "Review_of_Systems": ""}, "Physical_Examination": ["Heart rate is 61/min, respiratory rate is 16/min, temperature is 36.5 C(97.7F), blood pressure is 115/78 mm Hg", "Physical examination shows no abnormalities", "Pericardial friction rub is heard on auscultation"], "Test_Results": {"Laboratory_Findings": ["elevated erythrocyte sedimentation rate (ESR) and C-reactive protein (CRP) levels"], "Imaging_Results": [], "Other": ["An ECG is performed"]}}} 
+
+55 Extended Figure 2: Example with proactive, case-specific follow-up questions for medical di-agnosis. The figure presents an example patient case with clinical information (top), as well an the diagnostic dialogue generated by the naïve multi-turn baseline system (middle) and by MedClarify (bottom) for the same patient case. 56 Extended Figure 3: Example with proactive, case-specific follow-up questions for medical di-agnosis. The figure presents an example patient case with clinical information (top), as well an the diagnostic dialogue generated by the naïve multi-turn baseline system (middle) and by MedClarify (bottom) for the same patient case. 57 Neurology 
+
+> Hematology/Oncology
+> Pulmonology
+> Dermatology
+> Cardiology
+> Gastroenterology
+> Urology/Nephrology
+> Endocrinology
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> 90
+> Count
+
+a
+
+MedQA 
+
+36% 
+
+MediQ 
+
+28% 
+
+NEJM 
+
+36% 
+
+b
+
+> NEJM
+> MediQ
+> MedQA
+
+Extended Figure 4: Dataset analysis. a , Medical specialties across three datasets: NEJM, MediQ, and MedQA. b, Relative size of the datasets during the experiments. 
+
+bNEJM MediQ MedQA     
+
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> Accuracy (%)
+> Top-1 Top-2 Top-3 Top-4 Top-5
+
+NEJM MediQ MedQA     
+
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> Accuracy (%)
+> Top-1 Top-2 Top-3 Top-4 Top-5
+
+Extended Figure 5: Overview of the diagnostic accuracy of MedClarify and baseline systems across datasets The comparison of top-k accuracy for MedClarify and baseline across NEJM, MediQ, and MedQA datasets in stacked bar charts. 58 0 20 40 60 80 
+
+Top-3 accuracy (%) 
+
+Laboratory 
+
+(n=82) 
+
+Imaging 
+
+(n=66) 
+
+Symptoms 
+
+(n=170) 
+
+Physical 
+
+examination 
+
+(n=135) 
+
+Social history 
+
+(n=32) 
+
+Past medical 
+
+history 
+
+(n=95)   
+
+> 47.6%
+> 54.9%
+> 44.9%
+> 53.0%
+> 68.2%
+> 57.6%
+> 38.2%
+> 56.5%
+> 50.9%
+> 43.7%
+> 54.1%
+> 47.3%
+> 53.1%
+> 56.2%
+> 47.5%
+> 49.5%
+> 53.7%
+> 48.8%
+> Single-shot (incomplete case) Baseline (incomplete case) MedClarify (incomplete case)
+
+Extended Figure 6: Results for top-3 accuracy showing how MedClarify improves diagnostic accuracy under incomplete patient cases. Top-3 diagnostic accuracy on NEJM cases with one clinical feature category masked at a time (laboratory findings, imaging results, symptoms, phys-ical examinations, social history, and past medical history), comparing a standalone single-shot LLM baseline (orange) with the MedClarify system (purple). The green bar indicates single-shot performance on complete cases and serves as an upper reference bound. 59 MedClarify     
+
+> (n=469)
+> Baseline
+> (n=469)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Number of questions asked
+> = 8.96
+> = 9.81
+> (Confident enough to diagnose or exceed hard threshold of 10 questions)
+> MedClarify: =8.96, =2.21
+> Baseline: =9.81, =1.12
+
+Extended Figure 7: Efficiency of diagnostic information-seeking in MedClarify under joint masking of all feature categories. Violin plot of the number of questions asked over iterations for MedClarify versus the naïve multi-turn baseline to reach the correct diagnosis. Here, ˆμ denotes the mean number of questions per case. Fewer questions indicate more efficient acquisition of diagnostically relevant information through targeted follow-up. 60 Baseline MedClarify 
+
+0.3 
+
+0.4 
+
+0.5 
+
+0.6 
+
+> Mean reciprocal rank (MRR)
+> 0.327
+> 0.407
+> 0.498
+> 0.552
+> 0.480
+> 0.533
+> +0.080
+> (24.4%)
+> +0.054
+> (10.8%)
+> +0.052
+> (10.9%)
+> Dataset
+> NEJM
+> MedQA
+> MediQ
+
+Extended Figure 8: Efficiency of diagnostic information-seeking in MedClarify under joint masking of all feature categories. Shown is the Mean Reciprocal Rank, which measures how early the correct diagnosis appears in the ranked differential diagnosis list. Higher MRR values indicate that MedClarify prioritizes the correct diagnosis earlier than the naïve baseline system. 61 1 2 3 4 5 6 7 8 9 10 
+
+> Iteration
+> 0.35
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+> 0.60
+> 0.65
+> 0.70
+> Confidence score
+
+b     
+
+> Baseline
+> MedClarify
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Confidence score
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Actual accuracy
+
+a
+
+> Expected calibration error
+> Baseline: 0.371
+> MedClarify: 0.156
+> Perfect calibration
+> Baseline
+> MedClarify
+
+Extended Figure 9: Confidence scores in MedClarify are clinically informative. a , Evolution of confidence scores across diagnostic iterations comparing MedClarify with the naïve multi-turn baseline. In the case of MedClarify, we see that the belief updates are reflected in increasing confi-dence scores as evidence accumulates. b, The calibration plot compares actual diagnostic accuracy with predicted confidence for each confidence bin. The dashed line represents perfect calibration. Together, these results show that MedClarify produces confidence estimates that are better aligned with diagnostic correctness, whereas the baseline exhibits higher but poorly calibrated confidence scores. 62 aBaseline MedClarify 
+
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> Top-1 accuracy (%)
+
+24.7% 24.1% 
+
+GPT-5.1 
+
+Baseline MedClarify  
+
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+
+27.2% 26.5% 
+
+DeepSeek-R1-0528 
+
+Baseline MedClarify 
+
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+
+18.8% 
+
+26.5% 
+
+Llama-3.3-70B 
+
+bBaseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> Top-1 accuracy (%)
+
+46.5% 
+
+38.0% 
+
+GPT-5.1 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+
+28.7% 
+
+34.1% 
+
+DeepSeek-R1-0528 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+
+37.2% 39.5% 
+
+Llama-3.3-70B 
+
+cBaseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> Top-1 accuracy (%)
+
+37.1% 
+
+40.6% 
+
+GPT-5.1 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+
+27.7% 
+
+32.4% 
+
+DeepSeek-R1-0528 
+
+Baseline MedClarify 
+
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+
+38.2% 
+
+34.1% 
+
+Llama-3.3-70B 
+
+Extended Figure 10: Overview of the diagnostic accuracy of MedClarify for up to five inter-action questions across different LLM backbones. Here, MedClarify is compared when instan-tiated with different LLM backbones, namely, GPT-5.1, Deepseek-R1-0528, and Llama-3.3-70B. Reported is the top-1 accuracy of MedClarify (purple) in comparison the naïve multi-turn system across different datasets: a, NEJM; b, MediQ; and c, MedQA. 63 Supplementary Tables 
+
+Extended Table 1: Performance comparison between baseline and MedClarify in terms of diagnos-tic accuracy in the all-features masking setting. A single-shot (incomplete case) indicates a direct diagnosis from the masked patient cases without follow-up questioning. A single-shot (complete case) indicates a direct diagnosis based on complete cases. The baseline is a naïve multi-turn LLM system analogous to MedClarify but where questions are selected through a heuristic rather than an information-theoretic approach. The results are reported using 95% confidence intervals, calcu-lated from the sample mean and standard error as the mean plus or minus the margin derived from the Student’s t-distribution. Abbreviation: s.e., standard error; CI, confidence interval. Dataset mean s.e. margin 95% CI NEJM (single-shot complete) 0.368 0.005 0.007 [0.362; 0.375] MediQ (single-shot complete) 0.504 0.012 0.015 [0.489; 0.519] MedQA (single-shot complete) 0.499 0.013 0.016 [0.483; 0.515] NEJM (single-shot incomplete) 0.087 0.005 0.006 [0.081; 0.093] MediQ (single-shot incomplete) 0.260 0.009 0.011 [0.250; 0.271] MedQA (single-shot incomplete) 0.152 0.011 0.013 [0.139; 0.165] NEJM (baseline) 0.280 0.003 0.008 [0.272; 0.289] MediQ (baseline) 0.412 0.017 0.018 [0.395; 0.430] MedQA (baseline) 0.443 0.023 0.024 [0.419; 0.467] NEJM (MedClarify) 0.361 0.019 0.047 [0.314; 0.408] MediQ (MedClarify) 0.461 0.018 0.029 [0.432; 0.491] MedQA (MedClarify) 0.484 0.010 0.016 [0.468; 0.500] 
+
+n = 170 (NEJM), 129 (MediQ), 170 (MedQA). 64 Extended Table 2: Dataset size across different feature categories. Values represent the number of cases containing each medical feature after preprocessing. We included only cases that focus on diagnostic reasoning with sufficient clinical details, excluding management, treatment, and prognosis content. Feature category NEJM MediQ MedQA Symptoms 170 129 170 Past medical history 95 88 170 Social history 32 71 170 Physical examination 135 118 170 Laboratory findings 82 58 170 Imaging results 66 34 170 65

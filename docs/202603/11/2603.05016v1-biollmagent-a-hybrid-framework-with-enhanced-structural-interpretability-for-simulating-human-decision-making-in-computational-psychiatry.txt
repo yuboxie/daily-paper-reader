@@ -1,0 +1,880 @@
+Title: BioLLMAgent: A Hybrid Framework with Enhanced Structural Interpretability for Simulating Human Decision-Making in Computational Psychiatry
+
+URL Source: https://arxiv.org/pdf/2603.05016v1
+
+Published Time: Fri, 06 Mar 2026 01:51:34 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+> IEEE TRANSACTIONS AND JOURNALS TEMPLATE 1
+
+# BioLLMAgent: A Hybrid Framework with Enhanced Structural Interpretability for Simulating Human Decision-Making in Computational Psychiatry 
+
+Fei Zuo , Kezhi Wang , Senior Member, IEEE , Xiaomin Chen , Yizhou Huang 
+
+Abstract — Computational psychiatry aims to transform mental health research through mathematical models, yet existing approaches face a fundamental trade-off: tra-ditional reinforcement learning (RL) models offer inter-pretability but lack behavioral realism, while Large Lan-guage Model (LLM) agents generate realistic behaviors but lack structural interpretability for scientific analysis. In response, we introduce BioLLMAgent , a novel hybrid framework that combines the interpretability of computa-tional models with the behavioral generation capabilities of LLMs to create a structurally interpretable simulation tool for psychiatric research. The framework consists of three core components: (i) an Internal RL Engine implementing validated cognitive models (e.g., Outcome-Representation Learning) that simulates experience-driven value learning; (ii) an External LLM Shell that captures high-level cognitive strategies and therapeutic interventions through natural language prompts; and (iii) a Decision Fusion Mechanism that integrates both components through weighted averag-ing of utility values. Through comprehensive experiments on the Iowa Gambling Task across six datasets spanning healthy controls and addiction populations, we demon-strate that BioLLMAgent accurately reproduces human be-havioral patterns, maintains excellent parameter identifia-bility with core cognitive parameters showing correlations 
+
+> 0.67 , exhibits controllable responses to prompt manip-ulations in large models, and explores in silico encoding of cognitive behavioral therapy principles with behaviorally plausible effects. Multi-agent social dynamics simulations generate hypothesis-generating findings that community-wide educational interventions may outperform targeted individual treatments. BioLLMAgent provides a powerful computational sandbox for testing theoretical hypotheses and intervention strategies, offering new opportunities for mechanistic understanding of decision-making deficits in computational psychiatry. The framework has been vali-dated on two tasks within the decision-making domain: 
+
+This work was partly supported by Horizon Europe HarmonicAI project under grant number 101131117, and UKRI grant EP/Y03743X/1. K. Wang would like to acknowledge the support in part by the Royal Society Industry Fellowship (IF/R2/23200104). Corresponding author: Kezhi Wang, Yizhou Huang. Fei Zuo is with the School of Computer Science and Technology, East China Normal University, 3663 North Zhongshan Road, Shanghai 200062, China (e-mail: 71255901041@stu.ecnu.edu.cn). Xiaomin Chen is with the Department of Computer Science, Univer-sity of Reading, RG6 6UR, UK (e-mail: xiaomin.chen@reading.ac.uk). Kezhi Wang and Yizhou Huang are with the Department of Com-puter Science, Brunel University of London, UB8 3PH, UK (email: kezhi.wang@brunel.ac.uk; yizhou.huang2@brunel.ac.uk). 
+
+reward-punishment learning (Iowa Gambling Task) and tem-poral discounting (Delay Discounting task), demonstrating cross-task generalization of core components. Generaliza-tion to other cognitive domains (working memory, social cognition, attention control) remains to be demonstrated. 
+
+Index Terms — Computational Psychiatry, Reinforcement Learning, Large Language Models, Decision Making, Iowa Gambling Task, Agent-based Simulation. 
+
+I. I NTRODUCTION 
+
+# HUMAN decision-making, particularly under uncertainty and reward-punishment contingencies, has been a central focus of computational psychiatry. AI methods have shown broad success in biomedicine, from molecular modeling [1] to medical image diagnosis [2], and are now increasingly applied to mental health through computational psychiatry, which promises to redefine our understanding of mental disorders, moving beyond descriptive labels to quantifiable, mechanistic models of cognition [3], [4]. Reinforcement learning (RL) has been central to this effort, with models like Prospect Valence Learning (PVL) and Outcome-Representation Learning (ORL) being applied to tasks like the Iowa Gambling Task (IGT) [5], [6]. These models offer mathematical interpretability, linking cognitive deficits in conditions like addiction to spe-cific parameters, like insensitivity to losses or hypersensitivity to rewards [7]. However, this approach faces a persistent "model war," where no single framework consistently cap-tures the full spectrum of human decision-making [8]. While mathematically elegant, these models often fail to generate behavior reflecting variability and contextual nuances, creating a significant gap between theoretical insight and behavioral realism [9]. In parallel, the rise of Large Language Models (LLMs) has introduced a new paradigm for behavioral simulation [10]. LLM-based generative agents can plan, reason, and inter-act in simulated environments with remarkable authenticity [11]. This has spurred interest in creating "virtual patients" for clinical training and AI assessment, where agents can simulate specific disease symptoms through fluid, context-aware conversations [12], [13]. These agents seem to perfectly address the behavioral generation shortcomings of traditional   
+
+> arXiv:2603.05016v1 [cs.AI] 5 Mar 2026 2IEEE TRANSACTIONS AND JOURNALS TEMPLATE
+> Fig. 1. Network-level intervention effects. Top: PCA visualization of behavioral states under (a) No Intervention (0.700), (b) Targeted CBT (0.750), (c) Network Hub (0.630), (d) Community Education (0.950). Bottom: Network structures with health levels. Community Education achieves highest performance with cohesive behavioral convergence and uniform network-wide improvements.
+
+computational models. However, their application as rigorous scientific tools is hindered by a fundamental lack of structural interpretability [14]. An agent’s choices emerge from billions of opaque parameters, ungrounded in any explicit psychologi-cal or neuroscientific theory. This "black-box" nature makes it impossible to determine precisely why a decision was made, limiting their utility for mechanistic discovery [15]. Thus, computational psychiatry faces a trade-off: RL models offer interpretability without realism, while LLMs offer realism without interpretability. To bridge this gap, we introduce BioLLMAgent , a novel hybrid framework that integrates the strengths of both ap-proaches to achieve structural interpretability alongside be-havioral realism. Our core innovation is to embed a validated, interpretable computational model as an Internal RL Engine 
+
+within an External LLM Shell . This design explicitly models two distinct cognitive drivers: an Internal Drive , generated by the RL engine, which simulates experience-based value learning from direct environmental interaction (representing slow, trial-and-error habit formation); and an External Drive ,generated by the LLM, which captures high-level beliefs, situ-ational reasoning, or external instructions (such as a therapist’s advice) to form decision priors. By constraining the LLM’s contribution to specific, theoretically meaningful cognitive functions, this dual-component architecture makes the agent’s decision process both analyzable and realistic. This architecture enables quantitative predictions from the mathematical model and qualitative reasoning from the LLM to mutually validate and constrain one another. We validated 
+
+BioLLMAgent through experiments using the IGT across diverse clinical and healthy populations. Beyond individual-level validation, we demonstrate the framework’s potential for agent-based simulation through large-scale network simula-tions (Fig. 1), where community-wide educational interven-tions achieve the highest average health score (0.950), signifi-cantly outperforming individual treatments (0.750). This work offers a path toward accelerating research in computational psychiatry, particularly for decision-making and impulsivity-related paradigms. The framework has been validated on two canonical tasks (Iowa Gambling Task, Delay Discounting) that assess complementary aspects of decision deficits in addiction: reward-punishment learning and temporal impulsivity. Cross-task validation (Fig. 13) demonstrates successful generaliza-tion of modular architecture (seamless RL engine substitution: ORL → Hyperbolic Discounting), fusion mechanism (consis-tent ω effects), and LLM-based priors (task-specific prompt engineering). Extension to other cognitive domains represents an important future direction. 
+
+II. R ELATED WORK 
+
+A. Computational Psychiatry and Reinforcement Learning Models 
+
+Computational psychiatry uses mathematical frameworks to define mental disorders as disruptions in cognitive algorithms [3], [4]. Reinforcement learning (RL) models have been central to this effort, particularly for decision-making tasks like the Iowa Gambling Task (IGT) [6], [9]. Models such as Prospect Valence Learning (PVL), which captures reward sensitiv-ity [16], Value-plus-Perseverance (VPP), which incorporates habits [17], and the Outcome-Representation Learning (ORL) model used in our framework [18], offer interpretability. Their AUTHOR et al. : TITLE 3Bad deck  Good deck         
+
+> IGT Environment Decision Fusion
+> Role: You are a participant in a psychological experiment called the Iowa Gambling Task.
+> Task: You will make 100 choices from four card decks (A, B, C, D) with the goal of maximizing your money.
+> Instruction: provide your final decision as a probability distribution over the four decks in JSON format, like this:
+> {"A": 0.1, "B": 0.7, "C": 0.1, "D": 0.1}
+> Persona Prompt LLM Shell
+> Internal RL Engine
+> External LLM Shell
+> softmax
+> fusion
+> Experience RL Engine
+> ORL Model
+> EV EF PS
+> Action:
+
+BioLLMAgent 
+
+Fig. 2. BioLLMAgent framework architecture integrating IGT Environment, Internal RL Engine (ORL model), External LLM Shell, and Decision Fusion mechanism. Parameter ω controls RL-LLM balance. The Internal RL Engine processes experience to generate Expected Value (EV), Expected Frequency (EF), and Perseveration (PS) utilities, while the External LLM Shell uses persona prompts to simulate complete IGT trials, generating probability distributions that are averaged and converted to static utility-scale priors Πutil .
+
+parameters can serve as cognitive biomarkers, identifying pat-terns like altered loss aversion in addiction [6], [19]. Despite their success, these models are limited by their abstraction, failing to capture contextual and narrative elements of human choice. This has led to "model wars" where no approach prevails, and an inability to generate realistic "digital subjects" for simulation-based research [5], [8]. 
+
+B. Large Language Models as Behavioral Agents 
+
+Large language models (LLMs) have recently revolutionized behavior generation, with agents capable of simulating nu-anced human interactions in virtual environments [10]. Using natural language prompts, these agents can role-play complex scenarios, leading to applications such as creating "virtual patients" for clinical training that replicate symptoms of de-pression or addiction [12], [13]. Their strength is behavioral realism; they can approximate human performance in decision-making tasks like the IGT, handle ambiguity, and generate diverse, context-aware outcomes [20], [21]. However, this realism comes at the cost of interpretability. The "black-box" nature of LLMs, where decisions arise from billions of opaque parameters, prevents their use for rigorous scientific inquiry, as they are not grounded in validated cognitive theories [14], [15]. Furthermore, their controllability is inconsistent, especially in smaller models, making it difficult to systematically simulate interventions like therapy [22]. 
+
+C. Hybrid RL-LLM Approaches 
+
+To combine the strengths of both paradigms, hybrid RL-LLM approaches have emerged, aiming to pair RL’s struc-tured learning with the reasoning of LLMs. In fields like robotics, this often involves using an LLM for high-level planning and RL for low-level motor control [23]. While some work has explored using hybrids for social simulation in cognitive science [15], [24], their application to computational psychiatry remains limited. Critically, existing hybrid models have not been designed with structural interpretability as a primary goal. They often lack a clear separation of components for analysis and have not integrated clinically-validated RL models (like ORL) as an internal cognitive engine. Moreover, they are rarely validated against clinical datasets with rigorous parameter recovery, and their potential for large-scale social and network-level intervention simulation remains unexplored. Our work with BioLLMAgent directly addresses these gaps by proposing a modular hybrid framework that preserves the interpretability of a validated RL model while leveraging an LLM to inject behavioral realism and enable controllable, large-scale simulations for psychiatric research. 
+
+III. M ETHODOLOGY 
+
+In this paper, we introduce an innovative hybrid agent framework named BioLLMAgent , designed to merge the interpretability of computational Reinforcement Learning (RL) models with the behavioral generation capabilities of Large Language Models (LLMs) to create a structurally interpretable simulation tool for psychiatric research. As illustrated in Fig. 2, the framework operates through a clear information flow: starting from the IGT Environment, proceeding through parallel processing in the Internal RL Engine and External LLM Shell, and culminating in the Decision Fusion mecha-nism. This modular design decomposes the agent’s decision-making process into independently analyzable endogenous and exogenous driving components through three core modules: (i) an Internal RL Engine implementing the ORL model for experience-driven value learning (endogenous drive); (ii) an 
+
+External LLM Shell capturing high-level cognitive strategies through persona prompts (exogenous drive); and (iii) a Deci-sion Fusion Mechanism that integrates their utility outputs to produce interpretable and realistic decision sequences. 
+
+A. Task Paradigm: The Iowa Gambling Task (IGT) 
+
+All our computer simulations are based on the classic Iowa Gambling Task (IGT), a widely used experimental paradigm for assessing experience-driven decision-making abilities, par-ticularly in clinical populations with decision-making deficits [6], [9], [25]. The IGT has been extensively validated in 4 IEEE TRANSACTIONS AND JOURNALS TEMPLATE 
+
+computational psychiatry research for modeling addiction-related decision-making deficits [7], [16], [26]. In this task, participants are required to make repeated selections from four virtual decks of cards (A, B, C, D) over 100 trials, with the goal of maximizing their total cumulative earnings [27]. The reward and loss structure of these four decks is carefully designed to create a conflict between short-term high returns and long-term net gains [5]:  
+
+> •
+
+Disadvantageous Decks (Decks A & B): These two decks offer higher immediate monetary rewards but are accompanied by larger or more frequent penalties, leading to a net loss if chosen over the long term.  
+
+> •
+
+Advantageous Decks (Decks C & D): These two decks provide lower immediate rewards, but their penalties are significantly smaller and less frequent, thus ensuring a long-term net gain. Furthermore, the task introduces an asymmetry in the dimen-sion of outcome frequency: Decks A and C have a higher fre-quency of losses (50%), whereas Decks B and D have a lower frequency of losses (10%) [17], [28]. This complex design makes the IGT an ideal testbed for investigating how decision-makers trade off between multiple conflicting dimensions. To ensure computational rigor, we formalize the task as a single-state Markov Decision Process (MDP), where the action space comprises the four decks and the reward function is stochastic according to the chosen deck’s payoff schedule [29], [30]. 
+
+B. The BioLLMAgent Framework 
+
+The core architecture of BioLLMAgent lies in its modular design, which provides a detailed mathematical formalization of the framework’s components.  
+
+> 1) Module 1: The Internal RL Engine:
+
+The Internal RL Engine, positioned at the center of the framework architecture, is designed to simulate trial-and-error based value learning driven by direct experience with the IGT environment [19], [31]. This module is "plug-and-play," allowing for the inte-gration of various computational models [32]. The modular design ensures framework generalizability beyond ORL/IGT. Any RL model must implement a standardized interface: GET UTILITY (state ) → URL , enabling seamless model sub-stitution for different domains (e.g., hyperbolic discounting for temporal choice, Fig. 13). The fusion mechanism operates independently, requiring only utility vectors as input. Exten-sion to new tasks involves: (1) selecting validated domain-appropriate RL models, (2) implementing G ET UTILITY , (3) re-validating parameter identifiability. ORL was chosen for its strong IGT validation record. In the current work, we employ the Outcome-Representation Learning (ORL) model as the core engine [18], [33]. The ORL model was chosen because it explicitly separates the learning processes for expected value (EV), expected frequency (EF), and perseveration (PS) components, as visualized in Fig. 2, providing us with a more refined, multi-component characterization of the decision-making process [8]. As detailed in Phase 2 of Algorithm 1, the internal RL en-gine parameters are estimated through Bayesian inference on human behavioral data. The algorithm initializes the parameter 
+
+Algorithm 1 Bayesian Inference & Simulation 
+
+Input: Human data Dhuman 
+
+Output: Posterior samples Θ 
+
+> 1:
+
+Phase 1: External Prior Generation  
+
+> 2:
+
+GET STATE () {Simulate IGT}  
+
+> 3:
+
+πt ← πLLM (a|st, P ) {Query LLM}  
+
+> 4:
+
+Πtrials .add( πt) 
+
+> 5:
+
+Πprob ← 1
+
+> T
+
+P 
+
+> π∈Πtrials
+
+π {Average}  
+
+> 6:
+
+Πutil ← CONVERT (Π prob ) {Scale}  
+
+> 7:
+
+return Πutil  
+
+> 8:
+
+Phase 2: Bayesian Inference  
+
+> 9:
+
+Θ = {θ(i)}Ni=1 of model M 
+
+> 10:
+
+L(Dhuman |Θ) ← . . . {Likelihood}  
+
+> 11:
+
+Sample from P (Θ |Dhuman ) to get {Θs}Ss=1  
+
+> 12:
+
+Phase 3: Simulation  
+
+> 13:
+
+for each Θs, each subject i = 1 to N do  
+
+> 14:
+
+state (i)1 ← M. INIT (θ(i) 
+
+> s
+
+) 
+
+> 15:
+
+for trial t = 1 to Ti do  
+
+> 16:
+
+U (i) 
+
+> M,t
+
+← M. GET UTILITY (state (i) 
+
+> t
+
+) 
+
+> 17:
+
+U (i) 
+
+> Comb ,t
+
+← (1 − w) · U (i) 
+
+> M,t
+
++ w · Πutil  
+
+> 18:
+
+a(i) 
+
+> sim ,t
+
+∼ Categorical (Softmax (U (i)
+
+> Comb ,t
+
+))  
+
+> 19:
+
+state (i) 
+
+> t+1
+
+← M. UPDATE (. . . ) 
+
+> 20:
+
+end for  
+
+> 21:
+
+end for  
+
+> 22:
+
+return P (Θ |Dhuman ), D sim 
+
+space Θ = {θ(i)}Ni=1 for the ORL model and uses MCMC sampling to obtain posterior distributions P (Θ |Dhuman ) (Steps 9-11). This ensures that the endogenous cognitive components remain grounded in empirical evidence while maintaining full parameter interpretability. The ORL model consists of several main parts: 1) Asymmetric Learning of Value and Frequency: The model does not use a subjective utility function but learns directly from the objective gain/loss outcomes Xt
+
+[34]. It maintains and updates expected value EV j (t)
+
+and expected frequency EF j (t) (for deck j at trial 
+
+t) separately, using two independent learning rates—a reward learning rate Arew and a punishment learning rate Apun —to capture differences in sensitivity to gains and losses [26], [30].  
+
+> •
+
+Expected Value Update: The expected value is updated according to Equation (1): 
+
+EV j (t + 1) = EV j (t)+
+
+(
+
+Arew · (Xt − EV j (t)) if Xt ≥ 0
+
+Apun · (Xt − EV j (t)) if Xt < 0
+
+.
+
+(1)  
+
+> •
+
+Expected Frequency Update: Similarly, the ex-pected frequency is updated as shown in Equa-tion (2): 
+
+EF j (t + 1) = EF j (t)+
+
+(
+
+Arew · (sgn (Xt) − EF j (t)) if Xt ≥ 0
+
+Apun · (sgn (Xt) − EF j (t)) if Xt < 0
+
+,
+
+(2) AUTHOR et al. : TITLE 5                               
+
+> TABLE I ORL M ODEL PARAMETERS AND THEIR COGNITIVE INTERPRETATIONS
+> Param. Range Cognitive Interpretation
+> Arew [0, 1] Reward learning rate
+> Apun [0, 1] Punishment learning rate
+> K[0, 5] Forgetting/perseveration decay
+> βFRFrequency weight (wins vs. losses)
+> βPRPerseveration weight
+> θ[0, ∞)Inverse temperature (exploration)
+> ω[0, 1] Fusion weight (external vs. inter-nal) Note: Arew –βPare core RL Engine parameters; θcontrols choice noise;
+> ωbalances internal and external drives.
+
+where the sgn (Xt) function returns 1, 0, and -1 for positive, zero, and negative outcomes, respectively. 2) Perseveration Process: The model also includes an independent perseveration weight P S j (t) to capture a value-independent tendency to repeat a choice (perse-veration) or to switch (exploration) [17], [31]. After each trial, the perseveration weight for the chosen deck 
+
+j is reset to 1, while the weights for all decks decay according to a forgetting/decay parameter K.3) Decision Utility Integration: At the time of decision, the final integrated utility of an action a for the internal engine, URL ,t (a), is computed as a linear weighted sum of the three components mentioned above, as formalized in Equation (3): 
+
+URL ,t (a) = EV t(a) + βF · EF t(a) + βP · P S t(a), (3) where βF and βP are the weight parameters for fre-quency preference and perseveration preference, respec-tively. Thus, the ORL model contains a total of five core free parameters: {Arew , A pun , K, β F , β P } [35]. 
+
+2) Module 2: The External LLM Shell: The External LLM Shell, depicted in the upper right of Fig. 2, formalizes external instructions or high-level cognitive beliefs as a static cogni-tive prior through persona prompts. This module represents specific cognitive biases or therapeutic guidance [10], [36]. The cognitive prior is extracted from a Large Language Model (LLM) through a three-step process, designed to convert its dynamic, natural language-based reasoning capabilities into a stable utility vector suitable for mathematical computation and fusion with the RL engine outputs [15]: The extraction process is formalized in Phase 1 of Algo-rithm 1, which addresses the fundamental challenge of con-verting dynamic, token-based LLM outputs into static utility vectors compatible with mathematical decision models. The algorithm simulates the complete IGT task using a "pure LLM agent" endowed with a specific persona (Steps 2-3), collecting trial-specific probability distributions πt, LLM (a|st, P ) across all trials (Step 4). 1) Policy Sampling: First, we run a "pure LLM agent" endowed with a specific persona, allowing it to complete the entire IGT task [14]. At each trial t, we record the action probability distribution πt, LLM (a) output by the                   
+
+> TABLE II BREAKDOWN OF DATASETS USED IN THE CURRENT STUDY
+> Dataset NPopulation
+> Ahn et al. (HC) [6] 48 Healthy Controls Horstmann et al. [27] 162 Healthy Controls Kjome et al. [37] 19 Healthy Controls Maia & McClelland [38] 40 Healthy Controls Ahn et al. (Amphetamine) [6] 38 Amphetamine Users Ahn et al. (Heroin) [6] 43 Heroin Users Note: HC = Healthy Controls. All datasets used the modified Iowa Gambling Task with 100 trials per participant.
+
+LLM for all actions a ∈ A, as implemented in Steps 2-4 of Algorithm 1. 2) Static Prior Aggregation: To obtain a prior that repre-sents the stable decision-making tendency of this per-sona throughout the task, we average the probability distributions from all T trials to get a single, static probability vector Πprob , as defined in Equation (4) and implemented in Step 5 of Algorithm 1: 
+
+Πprob = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+πt, LLM . (4) This vector represents the overall preference distribution of the LLM persona for the four options. 3) Conversion to Utility Scale: Since the probability scale (range [0, 1]) is not compatible with the utility scale (arbitrary real numbers) computed by the internal RL model, we need to convert the probability prior to the utility scale. We achieve this by centering and scaling it to obtain a utility vector Πutil , as shown in Equation (5) and Step 6 of Algorithm 1, where the sign of its elements represents a preference for or aversion to an option relative to the average: 
+
+Πutil = scale (Π prob − ¯Πprob ). (5) This transformed static vector Πutil serves as the effective exogenous drive fused with dynamic RL utilities. The static prior is a deliberate simplifying assumption justi-fied on three grounds: (1) Cognitive validity: it mod-els trait-level stable dispositions (personality, internal-ized beliefs, therapeutic guidance) consistent with dual-process theories; (2) Methodological priority: param-eter identifiability and causal interpretability outweigh capturing all cognitive dynamics, cleanly separating “in-ternal learning” (RL) from “external influence” (LLM); (3) Pragmatic scope: proof-of-concept for hybrid archi-tecture, with dynamic extensions as future work. 
+
+3) Module 3: Decision Fusion and Action Selection: The Decision Fusion mechanism, illustrated in the lower right of Fig. 2, represents the core integration point where endogenous and exogenous drives converge. In each decision trial t of the BioLLMAgent , the final action value for the agent, 
+
+UCombined ,t (a), is derived through a weighted averaging process that fuses the dynamically updated internal RL utility ( URL ,t )and the static exogenous LLM prior utility ( Πutil ) [39], [40], as formalized in Equation (6): 6 IEEE TRANSACTIONS AND JOURNALS TEMPLATE 1 3 5 7 9
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+> Adv. Choice Ratio
+
+(a) 
+
+> Pure ORL: 0.50
+> BioLLMAgent (Neutral): 0.51
+> BioLLMAgent (Noisy): 0.58
+
+Ahn et al. (Amphetamine) 
+
+> Pure ORL
+> BioLLMAgent (Neutral)
+> BioLLMAgent (Noisy)
+
+1 3 5 7 9
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+(b) 
+
+> Pure ORL: 0.50
+> BioLLMAgent (Neutral): 0.51
+> BioLLMAgent (Noisy): 0.59
+
+Ahn et al. (Heroin) 
+
+1 3 5 7 9
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+(c) 
+
+> Pure ORL: 0.59
+> BioLLMAgent (Neutral): 0.58
+> BioLLMAgent (Noisy): 0.65
+
+Ahn et al. (HC) 
+
+1 3 5 7 9
+
+Block 
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+> Adv. Choice Ratio
+
+(d) 
+
+> Pure ORL: 0.48
+> BioLLMAgent (Neutral): 0.48
+> BioLLMAgent (Noisy): 0.54
+
+Horstmann et al. 
+
+1 3 5 7 9
+
+Block 
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+(e) 
+
+> Pure ORL: 0.59
+> BioLLMAgent (Neutral): 0.58
+> BioLLMAgent (Noisy): 0.63
+
+Kjome et al. 
+
+1 3 5 7 9
+
+Block 
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+(f) 
+
+> Pure ORL: 0.74
+> BioLLMAgent (Neutral): 0.72
+> BioLLMAgent (Noisy): 0.76
+
+Maia & McClelland 
+
+Fig. 3. Behavioral trajectory validation using GPT-4o. Choice patterns for (a) Amphetamine, (b) Heroin, (c) Healthy controls, (d-f) Additional datasets. Lines: Pure ORL (red), BioLLMAgent neutral (green), noisy control (orange), human data (black). 1 3 5 7 9
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+> Adv. Choice Ratio
+
+(a) 
+
+> Pure ORL: 0.50
+> BioLLMAgent (Neutral): 0.46
+> BioLLMAgent (Noisy): 0.40
+
+Ahn et al. (Amphetamine) 
+
+> Pure ORL
+> BioLLMAgent (Neutral)
+> BioLLMAgent (Noisy)
+
+1 3 5 7 9
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+(b) 
+
+> Pure ORL: 0.50
+> BioLLMAgent (Neutral): 0.46
+> BioLLMAgent (Noisy): 0.39
+
+Ahn et al. (Heroin) 
+
+1 3 5 7 9
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+(c) 
+
+> Pure ORL: 0.59
+> BioLLMAgent (Neutral): 0.53
+> BioLLMAgent (Noisy): 0.49
+
+Ahn et al. (HC) 
+
+1 3 5 7 9
+
+Block 
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+> Adv. Choice Ratio
+
+(d) 
+
+> Pure ORL: 0.48
+> BioLLMAgent (Neutral): 0.44
+> BioLLMAgent (Noisy): 0.36
+
+Horstmann et al. 
+
+1 3 5 7 9
+
+Block 
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+(e) 
+
+> Pure ORL: 0.59
+> BioLLMAgent (Neutral): 0.55
+> BioLLMAgent (Noisy): 0.47
+
+Kjome et al. 
+
+1 3 5 7 9
+
+Block 
+
+0.0 
+
+0.25 
+
+0.5 
+
+0.75 
+
+1.0 
+
+(f) 
+
+> Pure ORL: 0.74
+> BioLLMAgent (Neutral): 0.70
+> BioLLMAgent (Noisy): 0.64
+
+Maia & McClelland 
+
+Fig. 4. Behavioral trajectory validation using DeepSeek backend. Same setup as Fig. 3, demonstrating consistent performance across LLM backends with comparable trajectory tracking fidelity to GPT-4o, validating the generalizability of the hybrid approach. TABLE III MODEL CONSISTENCY ANALYSIS : T RADITIONAL RL VS . B IO LLMA GENT PERFORMANCE 
+
+Dataset GPT-4o DeepSeek Neutral Noisy Neutral Noisy r MAE B.Diff r MAE B.Diff r MAE B.Diff r MAE B.Diff 
+
+Ahn et al. (Amphetamine) [6] 0.958 0.073 0.005 0.957 0.146 0.108 0.944 0.090 0.055 0.919 0.119 0.054 Ahn et al. (Heroin) [6] 0.954 0.066 0.001 0.938 0.133 0.097 0.912 0.097 0.060 0.874 0.133 0.069 Ahn et al. (HC) [6] 0.943 0.084 0.005 0.927 0.140 0.089 0.928 0.108 0.068 0.897 0.161 0.081 Horstmann et al. [27] 0.981 0.073 0.001 0.979 0.126 0.095 0.959 0.111 0.067 0.919 0.167 0.081 Kjome et al. [37] 0.989 0.101 0.006 0.986 0.142 0.078 0.965 0.140 0.062 0.940 0.202 0.078 Maia & McClelland [38] 0.991 0.103 0.025 0.988 0.132 0.062 0.979 0.123 0.063 0.962 0.164 0.057 Average 0.969 0.083 0.006 0.963 0.137 0.088 0.948 0.112 0.063 0.919 0.158 0.070 Note: r = Pearson correlation between Traditional RL and BioLLMAgent predictions at subject level. MAE = Mean Absolute Error between predictions. B.Diff = Behavioral Difference (absolute difference in advantageous choice proportions). Bold values indicate excellent consistency (r > 0.95, MAE < 0.1, B.Diff < 0.05). Higher correlations demonstrate stronger model alignment. HC = Healthy Controls. AUTHOR et al. : TITLE 7  
+
+> Fig. 5. Fusion mechanism comparison across five alternatives. Violin plots show advantageous choice rate distributions for Linear (0.967, our choice), Multiplicative (0.991), Bayesian (0.982), Attention-based (0.954), and Gated (0.949) fusion methods. Linear balances perfor-mance with interpretability ( ωas intuitive dosage parameter) and par-simony (single parameter vs. 3-5 in alternatives).
+
+The fusion mechanism is implemented in Phase 3 of Al-gorithm 1, which represents the core hybrid decision-making process. For each trial t, the internal RL model computes utilities U (i) 
+
+> M,t
+
+based on accumulated experience (Step 16), which are then combined with the static LLM prior through the weighted averaging formula in Step 17: 
+
+UCombined ,t (a) = (1 − ω) · URL ,t (a) + ω · Πutil (a), (6) where ω is a fixed hyperparameter ( 0 ≤ ω ≤ 1) representing the external prior weight , quantifying reliance on the exoge-nous LLM prior relative to endogenously learned values. In our experiments, ω was set to 0.25 based on comprehensive sensitivity analysis across ω ∈ [0 , 1] (Fig. 9), balancing decision quality gains (+8-10% advantageous choice rate) with robustness to incorrect priors. This 75%/25% internal/external ratio aligns with dual-process theories. Notably, ω exhibits population-level variation (Fig. 10): clinical populations ben-efit from higher values (ω ≈ 0.30 –0.40 ), while healthy populations plateau at ω ≈ 0.20 –0.25 , suggesting ω may serve as a clinically meaningful individual difference variable. Detailed sensitivity results are reported in Section IV. The linear fusion was selected after systematic comparison of five alternatives (Fig. 5): Linear, Multiplicative, Bayesian Averaging, Attention-Based, and Gated mechanisms. Although Multiplicative (0.991) and Bayesian (0.982) slightly outper-formed Linear (0.967) in trajectory correlation, Linear was chosen for: (1) Interpretability —ω serves as an intuitive “dosage” parameter; (2) Parsimony —single parameter vs. 3–5 in alternatives, preserving RL parameter identifiability (r > 0.65 ); and (3) Psychological plausibility —additive combination parallels competing habitual/reflective forces per dual-process theories. The 2.4% gap represents a deliberate trade-off favoring interpretability for clinical phenotyping. Finally, based on this fused utility vector UCombined ,t , the agent calculates the final probability of choosing each action using a standard Softmax function and makes a decision by sampling from it [29], as specified in Equation (7) and implemented in Step 18 of Algorithm 1: 
+
+Pt(a) = exp( θ · UCombined ,t (a)) 
+
+P 
+
+> a′∈A
+
+exp( θ · UCombined ,t (a′)) , (7)                                                                       
+
+> TABLE IV PARAMETER RECOVERY PERFORMANCE SUMMARY
+> Dataset Arew Apun KβFβP
+> Amphetamine [6] 0.709 0.696 0.719 0.863 0.928
+> Heroin [6] 0.615 0.680 0.751 0.841 0.938
+> HC [6] 0.701 0.684 0.664 0.909 0.905 Average 0.676 0.687 0.711 0.871 0.924
+> Note: Values represent the Pearson correlation ( r) between true and recovered parameters. Bold values indicate good to excellent recovery (r > 0.8). All parameters show acceptable identifiability.
+> TABLE V PROMPT ABLATION STUDY : E FFECT OF UNIFORM DISTRIBUTION
+> INSTRUCTION
+> Model Instr. Chi-sq KL Std
+> pDiv. Dev.
+> GPT-4o w/o 0.105 0.124 0.125 w/ 0.988 0.002 0.017
+> DeepSeek w/o <0.001 0.615 0.282 w/ 0.604 0.031 0.062
+> Llama-3.2 (3b) w/o <0.001 1.386 0.433 w/ <0.001 1.264 0.414 Gemma-3 (27b) w/o <0.001 0.329 0.222 w/ <0.001 0.315 0.218 Note: Instr. = Instruction (w/o = without, w/ = with uniform distribution instruction). Chi-sq p= Chi-square test p-value. KL Div. = Kullback-Leibler Divergence. Std Dev. = Standard Deviation. Bold values highlight strong instruction adherence.
+
+where θ is the inverse temperature parameter, which controls the stochasticity of the decision-making process [34]. The RL model state is subsequently updated based on the observed outcome (Step 19), enabling experience-driven learning to interact dynamically with the static LLM prior. 
+
+IV. E XPERIMENT RESULTS AND DISCUSSION 
+
+A. Experimental Setup and Validation 
+
+Datasets: We selected six public IGT datasets (N=350) to ensure the generalizability and robustness of our findings. This collection, summarized in Table II, is strategically diverse: it includes clinical populations (amphetamine and heroin users) and healthy controls from Ahn et al. [6], allowing for direct comparison of addiction-related decision patterns. To validate our results across different lab contexts, we also included three additional healthy control datasets from prominent studies [27], [37], [38], providing a comprehensive foundation for testing the framework. 
+
+LLM Backends & Agent Configurations: To test the framework’s versatility, we employed multiple LLM backends, including GPT-4o , DeepSeek , and smaller open-source models. Our experiments compared three agent configurations: (1) a baseline Pure ORL Agent (ω = 0 ), (2) the standard 
+
+BioLLMAgent with a neutral LLM prior ( ω = 0.25 ) in-structed to choose uniformly, (3) a noisy control condition with distraction instructions impairing uniform selection, and (4) a CBT intervention condition providing explicit guidance 8 IEEE TRANSACTIONS AND JOURNALS TEMPLATE          
+
+> Fig. 6. Parameter recovery analysis. Scatter plots of true vs. recovered parameters: (a) Arew , (b) Apun , (c) K, (d) βF, (e) βP. Bottom: Pearson correlations with confidence intervals. Diagonal line indicates perfect recovery.
+
+on advantageous (C, D) versus disadvantageous (A, B) decks based on long-term outcomes. 
+
+Evaluation Metrics: We used two primary metrics for evaluation: Mean Squared Deviation (MSD) to measure goodness-of-fit between simulated and real human choice trajectories, and the Pearson Correlation Coefficient (r) 
+
+to assess parameter recovery fidelity and model consistency [34]. To ensure reproducibility, LLM API calls used fixed parameters ( T = 0 .5, top-p p = 0 .9) with model versions GPT-4o (gpt-4o-2024-05-13) and DeepSeek-V3. Bayesian inference employed PyMC v5.0 with NUTS sampling (4 chains, 2000 warmup, 4000 sampling iterations; ˆR < 1.1). We will release an open-source repository on GitHub (archived on Zenodo with DOI) containing complete implementation, anonymized datasets, inference scripts, and documentation. 
+
+Prompt Engineering and Sensitivity. Prompts were en-gineered through iterative pilot testing and constrained to 400-500 tokens. Sensitivity analysis revealed explicit uniform selection instructions and list-formatted directives enhanced compliance, with larger models (GPT-4o, DeepSeek-V3) ex-hibiting greater robustness to paraphrasing. Complete verbatim templates for all conditions are provided in the Appendix. 
+
+B. Benchmark Validation: BioLLMAgent Accurately Reproduces Human Behavior 
+
+Our first experiment confirmed that BioLLMAgent suc-cessfully preserves the theoretical foundation of the under-lying computational model while extending its capabilities. As shown in the behavioral trajectories (Fig. 3 and Fig. 4), the BioLLMAgent with a neutral prior (green line) closely reproduces the pure ORL model’s behavior patterns, demon-strating that the hybrid framework does not compromise the interpretable cognitive mechanisms of the internal RL engine. Crucially, this consistency validates the framework’s scien-tific rigor. The noisy control condition shows systematic be-havioral changes compared to the pure ORL baseline, confirm-ing that external priors can effectively modulate agent behav-ior through the fusion mechanism. The consistency analysis (Table III) reveals that BioLLMAgent maintains excellent theoretical alignment with the underlying ORL model (mean 
+
+r = 0 .959 ), confirming that the framework preserves the inter-pretable computational foundation while adding controllability and behavioral flexibility. This demonstrates that the LLM component provides a principled pathway for incorporating external cognitive influences when needed. 
+
+C. Model Validation: Key Cognitive Parameters are Identifiable 
+
+To verify the framework’s scientific rigor, we conducted a comprehensive parameter recovery study which confirmed that the core cognitive parameters of the internal ORL engine are robustly identifiable. As shown in Fig. 6 and Table IV, the model is not over-parameterized and can serve as a reliable tool for scientific inference. The analysis revealed excellent recoverability for the de-cision weight parameters—frequency preference (βF ) and perseveration ( βP )—with correlations consistently above 0.84 across all populations. This indicates the model can accurately AUTHOR et al. : TITLE 9A B C D              
+
+> Card Deck
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Selection Probability
+> 0.23 0.22 0.27 0.22 0.27
+> 0.45
+> 0.23
+> 0.12
+> (a)
+> GPT-4o
+> ABCD
+> Card Deck
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.27
+> 0.18
+> 0.27
+> 0.18
+> 0.23
+> 0.58
+> 0.23 0.18
+> (b)
+> DeepSeek-Chat
+> ABCD
+> Card Deck
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.05 0.05 0.05
+> 0.08
+> 0.85 0.82
+> 0.05 0.05
+> (c)
+> Llama3.2
+> ABCD
+> Card Deck
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 0.30
+> 0.81
+> 0.31
+> 0.22
+> 0.05
+> 0.15
+> 0.35
+> 0.02
+> (d)
+> Gemma3.27b
+> With Instruction Without Instruction Uniform (0.25)
+
+Fig. 7. Choice distributions from prompt ablation study. Action probabilities for (a) GPT-4o, (b) DeepSeek-Chat, (c) Llama-3.2, (d) Gemma-3.27b with/without uniform instruction. Red line: perfect uniform (0.25). Larger models show better compliance. TABLE VI PERFORMANCE RANKING OF LLM S WITHIN THE BIO LLMA GENT 
+
+FRAMEWORK 
+
+Rank Model Temp. MSD SD N Datasets 
+
+1 GPT-4o 0.5 1.00 0.65 62 GPT-4o 0.0 1.12 1.23 63 GPT-4o 1.0 1.47 0.92 64 DeepSeek 0.0 1.59 1.97 65 DeepSeek 1.0 1.61 1.56 66 DeepSeek 0.5 2.01 2.22 67 Gemma 3 (27b) 0.0 6.81 3.64 68 Gemma 3 (27b) 1.0 6.89 4.51 69 Gemma 3 (27b) 0.5 8.27 3.69 610 Llama 3.2 (3b) 1.0 9.94 2.71 611 Llama 3.2 (3b) 0.0 11.65 2.10 612 Llama 3.2 (3b) 0.5 12.07 2.01 6
+
+Note: Lower Mean MSD indicates better fit to human behavioral data. Bold values indicate top-tier performance. Temperature settings: 0.0 (deterministic), 0.5 (moderate), 1.0 (high variability). 
+
+capture the primary cognitive drivers of choice. Learning-related parameters (Arew , A pun , K ) showed moderate but acceptable recoverability (r > 0.61), a common finding in complex computational models [5]. These results validate that 
+
+BioLLMAgent can reliably quantify key components of the decision-making process. 
+
+D. Ablation Study: Controllability and Performance of the External LLM Shell 
+
+A key feature of BioLLMAgent is its controllability, which we tested through a series of ablation and benchmarking experiments on the external LLM shell. Our ablation study reveals a direct link between LLM scale and instruction-following ability. As shown in Fig. 7 and Table V, large models like GPT-4o and DeepSeek-Chat demonstrate excel-lent compliance, generating a near-uniform choice distribution when explicitly prompted to do so. In contrast, smaller models like Llama-3.2 and Gemma-3.27b exhibit strong "instruction resistance," with their behavior dominated by ingrained biases from pre-training. This confirms that the framework’s external prior is highly controllable when using capable LLMs. A systematic benchmark of LLM backends confirmed a clear performance hierarchy (Table VI and Fig. 8). GPT-4o Temp 0.0 
+
+> Temp 0.5 Temp 1.0
+> GPT-4o
+> DeepSeek
+> Llama 3.2
+> Gemma 3.27b
+
+Fig. 8. LLM performance across temperature settings (0.0, 0.5, 1.0). Performance as 1/MSD. Models: GPT-4o (blue), DeepSeek-Chat (or-ange), Llama-3.2 (green), Gemma-3.27b (red). 
+
+consistently provided the best fit to human data across all tem-perature settings, with moderate temperature (0.5) achieving optimal performance. DeepSeek offered a viable, less accurate alternative. Smaller open-source models performed poorly regardless of temperature, indicating their limitations are archi-tectural rather than configurational. This provides guidance for model selection when implementing BioLLMAgent . How-ever, smaller models (e.g., Llama-3.2, Gemma-3) failed to adhere to persona prompts, representing a fundamental limita-tion. This aligns with “Inverse Scaling” theory, which suggests instruction-following emerges non-linearly with model scale. Smaller models struggle with negative constraints requiring suppression of pre-trained priors, particularly for probabilistic ambiguity or counter-intuitive behaviors. Consequently, the framework’s generalizability is contingent upon large-scale LLMs ( >70B parameters) with robust instruction-following capabilities, constraining applicability in resource-limited en-vironments and simulations requiring fine-grained behavioral control. Sensitivity analysis across ω ∈ [0 , 1] on six datasets (Fig. 9, Fig. 10) revealed three findings: (1) Quality-Robustness Tradeoff: ω ∈ [0 .20 , 0.30] balances quality gains (+8-10%) 10 IEEE TRANSACTIONS AND JOURNALS TEMPLATE                    
+
+> Fig. 9. Omega sensitivity analysis. Panel A: advantageous choice rate across ω∈[0 ,1] for clinical and healthy populations. Panel B: performance degradation with incorrect priors. Vertical line at ω= 0 .25
+> balances quality gains (+8-10%) with robustness to prior errors ( <5% for healthy, <15% for clinical).
+> Fig. 10. Population-specific omega sensitivity. Panel A: performance trajectories across ωfor healthy (near-ceiling, flat) vs. clinical (lower baseline, steep) populations. Clinical groups show larger sensitivity to external guidance (Heroin: +38% from ω= 0 to 0.25). Panel B: LLM guidance benefit at ω=0.25 confirms clinical populations derive greater benefits.
+
+with robustness to incorrect priors. (2) Population Specificity: 
+
+Clinical datasets show steeper ω-response curves (Heroin: +38% from ω = 0 to 0.25) than healthy datasets, suggesting population-specific optimal values. (3) Interpretability: RL parameter identifiability is maintained when ω ≤ 0.3 but degrades at higher values. 
+
+Data Contamination Consideration. LLMs’ training data may include IGT literature, potentially introducing circular-ity. We note three mitigating factors: (1) the LLM provides cognitive priors yielding conservative choice rates ( ∼0.70– 0.75), well below ceiling ( ∼0.95), suggesting heuristics rather than memorization; (2) the framework’s value lies in model-ing guidance-learning interactions, a capacity that generalizes beyond any single task; (3) cross-task validation on Delay Discounting (Fig. 13) confirms generalization to different task structures. 
+
+E. Applications in Computational Psychiatry 
+
+Having validated its core properties, we demonstrated the framework’s applied potential by simulating both clinical and social-level interventions. 
+
+1) In Silico Exploration of CBT Principle Encoding: To demonstrate the framework’s capability as a computational sandbox, we explored whether encoding CBT principles as external guidance could influence simulated decision-making. This is a proof-of-concept demonstration, not a model of clin-ical therapy or test of therapeutic efficacy. By encoding CBT principles into LLM prompts (Appendix A.2), we observed in silico behavioral shifts toward advantageous decision-making across all six datasets (Fig. 11), most pronounced in addic-tion populations. These results represent simulated normative strategy biases, not validated therapeutic effects. The observed “effects” are purely behavioral (task performance shifts), not clinical outcomes. These findings are hypothesis-generating, suggesting testable predictions (e.g., differential responsive-ness to therapeutic guidance) that require empirical validation through controlled trials. 
+
+2) Simulating Social Dynamics and Network-Level Interven-tions: We demonstrate the framework’s potential for agent-based simulation through large-scale network experiments. A community of 100 interconnected agents (Watts-Strogatz small-world network) was constructed to test four interven-tion strategies: Targeted CBT (20% worst performers), Hub Strategy (20% highest-degree nodes), Random CBT (20% random), and Community Education (100% coverage). Each agent was governed by a BioLLMAgent with ORL param-eters sampled from empirical posteriors. To assess topology robustness, experiments were replicated on Barabási-Albert scale-free and Erd˝ os-Rényi random networks (Fig. 12), with intervention ranking preserved across all topologies ( σ2 <
+
+0.002 ). Results (Fig. 1) reveal that Community Education 
+
+was overwhelmingly most effective (Health Score: 0.950), while Targeted CBT produced localized improvements (0.750) and Hub intervention proved ineffective (0.630). The Health Score ( Hi = ( N etScore i +100) /200 ) is a task-specific index; these results are hypothesis-generating, not policy-prescriptive. 
+
+3) Framework Generalization: To address generalizability concerns, we validated the framework on the Delay Discount-ing task (Fig. 13), which assesses temporal impulsivity. The Internal RL Engine was replaced with a Hyperbolic Discount-ing model using literature-derived parameters [41], [42], while preserving the LLM Shell and Decision Fusion Mechanism. Key findings from IGT replicated: population stratification, dose-dependent ω effects, and CBT guidance effectiveness (+60% relative improvement in clinical populations). This cross-task validation demonstrates that core components gen-eralize within the decision-making domain, but generalization to other cognitive domains (working memory, social cognition) remains unverified. 
+
+F. Discussion 
+
+Limitations. While BioLLMAgent demonstrates promising capabilities, several limitations warrant consideration: depen-dence on large-scale LLMs ( >70B parameters), a simplified static prior, unvalidated CBT simulation effects, and a fixed linear fusion. The modular architecture facilitates extension but requires systematic validation across diverse paradigms. An important future direction is treating ω as an estimable individual-difference parameter: clinical populations exhibit steeper ω-response curves (+10–15% at ω = 0 .25 ) compared to healthy populations (+2–5%), suggesting ω may quantify “reliance on external guidance.” 
+
+CBT Simulation Limitations. The CBT simulation cap-tures only the directive component while omitting core thera-peutic mechanisms (collaborative empiricism, behavioral acti-vation, cognitive restructuring). No clinical outcome measures AUTHOR et al. : TITLE 11 0 20 40 60 80 100                              
+
+> A
+> B
+> C
+> D
+> Choice
+> (a)
+> Ahn et al. (Amphetamine)
+> 020 40 60 80 100
+> A
+> B
+> C
+> D
+> (b)
+> Ahn et al. (Heroin)
+> 020 40 60 80 100
+> A
+> B
+> C
+> D
+> (c)
+> Ahn et al. (HC)
+> 020 40 60 80 100
+> Block
+> A
+> B
+> C
+> D
+> Choice
+> (d)
+> Horstmann et al.
+> 020 40 60 80 100
+> Block
+> A
+> B
+> C
+> D
+> (e)
+> Kjome et al.
+> 020 40 60 80 100
+> Block
+> A
+> B
+> C
+> D
+> (f)
+> Maia & McClelland
+> Real Choices Real Choices (Smoothed) Pure ORL BioLLMAgent (Neutral) BioLLMAgent (cbt_intervention)
+
+Fig. 11. CBT intervention effects on decision trajectories. (a-f) Six datasets showing human choices (black), ORL model (red), neutral prior (green), CBT intervention (orange). CBT promotes advantageous learning, strongest in clinical populations. 
+
+Fig. 12. Network topology robustness analysis. Row 1: three network architectures (Watts-Strogatz, Barabási-Albert, Erd ˝ os-Rényi). Row 2: intervention effectiveness across topologies. Intervention ranking pre-served across all networks (Community Education > Targeted CBT >
+
+Hub > Random), demonstrating coverage breadth matters more than network structure. 
+
+Fig. 13. Framework generalization to Delay Discounting task. Panel A: delayed choice rate across ω for three populations. Clinical groups show lower baselines but steeper ω-response curves, mirroring IGT patterns. Panel B: CBT guidance benefit at ω = 0 .25 . Clinical populations show largest relative improvements (+60%), validating cross-task generaliza-tion of fusion mechanism. 
+
+were modeled—only task performance shifts. These explo-rations generate hypotheses about potential mechanisms but should not be interpreted as models of actual psychotherapy or evidence of therapeutic efficacy [43]. 
+
+Domain Specificity. BioLLMAgent has been validated on two decision-making tasks (IGT, Delay Discounting) within the addiction/impulsivity domain. Cross-task validation demonstrates generalization of core components, but com-putational psychiatry encompasses diverse domains (working memory, social cognition, attention) with distinct cognitive profiles. Current evidence most directly supports addiction-related decision-making deficits; extension to other psychiatric conditions requires additional validation. 
+
+Unique Clinical Hypotheses. BioLLMAgent enables hy-potheses that traditional RL models cannot address: (1) Treat-ment Personalization: varying LLM prompts and ω can predict which patient phenotypes respond best to which in-tervention strategies— ω serves as a quantitative biomarker for susceptibility to external guidance; (2) Semantic Guidance Encoding: natural language encoding enables rapid testing of diverse intervention content without developing separate formal models; (3) Social Network Effects: multi-agent simulations test how network topology and intervention cov-erage interact to determine population-level behavior change. These capabilities remain computational hypotheses requiring empirical validation. 
+
+Reproducibility Challenges. A practical challenge for long-term reproducibility is that commercial LLM APIs evolve continuously. We address this through version documen-tation (GPT-4o: gpt-4o-2024-05-13; DeepSeek-V3), multi-model validation showing consistent patterns across backends (Figs. 3-4), and open-source code release with cached LLM 12 IEEE TRANSACTIONS AND JOURNALS TEMPLATE 
+
+outputs. While model evolution remains a limitation for exact replication, our multi-pronged approach ensures core scientific conclusions remain verifiable. 
+
+V. C ONCLUSION 
+
+This study introduces BioLLMAgent , a novel hybrid framework that addresses the trade-off between interpretabil-ity and behavioral realism in computational psychiatry. 
+
+BioLLMAgent integrates a structurally interpretable RL en-gine with an external LLM shell through a decision fusion mechanism, enabling both scientific analysis and realistic behavior generation. Systematic validation across six IGT datasets encompassing 350 participants, along with cross-task validation on the Delay Discounting task, demonstrates that BioLLMAgent accurately reproduces human behavioral patterns while maintaining excellent parameter identifiability (correlations > 0.67 for core cognitive parameters). The framework explores in silico encoding of CBT principles and enables large-scale agent-based social dynamics model-ing, producing hypothesis-generating findings that community-wide educational interventions may outperform targeted in-dividual treatments. BioLLMAgent opens new avenues for accelerating research in computational psychiatry, particu-larly for decision-making and impulsivity-related paradigms in addiction-related populations. 
+
+ACKNOWLEDGMENT 
+
+This work was partly supported by Horizon Europe Har-monicAI project under grant number 101131117, and UKRI grant EP/Y03743X/1. K. Wang would like to acknowledge the support in part by the Royal Society Industry Fellowship (IF/R2/23200104). 
+
+REFERENCES 
+
+[1] Y. Yue, S. Li, Y. Cheng, L. Wang, T. Hou, Z. Zhu, and S. He, “Integration of molecular coarse-grained model into geometric representation learn-ing framework for protein-protein complex property prediction,” Nature Communications , vol. 15, no. 1, p. 9629, 2024. [2] C. Xu, J. Wu, F. Zhang, J. Freer, Z. Zhang, and Y. Cheng, “A deep image classification model based on prior feature knowledge embedding and application in medical diagnosis,” Scientific Reports , vol. 14, no. 1, p. 13244, 2024. [3] A. Khaleghi, M. R. Mohammadi, K. Shahi, and A. M. Nasrabadi, “Computational Neuroscience Approach to Psychiatry: A Review on Theory-driven Approaches,” Clin Psychopharmacol Neurosci , vol. 20, no. 1, pp. 26–36, 2022. [4] R. A. Adams, Q. J. M. Huys, and J. P. Roiser, “Computational Psychia-try: towards a mathematically informed understanding of mental illness,” 
+
+J Neurol Neurosurg Psychiatry , 2015. [5] H. Steingroever, R. Wetzels, and E.-J. Wagenmakers, “A Comparison of Reinforcement Learning Models for the Iowa Gambling Task Using Parameter Space Partitioning,” The Journal of Problem Solving , vol. 5, no. 2, 2013. [6] W.-Y. Ahn, G. Vasilev, S.-H. Lee, J. R. Busemeyer, J. K. Kruschke, A. Bechara, and J. Vassileva, “Decision-making in stimulant and opiate addicts in protracted abstinence: evidence from computational modeling with pure users,” Front Psychol , vol. 5, p. 849, 2014. [7] S. N. Janbesaraei, A. H. Hadian Rasanan, V. Nejati, and J. Amani Rad, “Do human reinforcement learning models account for key experimental choice patterns in the Iowa Gambling Task?,” Computational Brain & Behavior , vol. 8, pp. 286–320, 2024. [8] S. N. Janbesaraei, A. H. H. Rasanan, V. Nejati, and J. A. Rad, “Do Human Reinforcement Learning Models Account for Key Experimental Choice Patterns in the Iowa Gambling Task?,” Comput Brain Behav ,vol. 8, no. 2, pp. 286–320, 2025. [9] H. Steingroever, R. Wetzels, A. Horstmann, J. Neumann, and E.-J. Wagenmakers, “Performance of healthy participants on the Iowa Gambling Task,” Psychological Assessment , vol. 25, no. 1, pp. 180–193, 2013. [10] J. S. Park, J. O’Brien, C. J. Cai, M. R. Morris, P. Liang, and M. S. Bern-stein, “Generative Agents: Interactive Simulacra of Human Behavior,” in Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology , pp. 1–22, 2023. [11] Y. Huang, Y. Cheng, and K. Wang, “Efficient driving behavior narration and reasoning on edge device using large language models,” IEEE Transactions on Vehicular Technology , pp. 1–5, 2025. [12] R. Wang, S. Milani, J. C. Chiu, J. Zhi, S. M. Eack, T. Labrum, S. M. Murphy, N. Jones, K. Hardy, H. Shen, F. Fang, and Z. Z. Chen, “PATIENT-Ψ: Using Large Language Models to Simulate Patients for Training Mental Health Professionals,” 2024. [13] A. Yuan, E. Garcia Colato, B. Pescosolido, H. Song, and S. Samtani, “Improving Workplace Well-being in Modern Organizations: A Review of Large Language Model-based Mental Health Chatbots,” ACM Trans. Manage. Inf. Syst. , vol. 16, no. 1, pp. 1–26, 2025. [14] Y. Lu, J. Huang, Y. Han, B. Yao, S. Bei, J. Gesi, Y. Xie, Zheshen, Wang, Q. He, and D. Wang, “Prompting is Not All You Need! Evaluating LLM Agent Simulation Methodologies with Real-World Online Customer Behavior Data,” 2025. [15] M. Rmus, A. K. Jagadish, M. Mathony, T. Ludwig, and E. Schulz, “Generating Computational Cognitive Models using Large Language Models,” 2025. [16] D. J. Fridberg, S. Queller, W.-Y. Ahn, W. Kim, A. J. Bishara, J. R. Busemeyer, L. Porrino, and J. C. Stout, “Cognitive mechanisms un-derlying risky decision-making in chronic cannabis users,” Journal of Mathematical Psychology , vol. 54, no. 1, pp. 28–38, 2010. [17] R. Ligneul, “Sequential exploration in the Iowa gambling task: Valida-tion of a new computational model in a large dataset of young and old healthy participants,” PLoS Comput Biol , vol. 15, no. 6, p. e1006989, 2019. [18] “The Outcome-Representation Learning Model: A Novel Reinforcement Learning Model of the Iowa Gambling Task.” [19] S. M. Groman, S. L. Thompson, D. Lee, and J. R. Taylor, “Rein-forcement learning detuned in addiction: integrative and translational approaches,” Trends in Neurosciences , vol. 45, no. 2, pp. 96–105, 2022. [20] J. S. Park, C. Q. Zou, A. Shaw, B. M. Hill, C. J. Cai, M. R. Morris, R. Willer, P. Liang, and M. S. Bernstein, “Simulating Human Behavior with AI Agents,” 2025. [21] W. Zeng, B. Wang, D. Zhao, Z. Qu, R. He, Y. Hou, and Q. Hu, “Dynamic Personality in LLM Agents: A Framework for Evolutionary Modeling and Behavioral Analysis in the Prisoner’s Dilemma,” 2025. [22] D. A. Cook, J. Overgaard, V. S. Pankratz, G. D. Fiol, and C. A. Aakre, “Virtual Patients Using Large Language Models: Scalable, Contextual-ized Simulation of Clinician-Patient Dialogue With Feedback,” Journal of Medical Internet Research , vol. 27, no. 1, p. e68486, 2025. [23] M. Ahn, A. Brohan, N. Brown, Y. Chebotar, O. Cortes, B. David, C. Finn, C. Fu, K. Gopalakrishnan, K. Hausman, et al. , “Do as i can, not as i say: Grounding language in robotic affordances,” arXiv preprint arXiv:2204.01691 , 2022. [24] T. Jiang, J. Wu, and S. C. H. Leung, “The cognitive impacts of large language model interactions on problem solving and decision making using EEG analysis,” Front. Comput. Neurosci. , vol. 19, 2025. [25] A. Bechara, A. R. Damasio, H. Damasio, and S. W. Anderson, “Insen-sitivity to future consequences following damage to human prefrontal cortex,” Cognition , vol. 50, no. 1-3, pp. 7–15, 1994. [26] S. M. Groman, B. Massi, S. R. Mathias, D. Lee, and J. R. Taylor, “Model-Free and Model-Based Influences in Addiction-Related Behav-iors,” Biological Psychiatry , vol. 85, no. 11, pp. 936–945, 2019. [27] H. Steingroever, D. J. Fridberg, A. Horstmann, K. L. Kjome, V. Kumari, S. D. Lane, T. V. Maia, J. L. McClelland, T. Pachur, P. Premkumar, J. C. Stout, R. Wetzels, S. Wood, D. A. Worthy, and E.-J. Wagenmakers, “Data from 617 Healthy Participants Performing the Iowa Gambling Task: A "Many Labs" Collaboration,” Journal of Open Psychology Data , vol. 3, 2015. [28] E. Yechiam, J. R. Busemeyer, J. C. Stout, and A. Bechara, “Using Cog-nitive Models to Map Relations Between Neuropsychological Disorders and Human Decision-Making Deficits,” Psychol Sci , vol. 16, no. 12, pp. 973–978, 2005. AUTHOR et al. : TITLE 13 
+
+[29] N. D. Daw, S. J. Gershman, B. Seymour, P. Dayan, and R. J. Dolan, “Model-based influences on humans’ choices and striatal prediction errors,” Neuron , vol. 69, no. 6, pp. 1204–1215, 2011. [30] H. Chen, N. Mojtahedzadeh, M. J. Belanger, S. Nebe, S. Kuitunen-Paul, M. Sebold, M. Garbusow, Q. J. Huys, A. Heinz, M. A. Rapp, and M. N. Smolka, “Model-Based and Model-Free Control Predicts Alcohol Consumption Developmental Trajectory in Young Adults: A 3-Year Prospective Study,” Biological Psychiatry , vol. 89, no. 10, pp. 980– 989, 2021. [31] T. Yang, C. Xie, and X. Wang, “Forgetting phenomena in the Iowa Gambling Task: a new computational model among diverse participants,” 
+
+Front Psychol , vol. 16, p. 1510151, 2025. [32] W. Y. Ahn, J. Dai, J. Vassileva, J. R. Busemeyer, and J. C. Stout, “Computational modeling for addiction medicine: from cognitive models to clinical applications,” Progress in brain research , vol. 224, pp. 53–65, 2016. [33] N. Haines, J. Vassileva, and W. Y. Ahn, “The outcome-representation learning model: A novel reinforcement learning model of the iowa gambling task,” Cognitive Science , vol. 44, no. 3, p. e12824, 2020. [34] H. Steingroever, R. Wetzels, and E.-J. Wagenmakers, “Validating the PVL-Delta model for the Iowa gambling task,” Front. Psychol. , vol. 4, 2013. [35] A. Mkrtchian, V. Valton, and J. P. Roiser, “Reliability of Decision-Making and Reinforcement Learning Computational Parameters,” Com-put Psychiatr , vol. 7, no. 1, pp. 30–46, 2023. [36] C. Xie, C. Chen, F. Jia, Z. Ye, S. Lai, K. Shu, J. Gu, A. Bibi, Z. Hu, D. Jurgens, J. Evans, P. Torr, B. Ghanem, and G. Li, “Can Large Language Model Agents Simulate Human Trust Behavior?,” 2024. [37] K. L. Kjome, S. D. Lane, J. M. Schmitz, C. Green, L. Ma, I. Prasla, A. C. Swann, and F. G. Moeller, “Relationship between impulsivity and decision making in cocaine dependence,” Psychiatry Res , vol. 178, pp. 299–304, July 2010. [38] T. V. Maia and J. L. McClelland, “A reexamination of the evidence for the somatic marker hypothesis: what participants really know in the Iowa gambling task,” Proc Natl Acad Sci U S A , vol. 101, pp. 16075–16080, Nov. 2004. [39] Q. J. M. Huys, N. Eshel, E. O’Nions, L. Sheridan, P. Dayan, and J. P. Roiser, “Bonsai Trees in Your Head: How the Pavlovian System Sculpts Goal-Directed Choices by Pruning Decision Trees,” PLoS Comput Biol ,vol. 8, no. 3, p. e1002410, 2012. [40] E. D. Grosskurth, D. R. Bach, M. Economides, Q. J. M. Huys, and L. Holper, “No substantial change in the balance between model-free and model-based control via training on the two-step task,” PLoS Comput Biol , vol. 15, no. 11, p. e1007443, 2019. [41] M. Amlung, T. Petker, J. Jackson, I. Balodis, and J. MacKillop, “Steep discounting of delayed monetary and food rewards in obesity: a meta-analysis,” Psychological Medicine , vol. 47, no. 7, pp. 1269–1281, 2017. [42] J. MacKillop, M. T. Amlung, L. R. Few, L. A. Ray, L. H. Sweet, and M. R. Munafò, “Delayed reward discounting and addictive behavior: a meta-analysis,” Psychopharmacology , vol. 216, no. 3, pp. 305–321, 2011. [43] I. M. Berwian, P. Hitchcock, S. Pisupati, G. Schoen, and Y. Niv, “Us-ing computational models of learning to advance cognitive behavioral therapy,” Communications Psychology , vol. 3, p. 72, 2025. 
+
+APPENDIX 
+
+PROMPT TEMPLATES 
+
+To ensure full reproducibility, we provide the prompt tem-plates used in all experimental conditions. Each template follows a standardized structure comprising system prompt, task description, specific instruction, and output format spec-ification. 
+
+A.1 Neutral Prior Prompt (Baseline Condition) 
+
+[System]: You are an agent participating in a decision-making experiment called the Iowa Gambling Task. [Task]: You will make repeated choices from four card decks (A, B, C, D) over 100 trials. Each choice yields a monetary outcome (gain or loss). Your goal is to maximize total earnings. [Instruction]: You have no prior information about the decks. Please select uniformly among the four options. Do not attempt to identify patterns or learn from previous outcomes— maintain uniform random selection throughout. [Output]: Provide a probability distribution: {A: p_A, B: p_B, C: p_C, D: p_D}, where P p = 1 .0.
+
+A.2 CBT Intervention Prompt 
+
+[System]: You are an agent who has received Cognitive Behavioral Therapy (CBT) training for decision-making under uncertainty. [Task]: [Same as A.1] [Instruction]: Apply the following therapeutic principles: (1) High immediate rewards often carry hidden long-term costs; (2) Consistent moderate gains are preferable to volatile large wins; (3) Analyze both frequency and magnitude of losses, not only gains; (4) Resist impulsive attraction to large payoffs. Use these principles to favor decks with stable, long-term positive outcomes. [Output]: [Same as A.1] 
+
+A.3 Additional Prompt Conditions 
+
+Additional prompts (Noisy Control, Community Education) are provided in supplementary materials online. All prompts were constrained to <500 tokens with fixed parameters ( T =0.5, p = 0 .9).

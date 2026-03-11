@@ -1,0 +1,175 @@
+Title: A Joint Neural Baseline for Concept, Assertion, and Relation Extraction from Clinical Text
+
+URL Source: https://arxiv.org/pdf/2603.07487v1
+
+Published Time: Tue, 10 Mar 2026 01:07:53 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# A Joint Neural Baseline for Concept, Assertion, and Relation Extraction from Clinical Text 
+
+Fei Cheng 1 Ribeka Tanaka 2 Sadao Kurohashi 31 Kyoto University  
+
+> 2
+
+Tokyo University of Technology  
+
+> 3
+
+National Institute of Informatics 
+
+feicheng@i.kyoto-u.ac.jp keyakirbk@stf.teu.ac.jp kurohashi@nii.ac.jp 
+
+Abstract 
+
+Clinical information extraction (e.g., 2010 i2b2/VA challenge) usually presents tasks of concept recognition, assertion classification, and relation extraction. Jointly modeling the multi-stage tasks in the clinical domain is an underexplored topic. The existing indepen-dent task setting (reference inputs given in each stage) makes the joint models not directly com-parable to the existing pipeline work. To ad-dress these issues, we define a joint task set-ting and propose a novel end-to-end system to jointly optimize three-stage tasks. We em-pirically investigate the joint evaluation of our proposal and the pipeline baseline with various embedding techniques: word, contextual, and in-domain contextual embeddings. The pro-posed joint system substantially outperforms the pipeline baseline by +0.3, +1.4, +3.1 for the concept, assertion, and relation F1. This work bridges joint approaches and clinical in-formation extraction. The proposed approach could serve as a strong joint baseline for future research. The code is publicly available 1.
+
+1 Introduction 
+
+Electronic medical record (EMR) systems have been widely adopted in the hospitals. One critical application to facilitate the use of EMR data is the information extraction (IE) task, which may intel-lectually extract the desired information from them. In the past decade, research efforts (Uzuner et al., 2011; Pradhan et al., 2014; Elhadad et al., 2015; Yada et al., 2020) have been devoted to providing annotated data and Natural Language Processing (NLP) approaches for various IE tasks in the clini-cal domain. These tasks are employed for a variety of purposes, for instance: the purpose of extracting medical concepts and mapping to Unified Medical Language System (UMLS), the interest in reason-ing temporal information, and etc. 
+
+> 1https://github.com/racerandom/JaMIE
+
+We focus on a typical clinical information ex-traction challenge: 2010 i2b2/VA, which present three-stage tasks: extracting medical concepts from clinical text; classifying assertion types for con-cepts; and extracting relations between concepts. Traditional methods deal with this challenge in a pipeline fashion, with each stage model being in-dependently trained. Consequently, the systems lose the capability of sharing information among components, and errors are propagated. Outside the clinical domain, joint approaches (Li and Ji, 2014; Miwa and Sasaki, 2014; Zheng et al., 2017; Bekoulis et al., 2018b,a; Zhang et al., 2020; Cheng et al., 2020) have been widely proposed in general IE tasks. Bhatia et al. (2019) proposed a representa-tive multi-task learning to jointly train the medical concept and negation models. Inspired by this, we propose a novel joint entity, assertion, and relation extraction model, which consists of a common en-coder with three decoder layers to jointly optimize three tasks. A crucial obstacle is that the official task set-tings (Uzuner et al., 2011) prevents joint ap-proaches from being directly compared to the ex-isting work. The independent evaluation assumes reference inputs given at each stage, while joint approaches can be hardly evaluated in this manner. We instead propose a more practically useful joint task setting, in which each stage is given the former system prediction in the task pipeline, not the refer-ence. We compare our joint model to the pipeline baselines in the joint evaluation and observe sub-stantial improvements of +0.3, +1.4, +3.1 in the concept, assertion, and relation F1. The development of the distributed embed-dings (Mikolov et al., 2013a,b; Pennington et al., 2014) significantly fuels the success of neural mod-els in NLP since 2013. Latest pre-trained contex-tual embeddings, including ELMO (Peters et al., 2018), GPT (Radford et al., 2018), and BERT (De-
+
+> arXiv:2603.07487v1 [cs.CL] 8 Mar 2026
+
+vlin et al., 2019) shows strong impact to a wide range of tasks. Natural extensions for adapting BERT to specific domains have been explored by pretraining BERT continuously on large in-domain text. For a better understanding of various embed-ding techniques in the joint model, we investigate the proposed model and baseline with several en-coder settings, i.e., word embedding, BERT, and in-domain BERT. We believe these results can serve as a valuable baseline for future studies of joint approaches in clinical information extraction, and the system is public. 
+
+2 Related Work 
+
+In 2010, i2b2/VA challenge (Uzuner et al., 2011) continued i2b2’s efforts to release the manually annotated clinical records to the medical NLP com-munity. The concept annotation included patient 
+
+medical problem , treatment and test . The asser-tions extended traditional negation and uncertainty to conditional and hypothetical problems. The chal-lenge further introduced the relation annotation on the pairs of concepts. 2010 i2b2/VA is the ideal task to serve our purpose of exploring joint processes for the multi-stage clinical tasks. Joint models have attracted growing research ef-forts of recent years in the general domain informa-tion extraction. Li and Ji (2014); Miwa and Sasaki (2014) proposed neural models based on external features such as syntactic dependencies. Zheng et al. (2017) proposed a novel tagging scheme to convert the joint tasks to a sequential tagging prob-lem. Bekoulis et al. (2018b) transformed relation extraction to the problem of selecting multi-head of tails and performed token-level entity and rela-tion tagging. Our approach is inspired by Bekoulis et al. (2018b) and Bhatia et al. (2019) to stack a three-stage decoders with each stage is conditional on the former layer outputs, without relying on any external resources. Latest research (Gururangan et al., 2020) re-veals that continuously pretraining on in-domain text further improves the in-domain task perfor-mance. For acquiring knowledge from the clinical domain, Alsentzer et al. (2019a); Peng et al. (2019) further pretrain BERT on clinical notes (MIMIC-III) (Johnson et al., 2016) and medical paper ab-stracts (PubMed). In the experiments, we empiri-cally investigate the effects of GloVe embedding, original BERT, ClinicalBERT (+MIMIC-III), and BlueBERT (+MIMIC-III and PubMed) to serve as a series of valuable baselines for future studies. 
+
+3 Joint Tasks and Evaluation 
+
+Learning from the general IE tasks (Zheng et al., 2017), we proposed a joint three-stage task setting. 1. Concept extraction identifies concepts from raw clinical reports. We evaluate {concept, concept type } to the reference. 2. Assertion classification classifies assertion types of medical problems identified by the former stage. The evaluation is on {concept, concept type, assertion type }.3. Relation extraction extracts relations be-tween the concepts identified by the former stages. The evaluation is on the triplets 
+
+{concept1, relation, concept2 }.The evaluation metrics are all Micro-F1. 
+
+4 Joint Concept, Assertion, and Relation Extraction System 
+
+4.1 Methodology 
+
+The system overview is shown in Figure 1. For-mally, a sentence S = [ x0, x 1, x 2, ..., x n] is en-coded by a contextual BERT or word embed-ding with bidirectional Long Short-Term Mem-ory (LSTM) (Hochreiter and Schmidhuber, 1997; Cheng and Miyao, 2017) as: 
+
+X = Encoder ([ x0, x 1, x 2, ..., x n]) 
+
+Concept extraction decoder : We formulate concept extraction as sequential tagging with the BIO (begin, inside, outside) tags. The decoder is modeled with a conditional random field (CRF) to constrain tag predictions. For a tag sequence 
+
+y = [y0, y 1, y 2, ..., y n], the probability of a se-quence y given X is the softmax overall possible tag sequences: 
+
+P (y|X) = es(X,y )
+
+P 
+
+> ˆy∈Y
+
+es(X, ˆy)
+
+where the score function s(X, y ) represents the sum of the transition scores and tag probabilities. 
+
+Assertion classification decoder : It deals with tagging the assertions on the concepts. To enrich the context for predicting assertion, we concatenate the token embeddings with the additional concept embeddings from the predictions of the 1st-stage decoder. The i-step assertion prediction is: 
+
+yi = sof tmax (W [Xi; CE (yconcept i )] + b)Encoder (BERT or LSTM)                     
+
+> Concept Decoder B-TE B-TE OB-PR I-PR I-PR I-PR
+> ______Pres.
+> Assertion Decoder Head, Relation Decoder TeRP nolink nolink nolink nolink nolink nolink
+
+An mri revealed a C5-6 disc herniation 
+
+> Token Embedding
+> Concept Embedding
+> Assertion Embedding
+
+Figure 1: The overview of the joint concept, assertion, and relation extraction model. 
+
+where Xi denotes the i-th token embedding, 
+
+CE (∗) is the concept embedding and yconcept i is prediction of the concept decoder. 
+
+Relation extraction decoder : The relation de-coder models the relation extraction problem as the multiple head token selection (Zhang et al., 2017) of each token in the sentence. Given each token xi, the decoder predicts whether another to-ken in the sentence xj is the head of this token with a relation rk. The probability of is defined as: 
+
+P (xj , r k|xi; θ) = sof tmax (s(xj , r k, x i)) . ‘no-link’ relation presents no relation between two to-kens. The final representation of a token xi is the concatenation of the token, concept, and assertion embeddings. For a multi-token concept, the right-most token serves as the head in the assertion and relation decoders. The final joint objective is computed as: 
+
+Ljoint = Lconcept + Lassertion + Lrelation 
+
+4.2 The Pipeline Baseline 
+
+The baseline is a pipeline method with the inde-pendent concept extraction, assertion classification and relation extraction models proposed by Cheng et al. (2022). The assertion model is to predict the assertions by given the predicted concepts and their types. In the relation model, the predicted concepts, types and their assertions are the inputs to infer the relations between spans. For a multi-token concept, the baseline model represents it as the element sum of the token vectors in the concept span, instead of using rightmost head like the joint model. 
+
+Training Test 
+
+#Doc 170 256 #Concept 16,399 31,048 #Assertion 7,058 12,568 #Relation 3,106 6,279 
+
+Table 1: Statistics of the public i2b2/VA 2010. 
+
+In-domain pretraining data 
+
+ClinicalBERT + 0.3M MIMIC BlueBERT + 5M PubMed + 0.2M MIMIC 
+
+Table 2: Statistics of the pretraining settings of the in-domain clinical BERTs. 
+
+5 Experiments 
+
+5.1 Dataset and Experiment Settings 
+
+The 2010 i2b2/VA challenge offered a total 394 training reports and 477 test reports. However, the original size of the training data is not open after the challenge. The public dataset 2 is a sub-set of the original data including 170 training re-ports and 256 test reports. The results are not di-rectly comparable to the original i2b2/VA chal-lenge, as the training data reduced. The statis-tics of public i2b2 dataset are listed in Table 1. For the experiments, we split 10% reports from training as the validation set. The test set is the same. For word embedding methods, we exploit the 300d GloVe 3 and the hyper-parameters as: lr in {1e − 2, 1e − 3, 1e − 4}, LSTM hidden in 
+
+> 2https://portal.dbmi.hms.harvard.edu/ projects/n2c2-nlp/
+> 3https://nlp.stanford.edu/projects/ glove/
+
+Baseline Joint Model Encoders Concept Assertion Relation Concept Assertion Relation 
+
+Glove+LSTM 82.7 74.4 36.8 83.0 75.2 40.5 BERT 86.3 81.0 49.9 86.5 82.1 53.2 ClinicalBERT 87.5 82.6 51.7 87.6 83.3 55.5 
+
+BlueBERT 89.2 84.3 56.1 89.5 85.7 59.2 
+
+> Table 3: Joint evaluation results of the joint model and pipeline baseline.
+
+{100 , 300 , 600 } and batch in {32 , 64 , 128 }. For BERT 4, ClinicalBERT 5 and BlueBERT 6, the hyper-parameters are: lr in {1e − 5, 2e − 5, 5e − 5}, batch in {16 , 32 }. Optimizer is AdamW (Loshchilov and Hutter, 2019). Concept and assertion embedding are in the same range {32 , 64 }. All the results are 3-run averages. The in-domain pretraining settings of ClinicalBERT and BlueBERT are list in Table 2. The 2010 i2b2/VA relations involve three cat-egories: medical problem–treatment , medical problem–test and medical problem–medical prob-lem . The existing approaches filter the data and remove irrelevant categories ( treatment–treatment ,
+
+treatment–test and test–test ). A drawback of the joint model is that the system cannot do such fil-tering during decoding, and extracts relations on all the concept pairs, including the irrelevant cat-egories as ‘nolink’ pairs. It potentially increases the noise in the task. For making an apple-to-apple comparison, the baseline model includes these ir-relevant categories as negative pairs as well as the joint model does, instead of filtering them out. For the tasks without such irrelevant relation categories, this limitation has no effect. 
+
+5.2 Main Results in Joint Evaluation 
+
+Table 3 is the main system performance of our model and the pipeline baseline in the joint evalu-ation. The joint models show consistent improve-ments over the baseline in three tasks. Especially in relation extraction, the joint models outperform the baseline by substantial margins. With the Blue-BERT encoder, the joint model obtains the improve-ments of +3.1 F1 in relation extraction and +1.4 F1 in assertion classification compared to the baseline, while marginal improvements in concept extrac-tion. The main finding is that a latter task in the task pipeline usually obtains higher improvementg 
+
+> 4https://github.com/huggingface/ transformers
+> 5https://github.com/EmilyAlsentzer/ clinicalBERT
+> 6https://github.com/ncbi-nlp/bluebert
+
+Models Concept Assertion Relation 
+
+i2b2/VA Best 85.2 93.6 73.7 Alsentzer 2019b 87.8 - -Peng 2019 - - 76.4 
+
+Lee 2020 86.7 - -
+
+Baseline BlueBERT 89.2 94.3 71 .3∗ 
+
+> Table 4: Independent evaluation of comparing the base-line (BlueBERT) to SOTA systems. The reported results of ‘i2b2/VA Best’ are on the original dataset (394 train-ing and 477 test reports) in the 2010 challenge. ‘*’ denotes the noisy setting on relation categories in § 5.1
+
+compare to the former task, which suggests the joint models improve error propagation along the task pipeline by jointly optimizing three decoders. In the encoder comparison, the latest contex-tual BERT-based encoders substantially outper-form GloVe+LSTM. With clinical notes pretrain-ing, ClinicalBERT brings overall improvements in three tasks, compared to the general domain BERT. The best BlueBERT encoder (further pretrained on MedPub abstracts) indicates that medical papers contain a significant amount of knowledge required by 2010 i2b2/VA. 
+
+5.3 Comparison in Independent Evaluation 
+
+Although it is not capable to evaluate the joint mod-els in the independent evaluation, we offer indirect evidences (Table 4) by comparing the results of our BlueBERT baseline model (with reference in-puts) to state-of-the-art (SOTA) systems in the in-dependent evaluation. These systems usually deal with a single-stage task, instead of fully investi-gating three stages. The baseline significantly out-performs other systems in the concept extraction and assertion classification tasks. The relation per-formance is lower due to the noisy setting with irrelevant relation categories (§ 5.1) inside. We leave the question to the future study about con-trolling the selection over relation categories in the joint approaches. 6 Conclusion 
+
+This work addresses an urgent demand for bridging the joint approach and the multi-stage clinical IE task (2010 i2b2/VA) by clearly defining a joint task setting and evaluation. We proposed a novel end-to-end system for jointly optimizing three-stage tasks, which shows overall superiority over the pipeline baseline. The detailed investigation of the joint evaluation with various embeddings and the com-parison to SOTA systems in the independent eval-uation will establish a valuable baseline for future studies. 
+
+References 
+
+Emily Alsentzer, John Murphy, William Boag, Wei-Hung Weng, Di Jindi, Tristan Naumann, and Matthew McDermott. 2019a. Publicly available clin-ical BERT embeddings. In Proceedings of the 2nd Clinical Natural Language Processing Workshop ,pages 72–78, Minneapolis, Minnesota, USA. Associ-ation for Computational Linguistics. Emily Alsentzer, John R. Murphy, Willie Boag, Wei-Hung Weng, Di Jin, Tristan Naumann, and Matthew B. A. McDermott. 2019b. Publicly available clinical BERT embeddings. CoRR , abs/1904.03323. Giannis Bekoulis, Johannes Deleu, Thomas Demeester, and Chris Develder. 2018a. Adversarial training for multi-context joint entity and relation extraction. In Proceedings of the 2018 Conference on Empiri-cal Methods in Natural Language Processing , pages 2830–2836, Brussels, Belgium. Association for Com-putational Linguistics. Giannis Bekoulis, Johannes Deleu, Thomas Demeester, and Chris Develder. 2018b. Joint entity recognition and relation extraction as a multi-head selection prob-lem. Expert Systems with Applications , 114:34–45. Parminder Bhatia, Busra Celikkaya, and Mohammed Khalilia. 2019. Joint entity extraction and assertion detection for clinical text. In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics , pages 954–959, Florence, Italy. Associa-tion for Computational Linguistics. Fei Cheng, Masayuki Asahara, Ichiro Kobayashi, and Sadao Kurohashi. 2020. Dynamically updating event representations for temporal relation classification with multi-category learning. In Findings of the Asso-ciation for Computational Linguistics: EMNLP 2020 ,pages 1352–1357, Online. Association for Computa-tional Linguistics. Fei Cheng and Yusuke Miyao. 2017. Classifying tempo-ral relations by bidirectional LSTM over dependency paths. In Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Vol-ume 2: Short Papers) , pages 1–6, Vancouver, Canada. Association for Computational Linguistics. Fei Cheng, Shuntaro Yada, Ribeka Tanaka, Eiji Ara-maki, and Sadao Kurohashi. 2022. JaMIE: A pipeline Japanese medical information extraction system with novel relation annotation. In Proceedings of the Thir-teenth Language Resources and Evaluation Confer-ence , pages 3724–3731, Marseille, France. European Language Resources Association. Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language under-standing. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Tech-nologies, Volume 1 (Long and Short Papers) , pages 4171–4186, Minneapolis, Minnesota. Association for Computational Linguistics. No ´emie Elhadad, Sameer Pradhan, Sharon Gorman, Suresh Manandhar, Wendy Chapman, and Guergana Savova. 2015. SemEval-2015 task 14: Analysis of clinical text. In Proceedings of the 9th International Workshop on Semantic Evaluation (SemEval 2015) ,pages 303–310, Denver, Colorado. Association for Computational Linguistics. Suchin Gururangan, Ana Marasovi ´c, Swabha Swayamdipta, Kyle Lo, Iz Beltagy, Doug Downey, and Noah A. Smith. 2020. Don’t stop pretraining: Adapt language models to domains and tasks. In 
+
+Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics , pages 8342–8360, Online. Association for Computational Linguistics. Sepp Hochreiter and J ¨urgen Schmidhuber. 1997. Long short-term memory. Neural Computation , 9(8):1735– 1780. Alistair EW Johnson, Tom J Pollard, Lu Shen, H Lehman Li-Wei, Mengling Feng, Moham-mad Ghassemi, Benjamin Moody, Peter Szolovits, Leo Anthony Celi, and Roger G Mark. 2016. Mimic-iii, a freely accessible critical care database. Scien-tific data , 3(1):1–9. Jinhyuk Lee, Wonjin Yoon, Sungdong Kim, Donghyeon Kim, Sunkyu Kim, Chan Ho So, and Jaewoo Kang. 2020. Biobert: a pre-trained biomedical language representation model for biomedical text mining. 
+
+Bioinformatics , 36(4):1234–1240. Qi Li and Heng Ji. 2014. Incremental joint extraction of entity mentions and relations. In Proceedings of the 52nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) ,pages 402–412, Baltimore, Maryland. Association for Computational Linguistics. Ilya Loshchilov and Frank Hutter. 2019. Decoupled weight decay regularization. In 7th International Conference on Learning Representations, ICLR 2019, New Orleans, LA, USA, May 6-9, 2019 . OpenRe-view.net. Tomas Mikolov, Kai Chen, Greg Corrado, and Jef-frey Dean. 2013a. Efficient estimation of word representations in vector space. arXiv preprint arXiv:1301.3781 .Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg S Cor-rado, and Jeff Dean. 2013b. Distributed representa-tions of words and phrases and their compositionality. In Advances in neural information processing sys-tems , pages 3111–3119. Makoto Miwa and Yutaka Sasaki. 2014. Modeling joint entity and relation extraction with table represen-tation. In Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP) , pages 1858–1869, Doha, Qatar. Associa-tion for Computational Linguistics. Yifan Peng, Shankai Yan, and Zhiyong Lu. 2019. Trans-fer learning in biomedical natural language process-ing: An evaluation of BERT and ELMo on ten bench-marking datasets. In Proceedings of the 18th BioNLP Workshop and Shared Task , pages 58–65, Florence, Italy. Association for Computational Linguistics. Jeffrey Pennington, Richard Socher, and Christopher Manning. 2014. Glove: Global vectors for word representation. In Proceedings of the 2014 Confer-ence on Empirical Methods in Natural Language Pro-cessing (EMNLP) , pages 1532–1543, Doha, Qatar. Association for Computational Linguistics. Matthew Peters, Mark Neumann, Mohit Iyyer, Matt Gardner, Christopher Clark, Kenton Lee, and Luke Zettlemoyer. 2018. Deep contextualized word repre-sentations. In Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Tech-nologies, Volume 1 (Long Papers) , pages 2227–2237, New Orleans, Louisiana. Association for Computa-tional Linguistics. Sameer Pradhan, No ´emie Elhadad, Wendy Chapman, Suresh Manandhar, and Guergana Savova. 2014. SemEval-2014 task 7: Analysis of clinical text. In 
+
+Proceedings of the 8th International Workshop on Semantic Evaluation (SemEval 2014) , pages 54–62, Dublin, Ireland. Association for Computational Lin-guistics. Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever. 2018. Improving language under-standing by generative pre-training. Preprint .¨Ozlem Uzuner, Brett R South, Shuying Shen, and Scott L DuVall. 2011. 2010 i2b2/va challenge on concepts, assertions, and relations in clinical text. 
+
+Journal of the American Medical Informatics Associ-ation , 18(5):552–556. Shuntaro Yada, Ayami Joh, Ribeka Tanaka, Fei Cheng, Eiji Aramaki, and Sadao Kurohashi. 2020. Towards a versatile medical-annotation guideline feasible with-out heavy medical knowledge: Starting from criti-cal lung diseases. In Proceedings of The 12th Lan-guage Resources and Evaluation Conference , pages 4565–4572, Marseille, France. European Language Resources Association. Ranran Haoran Zhang, Qianying Liu, Aysa Xuemo Fan, Heng Ji, Daojian Zeng, Fei Cheng, Daisuke Kawa-hara, and Sadao Kurohashi. 2020. Minimize ex-posure bias of Seq2Seq models in joint entity and relation extraction. In Findings of the Association for Computational Linguistics: EMNLP 2020 , pages 236–246, Online. Association for Computational Lin-guistics. Xingxing Zhang, Jianpeng Cheng, and Mirella Lapata. 2017. Dependency parsing as head selection. In 
+
+Proceedings of the 15th Conference of the European Chapter of the Association for Computational Lin-guistics: Volume 1, Long Papers , pages 665–676, Valencia, Spain. Association for Computational Lin-guistics. Suncong Zheng, Feng Wang, Hongyun Bao, Yuexing Hao, Peng Zhou, and Bo Xu. 2017. Joint extraction of entities and relations based on a novel tagging scheme. In Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Vol-ume 1: Long Papers) , pages 1227–1236, Vancouver, Canada. Association for Computational Linguistics.

@@ -1,0 +1,353 @@
+Title: Language Shapes Mental Health Evaluations in Large Language Models
+
+URL Source: https://arxiv.org/pdf/2603.06910v1
+
+Published Time: Tue, 10 Mar 2026 00:16:37 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# Language Shapes Mental Health Evaluations in Large Language Models 
+
+Jiayi Xu 1 and Xiyang Hu 2
+
+> 1
+
+University of North Carolina at Chapel Hill 
+
+> 2
+
+Arizona State University 
+
+Abstract 
+
+This study investigates whether large language models (LLMs) exhibit cross-linguistic differences in mental health evaluations. Focusing on Chinese and English, we examine two widely used models, GPT-4o and Qwen3, to assess whether prompt language systematically shifts mental health-related evaluations and downstream decision outcomes. First, we assess models’ evaluative orientation toward mental health stigma using multiple validated measurement scales capturing social stigma, self-stigma, and professional stigma. Across all measures, both models produce higher stigma-related responses when prompted in Chi-nese than in English. Second, we examine whether these differences also manifest in two common down-stream decision tasks in mental health. In a binary mental health stigma detection task, sensitivity to stig-matizing content varies across language prompts, with lower sensitivity observed under Chinese prompts. In a depression severity classification task, predicted severity also differs by prompt language, with Chinese prompts associated with more underestimation errors, indicating a systematic downward shift in predicted severity relative to English prompts. Together, these findings suggest that language context can systemati-cally shape evaluative patterns in LLM outputs and shift decision thresholds in downstream tasks. 
+
+1
+
+> arXiv:2603.06910v1 [cs.CL] 6 Mar 2026
+
+# 1 Introduction 
+
+Generative AI models, particularly large language models (LLMs), are increasingly deployed across multilin-gual contexts, supporting users in tasks ranging from information access [1] to empathetic conversation [2] and clinical decision support [3]. As of January 2026, OpenAI’s ChatGPT serves more than 800 million weekly active users worldwide and is available across over 150 countries and regions [4, 5]. Chinese multilingual mod-els, such as Alibaba’s Qwen3, have been trained on data spanning more than 100 languages and dialects and are deployed across multiple geographic regions [6, 7]. These systems are therefore routinely used across linguistic contexts that differ in cultural norms, value systems, and social expectations. Recent research suggests that LLMs do not behave uniformly across languages. When prompted in different languages, the same model can exhibit systematic differences in its expressed human values, social orienta-tions, cognitive styles, and evaluative judgments [8–10]. Such cross-linguistic variation is consequential in do-mains where evaluation relies on socially shared interpretation rather than purely factual knowledge. Mental health evaluation represents one such domain. Assessments of psychological conditions often involve inter-pretive judgments shaped by social context, including attitudes toward stigma, perceptions of symptom sever-ity, and norms surrounding help-seeking [11, 12]. These evaluations are informed by culturally transmitted beliefs about the causes and meaning of mental illness, which shape cognitive interpretations of symptoms, emotional responses to mental illness, and behavioral norms surrounding help-seeking [13–15]. As a result, assessments of stigma and symptom severity reflect socially conditioned evaluative frames. Because these interpretive frames differ across cultural and linguistic contexts, the language used to prompt a multilingual model may influence how mental health–related narratives are evaluated. Mental health is also a globally prevalent and socially consequential area in which LLMs are increasingly ap-plied, including mental health support chatbots, symptom screening tools, content moderation systems, and clinical decision support [2, 3, 16]. In such applications, model outputs may influence how users’ experiences are interpreted, labeled, or prioritized for intervention. If prompt language systematically alters the evalu-ative orientation of multilingual models, these shifts may translate into unequal assessments and interven-tions across linguistic communities. We therefore ask whether generative AI systems exhibit systematic cross-linguistic differences in mental health evaluation .To address this question, we investigate cross-linguistic differences between Chinese and English using two widely deployed multilingual large language models: GPT-4o and Qwen3. We focus on English and Chi-nese because they are among the most widely used languages globally and constitute substantial portions of large-scale training corpora [17, 18]. Beyond prevalence, these languages are associated with documented cross-cultural differences in mental health beliefs. For example, prior research reports higher endorsement of stigmatizing attitudes toward mental illness in several East Asian contexts relative to Western contexts [19], with Chinese mental health stigma shaped by culturally embedded norms concerning social reputation, family responsibility, and etiological beliefs [20, 21]. Comparing English and Chinese therefore provides a theoreti-cally grounded test of whether multilingual LLMs exhibit language-contingent shifts in mental health-related evaluative orientation. Our investigation proceeds in two stages. First, we examine the LLMs’ evaluative orientation toward men-tal illness using established psychometric instruments. Rather than eliciting free-form opinions, we present adapted items from validated stigma scales and quantify the extent to which model-generated responses align with stigmatizing versus non-stigmatizing positions across social, self, and professional domains. This stage evaluates whether prompt language systematically shifts the normative stance embedded in model outputs. At this construct level, we test whether generative AI models exhibit cross-linguistic variation in stigma-
+
+2related evaluative orientation toward mental health . Second, we assess whether any cross-linguistic differences in evaluative orientation translate into differences in downstream decisions. We evaluate model behavior in binary stigma detection and in multi-level depression severity classification, examining whether prompt language alters sensitivity, decision thresholds, or directional error patterns. At this decision level, we test whether language-contingent differences in evaluative orientation lead to cross-linguistic differences in downstream decision outcomes . In short, we move from cross-linguistic differences in evaluative orientation to cross-linguistic differences in decision output. For the construct-level evaluation, we focus on mental health stigma as the primary construct used to measure cross-linguistic variation in stigma-related evaluative orientation. Mental health stigma refers to negative attitudes (prejudice) or negative behaviors (discrimination) toward individuals experiencing mental illness or toward seeking psychological help [22]. As a socially structured process shaped by prevailing norms and cul-tural value systems [14, 23, 24], stigma influences treatment attitudes, help-seeking behavior, and participation in care [25–27]. Because stigma is multidimensional, we measure it using multiple validated instruments span-ning social stigma, self-stigma, and professional stigma [28]. This approach enables a structured assessment of how strongly model-generated responses align with stigmatizing versus non-stigmatizing positions across distinct domains. 
+
+Social stigma (also referred to as public stigma) captures collectively endorsed stigmatizing perceptions to-ward individuals with mental illness within the general population [25, 29]. We operationalize this construct using measures of perceived public stigma and personal stigma [30]. Perceived public stigma reflects individu-als’ perceptions of the general public’s stigmatizing attitudes [25], whereas personal stigma reflects one’s own negative attitudes toward members of a stigmatized group [31]. 
+
+Self-stigma , also called internalized stigma, occurs when individuals affected by mental illness internalize public stereotypes, anticipate social rejection, and come to view themselves as devalued members of soci-ety [32, 33]. Internalization of public stigma may lead to feelings of shame, guilt, and inadequacy regarding one’s condition, potentially discouraging individuals from seeking professional help [25, 34]. Beyond individ-ual attitudes, stigma can also manifest at the professional level. Health care providers’ stigmatizing attitudes or behaviors may restrict access to care, contribute to under-treatment, and undermine patient-provider rela-tionships [35, 36]. Together, these dimensions provide a comprehensive framework for quantifying language-contingent variation in evaluative orientation. We next assess whether cross-linguistic differences in evaluative orientation manifest in downstream decision-making performed by LLMs. First, we evaluate LLM decision-making in binary detection of stigmatizing mental health content, assessing whether language context shifts sensitivity to stigmatizing content. Second, we examine LLM decision-making in graded depression severity classification. In human social contexts, stigma is known to discourage symptom disclosure and shape how mental health experiences are labeled and interpreted [37, 38], which may in turn influence perceived severity and related evaluative judgments. Depres-sion severity classification thus provides a structured testbed for detecting cross-linguistic shifts in evaluative thresholds. If language context alters how AI systems interpret distress narratives, such effects should appear as directional shifts in classification decisions, including asymmetric under- or over-estimation of severity. Taken together, this study provides a systematic examination of how language context can shape mental health evaluations in LLMs at both the level of evaluative orientation and downstream decision output. By linking multidimensional stigma measurement to behavioral classification tasks, we move beyond surface-level per-formance comparisons to identify how language context may shape evaluative orientations embedded within LLMs. Our findings contribute to a growing literature on cross-linguistic differences in generative AI by sit-uating these differences within a socially consequential domain. More broadly, as large language models are 3increasingly deployed in multilingual settings for mental health support, content moderation, and clinical as-sistance, understanding whether and how language context influences evaluative judgments becomes critical for ensuring fairness, reliability, and responsible global deployment. 
+
+# 2 Cross-Linguistic Differences in Mental Health Stigma Evaluative Orientation 
+
+## 2.1 Large language models 
+
+To ensure procedural consistency and reproducibility, all models were accessed through their official appli-cation programming interfaces (APIs) rather than chatbot interfaces. GPT-4o and Qwen3-32B were queried using Python (v3.12.4). Unless otherwise specified, model parameters were held constant across language conditions to avoid introducing additional variability. Temperature was set to 0.0 to minimize stochastic sampling effects and to produce deterministic responses for identical prompts. 
+
+## 2.2 Psychometric Stigma Measures 
+
+To examine cross-linguistic differences at the construct level, we evaluated model responses using established psychometric instruments that measure stigma across three domains: social stigma (perceived public and per-sonal), self-stigma, and health professional stigma (see Methods). These measures capture evaluative orienta-tions toward mental health conditions across societal, individual, and clinical contexts. Across these conceptual levels, Chinese-language outputs generally exhibited higher stigma-related scores than English-language outputs. We report these construct-level findings before turning to downstream task performance. 
+
+## 2.3 Social stigma 
+
+Perceived public stigma and personal stigma. Perceived public stigma and personal stigma were as-sessed using two validated Likert-type instruments: the Devaluation–Discrimination Scale (DDS) [39] and the Mental Illness Stigma Scale (MISS) [40]. Both instruments use seven-point response scales, where higher scores indicate stronger stigmatizing evaluations. In our implementation, the model was asked to indicate its general attitude toward each statement (e.g., “Most people would willingly accept a former mental patient as a close friend.”; 1 = strongly agree, 7 = strongly disagree). As shown in Table 1 and Figure 1, Welch’s t-tests reveal cross-linguistic differences across both measures. For perceived public stigma (DDS), GPT-4o expressed sig-nificantly higher stigma when prompted in Chinese (M = 3.85, SD = 0.55) than in English (M = 3.65, SD = 0.69), 
+
+t(2271.59) = -7.68, P < 0.001, d = -0.31, 95% CI [-0.246, -0.146]. Qwen3 did not exhibit a significant difference on this measure (see Figure 1 and Supplementary Table S1). For personal stigma (MISS), GPT-4o again produced higher stigma scores in Chinese (M = 4.44, SD = 0.89) relative to English (M = 4.39, SD = 0.83), t(5567.51) = -2.41, 
+
+P < 0.05, d = -0.06, 95% CI [-0.100, -0.010]. A comparable cross-linguistic difference was observed for Qwen3 (see Figure 1 and Supplementary Table S1). 4Vignette-based stigma measure. To capture scenario-based evaluations, we included a vignette-based measure[41] comprising four standardized case descriptions meeting DSM-IV diagnostic criteria [42]. To iso-late language effects, demographic cues such as gender, race, and education were removed. Models evaluated each protagonist on social distance (e.g., willingness to work closely with the person on a job, live next door to them, or have them marry into one’s family) and perceived dangerousness (e.g., how likely the person de-scribed in the vignette would be to do something violent toward others or toward themselves). Responses were recorded using five-point Likert-type scales, with higher values indicating greater stigma. Welch’s t-tests revealed significant cross-linguistic differences. GPT-4o generated higher stigma scores in Chinese (M = 2.92, SD = 1.14) than in English (M = 2.61, SD = 1.14), t(1511.44) = -6.11, P < 0.001, d = -0.31, 95% CI [-0.412, -0.212]. Qwen3 showed a similar pattern, with higher scores in Chinese (M = 3.12, SD = 0.86) relative to English (M = 2.91, SD = 1.10), t(1509.84) = -4.29, P < 0.001, d = -0.21, 95% CI [-0.310, -0.115]. 
+
+Depression-specific social stigma. To test whether cross-linguistic differences extend to disorder-specific contexts, we included the Depression Stigma Scale (DSS). Depression is among the most prevalent mental health conditions globally [43], and stigma toward depression substantially affects public attitudes and help-seeking behavior [27]. We asked the models to respond to a set of questions assessing stigma toward depres-sion, including both perceived stigma and personal stigma components. Higher scores indicate greater levels of stigmatizing attitudes. For GPT-4o, both components exhibited significant cross-linguistic differences. Perceived depression stigma was higher under Chinese prompts (M = 2.73, SD = 1.03) than English prompts (M = 2.21, SD = 0.80), t(1693.42) = -11.99, P < 0.001, d = -0.57, 95% CI [-0.604, -0.434]. Personal depression stigma showed a similar pattern (Chinese: M = 1.55, SD = 0.83; English: M = 1.33, SD = 0.47), t(1430.14) = -6.84, P < 0.001, 
+
+d = -0.32, 95% CI [-0.279, -0.154]. Qwen3 also showed a similar pattern of cross-linguistic differences across both components (see Figure 1 and Supplementary Table S1). 
+
+## 2.4 Self stigma 
+
+We next assessed self-directed stigma using the Self-Stigma of Seeking Help Scale (SSOSH) [34], which mea-sures anticipated negative self-evaluations associated with seeking psychological help. Models were asked to imagine themselves in a situation where they were considering seeking help and evaluate statements re-garding help-seeking attitudes (e.g., “I would feel inadequate if I went to a therapist for psychological help”). Responses were recorded on a five-point scale (1 = strongly disagree, 5 = strongly agree), with higher scores indicating greater self-stigma. Welch’s t-tests revealed significant cross-linguistic differences for both models. GPT-4o produced higher self-stigma scores in Chinese (M = 2.86, SD = 0.40) than in English (M = 2.33, SD = 0.55), t(1867.38) = -6.08, P < 0.001, d = -0.27, 95% CI [-0.279, -0.143]. Qwen3 showed a similar pattern (Chinese: M = 2.41, SD = 0.67; English: M = 2.20, SD = 0.87), t(2397.99) = -4.29, P < 0.001, d = -0.21, 95% CI [-0.310, -0.115]. 
+
+## 2.5 Health professional stigma 
+
+Finally, we assessed professional stigma using the Opening Minds Scale for Health Care Providers (OMS-HC)[44], which captures stigmatizing attitudes within clinical contexts. Both models showed the same direc-tional pattern. GPT-4o generated higher professional stigma scores in Chinese (M = 2.20, SD = 0.78) than in English (M = 1.75, SD = 0.77), t(2997.57) = -15.93, P < 0.001, d = -0.58, 95% CI [-0.509, -0.398]. Qwen3 also showed higher scores under Chinese prompts (M = 2.56, SD = 0.72) relative to English prompts (M = 2.40, SD = 0.88), 
+
+t(2880.11) = -5.46, P < 0.001, d = -0.20, 95% CI [-0.217, -0.103]. 5GPT-4o Qwen3   
+
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> Mean score  3.85 3.65
+> 3.30 3.30
+> ***
+
+a Devaluation     
+
+> Discrimination Scale
+> GPT-4o Qwen3
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 4.44 4.39 4.53 4.38
+> *
+> ***
+
+b Mental Illness Stigma   
+
+> Scale
+> GPT-4o Qwen3
+> 1
+> 2
+> 3
+> 4
+> 5
+> 2.92
+> 2.61
+> 3.12 2.91
+> ***
+> ***
+
+c Vignette-based Measure of  
+
+> Stigma
+> In Chinese In English
+
+Figure 1: Large language models express systematically higher perceived public stigma and personal stigma when prompted in Chinese than in English. (a) Perceived public stigma, measured by the Devaluation–Discrimination Scale (DDS) [39]; (b) personal stigma toward individuals with mental illness, measured by the Mental Illness Stigma Scale (MISS) [40]; and (c) scenario-based personal stigma assessed using a vignette-based measure [41]. Across dimensions, both GPT-4o and Qwen3 ex-pressed higher stigma scores when prompted in Chinese (red) relative to English (blue). Bars represent mean scores and error bars denote 95% confidence intervals. Statistical comparisons between language conditions were conducted using two-sided Welch’s 
+
+t-tests (* P < 0.05; ** P < 0.01; *** P < 0.001). GPT-4o Qwen3   
+
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> Mean score
+> 2.73
+> 2.21
+> 3.14 3.00
+> *** ***
+
+a Depression Stigma Scale - 
+
+> Perceived Stigma
+> GPT-4o Qwen3
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 1.55
+> 1.33
+> 2.44
+> 2.00
+> ***
+> ***
+
+b Depression Stigma Scale -    
+
+> Personal Stigma
+> GPT-4o Qwen3
+> 1
+> 2
+> 3
+> 4
+> 5
+> 2.86
+> 2.33 2.41 2.20
+> *** ***
+
+c Self-Stigma of Seeking   
+
+> Help Scale
+> GPT-4o Qwen3
+> 1
+> 2
+> 3
+> 4
+> 5
+> 2.20
+> 1.75
+> 2.56 2.40
+> ***
+> ***
+
+d The Opening Minds Scale  
+
+> for Health Care Providers
+> In Chinese In English
+
+Figure 2: Large language models express systematically higher depression-specific social stigma, self-stigma, and pro-fessional stigma when prompted in Chinese than in English. (a) Depression-specific perceived stigma and (b) depression-specific personal stigma, both measured by the Depression Stigma Scale (DSS) [43]; (c) self-stigma, measured by the Self-Stigma of Seeking Help Scale (SSOSH) [34]; and (d) professional stigma, measured by the Opening Minds Scale for Health Care Providers (OMS-HC) [44]. Across dimensions, both GPT-4o and Qwen3-32b generated higher stigma scores when prompted in Chinese (red) relative to English (blue). Bars represent mean scores and error bars denote 95% confidence intervals. Statistical comparisons be-tween language conditions were conducted using two-sided Welch’s t-tests (* P < 0.05; ** P < 0.01; *** P < 0.001). 
+
+Across all measures, Chinese prompts consistently elicited higher stigma-related scores than English prompts. This pattern appeared across perceived public attitudes, personal evaluations, scenario-based judgments, de-pression specific beliefs, self-stigma, and professional attitudes. The consistency of these effects suggests that prompting language shifts broader evaluative orientations rather than isolated item responses. 6Table 1: When prompted in Chinese (versus English), GPT-4o expressed higher (versus lower) stigma across social, self, and health professional stigma dimensions. Results for Qwen3 are provided in Supplementary Information (Table S1), showing a similar pattern of cross-linguistic differences. 
+
+Category Measure Example items GPT-4o Significance test Chinese English Social stigma Devaluation– Discrimination Scale (12 items) - Most people would willingly accept a former mental patient as a close friend. - Most people believe that a former mental patient is just as trust-worthy as the average citizen. (1 = strongly agree, 7 = strongly disagree) 3.85 (0.55) 3.65 (0.69) Two-sided Welch’s t-test: t(2271.59) = – 7.68, P < 0.001, d = – 0.31, 95% CI [–0.246, –0.146] Mental Illness Stigma Scale (28 items) - I would find it difficult to trust someone with a mental illness. - I feel anxious and uncomfortable when I’m around someone with a mental illness. (1 = completely disagree, 7 = completely agree) 4.44 (0.89) 4.39 (0.83) Two-sided Welch’s t-test: t(5567.51) = – 2.41, P = 0.016, d = –0.06, 95% CI [– 0.100, –0.010] Vignette-based mea-sure (4 vignettes) The person is an adult. For the past two weeks, the person has been feeling persistently low. Each morning begins with a heavy, flat mood that lasts throughout the day. Activities that once brought pleasure no longer feel rewarding. Even when positive events occur, the person struggles to feel happy. The person continues daily responsibilities, but even small tasks feel overwhelming. Concentration is difficult, and energy levels are low. Despite feeling tired, the person has trouble falling asleep at night. The person reports feelings of worthlessness and dis-couragement. Over the past month, the person has withdrawn socially and prefers not to talk much. - How willing would you be to have the person described in the vignette work closely with you on a job; live next door to you; spend an evening socializing with you; marry into your family; and be a close friend of yours? (1 = definitely willing, 5 = definitely unwilling) - How likely is it that the person described in the vignette would do something violent toward other people; do something vio-lent toward himself or herself? (1 = not at all likely, 5 = very likely) 2.92 (0.89) 2.61 (1.14) Two-sided Welch’s t-test: t(1511.44) = – 6.11, P < 0.001, d = – 0.31, 95% CI [–0.412, –0.212] Depression Stigma Scale (18 items) 
+
+Perceived stigma 
+
+- Most people believe that people with depression are unpre-dictable. - Most people believe that it is best to avoid people with depres-sion so you don’t become depressed yourself. 2.73 (1.03) 2.21 (0.80) Two-sided Welch’s t-test: t(1693.42) = – 11.99, P < 0.001, d = –0.57, 95% CI [– 0.604, –0.434] 
+
+Personal stigma 
+
+- Depression is a sign of personal weakness. - People with depression are dangerous. (1 = strongly disagree, 6 = strongly agree) 1.55 (0.83) 1.33 (0.47) Two-sided Welch’s t-test: t(1430.14) = –6.84, P < 0.001, d = –0.32, 95% CI [– 0.279, –0.154] Self stigma Self-Stigma of Seeking Help Scale (10 items) - I would feel inadequate if I went to a therapist for psychological help. - It would make me feel inferior to ask a therapist for help. (1 = strongly disagree, 5 = strongly agree) 2.86 (0.40) 2.33 (0.55) Two-sided Welch’s t-test: t(1841.40) = – 24.30, P < 0.001, d = –1.09, 95% CI [– 0.574, –0.489] Health profes-sional stigma Opening Minds Scale for Health Care Providers (15 items) - I am more comfortable helping a person who has a physical illness than I am helping a person who has a mental illness. - Despite my professional beliefs, I have negative reactions to-wards people who have mental illness. (1 = strongly disagree, 5 = strongly agree) 2.20 (0.78) 1.75 (0.77) Two-sided Welch’s t-test: t(2997.57) = –15.93, P < 0.001, d = –0.58, 95% CI [– 0.509, –0.398] 
+
+## 2.6 Robustness Check 
+
+Like other large language models, GPT-4o and Qwen3 are stochastic systems that can generate varying out-puts for the same prompt. Response variability is influenced by the temperature parameter, which governs 7the randomness of token sampling. In our primary analyses, we set the temperature to 0 to minimize output variance and enhance the replicability of model evaluations. Although responses at temperature 0 are highly deterministic, they are not strictly identical across repeated runs. As a robustness check, we repeated all anal-yses under higher sampling variability (temperature = 1). The overall patterns of cross-linguistic differences, including directional bias and calibration asymmetries, remained substantively unchanged, indicating that our findings are not driven by low-temperature determinism. 
+
+# 3 From Evaluative Orientation to Decision Behavior 
+
+Cross-linguistic analyses reveal a consistent difference in stigma-related evaluative orientation: when prompted in Chinese rather than English, both models produce higher levels of stigmatizing responses. To examine the practical implications of this orientation shift, we next evaluate the models on two downstream decision-making tasks: mental health stigma detection [45] and depression severity classification [46]. 
+
+## 3.1 Task 1 - Mental Health Stigma Detection 
+
+We first evaluated GPT-4o and Qwen3 on a binary mental health stigma detection task. In this task, the models were asked to read a vignette describing the basic life circumstances of an individual diagnosed with depres-sion, together with an interview snippet (a short dialogue segment between a chatbot and a user) [45]. Further details about the vignette and conversation formats are provided in Supplementary Section 4.2. Because the original benchmark dataset was available only in English, we constructed a semantically aligned Chinese version to enable paired cross-linguistic comparisons. The translation and quality-control procedures were designed to ensure maximal semantic and affective alignment across languages (see Methods). Under a zero-shot setting, the models were required to determine whether the snippet contained stigma-tizing content. We adopted a zero-shot prompting strategy to minimize the influence of example-based demonstrations, which could introduce additional language-specific cues and confound cross-linguistic com-parisons [47]. This setup also better reflects common real-world uses of generative AI systems, where users typically rely on direct prompts rather than curated few-shot examples. Each sample was evaluated 30 times under each language condition to account for stochastic variability in model outputs. For each sample, predictions were aggregated using majority voting to obtain a single binary decision per language condition. Performance metrics and statistical tests were computed based on these aggregated predictions. In the rare case of ties, the corresponding samples were excluded from analysis. Our results show that prompt language systematically shifted models’ ability to detect stigmatizing content. As shown in Table 2, overall classification performance (accuracy) was modestly higher under English prompts for both models. For GPT-4o, accuracy was 0.737 in English compared to 0.717 in Chinese ( Δ = 0.021 ; two-sided McNemar test: χ21 = 4.34 , p = 0.037 ). The cross-linguistic difference was larger for Qwen3, where accuracy reached 0.769 in English and 0.722 in Chinese ( Δ = 0.046 ; χ21 = 19 .01 , p < 0.001 ). Although the differences for GPT-4o are statistically significant, the magnitude of the effect is relatively modest compared with Qwen3. One possible explanation is that the two models may differ in the linguistic composition of their training data, which could make Qwen3 more sensitive to shifts in prompt language than GPT-4o. Importantly, the cross-linguistic difference arose primarily because models were less likely to identify stigma-tizing content when prompted in Chinese than in English. Our results show that precision remained stable 8across languages for both models and did not differ significantly (GPT-4o: Δ = 0.015 , bootstrap p = 0.381 ;Qwen3: Δ = 0.010 , bootstrap p = 0.547 ), suggesting that prompt language does not systematically affect the models’ propensity to generate false positives. In contrast, the cross-linguistic gap was driven by differences in recall (sensitivity), which measures the proportion of truly stigmatizing instances correctly identified by the model. For GPT-4o, recall increased from 0.428 in Chinese to 0.466 in English ( Δ = 0.039 ; χ21 = 4.17 ,
+
+p = 0.041 ). The effect was substantially larger for Qwen3, where recall rose from 0.441 to 0.547 ( Δ = 0.105 ;
+
+χ21 = 23 .88 , p < 0.001 ). Together, these findings indicate that Chinese prompts systematically reduce models’ sensitivity to stigmatiz-ing content rather than producing uniform declines in performance. This pattern suggests a cross-linguistic shift in detection threshold, whereby models become more conservative in identifying stigmatizing expres-sions when prompted in Chinese. 
+
+Table 2: Cross-linguistic differences in binary classification performance across models. 
+
+Model Metric Chinese English Δ Significance test GPT-4o Accuracy 0.717 0.737 0.021* Two-sided McNemar test: χ21 = 4.34 , p = 0.037 
+
+(b = 38 , c = 21 )Precision 0.927 0.943 0.015 Paired bootstrap test: Δ = 0.015 , p = 0.381 , 95% CI [-0.019, 0.051] Recall 0.428 0.466 0.039* Two-sided McNemar test: χ21 = 4.17 , p = 0.041 
+
+(b = 31 , c = 16 )F1-score 0.586 0.624 0.039* Paired bootstrap test: Δ = 0.039 , p = 0.021 , 95% CI [0.005,0.073] Qwen3 Accuracy 0.722 0.769 0.046*** Two-sided McNemar test: χ21 = 19 .01 , p <
+
+0.001 (b = 60 , c = 20 ). Precision 0.927 0.930 0.010 Paired bootstrap test: Δ = 0.010 , p = 0.547 , 95% CI [-0.022,0.043] Recall 0.441 0.547 0.105*** Two-sided McNemar test: χ21 = 23 .88 , p <
+
+0.001 (b = 54 , c = 13 )F1-score 0.598 0.689 0.091*** Paired bootstrap test: Δ = 0.091 , p < 0.001 , 95% CI [0.056,0.129] 
+
+Notes. Predictions were aggregated at the instance level across 30 runs before computing performance metrics. Δ
+
+denotes English minus Chinese. Accuracy and recall were compared using paired two-sided McNemar tests, where b
+
+and c in denote discordant pairs in the McNemar test, where b indicates cases correctly classified under English prompts but not under Chinese prompts, and c indicates cases correctly classified under Chinese prompts but not under English prompts. Precision and F1 differences were assessed using paired bootstrap resampling (10,000 iterations, two-sided). 
+
+> ∗
+
+P < 0.05 , ∗∗ P < 0.01 , ∗∗∗ P < 0.001 .
+
+## 3.2 Task 2 - Depression Severity Detection 
+
+We further evaluated two models (GPT-4o and Qwen3) on a depression severity prediction task. In this task, the models were provided with a social media post and asked to assess the user’s level of depression severity based on the content of the post. The severity was categorized into four levels: minimal, mild, moderate, and severe. As in the previous task, the evaluation was conducted in a zero-shot setting, and we constructed a semantically aligned Chinese version to enable paired cross-linguistic comparisons. 9First of all, models’ overall classification performance differed only modestly across languages (see Supple-mentary Information Section 3). For GPT-4o, accuracy was 0.446 in English and 0.433 in Chinese, with sim-ilarly small differences in macro-F1 (0.432 vs. 0.426). For Qwen3, performance was slightly lower in Chinese (accuracy: 0.417 vs. 0.447 in English; macro-F1: 0.390 vs. 0.419), but the overall gap remained moderate. These results suggest that, in this task, cross-linguistic variation does not primarily manifest as large-scale perfor-mance degradation. However, despite similar aggregate metrics, we observed pronounced directional differences in prediction errors. Across 829 paired samples, under-estimation errors (predicted severity lower than the gold label) oc-curred substantially more often under Chinese prompts than English prompts. As shown in Figure 3, for GPT-4o, Chinese inputs produced 43 discordant under-estimation cases compared to 11 under English ( p <0.001). A similar pattern emerged for Qwen3 (46 vs. 17). This asymmetry indicates that cross-linguistic varia-tion primarily manifests as systematic downward reclassification rather than symmetric prediction noise. In contrast, we observed a mild English-biased over-estimation pattern for GPT-4o. Over-estimation errors (predicted severity higher than gold) occurred more often under English prompts than Chinese prompts (38 vs. 19 discordant cases, p < 0.05). This pattern was not evident for Qwen3. Together, these findings help explain the aggregate metrics: although overall accuracy remains similar for GPT-4o across languages, English prompts exhibit a tendency toward over-estimation, whereas Chinese prompts exhibit a stronger tendency toward under-estimation. For Qwen3, the dominant cross-linguistic difference is the Chinese under-estimation shift. Examining class-specific prediction errors (Figure 4) further clarifies the structure of this asymmetry. The downward shift under Chinese prompts is particularly pronounced for moderate and severe cases, where prediction errors become substantially more negative relative to the gold labels. At minimal and mild levels, both language conditions show over-estimation, but the magnitude of over-estimation is smaller under Chi-nese prompts. These patterns indicate that cross-linguistic variation reflects a shift in the effective decision boundary rather than random performance fluctuations. 60 40 20 0 20 40 60          
+
+> English
+> Chinese
+> 11
+> 43
+> 38
+> 19
+> Under-estimation Over-estimation
+> a
+> GPT-4o
+> 60 40 20 020 40 60
+> English
+> Chinese
+> 17
+> 46
+> 36
+> 36
+> Under-estimation Over-estimation
+> b
+> Qwen3
+> Figure 3: Chinese prompts lead to systematic under-estimation in depression severity detection. Bars represent paired discordant cases derived from McNemar comparisons between English and Chinese prompts. Values to the left of zero indicate under-estimation relative to the gold severity label, whereas values to the right indicate over-estimation. Across both models, Chinese prompts show substantially more under-estimation cases than English prompts, indicating a systematic downward shift in predicted severity. In contrast, over-estimation differences are smaller and model-dependent. These results suggest that cross-linguistic differences manifest primarily as directional calibration shifts rather than random performance fluctuations.
+
+10 Minimal Mild Moderate Severe 
+
+> −0.50
+> −0.25
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> Prediction error (predicted − true severity)
+
+a GPT-4o    
+
+> Minimal Mild Moderate Severe
+
+b Qwen3   
+
+> True severity level
+> In English In Chinese Figure 4: Chinese prompts induce a systematic downward shift in predicted severity relative to English prompts. Sever-ity levels were coded as ordinal values (Minimal = 0, Mild = 1, Moderate = 2, Severe = 3) when computing prediction error. Mean prediction error (predicted - true severity) is shown for English (blue) and Chinese (red) prompts across true severity levels. Posi-tive values indicate overestimation relative to the gold label, whereas negative values indicate underestimation. Across both models, English prompts show greater overestimation for minimal and mild cases and smaller underestimation for moderate and severe cases. Error bars denote 95% confidence intervals.
+
+# 4 Discussion 
+
+We examined whether prompt language systematically shifts mental health–related evaluations produced by LLMs, separating construct-level evaluative orientation from downstream decision behavior. Across two widely deployed models, Chinese prompts elicited higher stigma-related scores than English prompts across multiple validated psychometric instruments spanning social stigma, self-stigma, and health professional stigma. These construct-level differences were accompanied by decision-level shifts in two downstream tasks: reduced sensitivity in binary stigma detection under Chinese prompts and a systematic downward shift in de-pression severity predictions under Chinese prompts. Together, the results indicate that prompt language can alter both (i) stigma-related evaluative orientation expressed in model outputs and (ii) the effective decision thresholds governing applied mental health classifications. 
+
+## 4.1 Theoretical contributions 
+
+This research contributes to a growing body of work examining how generative AI systems behave across different linguistic and social contexts. First, our findings extend evidence of cross-linguistic variation in LLM behavior to a high-stakes, socially interpreted domain. Prior studies have documented cross-linguistic differences in broad constructs such as values, social orientation, and cognitive style [8–10]. We show that similar language-contingent shifts arise in mental health–related evaluation, a socially sensitive context in which evaluations are closely intertwined with social norms and cultural meaning systems. The results are consistent across multiple instruments and across two models, supporting the conclusion that the effect is not an artifact of any single scale. 11 Second, this research bridges construct-level orientation to decision-level behavior in generative AI systems. Much of the existing literature on bias in AI focuses on representational differences in model outputs or vari-ations in stated attitudes. In contrast, our study shows that differences in evaluative orientation can translate into systematic differences in downstream decisions. Specifically, models become less sensitive to stigma-tizing content in Chinese and more likely to under-estimate depression severity in Chinese. This alignment supports an interpretation in which cross-linguistic shifts in evaluative orientation are associated with shifts in effective decision boundaries, rather than manifesting only as surface-level variation in phrasing. Finally, our findings highlight the real-world implications of cross-linguistic variation in AI-mediated mental health assessments. Generative AI models are increasingly used in mental health support, screening, and moderation [2, 3]. If the same model produces systematically different evaluations and decisions depending on prompt language, then users interacting in different languages may receive different levels of protection from stigmatizing content and different assessments of symptom severity. This risk is especially salient in settings where model outputs can influence triage, escalation, or moderation actions. Understanding these cross-linguistic dynamics is therefore important for ensuring fairness, reliability, and responsible deployment of AI systems in mental health-related settings. 
+
+## 4.2 Practical implication 
+
+Our findings also have several practical implications for the development and deployment of generative AI systems. 
+
+For developers. Single-language evaluation may fail to reveal systematic model behavior that emerges only under other linguistic contexts. Developers should therefore incorporate cross-linguistic evaluation as a standard component of model assessment for mental health–related applications. Such evaluation should examine both construct-level measures (e.g., stigma-related evaluative orientation) and downstream decision behavior (e.g., classification sensitivity and calibration). When systematic differences across languages are detected, mitigation strategies may include language-specific calibration, standardized prompting templates, or post-hoc adjustment of decision thresholds for applied classification tasks. 
+
+For individual users. This study also highlights that the language used to interact with an LLM can in-fluence both how mental health information is framed in responses and how users’ own statements are in-terpreted in automated analyses. Individuals who express similar experiences in different languages may en-counter responses that reflect different evaluative orientations toward mental illness, which may shape how users interpret information about stigma, symptoms, or help-seeking. At the same time, users may also be af-fected as subjects of AI-mediated assessments. In applications such as stigma detection or depression severity classification, a person’s language choice may influence how their experiences are interpreted and how their mental health status is categorized. Consequently, language choice may affect not only the information and support users receive, but also how their statements are evaluated or prioritized within AI-driven systems used for screening, moderation, or mental health–related support. 
+
+For organizational users. Healthcare platforms, online communities, and digital mental health services increasingly rely on LLM-based systems for tasks such as content moderation, mental health screening, and automated user support. Organizations that deploy LLM-based systems in mental health–related services 12 should consider language context when evaluating system behavior and performance. Platforms that oper-ate across multiple linguistic communities may encounter systematic differences in how similar user content is interpreted or classified depending on the language used. Routine multilingual evaluation can help iden-tify language-dependent shifts in evaluative orientation and decision behavior. Monitoring model outputs across the languages used by a platform’s user population may therefore help reduce disparities in how men-tal health–related content is assessed, moderated, or routed to support resources. More broadly, cross-linguistic variation in generative AI responses may influence how mental health–related content circulates and is interpreted across different linguistic communities. As AI-generated text becomes increasingly integrated into everyday communication, information seeking, and peer support environments, differences in how AI systems interpret and respond to mental health narratives may gradually shape patterns of discussion around mental health. If responses in some languages frame mental illness in more stigmatizing or less supportive ways, these patterns may affect the tone and direction of conversations within those lin-guistic communities. Over time, such differences may reinforce existing cultural distinctions in how mental health experiences are recognized, interpreted, and discussed. As a result, communities interacting with AI primarily in different languages may encounter systematically different framings of mental health concepts, stigma, and help-seeking, which could contribute to divergence in attitudes and public discourse around men-tal illness across linguistic contexts. 
+
+## 4.3 Limitations and future directions 
+
+This study has several limitations that open promising directions for future research. First, our analysis fo-cuses on two widely used languages, Chinese and English. Although these languages represent major lin-guistic contexts in global AI usage, future studies should examine whether similar cross-linguistic patterns emerge in other languages. Extending this analysis to languages such as Spanish, Hindi, Arabic, or French could provide a broader understanding of how cultural tendencies manifest across multilingual AI systems. Second, our study examines two widely deployed large language models, GPT-4o and Qwen3. Although these models represent prominent systems developed in different linguistic and technological contexts, future work could explore whether similar patterns emerge in other models, including open-source systems and models trained using different alignment strategies. Third, our analysis focuses on mental health stigma as a central evaluative construct. While stigma is a key dimension shaping mental health attitudes and behaviors, cultural differences in mental health perception may extend beyond stigma to include differences in emotional expression, help-seeking norms, and interpre-tations of psychological distress. Future research could explore additional constructs to better understand how cultural meaning systems shape AI-generated interpretations of mental health narratives. Finally, future research could investigate how cultural tendencies in generative AI evolve over time. As large language models are continuously updated and retrained on new data, cultural patterns embedded in AI sys-tems may shift. In some cases, generative AI may amplify existing cultural tendencies through feedback loops between AI-generated content and human communication. In other cases, alignment and safety interventions may attenuate such tendencies. Understanding these dynamics will be important for ensuring that genera-tive AI systems remain fair, reliable, and culturally aware as they are increasingly deployed across diverse linguistic environments. 13 5 Methods 
+
+## 5.1 Evaluation of Mental Health Stigma Orientation in Large Language Models 
+
+To systematically evaluate mental health stigma in large language models (GPT-4o and Qwen3), we employed multi-dimensional measures spanning social stigma, self-stigma, and health professional stigma, and addi-tionally incorporated a vignette-based measure as well as a depression-specific stigma measure. To enable cross-linguistic comparisons, we first translated the original scales and conducted back-translation procedures to ensure semantic equivalence across languages [48]. Furthermore, in the prompts, we avoided including any cues related to nationality, race, or other identity-specific information, ensuring that language was the only manipulated factor. For example, in the vignette-based measure, we replaced the original gen-der, race, and education information with the neutral third-person reference “this person,” so that the only difference in the model input was the language. In addition, to minimize potential learning effects, such as models inferring that they were completing a psy-chometric assessment, and to better capture their baseline attitudes, we required the models to respond to each item independently, without contextual continuity or awareness of previous responses [49]. We con-ducted 100 iterations per language, consistent with prior studies [8]. Thus, for each item in each measure, we ran 100 independent iterations for the English version and 100 for the Chinese version. Each iteration was executed independently via the API, ensuring that the model’s response to a given item could not influence its response to subsequent items. 
+
+## 5.2 Mental Health Stigma Detection 
+
+To evaluate whether cross-linguistic variation influences downstream decision-making behavior in large lan-guage models, we conducted a binary mental health stigma detection task. In a zero-shot setting (i.e., without providing in-context labeled demonstrations) [50], models were asked to determine whether a given social media snippet contained stigmatizing content. Since the original benchmark dataset was available only in English, we constructed a parallel Chinese version to enable paired cross-linguistic comparisons. English texts were translated using the DeepL API. To ensure semantic fidelity, we performed automated consistency verification using GPT-4.1 to confirm that translated texts preserved the meaning and contextual intent of the original content. Finally, we randomly sampled 100 instances for manual inspection to further validate translation quality. All instances were aligned at the item level to enable paired statistical testing. Using the bilingual dataset, we evaluated two large language models (GPT-4o and Qwen3-32B). We adopted a zero-shot prompting strategy to avoid task-specific fine-tuning and to ensure comparability across language conditions. Temperature was fixed at 0.0 to minimize stochastic variability. For each instance and language condition, we generated 30 independent predictions. Final performance metrics were computed based on the aggregated predictions across the 30 runs. In the rare case of ties, the corresponding samples were excluded from the analysis. Cross-linguistic differences in overall classification correctness (accuracy) and sensitivity (recall, computed on gold-positive instances) were assessed using paired two-sided McNemar tests. The McNemar test is appro-priate in this context because predictions under English and Chinese prompts were paired at the instance level, and the test specifically evaluates whether discordant classification outcomes differ systematically across con-14 ditions. Differences in precision and F1-score were evaluated using paired non-parametric bootstrap resampling over instances (10,000 iterations). In each iteration, instances were sampled with replacement, metrics were recom-puted for both language conditions, and the distribution of metric differences (English minus Chinese) was obtained. Two-sided p-values were derived from the empirical bootstrap distribution, and 95% confidence intervals were calculated using the percentile method. 
+
+## 5.3 Depression Severity Detection 
+
+To enable paired cross-linguistic comparisons, we constructed a semantically aligned Chinese version of the original English benchmark dataset following the same translation and quality-control procedures described in Task 1 (Section 5.2). The original dataset contained over 41,000 annotated social media posts labeled for four levels of depression severity (minimal, mild, moderate, and severe). Due to computational and budget constraints, we randomly sampled 1,000 instances for evaluation using a fixed random seed to ensure repro-ducibility. The four severity categories were approximately balanced in the sampled subset, thereby avoiding substantial class imbalance. Consistent with Task 1, all generative AI models were queried via their official APIs in a zero-shot setting with temperature fixed at 0.0 to minimize stochastic variability. For each post, we generated 30 independent responses per language condition. Final predictions were obtained by averaging across the 30 runs, thereby reducing random variation and stabilizing performance estimates. Overall classification performance was evaluated using accuracy, macro-precision, macro-recall, and macro-F1 (see Supplementary Information Section 3). These aggregate metrics allow comparison of general predic-tive performance across language conditions. To examine whether cross-linguistic differences manifested as systematic directional shifts, we computed a signed prediction error for each instance: 
+
+ei = ˆyi − yi,
+
+where ˆyi ∈ { 0, 1, 2, 3} denotes the predicted severity level and yi ∈ { 0, 1, 2, 3} denotes the gold label. Negative values indicate under-estimation, whereas positive values indicate over-estimation. To assess whether directional errors differed between English and Chinese prompts, we converted signed errors into paired binary indicators. Specifically, under-estimation was defined as 
+
+Ui = 𝕀 ei < 0,
+
+and over-estimation as 
+
+Oi = 𝕀 ei > 0,
+
+where 𝕀 · denotes the indicator function. McNemar-style paired comparisons were then conducted on {Ui}
+
+and {Oi} separately to test whether the frequency of directional errors differed across language conditions. Finally, to further characterize potential decision-boundary shifts, we computed mean signed prediction er-ror separately for each gold severity category under both language conditions. This class-specific analysis enables examination of whether cross-linguistic variation varies systematically across minimal, mild, moder-ate, and severe cases. 15 References 
+
+[1] Zhu, Y. et al. Large language models for information retrieval: A survey. ACM Transactions on Information Systems 44 , 1–54 (2025). [2] Sorin, V. et al. Large language models and empathy: systematic review. Journal of medical Internet research 26 , e52597 (2024). [3] Gaber, F. et al. Evaluating large language model workflows in clinical decision support for triage and referral and diagnosis. npj Digital Medicine 8, 263 (2025). [4] DemandSage. Chatgpt usage statistics 2025: 800m+ users, traffic data & growth. 
+
+https://www.demandsage.com/chatgpt-statistics/ (2025). [5] OpenAI. Chatgpt supported countries and regions. 
+
+https://help.openai.com/en/articles/7947663-chatgpt-supported-countries (2026). Accessed 2026-02-24. [6] Qwen Team. Qwen3 technical report. https://arxiv.org/abs/2505.09388 (2025). ArXiv:2505.09388. Accessed 2026-02-24. [7] Amazon Web Services. Qwen models are now available in amazon bedrock. https: //aws.amazon.com/blogs/aws/qwen-models-are-now-available-in-amazon-bedrock/ 
+
+(2025). Accessed 2026-02-24. [8] Lu, J. G., Song, L. L. & Zhang, L. D. Cultural tendencies in generative ai. Nature Human Behaviour 1–10 (2025). [9] Xu, S., Dong, W., Guo, Z., Wu, X. & Xiong, D. Exploring multilingual concepts of human values in large language models: Is value alignment consistent, transferable and controllable across languages? In 
+
+Findings of the Association for Computational Linguistics: EMNLP 2024 , 1771–1793 (2024). [10] Zhou, X. et al. Fairness or fluency? an investigation into language bias of pairwise llm-as-a-judge (2026). URL https://arxiv.org/abs/2601.13649 . 2601.13649 .[11] D ALARCÓN, R. Culture, cultural factors and psychiatric diagnosis: review and projections. World psychiatry 8, 131 (2009). [12] Corrigan, P. W. & Watson, A. C. Understanding the impact of stigma on people with mental illness. 
+
+World psychiatry 1, 16 (2002). [13] Bredström, A. Culture and context in mental health diagnosing: Scrutinizing the dsm-5 revision. 
+
+Journal of Medical Humanities 40 , 347–363 (2019). [14] Kleinman, A. Anthropology and psychiatry: The role of culture in cross-cultural research on illness. 
+
+The British Journal of Psychiatry 151 , 447–454 (1987). [15] Brijnath, B., Croy, S. & Antoniades, J. Mental illness. In Oxford Research Encyclopedia of Anthropology 
+
+(2023). [16] Sharma, A., Lin, I. W., Miner, A. S., Atkins, D. C. & Althoff, T. Human–ai collaboration enables more empathic conversations in text-based peer-to-peer mental health support. Nature Machine Intelligence 5,46–57 (2023). 16 [17] Ethnologue. What are the top 200 most spoken languages? 
+
+https://www.ethnologue.com/insights/ethnologue200/ (2025). Insight report; accessed 12 May 2025. [18] Dave, P. Chatgpt is cutting non-english languages out of the ai revolution. Wired (2023). URL 
+
+https://www.wired.com/story/chatgpt-nonenglish-languages-ai-revolution/ .Accessed 2026-02-25. [19] Krendl, A. C. & Pescosolido, B. A. Countries and cultural differences in the stigma of mental illness: the east–west divide. Journal of Cross-Cultural Psychology 51 , 149–167 (2020). [20] Yang, L. H. Application of mental illness stigma theory to chinese societies: synthesis and new direction. Singapore medical journal 48 , 977 (2007). [21] Yang, L. H. & Kleinman, A. ‘face’and the embodiment of stigma in china: The cases of schizophrenia and aids. Social science & medicine 67 , 398–408 (2008). [22] Goffman, E. Stigma: Notes on the management of spoiled identity (Simon and schuster, 2009). [23] Rao, D., Feinglass, J. & Corrigan, P. Racial and ethnic disparities in mental illness stigma. The Journal of nervous and mental disease 195 , 1020–1023 (2007). [24] Yang, L. H. et al. Culture and stigma: Adding moral experience to stigma theory. Social science & medicine 64 , 1524–1535 (2007). [25] Corrigan, P. How stigma interferes with mental health care. American psychologist 59 , 614 (2004). [26] Corrigan, P. W., Druss, B. G. & Perlick, D. A. The impact of mental illness stigma on seeking and participating in mental health care. Psychological science in the public interest 15 , 37–70 (2014). [27] Clement, S. et al. What is the impact of mental health-related stigma on help-seeking? a systematic review of quantitative and qualitative studies. Psychological medicine 45 , 11–27 (2015). [28] Ahmedani, B. K. Mental health stigma: society, individuals, and the profession. Journal of social work values and ethics 8, 4–1 (2011). [29] Penn, D. & Wykes, T. Stigma, discrimination and mental illness. Journal of Mental Health 12 , 203–208 (2003). [30] Schnyder, N., Panczak, R., Groth, N. & Schultze-Lutter, F. Association between mental health-related stigma and active help-seeking: systematic review and meta-analysis. The British Journal of Psychiatry 
+
+210 , 261–268 (2017). [31] Corrigan, P. W., Kerr, A. & Knudsen, L. The stigma of mental illness: Explanatory models and methods for change. Applied and preventive Psychology 11 , 179–190 (2005). [32] Corrigan, P. W. & Watson, A. C. The paradox of self-stigma and mental illness. Clinical psychology: Science and practice 9, 35 (2002). [33] Livingston, J. D. & Boyd, J. E. Correlates and consequences of internalized stigma for people living with mental illness: A systematic review and meta-analysis. Social science & medicine 71 , 2150–2161 (2010). 17 [34] Vogel, D. L., Wade, N. G. & Haake, S. Measuring the self-stigma associated with seeking psychological help. Journal of counseling psychology 53 , 325 (2006). [35] Oliver, M. I., Pearson, N., Coe, N. & Gunnell, D. Help-seeking behaviour in men and women with common mental health problems: cross-sectional study. The British Journal of Psychiatry 186 , 297–301 (2005). [36] Thornicroft, G. Stigma and discrimination limit access to mental health care. Epidemiology and Psychiatric Sciences 17 , 14–19 (2008). [37] Corrigan, P. W. & Rao, D. On the self-stigma of mental illness: Stages, disclosure, and strategies for change. The Canadian Journal of Psychiatry 57 , 464–469 (2012). [38] Kleinman, A. & Hall-Clifford, R. Stigma: a social, cultural and moral process (2009). [39] Link, B. G. Understanding labeling effects in the area of mental disorders: An assessment of the effects of expectations of rejection. American sociological review 96–112 (1987). [40] Day, E. N., Edgren, K. & Eshleman, A. Measuring stigma toward mental illness: Development and application of the mental illness stigma scale 1. Journal of applied social psychology 37 , 2191–2219 (2007). [41] Pescosolido, B. A., Halpern-Manners, A., Luo, L. & Perry, B. Trends in public stigma of mental illness in the us, 1996-2018. JAMA network open 4, e2140202–e2140202 (2021). [42] Guze, S. B. Diagnostic and statistical manual of mental disorders, (dsm-iv). American Journal of Psychiatry 152 , 1228–1228 (1995). [43] Santomauro, D. F. et al. Global prevalence and burden of depressive and anxiety disorders in 204 countries and territories in 2020 due to the covid-19 pandemic. The Lancet 398 , 1700–1712 (2021). [44] Modgill, G., Patten, S. B., Knaak, S., Kassam, A. & Szeto, A. C. Opening minds stigma scale for health care providers (oms-hc): examination of psychometric properties and responsiveness. BMC psychiatry 
+
+14 , 120 (2014). [45] Meng, H. et al. What is stigma attributed to? a theory-grounded, expert-annotated interview corpus for demystifying mental-health stigma. arXiv preprint arXiv:2505.12727 (2025). [46] Priyadarshana, Y., Liang, Z. & Piumarta, I. Heladepdet: A novel multi-class classification model for detecting the severity of human depression. In International Conference on Collaboration Technologies and Social Computing , 3–18 (Springer, 2023). [47] Hida, R., Kaneko, M. & Okazaki, N. Social bias evaluation for large language models requires prompt variations. arXiv preprint arXiv:2407.03129 (2024). [48] Brislin, R. W. Back-translation for cross-cultural research. Journal of cross-cultural psychology 1, 185–216 (1970). [49] Kratzke, N., Beuter, N., Drews, A. & Janneck, M. Psych—psychometric assessment of large language model characters: An exploration of the german language. Analytics 5, 5 (2026). [50] Brown, T. et al. Language models are few-shot learners. Advances in neural information processing systems 33 , 1877–1901 (2020). 18
