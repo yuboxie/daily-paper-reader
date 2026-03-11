@@ -117,7 +117,7 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-03-11T03:49:29.657Z'
-    - tag: LLM EC
+    - tag: LLM AC
       description: 查找LLM做情感计算和共情对话的论文
       enabled: true
       keywords:
@@ -168,7 +168,7 @@ subscriptions:
           enabled: true
           source: manual
           note: ''
-      updated_at: '2026-03-11T03:56:57.812Z'
+      updated_at: '2026-03-11T04:12:32.508Z'
     - tag: LH LLM
       description: 查找Long-horizon LLM（长程/长上下文大语言模型）的相关论文
       enabled: true
@@ -221,7 +221,7 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-03-11T04:07:00.567Z'
-    - tag: LLMDR
+    - tag: LLM MR
       description: 查找大语言模型（LLM）在药物推荐系统中的应用及相关研究论文
       enabled: true
       keywords:
@@ -275,7 +275,7 @@ subscriptions:
           enabled: true
           source: manual
           note: ''
-      updated_at: '2026-03-11T04:09:15.934Z'
+      updated_at: '2026-03-11T04:12:21.194Z'
     - tag: LLM MH
       description: 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文
       enabled: true
