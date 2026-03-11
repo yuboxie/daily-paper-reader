@@ -1,46 +1,8 @@
 {
-  "generated_at": "2026-03-11T03:14:39.283559+00:00",
+  "generated_at": "2026-03-11T04:39:59.796974+00:00",
   "updated_date": "20260210-20260311",
   "carryover_days": 9,
   "items": [
-    {
-      "id": "2602.21168v1",
-      "title": "Sequential Counterfactual Inference for Temporal Clinical Data: Addressing the Time Traveler Dilemma",
-      "abstract": "Counterfactual inference enables clinicians to ask \"what if\" questions about patient outcomes, but standard methods assume feature independence and simultaneous modifiability -- assumptions violated by longitudinal clinical data. We introduce the Sequential Counterfactual Framework, which respects temporal dependencies in electronic health records by distinguishing immutable features (chronic diagnoses) from controllable features (lab values) and modeling how interventions propagate through time. Applied to 2,723 COVID-19 patients (383 Long COVID heart failure cases, 2,340 matched controls), we demonstrate that 38-67% of patients with chronic conditions would require biologically impossible counterfactuals under naive methods. We identify a cardiorenal cascade (CKD -> AKI -> HF) with relative risks of 2.27 and 1.19 at each step, illustrating temporal propagation that sequential -- but not naive -- counterfactuals can capture. Our framework transforms counterfactual explanation from \"what if this feature were different?\" to \"what if we had intervened earlier, and how would that propagate forward?\" --  yielding clinically actionable insights grounded in biological plausibility.",
-      "authors": [
-        "Jingya Cheng",
-        "Alaleh Azhir",
-        "Jiazi Tian",
-        "Hossein Estiri"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG"
-      ],
-      "published": "2026-02-24T18:11:23+00:00",
-      "link": "https://arxiv.org/pdf/2602.21168v1",
-      "tags": [
-        "keyword:EHR TR",
-        "query:EHR TR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "temporal dependencies in electronic health records",
-      "llm_evidence_cn": "电子健康记录中的时间依赖性",
-      "llm_evidence": "电子健康记录中的时间依赖性",
-      "canonical_evidence": "电子健康记录中的时间依赖性",
-      "llm_tldr_en": "A framework for sequential counterfactual inference that respects temporal dependencies in longitudinal EHR data.",
-      "llm_tldr_cn": "一种序列因果推断框架，遵循纵向EHR数据中的时间依赖性。",
-      "llm_tldr": "一种序列因果推断框架，遵循纵向EHR数据中的时间依赖性。",
-      "llm_tags": [
-        "query:ehr-tr"
-      ],
-      "matched_query_tag": "query:ehr-tr",
-      "matched_query_text": "temporal reasoning in clinical data",
-      "matched_requirement_id": "req-3",
-      "selection_source": "carryover_cache",
-      "paper_id": "2602.21168v1",
-      "carry_days": 1
-    },
     {
       "id": "2603.04142v1",
       "title": "A Multi-Agent Framework for Interpreting Multivariate Physiological Time Series",
@@ -118,6 +80,659 @@
       "matched_requirement_id": "req-composite-ehr-tr",
       "selection_source": "carryover_cache",
       "paper_id": "2602.22771v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.08164v1",
+      "title": "The Differential Effects of Agreeableness and Extraversion on Older Adults' Perceptions of Conversational AI Explanations in Assistive Settings",
+      "abstract": "Large Language Model-based Voice Assistants (LLM-VAs) are increasingly deployed in assistive settings for older adults, yet little is known about how an agent's personality shapes user perceptions of its explanations. This paper presents a mixed factorial experiment (N=140) examining how agreeableness and extraversion in an LLM-VA (\"Robin\") influence older adults' perceptions across seven measures: empathy, likeability, trust, reliance, satisfaction, intention to adopt, and perceived intelligence. Results reveal that high agreeableness drove stronger empathy perceptions, while low agreeableness consistently penalized likeability. Importantly, perceived intelligence remained unaffected by personality, suggesting that personality shapes sociability without altering competence perceptions. Real-time environmental explanations outperformed conversational history explanations on five measures, with advantages concentrated in emergency contexts. Notably, highly agreeable participants were especially critical of low-agreeableness agents, revealing a user-agent personality congruence effect. These findings offer design implications for personality-aware, context-sensitive LLM-VAs in assistive settings.",
+      "authors": [
+        "Niharika Mathur",
+        "Hasibur Rahman",
+        "Smit Desai"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-03-09T09:44:13+00:00",
+      "link": "https://arxiv.org/pdf/2603.08164v1",
+      "tags": [
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "older adults' perceptions of empathy in LLM-VAs",
+      "llm_evidence_cn": "老年人对大模型语音助手共情能力的感知",
+      "llm_evidence": "老年人对大模型语音助手共情能力的感知",
+      "canonical_evidence": "老年人对大模型语音助手共情能力的感知",
+      "llm_tldr_en": "Studies how agent personality affects older adults' perceptions of empathy and trust in AI assistants.",
+      "llm_tldr_cn": "研究智能体个性如何影响老年人对AI助手共情能力和信任度的感知。",
+      "llm_tldr": "研究智能体个性如何影响老年人对AI助手共情能力和信任度的感知。",
+      "llm_tags": [
+        "query:llm-ac"
+      ],
+      "matched_query_tag": "query:llm-ac",
+      "matched_query_text": "benchmarking empathy in large language models",
+      "matched_requirement_id": "req-28",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.08164v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.01423v1",
+      "title": "Quantifying Conversational Reliability of Large Language Models under Multi-Turn Interaction",
+      "abstract": "Large Language Models (LLMs) are increasingly deployed in real-world applications where users engage in extended, mixed-topic conversations that depend on prior context. Yet, their reliability under realistic multi-turn interactions remains poorly understood. We conduct a systematic evaluation of conversational reliability through three representative tasks that reflect practical interaction challenges: (1) maintaining global constraints across topic shifts, (2) selecting the correct tool or agent amid interleaved intents, and (3) tracking structured entities under revisions and distractions. Each task pairs single-turn and multi-turn settings, allowing us to quantify reliability degradation under extended dialogue. Across both commercial and open-source models, we observe substantial declines in reliability, particularly for smaller models. Error analyses reveal recurring failure modes such as instruction drift, intent confusion, and contextual overwriting, which compromise dependable behavior in operational systems. Our findings highlight the need for stress-testing LLMs for conversational reliability and developing more robust evaluation methods for trustworthy deployment.",
+      "authors": [
+        "Jiyoon Myung"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-02T03:59:40+00:00",
+      "link": "https://arxiv.org/pdf/2603.01423v1",
+      "tags": [
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Evaluating LLM reliability under multi-turn interaction and extended dialogue",
+      "llm_evidence_cn": "评估多轮交互和长对话下LLM的可靠性",
+      "llm_evidence": "评估多轮交互和长对话下LLM的可靠性",
+      "canonical_evidence": "评估多轮交互和长对话下LLM的可靠性",
+      "llm_tldr_en": "This study quantifies how LLM reliability degrades during extended, multi-turn conversational interactions.",
+      "llm_tldr_cn": "本研究量化了在长程、多轮对话交互过程中，大语言模型可靠性下降的情况。",
+      "llm_tldr": "本研究量化了在长程、多轮对话交互过程中，大语言模型可靠性下降的情况。",
+      "llm_tags": [
+        "query:lh-llm:composite"
+      ],
+      "matched_query_tag": "query:lh-llm:composite",
+      "matched_query_text": "Papers central to 查找Long-horizon LLM（长程/长上下文大语言模型）的相关论文, especially work that connects or combines: Long-horizon large language models research papers; LLMs with extended context window length; Techniques for infinite context processing in LLMs; Needle in a haystack evaluation for long context LLMs; External memory and retrieval augmented generation for long horizons; KV cache compression and context distillation for long sequences; Recurrent neural network structures for long-horizon language modeling; State of the art methods for long horizon reasoning in LLMs; Benchmark datasets for evaluating long context large language models; Efficient attention mechanisms for processing extremely long sequences.",
+      "matched_requirement_id": "req-composite-lh-llm",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.01423v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.00312v1",
+      "title": "How Well Do Multimodal Models Reason on ECG Signals?",
+      "abstract": "While multimodal large language models offer a promising solution to the \"black box\" nature of health AI by generating interpretable reasoning traces, verifying the validity of these traces remains a critical challenge. Existing evaluation methods are either unscalable, relying on manual clinician review, or superficial, utilizing proxy metrics (e.g. QA) that fail to capture the semantic correctness of clinical logic. In this work, we introduce a reproducible framework for evaluating reasoning in ECG signals. We propose decomposing reasoning into two distinct, components: (i) Perception, the accurate identification of patterns within the raw signal, and (ii) Deduction, the logical application of domain knowledge to those patterns. To evaluate Perception, we employ an agentic framework that generates code to empirically verify the temporal structures described in the reasoning trace. To evaluate Deduction, we measure the alignment of the model's logic against a structured database of established clinical criteria in a retrieval-based approach. This dual-verification method enables the scalable assessment of \"true\" reasoning capabilities.",
+      "authors": [
+        "Maxwell A. Xu",
+        "Harish Haresumadram",
+        "Catherine W. Liu",
+        "Patrick Langer",
+        "Jathurshan Pradeepkumar",
+        "Wanting Mao",
+        "Sunita J. Ferns",
+        "Aradhana Verma",
+        "Jimeng Sun",
+        "Paul Schmiedmayer",
+        "Xin Liu",
+        "Daniel McDuff",
+        "Emily B. Fox",
+        "James M. Rehg"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-02-27T21:04:12+00:00",
+      "link": "https://arxiv.org/pdf/2603.00312v1",
+      "tags": [
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reasoning on ECG signals and clinical logic evaluation",
+      "llm_evidence_cn": "心电图信号推理与临床逻辑评估",
+      "llm_evidence": "心电图信号推理与临床逻辑评估",
+      "canonical_evidence": "心电图信号推理与临床逻辑评估",
+      "llm_tldr_en": "Introduces a framework to evaluate perception and deduction reasoning in multimodal models using ECG signals.",
+      "llm_tldr_cn": "引入了一个评估多模态模型在心电图信号上感知和演绎推理能力的框架。",
+      "llm_tldr": "引入了一个评估多模态模型在心电图信号上感知和演绎推理能力的框架。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.00312v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2602.19455v1",
+      "title": "SenTSR-Bench: Thinking with Injected Knowledge for Time-Series Reasoning",
+      "abstract": "Time-series diagnostic reasoning is essential for many applications, yet existing solutions face a persistent gap: general reasoning large language models (GRLMs) possess strong reasoning skills but lack the domain-specific knowledge to understand complex time-series patterns. Conversely, fine-tuned time-series LLMs (TSLMs) understand these patterns but lack the capacity to generalize reasoning for more complicated questions. To bridge this gap, we propose a hybrid knowledge-injection framework that injects TSLM-generated insights directly into GRLM's reasoning trace, thereby achieving strong time-series reasoning with in-domain knowledge. As collecting data for knowledge injection fine-tuning is costly, we further leverage a reinforcement learning-based approach with verifiable rewards (RLVR) to elicit knowledge-rich traces without human supervision, then transfer such an in-domain thinking trace into GRLM for efficient knowledge injection. We further release SenTSR-Bench, a multivariate time-series-based diagnostic reasoning benchmark collected from real-world industrial operations. Across SenTSR-Bench and other public datasets, our method consistently surpasses TSLMs by 9.1%-26.1% and GRLMs by 7.9%-22.4%, delivering robust, context-aware time-series diagnostic insights.",
+      "authors": [
+        "Zelin He",
+        "Boran Han",
+        "Xiyuan Zhang",
+        "Shuai Zhang",
+        "Haotian Lin",
+        "Qi Zhu",
+        "Haoyang Fang",
+        "Danielle C. Maddix",
+        "Abdul Fatir Ansari",
+        "Akash Chandrayan",
+        "Abhinav Pradhan",
+        "Bernie Wang",
+        "Matthew Reimherr"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL",
+        "stat.ML"
+      ],
+      "published": "2026-02-23T02:55:32+00:00",
+      "link": "https://arxiv.org/pdf/2602.19455v1",
+      "tags": [
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "time-series diagnostic reasoning and knowledge injection for LLMs",
+      "llm_evidence_cn": "大模型的时间序列诊断推理与知识注入",
+      "llm_evidence": "大模型的时间序列诊断推理与知识注入",
+      "canonical_evidence": "大模型的时间序列诊断推理与知识注入",
+      "llm_tldr_en": "A framework injecting time-series insights into LLMs to improve diagnostic reasoning capabilities.",
+      "llm_tldr_cn": "一种将时间序列见解注入大模型以提高诊断推理能力的框架。",
+      "llm_tldr": "一种将时间序列见解注入大模型以提高诊断推理能力的框架。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2602.19455v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.08448v1",
+      "title": "A prospective clinical feasibility study of a conversational diagnostic AI in an ambulatory primary care clinic",
+      "abstract": "Large language model (LLM)-based AI systems have shown promise for patient-facing diagnostic and management conversations in simulated settings. Translating these systems into clinical practice requires assessment in real-world workflows with rigorous safety oversight. We report a prospective, single-arm feasibility study of an LLM-based conversational AI, the Articulate Medical Intelligence Explorer (AMIE), conducting clinical history taking and presentation of potential diagnoses for patients to discuss with their provider at urgent care appointments at a leading academic medical center. 100 adult patients completed an AMIE text-chat interaction up to 5 days before their appointment. We sought to assess the conversational safety and quality, patient and clinician experience, and clinical reasoning capabilities compared to primary care providers (PCPs). Human safety supervisors monitored all patient-AMIE interactions in real time and did not need to intervene to stop any consultations based on pre-defined criteria. Patients reported high satisfaction and their attitudes towards AI improved after interacting with AMIE (p < 0.001). PCPs found AMIE's output useful with a positive impact on preparedness. AMIE's differential diagnosis (DDx) included the final diagnosis, per chart review 8 weeks post-encounter, in 90% of cases, with 75% top-3 accuracy. Blinded assessment of AMIE and PCP DDx and management (Mx) plans suggested similar overall DDx and Mx plan quality, without significant differences for DDx (p = 0.6) and appropriateness and safety of Mx (p = 0.1 and 1.0, respectively). PCPs outperformed AMIE in the practicality (p = 0.003) and cost effectiveness (p = 0.004) of Mx. While further research is needed, this study demonstrates the initial feasibility, safety, and user acceptance of conversational AI in a real-world setting, representing crucial steps towards clinical translation.",
+      "authors": [
+        "Peter Brodeur",
+        "Jacob M. Koshy",
+        "Anil Palepu",
+        "Khaled Saab",
+        "Ava Homiar",
+        "Roma Ruparel",
+        "Charles Wu",
+        "Ryutaro Tanno",
+        "Joseph Xu",
+        "Amy Wang",
+        "David Stutz",
+        "Hannah M. Ferrera",
+        "David Barrett",
+        "Lindsey Crowley",
+        "Jihyeon Lee",
+        "Spencer E. Rittner",
+        "Ellery Wulczyn",
+        "Selena K. Zhang",
+        "Elahe Vedadi",
+        "Christine G. Kohn",
+        "Kavita Kulkarni",
+        "Vinay Kadiyala",
+        "Sara Mahdavi",
+        "Wendy Du",
+        "Jessica Williams",
+        "David Feinbloom",
+        "Renee Wong",
+        "Tao Tu",
+        "Petar Sirkovic",
+        "Alessio Orlandi",
+        "Christopher Semturs",
+        "Yun Liu",
+        "Juraj Gottweis",
+        "Dale R. Webster",
+        "Joëlle Barral",
+        "Katherine Chou",
+        "Pushmeet Kohli",
+        "Avinatan Hassidim",
+        "Yossi Matias",
+        "James Manyika",
+        "Rob Fields",
+        "Jonathan X. Li",
+        "Marc L. Cohen",
+        "Vivek Natarajan",
+        "Mike Schaekermann",
+        "Alan Karthikesalingam",
+        "Adam Rodman"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC",
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-03-09T14:43:40+00:00",
+      "link": "https://arxiv.org/pdf/2603.08448v1",
+      "tags": [
+        "query:EHR TR",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "conversational diagnostic AI for clinical history taking and primary care",
+      "llm_evidence_cn": "用于临床病史采集和初级保健的对话式诊断 AI",
+      "llm_evidence": "用于临床病史采集和初级保健的对话式诊断 AI",
+      "canonical_evidence": "用于临床病史采集和初级保健的对话式诊断 AI",
+      "llm_tldr_en": "A feasibility study of a conversational LLM for clinical history taking in real-world medical workflows.",
+      "llm_tldr_cn": "一项关于对话式大模型在真实医疗流程中进行病史采集的可行性研究。",
+      "llm_tldr": "一项关于对话式大模型在真实医疗流程中进行病史采集的可行性研究。",
+      "llm_tags": [
+        "query:llm-mh:composite"
+      ],
+      "matched_query_tag": "query:llm-mh:composite",
+      "matched_query_text": "Papers central to 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文, especially work that connects or combines: Large Language Models; Mental health applications and diagnosis; Computational psychiatry and LLMs; AI-assisted psychotherapy and counseling; LLM for depression detection and analysis; Large language models for anxiety assessment; Emotional and sentiment analysis in mental health; LLMs in clinical psychology research; Applications of large language models in mental health diagnosis; LLM based conversational agents for psychological counseling.",
+      "matched_requirement_id": "req-composite-llm-mh",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.08448v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2602.23161v1",
+      "title": "PATRA: Pattern-Aware Alignment and Balanced Reasoning for Time Series Question Answering",
+      "abstract": "Time series reasoning demands both the perception of complex dynamics and logical depth. However, existing LLM-based approaches exhibit two limitations: they often treat time series merely as text or images, failing to capture the patterns like trends and seasonalities needed to answer specific questions; and when trained on a mix of simple and complex tasks, simpler objectives often dominate the learning process, hindering the development of deep reasoning capabilities. To address these limitations, we propose the Pattern-Aware Alignment and Balanced Reasoning model (PATRA), introducing a pattern-aware mechanism that extracts trend and seasonality patterns from time series to achieve deep alignment. Furthermore, we design a task-aware balanced reward to harmonize learning across tasks of varying difficulty, incentivizing the generation of coherent Chains of Thought. Extensive experiments show that PATRA outperforms strong baselines across diverse Time Series Question Answering (TSQA) tasks, demonstrating superior cross-modal understanding and reasoning capability.",
+      "authors": [
+        "Junkai Lu",
+        "Peng Chen",
+        "Xingjian Wu",
+        "Yang Shu",
+        "Chenjuan Guo",
+        "Christian S. Jensen",
+        "Bin Yang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-02-26T16:20:03+00:00",
+      "link": "https://arxiv.org/pdf/2602.23161v1",
+      "tags": [
+        "keyword:LLM HUM",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "pattern-aware alignment for time series reasoning and question answering",
+      "llm_evidence_cn": "时间序列推理与问答的模式感知对齐",
+      "llm_evidence": "时间序列推理与问答的模式感知对齐",
+      "canonical_evidence": "时间序列推理与问答的模式感知对齐",
+      "llm_tldr_en": "PATRA improves time series reasoning in LLMs by capturing trends and seasonalities.",
+      "llm_tldr_cn": "PATRA 通过捕捉趋势和季节性特征来改进大模型的时间序列推理能力。",
+      "llm_tldr": "PATRA 通过捕捉趋势和季节性特征来改进大模型的时间序列推理能力。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2602.23161v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2602.21653v1",
+      "title": "Irresponsible Counselors: Large Language Models and the Loneliness of Modern Humans",
+      "abstract": "Large language models (LLMs) have rapidly shifted from peripheral assistive tools to constant companions in everyday and even high stakes human decision making. Many users now consult these models about health, intimate relationships, finance, education, and identity, because LLMs are, in practice, multi domain, inexpensive, always available, and seemingly nonjudgmental. At the same time, from a technical perspective these models rely on transformer architectures, exhibit highly unpredictable behavior in detail, and are fundamentally stateless; conceptually, they lack any real subjectivity, intention, or responsibility. This article argues that the combination of this technical architecture with the social position of LLMs as multis pecialist counselors in an age of human loneliness produces a new kind of advisory intimacy without a subject. In this new relation, model outputs are experienced as if they contained deep understanding, neutrality, emotional support, and user level control, while at the deeper level there is no human agent who is straightforwardly responsible or answerable. By reviewing dominant strands of AI ethics critique, we show that focusing only on developer liability, data bias, or emotional attachment to chatbots is insufficient to capture this configuration. We then explore the ethical and political implications of this advisory intimacy without a subject for policy-making, for justice in access to counseling, and for how we understand loneliness in the contemporary world.",
+      "authors": [
+        "Abas Bertina",
+        "Sara Shakeri"
+      ],
+      "primary_category": "cs.CY",
+      "categories": [
+        "cs.CY"
+      ],
+      "published": "2026-02-25T07:29:21+00:00",
+      "link": "https://arxiv.org/pdf/2602.21653v1",
+      "tags": [
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "ethical considerations of LLMs in health and counseling",
+      "llm_evidence_cn": "LLM在健康和咨询中的伦理考量",
+      "llm_evidence": "LLM在健康和咨询中的伦理考量",
+      "canonical_evidence": "LLM在健康和咨询中的伦理考量",
+      "llm_tldr_en": "Critically examines the social and technical limitations of LLMs acting as counselors for human decision-making.",
+      "llm_tldr_cn": "批判性地探讨了LLM作为人类决策咨询者的社会和技术局限性。",
+      "llm_tldr": "批判性地探讨了LLM作为人类决策咨询者的社会和技术局限性。",
+      "llm_tags": [
+        "query:llm-mh"
+      ],
+      "matched_query_tag": "query:llm-mh",
+      "matched_query_text": "Ethical considerations of using LLMs in mental healthcare",
+      "matched_requirement_id": "req-66",
+      "selection_source": "carryover_cache",
+      "paper_id": "2602.21653v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2602.17308v1",
+      "title": "MedClarify: An information-seeking AI agent for medical diagnosis with case-specific follow-up questions",
+      "abstract": "Large language models (LLMs) are increasingly used for diagnostic tasks in medicine. In clinical practice, the correct diagnosis can rarely be immediately inferred from the initial patient presentation alone. Rather, reaching a diagnosis often involves systematic history taking, during which clinicians reason over multiple potential conditions through iterative questioning to resolve uncertainty. This process requires considering differential diagnoses and actively excluding emergencies that demand immediate intervention. Yet, the ability of medical LLMs to generate informative follow-up questions and thus reason over differential diagnoses remains underexplored. Here, we introduce MedClarify, an AI agent for information-seeking that can generate follow-up questions for iterative reasoning to support diagnostic decision-making. Specifically, MedClarify computes a list of candidate diagnoses analogous to a differential diagnosis, and then proactively generates follow-up questions aimed at reducing diagnostic uncertainty. By selecting the question with the highest expected information gain, MedClarify enables targeted, uncertainty-aware reasoning to improve diagnostic performance. In our experiments, we first demonstrate the limitations of current LLMs in medical reasoning, which often yield multiple, similarly likely diagnoses, especially when patient cases are incomplete or relevant information for diagnosis is missing. We then show that our information-theoretic reasoning approach can generate effective follow-up questioning and thereby reduces diagnostic errors by ~27 percentage points (p.p.) compared to a standard single-shot LLM baseline. Altogether, MedClarify offers a path to improve medical LLMs through agentic information-seeking and to thus promote effective dialogues with medical LLMs that reflect the iterative and uncertain nature of real-world clinical reasoning.",
+      "authors": [
+        "Hui Min Wong",
+        "Philip Heesen",
+        "Pascal Janetzky",
+        "Martin Bendszus",
+        "Stefan Feuerriegel"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-02-19T12:19:12+00:00",
+      "link": "https://arxiv.org/pdf/2602.17308v1",
+      "tags": [
+        "query:EHR TR",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "AI agent for medical diagnosis and differential reasoning",
+      "llm_evidence_cn": "用于医疗诊断和鉴别推理的AI智能体",
+      "llm_evidence": "用于医疗诊断和鉴别推理的AI智能体",
+      "canonical_evidence": "用于医疗诊断和鉴别推理的AI智能体",
+      "llm_tldr_en": "Presents MedClarify, an AI agent that improves medical diagnosis through iterative, case-specific follow-up questions.",
+      "llm_tldr_cn": "提出了MedClarify，一个通过迭代式病例特异性追问来改进医疗诊断的AI智能体。",
+      "llm_tldr": "提出了MedClarify，一个通过迭代式病例特异性追问来改进医疗诊断的AI智能体。",
+      "llm_tags": [
+        "query:llm-mh"
+      ],
+      "matched_query_tag": "query:llm-mh",
+      "matched_query_text": "Applications of large language models in mental health diagnosis",
+      "matched_requirement_id": "req-64",
+      "selection_source": "carryover_cache",
+      "paper_id": "2602.17308v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.04549v1",
+      "title": "Adaptive Memory Admission Control for LLM Agents",
+      "abstract": "LLM-based agents increasingly rely on long-term memory to support multi-session reasoning and interaction, yet current systems provide little control over what information is retained. In practice, agents either accumulate large volumes of conversational content, including hallucinated or obsolete facts, or depend on opaque, fully LLM-driven memory policies that are costly and difficult to audit. As a result, memory admission remains a poorly specified and weakly controlled component in agent architectures. To address this gap, we propose Adaptive Memory Admission Control (A-MAC), a framework that treats memory admission as a structured decision problem. A-MAC decomposes memory value into five complementary and interpretable factors: future utility, factual confidence, semantic novelty, temporal recency, and content type prior. The framework combines lightweight rule-based feature extraction with a single LLM-assisted utility assessment, and learns domain-adaptive admission policies through cross-validated optimization. This design enables transparent and efficient control over long-term memory. Experiments on the LoCoMo benchmark show that A-MAC achieves a superior precision-recall tradeoff, improving F1 to 0.583 while reducing latency by 31% compared to state-of-the-art LLM-native memory systems. Ablation results identify content type prior as the most influential factor for reliable memory admission. These findings demonstrate that explicit and interpretable admission control is a critical design principle for scalable and reliable memory in LLM-based agents.",
+      "authors": [
+        "Guilin Zhang",
+        "Wei Jiang",
+        "Xiejiashan Wang",
+        "Aisha Behr",
+        "Kai Zhao",
+        "Jeffrey Friedman",
+        "Xu Chu",
+        "Amine Anoun"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.MA"
+      ],
+      "published": "2026-03-04T19:32:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.04549v1",
+      "tags": [
+        "keyword:LLM HUM",
+        "query:EHR TR",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "adaptive memory admission control for long-term agent memory",
+      "llm_evidence_cn": "长期代理记忆的自适应记忆准入控制",
+      "llm_evidence": "长期代理记忆的自适应记忆准入控制",
+      "canonical_evidence": "长期代理记忆的自适应记忆准入控制",
+      "llm_tldr_en": "Proposes A-MAC to manage long-term memory in LLM agents by treating admission as a decision problem.",
+      "llm_tldr_cn": "提出A-MAC，通过将准入视为决策问题来管理LLM代理的长期记忆。",
+      "llm_tldr": "提出A-MAC，通过将准入视为决策问题来管理LLM代理的长期记忆。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "External memory and retrieval augmented generation for long horizons",
+      "matched_requirement_id": "req-37",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.04549v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2602.19507v1",
+      "title": "Conversational AI for Automated Patient Questionnaire Completion: Development Insights and Design Principles",
+      "abstract": "Collecting patient-reported outcome measures (PROMs) is essential for clinical care and research, yet traditional form-based approaches are often tedious for patients and burdensome for clinicians. We developed a generative AI conversational agent(CA) using GPT-5 to collect back pain data according to the NIH Task Force's Recommended Minimal Dataset. Unlike prior CAs that ask questions one-by-one, our CA engages users in topic-based conversations, allowing multiple data items to be captured in a single exchange. Through iterative development and pilot testing with clinicians and a consumer panel, we identified key design principles for health data collection CAs. These principles extend established clinical decision support design guidelines to conversational interfaces, addressing: flexibility of interaction style, personality calibration, data quality assurance through confidence visualization, patient safety constraints, and interoperability requirements. We present our prompt design methodology and discuss challenges encountered, including managing conversation length, handling ambiguous responses, and adapting to LLM version changes. Our design principles provide a practical framework for developers creating conversational agents for patient questionnaire completion. The CA is available at https://chatgpt.com/g/g-68f4869548f48191af0544f110ee91c6-backpain-data-collection-assistant (requires ChatGPT registration and subscription for unlimited use).",
+      "authors": [
+        "David Fraile Navarro",
+        "Mor Peleg"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-02-23T04:46:30+00:00",
+      "link": "https://arxiv.org/pdf/2602.19507v1",
+      "tags": [
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "generative AI conversational agent for clinical data collection",
+      "llm_evidence_cn": "用于临床数据收集的生成式AI对话代理",
+      "llm_evidence": "用于临床数据收集的生成式AI对话代理",
+      "canonical_evidence": "用于临床数据收集的生成式AI对话代理",
+      "llm_tldr_en": "Develops a GPT-based conversational agent to automate patient questionnaire completion for clinical research.",
+      "llm_tldr_cn": "开发了一个基于GPT的对话代理，用于自动化临床研究中的患者问卷填写。",
+      "llm_tldr": "开发了一个基于GPT的对话代理，用于自动化临床研究中的患者问卷填写。",
+      "llm_tags": [
+        "query:llm-mr"
+      ],
+      "matched_query_tag": "query:llm-mr",
+      "matched_query_text": "generative artificial intelligence in healthcare",
+      "matched_requirement_id": "req-47",
+      "selection_source": "carryover_cache",
+      "paper_id": "2602.19507v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.03536v1",
+      "title": "SafeCRS: Personalized Safety Alignment for LLM-Based Conversational Recommender Systems",
+      "abstract": "Current LLM-based conversational recommender systems (CRS) primarily optimize recommendation accuracy and user satisfaction. We identify an underexplored vulnerability in which recommendation outputs may negatively impact users by violating personalized safety constraints, when individualized safety sensitivities -- such as trauma triggers, self-harm history, or phobias -- are implicitly inferred from the conversation but not respected during recommendation. We formalize this challenge as personalized CRS safety and introduce SafeRec, a new benchmark dataset designed to systematically evaluate safety risks in LLM-based CRS under user-specific constraints. To further address this problem, we propose SafeCRS, a safety-aware training framework that integrates Safe Supervised Fine-Tuning (Safe-SFT) with Safe Group reward-Decoupled Normalization Policy Optimization (Safe-GDPO) to jointly optimize recommendation quality and personalized safety alignment. Extensive experiments on SafeRec demonstrate that SafeCRS reduces safety violation rates by up to 96.5% relative to the strongest recommendation-quality baseline while maintaining competitive recommendation quality. Warning: This paper contains potentially harmful and offensive content.",
+      "authors": [
+        "Haochang Hao",
+        "Yifan Xu",
+        "Xinzhuo Li",
+        "Yingqiang Ge",
+        "Lu Cheng"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.IR"
+      ],
+      "published": "2026-03-03T21:46:53+00:00",
+      "link": "https://arxiv.org/pdf/2603.03536v1",
+      "tags": [
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "personalized safety constraints including trauma triggers and self-harm history",
+      "llm_evidence_cn": "个性化安全约束，包括创伤触发因素和自残史",
+      "llm_evidence": "个性化安全约束，包括创伤触发因素和自残史",
+      "canonical_evidence": "个性化安全约束，包括创伤触发因素和自残史",
+      "llm_tldr_en": "Develops SafeCRS to ensure conversational recommenders respect user-specific mental health safety constraints.",
+      "llm_tldr_cn": "开发SafeCRS框架，确保对话推荐系统遵守用户特定的心理健康安全约束。",
+      "llm_tldr": "开发SafeCRS框架，确保对话推荐系统遵守用户特定的心理健康安全约束。",
+      "llm_tags": [
+        "query:llm-mh:composite"
+      ],
+      "matched_query_tag": "query:llm-mh:composite",
+      "matched_query_text": "Papers central to 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文, especially work that connects or combines: Large Language Models; Mental health applications and diagnosis; Computational psychiatry and LLMs; AI-assisted psychotherapy and counseling; LLM for depression detection and analysis; Large language models for anxiety assessment; Emotional and sentiment analysis in mental health; LLMs in clinical psychology research; Applications of large language models in mental health diagnosis; LLM based conversational agents for psychological counseling.",
+      "matched_requirement_id": "req-composite-llm-mh",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.03536v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2602.23668v1",
+      "title": "PseudoAct: Leveraging Pseudocode Synthesis for Flexible Planning and Action Control in Large Language Model Agents",
+      "abstract": "Large language model (LLM) agents typically rely on reactive decision-making paradigms such as ReAct, selecting actions conditioned on growing execution histories. While effective for short tasks, these approaches often lead to redundant tool usage, unstable reasoning, and high token consumption in complex long-horizon tasks involving branching, iteration, or multi-tool coordination. To address these limitations, this paper introduces PseudoAct, a novel framework for flexible planning and action control in LLM agents through pseudocode synthesis. Leveraging the ability of LLMs to express task-solving strategies as code, PseudoAct synthesizes a structured pseudocode plan that decomposes a task into subtasks and explicitly encodes control flow, including sequencing, conditionals, loops, parallel composition, and combinations of these logic primitives. Actions are then executed by following this global plan, making the decision logic explicit and temporally coherent. This design reduces redundant actions, prevents infinite loops, and avoids uninformative alternative exploration, enabling consistent and efficient long-horizon decision-making. Experiments on benchmark datasets show that our method significantly outperforms existing reactive agent approaches, achieving a 20.93% absolute gain in success rate on FEVER and setting a new state-of-the-art on HotpotQA.",
+      "authors": [
+        "Yihan",
+        "Wen",
+        "Xin Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "eess.SY"
+      ],
+      "published": "2026-02-27T04:30:45+00:00",
+      "link": "https://arxiv.org/pdf/2602.23668v1",
+      "tags": [
+        "query:LH LLM"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "flexible planning for complex long-horizon tasks in LLM agents",
+      "llm_evidence_cn": "LLM智能体在复杂长程任务中的灵活规划",
+      "llm_evidence": "LLM智能体在复杂长程任务中的灵活规划",
+      "canonical_evidence": "LLM智能体在复杂长程任务中的灵活规划",
+      "llm_tldr_en": "Introduces PseudoAct, using pseudocode synthesis to improve planning and control in long-horizon LLM tasks.",
+      "llm_tldr_cn": "引入PseudoAct，通过伪代码合成提升LLM智能体在长程任务中的规划与控制能力。",
+      "llm_tldr": "引入PseudoAct，通过伪代码合成提升LLM智能体在长程任务中的规划与控制能力。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
+      "matched_requirement_id": "req-40",
+      "selection_source": "carryover_cache",
+      "paper_id": "2602.23668v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.01042v1",
+      "title": "Thoth: Mid-Training Bridges LLMs to Time Series Understanding",
+      "abstract": "Large Language Models (LLMs) have demonstrated remarkable success in general-purpose reasoning. However, they still struggle to understand and reason about time series data, which limits their effectiveness in decision-making scenarios that depend on temporal dynamics. In this paper, we propose Thoth, the first family of mid-trained LLMs with general-purpose time series understanding capabilities. As a pivotal intermediate stage, mid-training achieves task- and domain-agnostic alignment between time series and natural language, for which we construct Book-of-Thoth, a high-quality, time-series-centric mid-training corpus. Book-of-Thoth enables both time-series-to-text and text-to-time-series generation, equipping LLMs with a foundational grasp of temporal patterns. To better evaluate advanced reasoning capabilities, we further present KnoTS, a novel benchmark of knowledge-intensive time series understanding, designed for joint reasoning over temporal patterns and domain knowledge. Extensive experiments demonstrate that mid-training with Book-of-Thoth enables Thoth to significantly outperform its base model and advanced LLMs across a range of time series question answering benchmarks. Moreover, Thoth exhibits superior capabilities when fine-tuned under data scarcity, underscoring the effectiveness of mid-training for time series understanding. Code is available at: https://github.com/thuml/Thoth.",
+      "authors": [
+        "Jiafeng Lin",
+        "Yuxuan Wang",
+        "Jialong Wu",
+        "Huakun Luo",
+        "Zhongyi Pei",
+        "Jianmin Wang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-01T10:44:39+00:00",
+      "link": "https://arxiv.org/pdf/2603.01042v1",
+      "tags": [
+        "keyword:LLM HUM",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Mid-training LLMs for time series understanding and temporal dynamics",
+      "llm_evidence_cn": "通过中期训练使大模型理解时间序列和时序动态",
+      "llm_evidence": "通过中期训练使大模型理解时间序列和时序动态",
+      "canonical_evidence": "通过中期训练使大模型理解时间序列和时序动态",
+      "llm_tldr_en": "Introduces Thoth, a family of LLMs mid-trained to align time series data with natural language for temporal reasoning.",
+      "llm_tldr_cn": "引入 Thoth 系列模型，通过中期训练将时间序列数据与自然语言对齐以进行时序推理。",
+      "llm_tldr": "引入 Thoth 系列模型，通过中期训练将时间序列数据与自然语言对齐以进行时序推理。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.01042v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.08278v1",
+      "title": "TA-RNN-Medical-Hybrid: A Time-Aware and Interpretable Framework for Mortality Risk Prediction",
+      "abstract": "Accurate and interpretable mortality risk prediction in intensive care units (ICUs) remains a critical challenge due to the irregular temporal structure of electronic health records (EHRs), the complexity of longitudinal disease trajectories, and the lack of clinically grounded explanations in many data-driven models. To address these challenges, we propose \\textit{TA-RNN-Medical-Hybrid}, a time-aware and knowledge-enriched deep learning framework that jointly models longitudinal clinical sequences and irregular temporal dynamics through explicit continuous-time encoding, along with standardized medical concept representations. The proposed framework extends time-aware recurrent modeling by integrating explicit continuous-time embeddings that operate independently of visit indexing, SNOMED-based disease representations, and a hierarchical dual-level attention mechanism that captures both visit-level temporal importance and feature/concept-level clinical relevance. This design enables accurate mortality risk estimation while providing transparent and clinically meaningful explanations aligned with established medical knowledge. We evaluate the proposed approach on the MIMIC-III critical care dataset and compare it against strong time-aware and sequential baselines. Experimental results demonstrate that TA-RNN-Medical-Hybrid consistently improves predictive performance in terms of AUC, accuracy, and recall-oriented F$_2$-score. Moreover, qualitative analysis shows that the model effectively decomposes mortality risk across time and clinical concepts, yielding interpretable insights into disease severity, chronicity, and temporal progression. Overall, the proposed framework bridges the gap between predictive accuracy and clinical interpretability, offering a scalable and transparent solution for high-stakes ICU decision support systems.",
+      "authors": [
+        "Zahra Jafari",
+        "Azadeh Zamanifar",
+        "Amirfarhad Farhadi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.DC",
+        "cs.ET"
+      ],
+      "published": "2026-03-09T11:49:42+00:00",
+      "link": "https://arxiv.org/pdf/2603.08278v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM MR",
+        "query:EHR TR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "irregular temporal structure of EHRs and longitudinal disease trajectories",
+      "llm_evidence_cn": "EHR的非规则时间结构和纵向疾病轨迹",
+      "llm_evidence": "EHR的非规则时间结构和纵向疾病轨迹",
+      "canonical_evidence": "EHR的非规则时间结构和纵向疾病轨迹",
+      "llm_tldr_en": "Proposes a time-aware RNN framework for mortality risk prediction using longitudinal EHR data.",
+      "llm_tldr_cn": "提出一种时间感知RNN框架，利用纵向EHR数据进行死亡风险预测。",
+      "llm_tldr": "提出一种时间感知RNN框架，利用纵向EHR数据进行死亡风险预测。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "temporal reasoning in clinical data",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.08278v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.08392v1",
+      "title": "COACH meets QUORUM: A Framework and Pipeline for Aligning User, Expert and Developer Perspectives in LLM-generated Health Counselling",
+      "abstract": "Systems that collect data on sleep, mood, and activities can provide valuable lifestyle counselling to populations affected by chronic disease and its consequences. Such systems are, however, challenging to develop; besides reliably extracting patterns from user-specific data, systems should also contextualise these patterns with validated medical knowledge to ensure the quality of counselling, and generate counselling that is relevant to a real user. We present QUORUM, a new evaluation framework that unifies these developer-, expert-, and user-centric perspectives, and show with a real case study that it meaningfully tracks convergence and divergence in stakeholder perspectives. We also present COACH, a Large Language Model-driven pipeline to generate personalised lifestyle counselling for our Healthy Chronos use case, a diary app for cancer patients and survivors. Applying our framework shows that overall, users, medical experts, and developers converge on the opinion that the generated counselling is relevant, of good quality, and reliable. However, stakeholders also diverge on the tone of the counselling, sensitivity to errors in pattern-extraction, and potential hallucinations. These findings highlight the importance of multi-stakeholder evaluation for consumer health language technologies and illustrate how a unified evaluation framework can support trustworthy, patient-centered NLP systems in real-world settings.",
+      "authors": [
+        "Yee Man Ng",
+        "Bram van Dijk",
+        "Pieter Beynen",
+        "Otto Boekesteijn",
+        "Joris Jansen",
+        "Gerard van Oortmerssen",
+        "Max van Duijn",
+        "Marco Spruit"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-09T13:49:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.08392v1",
+      "tags": [
+        "query:EHR TR",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLM-generated health counselling for mood and lifestyle",
+      "llm_evidence_cn": "LLM生成的针对情绪和生活方式的健康咨询",
+      "llm_evidence": "LLM生成的针对情绪和生活方式的健康咨询",
+      "canonical_evidence": "LLM生成的针对情绪和生活方式的健康咨询",
+      "llm_tldr_en": "Presents a framework for aligning perspectives in LLM-generated health and lifestyle counselling.",
+      "llm_tldr_cn": "提出一个对齐LLM生成的健康与生活方式咨询中多方视角的框架。",
+      "llm_tldr": "提出一个对齐LLM生成的健康与生活方式咨询中多方视角的框架。",
+      "llm_tags": [
+        "query:llm-mh"
+      ],
+      "matched_query_tag": "query:llm-mh",
+      "matched_query_text": "LLM based conversational agents for psychological counseling",
+      "matched_requirement_id": "req-65",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.08392v1",
       "carry_days": 1
     }
   ]

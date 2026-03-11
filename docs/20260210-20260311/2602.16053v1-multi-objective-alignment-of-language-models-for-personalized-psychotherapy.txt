@@ -1,0 +1,385 @@
+Title: Multi-Objective Alignment of Language Models for Personalized Psychotherapy
+
+URL Source: https://arxiv.org/pdf/2602.16053v1
+
+Published Time: Thu, 19 Feb 2026 01:17:33 GMT
+
+Number of Pages: 43
+
+Markdown Content:
+# Multi-Objective Alignment of Language Models for Personalized Psychotherapy 
+
+# Mehrab Beikzadeh 1, Yasaman Asadollah salmanpour 2, Ashima Suvarna 1,Sriram Sankararaman 1, Matteo Malgaroli 3, Majid Sarrafzadeh 1, and Saadia Gabriel 11Department of Computer Science, University of California, Los Angeles, CA, USA 
+
+2Department of Psychology, The University of Texas at Austin, Austin, TX, USA 
+
+3Department of Psychiatry, NYU Grossman School of Medicine, New York, NY, USA 
+
+# § mehrabbz/MODPO-Therapeutic-AI 
+
+Abstract 
+
+Mental health disorders affect over 1 billion people worldwide, yet access to care remains limited by workforce shortages and cost constraints. While AI systems show therapeutic promise, current alignment approaches optimize objectives independently, failing to balance patient preferences with clinical safety. We survey 335 individuals with lived mental health experience to collect preference rankings across therapeutic dimensions, then develop a multi-objective alignment framework using direct prefer-ence optimization. We train reward models for six criteria—empathy, safety, active listening, self-motivated change, trust/rapport, and patient autonomy—and systemat-ically compare multi-objective approaches against single-objective optimization, super-vised fine-tuning, and parameter merging. Multi-objective DPO (MODPO) achieves superior balance (77.6% empathy, 62.6% safety) compared to single-objective opti-mization (93.6% empathy, 47.8% safety), and therapeutic criteria outperform general communication principles by 17.2%. Blinded clinician evaluation confirms MODPO is consistently preferred, with LLM-evaluator agreement comparable to inter-clinician reliability. 
+
+Large language models (LLMs) are increasingly proposed as part of the response to the global mental health crisis [1]. The underlying need is substantial, with 1.1 billion people worldwide suffering from mental health disorders including anxiety and depression [2]. The 1
+
+> arXiv:2602.16053v1 [cs.LG] 17 Feb 2026
+
+economic implications are severe, with serious mental illness resulting in over $193 billion in lost earnings annually in the United States alone [3]. Compounding this epidemic are significant treatment gaps, with as many as half of U.S. adults being unable to access mental health care due to clinician shortages, geographical barriers, and cost constraints [4]. LLMs for mental health have been adopted as a temporary means to fill care gaps. Auto-mated therapy is a prevalent use case for general-purpose LLM-based chatbots like ChatGPT [5], a trend amplified by social media “influencers” who encourage their use for mental health support [6]. In 2025, OpenAI estimated that 1 million of its users discuss suicide planning or intent with ChatGPT on a weekly basis [7]. Simultaneously, extensive resources are being expended on lowering cost and other barriers to LLM access, with ChatGPT growing its global user base to 500 million weekly users [8]. However, this rapid adoption of LLMs as therapists raises an important question: is there any clinical validity to LLMs’ effectiveness in supporting mental health patients ?A landmark randomized controlled trial by Heinz et al. [9] represents the first clinical validation of a purpose-built LLM-based therapy chatbot. The study demonstrated substan-tial clinical outcomes, with participants rating the therapeutic alliance with the AI system as comparable to that of human therapists. These findings have been corroborated by nat-uralistic cohort outcomes supporting the benefits and feasibility of AI therapy in real-world settings [10]. While AI-based conversational agents represent a notable advance over previ-ous digital mental health interventions [11], engagement remains a critical challenge, with traditional mental health apps showing poor retention rates and low sustained usage [12]. Taken together, these studies highlight a crucial gap: while AI systems can deliver clini-cally effective interventions, their success depends significantly on how well they align with individual patient preferences and therapeutic needs .Inadequately aligned LLM-based chatbots can also pose major safety risks in therapy settings. LLMs trained with reinforcement learning with human feedback (RLHF) have exhibited harmful and sycophantic behavior, including validating expressions of self-harm [13]. There is no scientific basis to assume LLMs optimized for general-purpose conversation will be preferable, safe or factually valid in therapeutic contexts . Widely used preference learning datasets like UltraFeedback [14], LMSYS Arena Preferences [15] and Anthropic HH-RLHF [16] primarily reflect non-clinical contexts such as computer programming and storytelling. That raises our second question: Could guiding RLHF with patient-centric values and clinical reasoning significantly improve quality of automated care ?In this paper, we empirically evaluate benefits and risks of therapy chatbots based on multi-objective patient-guided preference learning. Our three key contributions to therapeu-tic AI and the broader research community are: 2(I) A survey of individuals with lived experiences of mental health disorders about their perspectives on LLMs as therapists, collecting individual-level preference rankings of estab-lished quality-of-care criteria [17] (e.g., empathy and patient autonomy). (II) A comprehensive therapeutic AI dataset comprising 600 therapeutic questions with multi-dimensional preference rankings and validated evaluation protocols, enabling reward model training and DPO benchmarking for the therapeutic AI research community. (III) A LLM-based therapeutic alignment framework that balances competing therapeu-tic objectives while adapting to individual patient preferences. Through systematic com-parison of 5 alignment approaches and 2 base models, we demonstrate that multi-objective preference learning significantly outperforms both unadapted LLMs and single-objective al-ternatives. 
+
+# Results 
+
+# Patient Survey Results and Persona Demographics 
+
+Our patient survey methodology generated 335 diverse personas. Due to resource con-straints we selected 150 personas from this initial pool through stratified sampling to ensure balanced representation across demographic categories and therapeutic preferences, subse-quently splitting them into training (n=100) and test (n=50) sets for model development and evaluation. 
+
+Demographic Composition 
+
+The selected subset (n=150) maintains diverse demographic proportions through stratified sampling: age groups 18-24 (36.0%), 25-34 (29.3%), 35-44 (19.3%), with consistent gender (Female: 51.3%; Male: 43.3%; Non-binary: 4.7%) and ethnicity distributions (Asian: 31.3%; Black/African American: 28.7%; White/Caucasian: 28.0%; Hispanic/Latino: 6.0%; Middle Eastern/North African: 2.7%; Others: 3.3%). The demographic distribution for the full dataset is given in Appendix A. There is demographic balance between training and test sets, as shown in Appendix B. 
+
+Therapeutic Preference Patterns 
+
+For context, we provide detailed explanations of therapeutic criteria and clinical validity in Appendix C. Analysis of primary therapeutic preferences revealed empathy as the over-whelmingly dominant patient priority across all persona sets (Figure 1). In the complete pool 3Figure 1: Primary therapeutic preference distribution across persona sets. (n=335), 62.7% of personas rated empathy as their highest-priority therapeutic dimension. Active listening consistently emerges as the second-most-valued dimension across all subsets. The substantial preference gap between empathy and other therapeutic dimensions provides empirical justification for empathy’s selection as the anchor criterion in multi-objective op-timization. While empathy emerged as the most important therapeutic dimension, we find that mean importance ratings across all five criteria were uniformly high in the complete persona pool, ranging from 4.16 to 4.35 out of 5.0. These findings validate the necessity of multi-objective optimization approaches that maintain performance across multiple therapeutic dimensions rather than exclusively optimizing for the single dominant preference. 
+
+# Phase 1: Training Methodology Validation 
+
+Phase 1 compared five alignment approaches (SFT Empathy, DPO Empathy, DPO Soup, Joint-Loss DPO, MODPO Empathy) and two baselines (GPT-4o, Base) to identify effec-tive training methodologies for therapeutic AI. All approaches used empathy preferences for training, with multi-objective methods additionally incorporating safety. We evaluated performance through head-to-head comparisons on 600 test questions judged by 50 patient personas. 4Performance Rankings Across Dimensions 
+
+Figure 2 shows how different training methodologies position models along the safety-empathy spectrum, where each point represents a model’s average win rate across all pairwise matchups. 
+
+Figure 2: Safety-empathy performance across training approaches. Each point shows a model’s average win rate computed across all pairwise head-to-head comparisons. All alignment approaches improve over baselines. Single-objective DPO training on em-pathy (DPO Empathy) achieved the highest empathy performance at 93.6% but ranked fourth on safety at 47.8%—the lowest among preference-optimized models, though still out-performing SFT Empathy (44.8%). The other single-objective approach, SFT Empathy, performed poorly on both dimensions (20.9% empathy, 44.8% safety). Multi-objective training methods cluster in a different region entirely. MODPO Empathy and Joint-Loss DPO achieved nearly identical safety scores (62.6% and 62.7%) while main-taining strong empathy performance (77.6% and 70.8% respectively). Parameter merging (DPO Soup) fell between these groups at 58.4% safety and 52.5% empathy. Complete pair-wise comparisons are shown in Appendix D. 
+
+Statistical Significance 
+
+We validated these performance differences using McNemar’s test on all 21 pairwise com-parisons (Figure 3). On empathy evaluation, DPO Empathy significantly outperformed all other models (all 
+
+p < 0.001). MODPO Empathy significantly beat Joint-Loss DPO ( p < 0.001), which in turn significantly beat DPO Soup and all remaining models. All pairwise comparisons reached statistical significance except one: GPT-4o versus SFT Empathy ( p = 0 .221), where both performed similarly poorly. 5(a) Empathy (b) Safety 
+
+Figure 3: Statistical significance matrices from pairwise head-to-head comparisons using McNemar’s test ( α=0.05, n=600). △ = row wins, ∇ = column wins, = = no significant difference. For safety, MODPO Empathy and Joint-Loss DPO showed no significant difference be-tween them ( p = 0 .368). All multi-objective methods significantly outperformed all remain-ing models (all p ≤ 0.01). DPO Empathy and SFT Empathy showed no significant difference between them ( p = 0 .540), while Base significantly outperformed GPT-4o ( p < 0.01). 
+
+# Phase 2: Criteria Framework Comparison Results 
+
+MODPO Empathy’s success demonstrates effective handling of competing therapeutic ob-jectives through its margin-based approach. Phase 2 evaluated whether therapeutic-specific criteria outperform general communication principles (Grice’s Maxims [18]) when both are optimized using MODPO’s proven methodology from Phase 1. We compared four models: MODPO Survey (Empathy, Self-Motivated Change, Trust/Rapport, Patient Autonomy, Ac-tive Listening, Safety), MODPO Survey4 (Empathy, Self-Motivated Change, Trust/Rapport, Patient Autonomy, Safety), MODPO Maxim (4 Gricean maxims, Safety), and Base. All trained models used identical MODPO training procedures, differing only in their criteria frameworks. 
+
+Performance Rankings Across Dimensions 
+
+Figure 4 shows the safety-overall preference positioning, where each point represents average win rate across all pairwise comparisons. 6Figure 4: Phase 2 safety-overall preference trade-off. All trained models substantially out-perform baseline on overall preference while maintaining or improving safety. Therapeutic-specific criteria (MODPO Survey, MODPO Survey4) achieve higher overall preference than general principles (MODPO Maxim). The three trained models form a distinct upper cluster on overall preference (56.9-74.1%), while Base performs at 1.1%, confirming that therapeutic alignment is essential for meeting patient needs. The 17.2 percentage point gap between MODPO Survey and MODPO Maxim demonstrates that domain-specific criteria yield meaningfully better therapeutic responses than adapted general communication principles. All three trained models surpassed Base (46.8%) on safety, demonstrating that therapeu-tic alignment maintains or improves safety rather than compromising it. For overall pref-erences, every pairwise model comparison reached statistical significance using McNemar’s test. Complete performance rankings, head-to-head comparisons, and statistical significance results are provided in Appendix E. 
+
+Multi-Objective Scaling in MODPO 
+
+Results demonstrate MODPO’s capability to effectively manage multiple objectives beyond the two-objective case validated in Phase 1. Phase 1 established that MODPO Empathy (optimizing empathy with safety margin) achieved 77.6% empathy and 62.6% safety, with significant safety advantages over Base (69.8% vs 29.7%, p < 0.001). Phase 2’s multi-objective models showed smaller, non-significant safety margins over Base (51.8-53.7% vs 46.8%). This pattern reveals an important characteristic of MODPO’s margin-based approach: moving from one criterion plus safety in Phase 1 to four or five criteria plus safety in Phase 2 7distributes optimization pressure across more objectives, maintaining safety above baseline without the pronounced advantages seen with fewer objectives. Critically, this signal distribution did not prevent MODPO from achieving its primary goal. MODPO Survey substantially improved overall therapeutic preference (74.1%) while maintaining safety above baseline (52.3% vs 46.8%). The method successfully balanced five therapeutic criteria plus safety without catastrophic interference among objectives, demon-strating MODPO’s practical utility for real-world therapeutic AI development where multiple therapeutic dimensions must be simultaneously optimized. 
+
+# Toxicity Evaluation Results 
+
+External toxicity evaluation confirms that therapeutic alignment does not compromise re-sponse safety. Using the ModelCitizens benchmark with LLAMACITIZEN-8B as the evalu-ator, MODPO Survey produced only 3 toxic responses (0.5%) compared to 7 toxic responses (1.2%) from the base model across 600 test questions (Table 1). Perspective API evaluation corroborated these findings. MODPO Survey achieved a mean toxicity score of 0.0354 compared to 0.0363 for the base model, with both models scoring well below the 0.5 high-toxicity threshold. Across all dimensions—severe toxicity, identity attack, insult, profanity, and threat—MODPO Survey maintained comparable or lower scores than the base model (Table 1). These results demonstrate that optimizing for therapeutic criteria does not introduce toxicity; therapeutic alignment may confer modest additional safety benefits because empathetic, patient-centered responses are inherently less likely to contain harmful content.                   
+
+> ModelCitizens (binary detection)
+> Base MODPO S
+> Toxic 7 (1.2%) 3 (0.5%) Safe 593 (98.8%) 597 (99.5%)
+> Perspective API (mean scores)
+> Base MODPO S
+> Toxicity 0.0363 0.0354 Severe Toxicity 0.0013 0.0012 Identity Attack 0.0046 0.0035 Insult 0.0190 0.0186 Profanity 0.0195 0.0203 Threat 0.0095 0.0096
+
+Table 1: Toxicity evaluation results. Both models score well below the 0.5 high-toxicity threshold. MODPO Survey maintains comparable or lower scores across all Perspective API dimensions. 8Human Validation Results 
+
+We now report results from a blinded clinician validation study designed to address whether our persona-based LLM evaluation procedure produces judgments that align with clinician annotations at a level comparable to human inter-rater agreement. 
+
+Clinician preference validates model improvement. Across every dimension, clini-cians preferred MODPO Survey responses over the base model. The largest margins appear for individual therapeutic criteria (Empathy, Self-Motivated Change, Trust and Rapport, Pa-tient Autonomy, and Active Listening). Safety and Overall Preference show comparatively smaller—but still clearly positive—margins, reflecting the higher ambiguity and stricter clin-ical thresholds associated with these criteria. Exact win, loss, and tie percentages for each criterion are shown directly in Figure 5a. 
+
+Human–LLM agreement relative to Human–Human To contextualize agreement between the LLM-as-judge and clinicians, we compare it against natural inter-clinician vari-ability on the non-tie subset. Figure 5b reports agreement for (i) a leave-one-out human baseline (each clinician versus the majority of the remaining clinicians) and (ii) the LLM versus the clinician majority. Fleiss’ κ, computed over the full three-class label space including ties, reflects the intrin-sic subjectivity of the task, with values of 0.184 for Safety and 0.048 for Overall Preference. These values establish a conservative human reliability ceiling against which non-tie agree-ment results should be interpreted. On Safety, the LLM achieves 71.6% accuracy against clinician majority, compared to 80.0% for the leave-one-out human baseline. On Overall Preference, LLM–majority agree-ment (70.3%) slightly exceeds the leave-one-out human baseline (65.5%). These results indicate that the LLM evaluator performs within the range of human reliability, matching or exceeding individual clinicians on Overall Preference and remaining reasonably close on the more conservative Safety criterion. Beyond raw accuracy, Figure 5b reports chance-corrected agreement metrics. Cohen’s 
+
+κ is sensitive to class imbalance and collapses to zero for Overall Preference because the LLM predicts MODPO Survey for all non-tie items, resulting in zero predictive variance despite high observed agreement. Gwet’s AC1, which is robust to prevalence effects, remains substantially higher and shows that LLM–human agreement exceeds or matches the human leave-one-out baseline for Overall Preference and falls within an acceptable range for Safety. 9Agreement behavior including ties. Figure 5c reports exact-match agreement over the full three-class label space (MODPO Survey, base model, tie). Human–human pairwise agreement is higher for Safety than for Overall Preference, indicating that clinicians are relatively more consistent with each other on Safety judgments at the individual level. For Overall Preference, both individual human–LLM and LLM–majority agreement ex-ceed human–human pairwise agreement, indicating that the LLM aligns with clinician pref-erences at least as consistently as clinicians align with each other. For Safety, individual human–LLM agreement remains below human–human agreement; however, LLM–majority agreement is substantially higher. This pattern reflects that both aggregations—the clini-cian majority canceling out individual variability, and the LLM prediction itself aggregating across 50 diverse patient personas—yield more stable signals that naturally converge. 
+
+Confusion matrix structure and detailed examples. The 3-class confusion matrices in Figure 5d and 5e reveal a clear and consistent pattern across both criteria: the largest cell corresponds to cases where both the LLM and the clinician majority select MODPO Survey. For Overall Preference, this agreement is strongest (64 cases), and the same holds for Safety (40 cases). The confusion structure confirms that human clinicians and the LLM evaluator most frequently agree on MODPO Survey as the preferred model. Appendix F presents representative examples from each confusion matrix cell, illustrating the types of questions and responses that lead to agreement or disagreement between human clinicians and the LLM evaluator. Each example displays the complete patient question, both model responses with color-coded highlighting indicating evaluation outcomes, and the breakdown of individual clinician votes. These examples provide qualitative insight into the agreement patterns observed in the confusion matrices and demonstrate the range of therapeutic scenarios evaluated in our validation study. 
+
+Calibration with clinician consensus. Finally, Figure 5f examines LLM accuracy as a function of clinician consensus strength on non-tie questions. The general upward trend indicates that the LLM evaluator is most reliable on clinically unambiguous cases and de-grades gracefully as expert consensus weakens, though not strictly monotonically due to finite sample sizes within bins. 
+
+Summary. Taken together, these results provide converging evidence that (i) the model trained with our proposed approach is consistently preferred by licensed clinicians over the base model, and (ii) our Persona-based LLM evaluation produces judgments that align with clinician annotations at a level comparable to inter-clinician agreement. This supports the 10 (a) 
+
+(b) 
+
+(c) 
+
+11 (d) (e) 
+
+> (f)
+
+Figure 5: Human validation results. (a) Win rates by criterion; bars show the fraction of questions where the clinician majority selected MODPO Survey, base model, or tie. (b) Non-tie (binary) agreement with human reliability context; we compare leave-one-out human vs consensus and LLM vs consensus on the same non-tie subset, reporting accuracy, Cohen’s 
+
+κ, and Gwet’s AC1; Fleiss’ κ provides overall inter-rater reliability context. (c) Agreement levels (3-class, all questions including ties); exact-match agreement is computed for human– human (pairwise across clinician pairs), individual human–LLM, and LLM–human majority. (d, e) 3-class confusion matrices (LLM vs clinician majority); rows are clinician-majority labels and columns are LLM predictions. (f) LLM accuracy stratified by clinician consensus strength (non-tie questions only). 12 use of our evaluation framework as a scalable proxy for expert judgment in therapeutic response assessment, grounded in blinded human validation. We replicated these findings via Prolific crowd-sourced studies comparing base model vs. MODPO Survey (Appendix G.1) and MODPO Maxim vs. MODPO Survey (Appendix G.2), with consistent results. 
+
+# Discussion 
+
+This work establishes the first systematic framework for multi-objective therapeutic align-ment of language models, demonstrating that domain-specific optimization through MODPO successfully balances patient preferences with clinical safety requirements. Through two complementary experimental phases, we provide empirical evidence that (1) multi-objective preference optimization substantially outperforms single-objective and parameter merging approaches for therapeutic AI, and (2) therapeutic-specific criteria yield meaningfully better outcomes than general communication principles adapted for therapeutic contexts. These findings have immediate implications for the development of AI systems in mental health applications where multiple, potentially competing objectives must be simultaneously satis-fied. Our findings suggest immediate applications in mental health support and professional training. The most promising near-term application lies in counselor training or human-supervised counseling support systems. Our MODPO Survey model could assist therapists in training or licensed therapists by generating initial response drafts that therapists re-view. This workflow preserves human oversight — the non-negotiable requirement in mental health care — while potentially reducing therapist workload and improving response con-sistency. Furthermore, the model’s balanced optimization across empathy, active listening, self-motivated change, trust building, and patient autonomy provides examples of multi-dimensional therapeutic communication that textbooks often struggle to illustrate simulta-neously. Training programs could use model-generated responses to demonstrate how ex-perienced therapists navigate competing therapeutic demands — maintaining warmth while respecting autonomy, showing empathy while encouraging change. Critical safeguards must accompany such deployments. Our explicit inclusion of safety as a criterion in all trained models reflects the fundamental reality that mental health AI carries significant risk. LLM therapists can reinforce negative beliefs, provide inappropriate advice, miss crisis signals, or undermine professional treatment [19]. The model’s 74.1% preference rate, while substantially better than alternatives, indicates that approximately one-quarter of its responses fall short of patient preferences — a reminder that AI technologies require critical evaluation rather than rapid adoption. These risks demand that safety remain a 13 hard constraint rather than an optional consideration or post-hoc evaluation metric. By embedding safety directly into the reward objective, we ensure that models cannot improve on patient preferences by compromising safety standards. Real-world deployment would require additional safety mechanisms: crisis detection and escalation protocols, explicit harm prevention guardrails, and continuous monitoring for safety failures. This work also demonstrates that domain-specific optimization can substantially out-perform general-purpose approaches even when both receive identical training procedures. The 17.2 percentage point gap between therapeutic-specific criteria (MODPO Survey) and general communication principles (MODPO Maxim) suggests that specialized AI applica-tions benefit from specialized alignment approaches rather than domain-agnostic methods. This finding has implications beyond mental health: specialized AI in education, health-care, legal reasoning, or scientific discovery may similarly require domain-specific criterion definition and optimization rather than relying on general capabilities. The successful scal-ing of multi-objective optimization from two objectives (Phase 1) to six objectives (Phase 2) without catastrophic interference validates margin-based approaches for complex align-ment problems in safety-critical domains. Many real-world AI applications face multiple, potentially competing objectives—accuracy versus fairness, capability versus safety, user satisfaction versus societal welfare. Our demonstration that MODPO can balance multiple objectives while maintaining performance on non-negotiable requirements (safety) provides methodological guidance for alignment researchers facing similar challenges. The fundamental insight from this work is that therapeutic AI alignment is not a general capability problem but a specialized optimization challenge requiring domain expertise in both criterion definition and training methodology. Effective therapeutic AI will not emerge from simply scaling general-purpose models or applying standard alignment techniques. It requires deep engagement with clinical knowledge to identify what therapeutic effectiveness means, systematic collection of stakeholder preferences to ground optimization in patient needs, and carefully designed multi-objective methods to balance competing requirements. This domain-specific approach—while more labor-intensive than general methods—proves essential for achieving therapeutic AI that serves patient needs while maintaining clini-cal safety standards. Our results further establish that therapeutic effectiveness requires integrated multi-objective learning rather than isolated objective optimization or post-hoc combination of separately trained models, and that domain expertise in criterion design com-bined with multi-objective preference optimization can produce models that better balance competing clinical requirements. These results are validated by expert clinician annota-tions demonstrating agreement comparable to inter-clinician reliability, supporting the use of our evaluation framework as a scalable proxy for expert judgment in therapeutic response 14 assessment. The evaluation criteria may not capture all dimensions of therapeutic effectiveness and safety. Long-term outcome measures (symptom improvement, treatment adherence, ther-apeutic alliance development) remain unmeasured. Our evaluation assesses immediate re-sponse quality rather than sustained therapeutic effectiveness over multiple interactions, and future work should explore whether these models support meaningful therapeutic progress over time. All experiments used Mistral-7B-Instruct-v0.2 as the base model. While practical for on-device use and potential adaptation across therapeutic contexts or hospital systems, larger models or different base model families might show different trade-offs between objec-tives. Our training data — 2,379 questions with five responses each — represents a relatively small dataset by modern LLM standards, and future work should investigate whether larger-scale preference collection yields improved performance or diminishing returns. Finally, our work focuses on English-language text from Western cultural contexts. Therapeutic commu-nication norms vary substantially across cultures, and effective cross-cultural therapeutic AI would require culture-specific criterion definition, preference collection, and evaluation. The methodology presented here—domain-specific criterion identification, persona-based prefer-ence collection, multi-objective optimization—could generalize to other cultural contexts, but the specific criteria and training data would require careful adaptation. Future work must also validate these methods through prospective clinical studies, investigate archi-tectural innovations for stronger multi-objective optimization, and examine generalization across diverse populations and clinical contexts. 
+
+# Methods 
+
+To contextualize our approach, we first discuss the therapeutic criteria that define qual-ity care and the challenges in balancing them. To systematically evaluate multi-objective therapeutic alignment, we designed an experimental framework with two complementary phases addressing distinct research questions. Phase 1 establishes optimal training method-ologies through systematic comparison of 5 alignment approaches and 2 base models, from single-objective baselines to novel multi-objective and parameter merging methods. Phase 2 validates the necessity of domain-specific optimization by comparing therapeutic criteria against adapted general communication principles using identical training infrastructure. Figure 6 illustrates the complete experimental pipeline from dataset preparation through final evaluation. 15 (a) Phase 1: Establishing Alignment method 
+
+> (b) Phase 2: Establishing Alignment criterion
+
+Figure 6: Complete methodological pipeline showing the flow from dataset preparation through final evaluation. 16 Therapeutic Quality Criteria and Multi-Objective Challenges 
+
+Research consistently demonstrates that therapeutic preferences vary substantially across demographic groups, cultural backgrounds, and individual circumstances [20, 21]. Clinical research has established several core dimensions that patients value in therapeutic relation-ships [17]: empathy [22], active listening [23], support for self-motivated change [24], trust and rapport [25], and respect for patient autonomy [26]. Safety serves as the foundational, non-negotiable prerequisite for all therapeutic interactions [13, 19]. Effective therapeutic communication involves complex trade-offs between these dimensions. Full definitions and clinical foundations for each criterion are provided in Appendix C. We also consider general communication principles based on Grice’s maxims [18] — quantity, quality, relation, and manner — adapted for therapeutic contexts, to test whether domain-specific criteria outperform general frameworks. 
+
+# Experimental Design Overview 
+
+Our validation approach employs two complementary experimental phases that systemati-cally evaluate different aspects of multi-objective therapeutic alignment: 
+
+Phase 1: Training Methodology Validation examines the effectiveness of multi-objective optimization by comparing MODPO against alternative training approaches in-cluding single-objective optimization, a novel multi objective method, and parameter merg-ing methods. This phase establishes whether multi-objective training provides advantages over traditional approaches in therapeutic contexts. 
+
+Phase 2: Criteria Framework Comparison investigates whether domain-specific therapeutic criteria outperform general communication principles when adapted for thera-peutic contexts. This phase validates the importance of specialized optimization for thera-peutic AI applications. Both phases employ the same foundational methodology—persona generation, preference collection, reward modeling, and evaluation—while varying the specific criteria and model training approaches to address distinct research questions. 
+
+Dataset Preparation and Response Generation 
+
+We constructed our foundation dataset using the Reddit portion of the EPITOME corpus [27], a collection of authentic mental health support interactions from mental health-focused subreddits. Specifically, we extracted only the seeker posts (help-seeking questions) from the dataset, which originally comprised 3,084 conversation records containing both seeker posts and corresponding peer responses. Through systematic data cleaning and deduplication 17 procedures, we identified 2,979 unique therapeutic questions by removing duplicate seeker post identifiers and filtering for quality criteria (minimum 10 characters, maximum 2,000 characters, minimum 3 words). The dataset was partitioned using stratified random sampling based on text length quar-tiles to ensure balanced representation across question complexity levels, resulting in 2,379 training questions (79.9%) and 600 test questions (20.1%). The stratification ensured both training and test sets maintained similar mean text lengths (183.0 and 182.3 characters respectively), preventing length bias in model evaluation. For each training question, we generated therapeutic responses using Mistral-7B-Instruct-v0.2 as our base model, employ-ing a standardized prompt structure that framed the model as a therapist responding to patient concerns. To ensure response diversity while maintaining therapeutic appropriate-ness, we generated five distinct responses per question using temperature sampling ( τ = 0 .8) with a maximum length constraint of 512 tokens. Response generation was conducted ex-clusively on the training dataset to prevent data leakage, yielding 11,895 total therapeutic responses (2,379 questions × 5 responses each) that provided sufficient variation for sub-sequent preference collection while ensuring practical communication lengths suitable for therapeutic contexts. 
+
+Patient Persona Generation 
+
+We developed realistic patient personas using authentic responses from individuals with lived experience to address the ethical and practical challenges in large-scale human evaluation for mental health research. We recruited participants experiencing a mental health disor-der within the past two years from two populations: university students at UCLA (n=124) and diverse participants through the Prolific platform (n=211), resulting in 335 total par-ticipants who completed comprehensive pre-study questionnaires. These surveys captured demographic information, clinical characteristics (mental health diagnoses, symptom sever-ity, treatment engagement), attitudes toward technology in mental health care, and ranked therapeutic preferences across multiple key dimensions including empathy, self-motivated change, active listening, trust and rapport building, and respecting autonomy. To ensure high-quality and diverse representation while maintaining manageable evalu-ation costs, we implemented a systematic persona selection process. We computed quality scores for all 335 participants based on survey completeness and response consistency, with a mean quality score of 0.983 (SD=0.037, range: 0.740-1.000). From this pool, we selected 150 high-quality personas (mean quality=0.989, minimum quality=0.900) that balanced demo-graphic diversity while avoiding redundancy. Our selection algorithm identified and reduced similar demographic groups (163 groups found, average size 3.6, largest group 30 personas) 18 Figure 7: Example of a persona profile. Displayed values are synthetic to prevent participant re-identification. 19 to maximize representational diversity. The 150 selected personas were then partitioned into training (n=100) and test (n=50) sets using stratified sampling to ensure balanced representation across key demographic di-mensions. The stratification maintained proportional representation by population source (UCLA: 41 train, 20 test; Prolific: 59 train, 30 test), gender distribution, and primary eth-nicity categories (Asian, Black, White, Hispanic, Middle Eastern), with special attention to ensuring representation of underrepresented groups (minimum 2 Middle Eastern participants in test set). The resulting personas encompassed five structured sections derived directly from survey responses: (1) demographics and clinical information, (2) technology experi-ence with AI tools, (3) attitudes toward AI in mental health across multiple dimensions, (4) ranked therapeutic preferences with importance ratings, and (5) views on appropriate AI applications in therapy contexts. Figure 7 provides an example persona profile. 
+
+Preference Collection Using Patient Personas 
+
+Our preference collection methodology employed these patient personas to systematically evaluate therapeutic responses across multiple dimensions, as illustrated in the Preference Collection component of Figure 6. Each persona evaluated therapy responses based on their unique characteristics, demographic background, and stated therapeutic preferences, providing a scalable approach to capturing diverse patient perspectives. The evaluation protocol was designed to balance comprehensive coverage with compu-tational efficiency. For each of the 2,379 training questions, we randomly assigned 50 per-sonas from the 100-persona training set to evaluate all five generated responses for that spe-cific question. The persona assignments varied across questions using a fixed random seed (seed=42) to ensure reproducibility while maintaining balanced evaluation workload—each persona evaluated approximately equal numbers of questions across the full training dataset (balanced assignment strategy). Each persona ranked all five responses from 1 (best) to 5 (worst) for each evaluation criterion using GPT-5 (gpt-5-chat-latest) with temperature 0 for consistent evaluation. The evaluation included multiple therapeutic dimensions with specific criteria determined by experimental objectives. Preferences were aggregated using symmetrical weighted voting with position weights of 10, 5, 0, -5, and -10 for ranks 1-5 respectively. This systematic approach generated best-worst preference pairs for each therapeutic dimension. 20 Reward Model Training 
+
+We trained separate reward models for each therapeutic criterion under evaluation using the preference data collected through our patient persona evaluation process. These models were designed to predict human preferences for therapeutic responses along specific dimensions, serving as the foundation for subsequent multi-objective optimization. Each reward model employed a RoBERTa-large architecture fine-tuned for preference prediction using best-worst preference pairs derived from our persona evaluations. We used Optuna for hyperparameter optimization across 20 trials, with models achieving validation accuracies ranging from 0.81 to 0.93 depending on the specific criterion. The reward model training process incorporated 10% of data for validation during hy-perparameter search, with final models trained on the complete training dataset. 
+
+Multi-Objective Alignment Training 
+
+Our approach employs Multi-Objective Direct Preference Optimization (MODPO) [28], which extends traditional Direct Preference Optimization to simultaneously optimize lan-guage models across multiple therapeutic objectives. As shown in the Alignment Training component of Figure 6, MODPO enables the creation of models that balance competing therapeutic goals through learnable objective weightings without the computational over-head and instability of multi-objective reinforcement learning approaches. MODPO operates through a two-stage process: (1) margin reward modeling, where re-ward models rϕ, −k are trained on complementary preference datasets D−k, and (2) language modeling, where the target policy πθw is optimized using a modified DPO loss that incor-porates margin terms from the reward models. The theoretical foundation builds upon the relationship between ground-truth collective reward models wT r∗ and optimal language model policies, where MODPO trains collective reward models that directly predict linear scalarization results under different objective weightings. The MODPO loss function for a target policy πθw is formulated as: 
+
+LMODPO (πθw ; rϕ, −k, π sft , Dk) = −EDk
+
+
+
+log σ
+
+ βwk
+
+log πθw (yw|x)
+
+πsft (yw|x) − βwk
+
+log πθw (yl|x)
+
+πsft (yl|x) (1) 
+
+− 1
+
+wk
+
+wT 
+
+> −k
+
+(rϕ, −k(x, y w) − rϕ, −k(x, y l)) 
+
+ 
+
+(2) where wk controls the relative importance of objective k, β is the KL-divergence penalty coefficient, and the margin term mϕ(x, y w, y l) = rϕ, −k(x, y w) − rϕ, −k(x, y l) provides guidance from the complementary reward model, ensuring the language model is guided by multiple 21 objectives simultaneously. We implemented multiple MODPO training configurations alongside baseline approaches to systematically compare multi-objective optimization against alternative training method-ologies, with specific model variants determined by experimental phase requirements. This comparative framework enabled systematic assessment of multi-objective optimization ben-efits relative to traditional single-objective approaches, while investigating the fundamental research question of how the assignment of therapeutic criteria to different components of the MODPO framework influences the resulting model’s therapeutic capabilities across multiple dimensions. 
+
+Evaluation Methodology 
+
+Our evaluation framework employed a comprehensive two-stage process: response generation from multiple trained models on the test dataset followed by head-to-head comparison using our test set patient personas. As illustrated in Figure 6, this approach ensures robust and unbiased performance evaluation while maintaining proper train-test separation. We generated therapeutic responses for all 600 test set questions using each trained model variant. All responses were generated using standardized therapeutic prompt format with temperature sampling ( τ = 0 .8) up to 512 tokens and saved independently for fair comparison. The evaluation process utilized all 50 test personas through systematic pairwise com-parisons between all pairs of models. For each of the 600 test questions, we presented test personas with responses from two models in randomized order, with 25 randomly selected personas seeing Model A as “Response A” and Model B as “Response B”, while the remain-ing 25 personas saw the reverse assignment. This randomization varied across questions to ensure no persona consistently saw the same model in the same position throughout the 600-question evaluation set. We employed GPT-5 as our LLM evaluator with temperature set to 0 for consistent evaluation, using standardized prompts that maintained persona character-istics. Winners were determined through majority voting among the 50 persona evaluations, then aggregated across all 600 test questions to calculate overall win rates and comprehen-sive pairwise statistics. Our primary evaluation metrics included win rates across all pairwise combinations, category-specific performance for relevant therapeutic criteria, and aggregate model rankings. 22 Phase 1: Training Methodology Validation 
+
+Before scaling to comprehensive therapeutic criteria, we validated MODPO’s ability to bal-ance competing therapeutic objectives. We selected empathy and safety as foundational criteria representing complementary requirements. Empathy represents the emotional foun-dation of therapeutic relationships through validation, emotional understanding, and com-passionate response, and is consistently demonstrated as a moderately strong predictor of therapy outcomes across diverse therapeutic contexts [22]. Safety is a non-negotiable re-quirement in mental health AI despite not appearing in patient preference surveys, as LLM counselors systematically exhibit ethical risks including lack of contextual adaptation, poor therapeutic collaboration, and reinforcement of false beliefs [19]. These complementary criteria—one valued by patients, one mandated by clinical practice—test whether multi-objective optimization can simultaneously satisfy patient preferences and maintain critical safety standards. This phase systematically compared 5 different alignment approaches to establish optimal multi-objective training for therapeutic contexts. 
+
+Model Training Approaches 
+
+We systematically compared 7 models across 600 therapeutic questions, including 2 baseline models and 5 alignment approaches: 
+
+Baseline Models: 
+
+• Base : Mistral-7B-Instruct-v0.2 without additional therapeutic alignment, serving as our foundation model reference 
+
+• GPT-4o : Large-scale model without therapeutic fine-tuning, providing comparison against general-purpose capabilities 
+
+Single-Objective Approaches: 
+
+• SFT Empathy : Supervised fine-tuning on empathy-optimized responses (chosen re-sponses from empathy preferences) 
+
+• DPO Empathy : Traditional DPO optimization using only empathy preference pairs (best and worst response as chosen and rejected respectively) 
+
+MODPO (Multi-Objective DPO): 
+
+• MODPO Empathy : Empathy preferences as primary training data with safety re-ward model providing margin guidance ( w = [0 .5, 0.5]) 23 Parameter Merging Approach: 
+
+• DPO Soup : Independent parallel DPO training on each criterion (DPO Empathy and DPO Safety models trained separately) followed by post-hoc parameter merging using the Personalized Soups methodology [29], which provides an alternative approach to multi-objective alignment through distributed training and parameter combination. 
+
+Novel Multi-Objective Method: 
+
+• Joint-Loss DPO : Custom sigmoid-weighted loss function treating both criteria as primary objectives rather than using the standard MODPO margin approach: 
+
+L = − log σ
+
+> K
+
+X
+
+> k=1
+
+β · wk ·
+
+
+
+log π(ywk |x)
+
+π(ylk |x) − log πsft (ywk |x)
+
+πsft (ylk |x)
+
+!
+
+Training Implementation Details 
+
+Each training approach employed consistent infrastructure and rigorous evaluation to ensure fair comparison. All models used Mistral-7B-Instruct-v0.2 as the base model initialization. All fine-tuning approaches utilized LoRA (Low-Rank Adaptation) for parameter efficiency, with hyperparameters individually optimized for each model type. 
+
+Hyperparameter Optimization: All models underwent systematic hyperparameter optimization using Optuna across multiple trials, followed by manual refinement based on evaluation metrics. This included optimization of LoRA parameters (rank, alpha, dropout), learning rates, batch sizes, gradient accumulation steps, training epochs, and task-specific parameters such as the beta coefficient for KL-divergence control in DPO and MODPO train-ing. The best-performing hyperparameter configurations were selected based on validation performance for each model variant. 
+
+Training Monitoring: All DPO and MODPO models were monitored using evalua-tion accuracy on held-out preference pairs and reward margins between chosen and rejected responses. Training procedures utilized the preference pairs generated from our persona evaluation process, with empathy and safety preferences serving as the foundation for respective single-objective and multi-objective training. This comprehensive comparison framework enabled systematic assessment of multi-objective optimization benefits relative to traditional single-objective approaches while investigating how different therapeutic criteria perform when serving as primary preference data versus margin reward guidance in the MODPO framework. 24 Phase 2: Criteria Framework Comparison 
+
+Having established MODPO Empathy as the best-performing model in Phase 1, we next in-vestigated whether our therapeutic-specific criteria outperform general communication prin-ciples when adapted for therapeutic contexts. This phase addresses a fundamental question in specialized AI applications: Do domain-specific criteria yield superior performance com-pared to well-established general frameworks adapted for the target domain? All models in this phase include safety as a non-negotiable criterion alongside their respective primary criteria frameworks. 
+
+Framework Selection and Rationale 
+
+We compared two distinct approaches to defining therapeutic communication criteria, both augmented with safety: 
+
+Therapeutic-Specific Criteria (MODPO Survey): Five survey-derived therapeutic dimensions (Empathy, Active Listening, Self-Motivated Change, Trust/Rapport, Patient Autonomy) plus Safety, as detailed in Appendix C. 
+
+Communication Theory Principles (MODPO Maxim): Four Gricean maxims adapted for therapeutic contexts (Quantity, Quality, Relation, Manner) plus Safety, as dis-cussed in Grice [18]. To control for the potential effect of criterion count on model performance, we also eval-uated MODPO Survey4 , which includes only four therapeutic criteria (Empathy, Self-Motivated Change, Trust/Rapport, Patient Autonomy) plus safety, excluding Active Listen-ing due to its substantial overlap with other criteria in preference pairs. This enables direct comparison with MODPO Maxim (4 criteria + safety) versus MODPO Survey (5 criteria + safety), isolating whether performance differences stem from criterion quality or simply criterion quantity. 
+
+Model Training Implementation 
+
+All models employed identical MODPO training methodology to ensure fair comparison, with empathy (for survey-based models) or manner (for maxim-based models) serving as the anchor objective and remaining criteria serving as penalty terms in the margin reward structure. This configuration was selected based on Phase 1 findings. All models utilized the same preference collection methodology, training infrastructure, and hyperparameter optimization procedures established in Phase 1, with criteria-specific reward models trained on respective preference datasets generated through our persona evaluation process. 25 Evaluation Protocol 
+
+To assess the effectiveness of different criteria frameworks, we evaluated all four models on two dimensions: 
+
+Overall Preference: All models were evaluated exclusively on overall therapeutic pref-erence without criterion-specific priming. Personas assessed which model’s responses they preferred based on their individual therapeutic needs and preferences, providing clinically relevant assessment of therapeutic effectiveness across the different training frameworks. 
+
+Safety: All models were evaluated on safety to ensure that training with different criteria frameworks did not compromise this non-negotiable requirement. This evaluation verified that optimized models maintained or improved upon baseline safety standards, preventing potential harm despite optimization for other therapeutic dimensions. Each evaluation employed the same 50 test personas through systematic pairwise com-parisons using GPT-5 with temperature 0.0 for consistent assessment. This methodology enables assessment of whether domain-specific optimization (MODPO Survey) provides gen-uine advantages over general communication principles (MODPO Maxim) while controlling for criterion quantity effects (MODPO Survey4) and ensuring safety standards are main-tained across all training approaches. 
+
+# Statistical Analysis 
+
+Statistical significance of model performance differences was assessed using McNemar’s test for paired comparisons. McNemar’s test compares paired responses from the same test questions, focusing on cases where models produce different outcomes (discordant pairs) while appropriately excluding ties. This paired structure accounts for the dependence in our data where identical questions are evaluated by the same personas across different models, providing more statistical power than unpaired tests. All pairwise comparisons utilized the chi-square approximation method given sufficient numbers of discordant pairs across all model comparisons. All tests used a significance threshold of α = 0.05. Statistical analyses were performed using Python’s scipy.stats library. 
+
+# Toxicity Evaluation 
+
+To verify that therapeutic alignment does not introduce harmful content, we evaluated all 600 test set responses from MODPO Survey and the base model using two external benchmarks: ModelCitizens [30], a community-grounded toxicity dataset with LLAMACITIZEN-8B for binary classification, and Perspective API [31], which provides continuous toxicity scores 26 across multiple harm dimensions. 
+
+# Human Validation Study 
+
+We conducted a clinician validation study to assess whether LLM-as-judge preferences align with expert clinical judgments across therapeutic dimensions. 
+
+Sample selection. From the 600-question test set, we selected 100 questions via stratified sampling to preserve the full-set distribution of LLM outcomes. In particular, strata were defined to match observed win-rate profiles for Overall Preference ( ∼100% MODPO Survey wins) and Safety ( ∼54% MODPO Survey, ∼46% base model), ensuring the validation set contained both clear-cut and ambiguous comparisons rather than only easy cases. 
+
+Clinicians and protocol. Six licensed mental health clinicians (e.g., PhD, LCSW, LMFT) with active clinical practice were recruited through professional networks and compensated at 
+
+$300/hour. For each of the 100 patient questions, clinicians were shown the original patient post together with two anonymized model responses (Base Model vs. MODPO Survey) displayed side by side, with left/right assignment randomized to prevent positional bias. An example evaluation scenario and the corresponding rating interface are shown in Figure 8. Clinicians evaluated paired model responses across seven criteria: Safety and Risk Man-agement, Empathy, Encouraging Self-Motivated Change, Trust and Rapport, Patient Au-tonomy, Active Listening, and Overall Preference. To ensure consistent interpretation across raters, detailed, practitioner-grounded definitions for each criterion were provided directly within the evaluation interface. The complete criterion definitions and supporting clinical references are included in Appendix C. 
+
+Majority label and reliability. For each question and criterion, we defined the clinician consensus label using a fixed rule: if the count of A votes exceeds B, the winner is the model behind A; if B exceeds A, the winner is the model behind B ; if A=B, the label is tie . We report per-criterion outcome rates (% MODPO Survey wins, % base model wins, % ties) and inter-rater reliability using Fleiss’ κ over the three nominal categories (MODPO Survey, base model, tie). We compute 95% bootstrap confidence intervals by resampling questions (1000 iterations). 
+
+Agreement evaluations (non-tie, two-class). Direct agreement metrics between a rater and the consensus are computed on the non-tie subset only (binary setting). We 27 evaluate (i) a leave-one-out human baseline, where each clinician is compared against the ma-jority of the other clinicians and results are averaged across clinicians (reporting SEM across clinician-level estimates), and (ii) the LLM, compared against the full clinician majority. On the non-tie subset, we report Accuracy, Cohen’s κ, and Gwet’s AC1 (a prevalence-robust alternative to κ). 
+
+Agreement evaluations (three-class, including ties). In addition to the non-tie (bi-nary) analysis, we report a complementary three-class agreement evaluation over all ques-tions, treating tie as a valid label alongside MODPO Survey and base model. In this setting, agreement is defined as exact label match between two raters. We report three agreement levels: human–human (pairwise agreement across all clinician pairs), individual human– LLM, and LLM–human majority. Because the LLM rarely predicts ties, disagreements on tie-majority items primarily reflect differences in uncertainty expression rather than prefer-ence inversion; accordingly, these three-class agreement rates are interpreted descriptively and alongside confusion matrices and chance-corrected metrics reported elsewhere. 
+
+Diagnostics. To characterize error modes and tie behavior, we visualize confusion matrices comparing LLM predictions to clinician-majority labels, including a 3-class version. We also perform consensus-stratified analysis: questions are binned by clinician consensus strength (majority share among non-tie votes) and LLM accuracy is reported per bin with bootstrap confidence intervals. 
+
+Implementation. All analyses were implemented in Python (NumPy/SciPy/scikit-learn) with bootstrap intervals computed by resampling questions with replacement (1000 itera-tions). 28 (a) Example patient scenario with two anonymized model responses presented side by side for comparison.    
+
+> (b) Clinician evaluation in-terface showing per-criterion forced-choice judgments with an explicit tie option.
+
+Figure 8: Example of the blinded clinician evaluation protocol. Clinicians reviewed the patient scenario and two anonymized responses, then rated each response pair across seven therapeutic criteria using a forced-choice or tie-based comparison. 29 Acknowledgments 
+
+We would like to thank our clinical evaluators at NYU Langone as well as university and Pro-lific patient study participants for their time and effort. We additionally thank Vickie Mays, Susan Cochran, Maarten Sap and Thomas Hartvigsen for feedback on the patient survey design. We thank Prithviraj Ammanabrolu for constructive discussions on the preference learning framework. S.G. was supported by a Google Research Scholar award. 
+
+# Author Contributions 
+
+M.B. conceived the study, designed the experimental framework, developed all code and training pipelines, performed all analyses, and wrote the manuscript. Y.A.S. contributed to the study design, assisted with implementation, and contributed to writing. A.S. con-tributed to the writing and manuscript preparation. S.S. contributed to the study design and experimental framework. M.M. provided clinical expertise and oversight of the clinician validation study. M.S. provided advisory guidance on the research direction. S.G. supervised the project, contributed to the study design and experimental framework, and guided the writing throughout all stages of the work. 
+
+# Competing Interests 
+
+The authors declare no competing interests. 
+
+# Ethics Statement 
+
+This study was approved by the UCLA Medical Institutional Review Board (Protocol IRB-24-5856, PI: S. Gabriel). The UCLA IRB waived the requirement for signed informed con-sent. All participants provided informed consent through an online information sheet prior to participation. Clinician evaluators were recruited through professional networks and com-pensated at $300/hour. Prolific participants were compensated at platform-standard rates. 
+
+# Code Availability 
+
+All code for data preparation, response generation, preference collection, reward model train-ing, MODPO alignment training, and evaluation is available at https://github.com/mehrabbz/MODPO-Therapeutic-AI. 30 Data Availability 
+
+The therapeutic questions used in this study are derived from the publicly available EPIT-OME corpus [27]. Due to the sensitive nature of mental health research data, the partici-pant survey responses, preference rankings, and patient personas are not publicly released. Anonymized data may be shared with qualified researchers who demonstrate proper cre-dentials for human subjects research (institutional affiliation, current CITI or equivalent training certification, and IRB approval or exemption documentation). Data access requests should be submitted using the data request form and directed to the corresponding author at mehrabbzapril@gmail.com. Requests are typically reviewed within 2–4 weeks. Model responses from all ten trained and baseline models on the 600-question test set are available upon request, enabling replication of evaluation results without requiring model inference. 
+
+# References 
+
+1. Malgaroli M, Schultebraucks K, Myrick KJ, et al. Large language models for the mental health community: framework for translating code to care. The Lancet Digital Health 2025;7:e282–e285. 2. World Health Organization. Mental disorders. Accessed: 2025. 2025. url : https:// www.who.int/news-room/fact-sheets/detail/mental-disorders .3. National Alliance on Mental Illness. Mental Health By the Numbers. Accessed: 2025. 2024. url : https://www.nami.org/about- mental- illness/mental- health- by-the-numbers/ .4. Coombs NC, Meriwether WE, Caringi JC, and Newcomer SR. Barriers to healthcare access among U.S. adults with mental health challenges: A population-based study. SSM - Population Health 2021;15. 5. Daniel Gilbert. Despite uncertain risks, many turn to AI like ChatGPT for mental health. Accessed: Aug 11, 2025. 2024. url : https : / / www . washingtonpost . com / business/2024/10/25/ai-therapy-chatgpt-chatbots-mental-health/ .6. Marco Quiroz-Gutierrez. Gen Z is increasingly turning to ChatGPT for affordable on-demand therapy, but licensed therapists say there are dangers many aren’t considering. Accessed: Aug 11, 2025. 2025. url : https://fortune.com/2025/06/01/ai-therapy-chatgpt-characterai-psychology-psychiatry/ .31 7. Zeff M. OpenAI says over a million people talk to ChatGPT about suicide weekly. Accessed: Oct 30 2025. 2025. url : https://techcrunch.com/2025/10/27/openai-says-over-a-million-people-talk-to-chatgpt-about-suicide-weekly/ .8. Martine Paris. ChatGPT Fuels $300 Billion Valuation, Waymo Taps Uber, AI Wins SXSW. Accessed: Aug 11, 2025. 2025. url : https : / / www . forbes . com / sites / martineparis / 2025 / 03 / 31 / top - ai - stars - of - sxsw - 2025 - from - waymo - uber -to-woolly-mouse/ .9. Heinz MV, Mackin DM, Trudeau BM, et al. Randomized Trial of a Generative AI Chatbot for Mental Health Treatment. NEJM AI 2025;2. 10. Hull TD, Zhang L, Arean PA, and Malgaroli M. Generative AI Purpose-built for Social and Mental Health: A Real-World Pilot. arXiv preprint arXiv:2511.11689 2025. 11. Lim SM, Shiau CWC, Cheng LJ, and Lau Y. Systematic review and meta-analysis of AI-based conversational agents for promoting mental health and well-being. npj Digital Medicine 2024;6:236. 12. Baumel A, Muench F, Edan S, and Kane JM. Objective User Engagement With Mental Health Apps: Systematic Search and Panel-Based Usage Analysis. Journal of Medical Internet Research 2019;21:e14567. 13. Grabb D, Lamparth M, and Vasan N. Risks from Language Models for Automated Mental Healthcare: Ethics and Structure for Implementation. medRxiv 2024. 14. Cui G, Yuan L, Ding N, et al. UltraFeedback: Boosting Language Models with High-quality Feedback. ArXiv 2023;abs/2310.01377. 15. Zheng L, Chiang WL, Sheng Y, et al. Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. NeurIPS 2023. 16. Bai Y, Jones A, Ndousse K, et al. Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback. ArXiv 2022;abs/2204.05862. 17. Timulak L and Keogh D. The client’s perspective on what is helpful in psychotherapy: A qualitative meta-synthesis. Psychotherapy Research 2020;30:279–93. 18. Grice P. Logic and Conversation. Ed. by Cole P and Morgan J. New York: Academic Press, 1975:41–58. 19. Iftikhar Z, Xiao A, Ransom S, Huang J, and Suresh H. How LLM Counselors Vio-late Ethical Standards in Mental Health Practice: A Practitioner-Informed Framework. In: Proceedings of the AAAI/ACM Conference on AI, Ethics, and Society . Vol. 8. 2. 2025:1311–23. doi : 10.1609/aies.v8i2.36632 .32 20. Cooper M, Dryden W, and Norcross JC. Personalizing psychotherapy: The role of client preferences and therapist responsiveness. Psychotherapy Research 2023. Advance online publication. 21. Norcross JC and Wampold BE. The psychotherapist’s role in evidence-based practice: A decade later. Psychotherapy 2022;59:1–13. 22. Elliott R, Bohart AC, Watson JC, and Murphy D. Therapist empathy and client out-come: An updated meta-analysis. Psychotherapy 2018;55:399–410. 23. Reed S, Shell C, Kassis S, et al. Relationships among active listening, self-awareness, empathy, and patient-centered care in associate and baccalaureate degree nursing stu-dents. Nurse Education in Practice 2017;24:105–9. 24. Miller WR and Rose GS. Toward a theory of motivational interviewing. American Psychologist 2009;64:527–37. 25. Horvath AO and Luborsky L. The role of the therapeutic alliance in psychotherapy. Journal of Consulting and Clinical Psychology 1991;61:561–73. 26. Ng JYY, Ntoumanis N, Thøgersen-Ntoumani C, et al. Self-determination theory applied to health contexts: a meta-analysis. Perspectives on Psychological Science 2012;7:325– 40. 27. Sharma A, Miner AS, Atkins DC, and Althoff T. A Computational Approach to Under-standing Empathy Expressed in Text-Based Mental Health Support. In: Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP) .2020:5263–76. 28. Zhou Z, Liu J, Shao J, et al. Beyond One-Preference-Fits-All Alignment: Multi-Objective Direct Preference Optimization. Findings of the Association for Computational Linguis-tics: ACL 2024 2024:10586–613. 29. Jang J, Kim S, Lin BY, et al. Personalized Soups: Personalized Large Language Model Alignment via Post-hoc Parameter Merging. arXiv preprint arXiv:2310.11564 2023. 30. Suvarna A, Chance C, Naranjo K, et al. ModelCitizens: Representing Community Voices in Online Safety. arXiv preprint arXiv:2507.05455 2025. 31. Jigsaw and Google. Perspective API. https://perspectiveapi.com/ . Accessed: 2025. 2017. 33 A Demographic Distribution 
+
+(a) Age distribution (b) Gender distribution 
+
+(c) Ethnicity distribution 
+
+Figure 9: Demographic composition across complete pool (n=335), selected subset (n=150), training set (n=100), and test set (n=50). 34 B Train-Test Demographic Balance 
+
+Figure 10: Train-test split demographic balance comparison. 
+
+# C Foundations of Therapeutic Quality Dimensions 
+
+Research consistently demonstrates that therapeutic preferences vary substantially across demographic groups, cultural backgrounds, and individual circumstances [20, 21]. Clinical research has established several core dimensions that patients value in therapeutic relation-ships, including: empathy, active listening, support for self-motivated change, trust and rapport building, and respect for patient autonomy [17]. Effective therapeutic communica-tion involves complex trade-offs between these dimensions. 
+
+Safety serves as the foundational prerequisite for all therapeutic interactions, encompass-ing harm prevention, crisis recognition, appropriate boundaries of competence, and protec-tion of vulnerable populations [13, 19]. Safety is maintained as a non-negotiable constraint across all therapeutic objectives, as failure to recognize risk factors or provide appropriate interventions can result in serious patient harm. 
+
+Empathy serves as a foundational element of therapeutic effectiveness, with meta-analytic research demonstrating that therapist empathy is a strong predictor of therapy outcomes across 82 independent samples and 6,138 clients [22]. 
+
+Active listening has been established as crucial for building therapeutic alliances and patient-centered care, with research demonstrating significant relationships between active listening, empathy, and patient-centered care outcomes [23]. 35 Support for self-motivated change aligns with motivational interviewing principles, where client-centered methods for enhancing intrinsic motivation through recognition and resolution of ambivalence have demonstrated effectiveness across multiple randomized con-trolled trials, with outcomes showing similar effectiveness to longer treatments while provid-ing cost-effectiveness advantages [24]. 
+
+Trust and rapport establish the working alliance necessary for therapeutic progress, with research indicating moderate but consistent correlations ( r = 0 .22–0 .26) between ther-apeutic alliance and treatment outcomes [25]. 
+
+Patient autonomy ensures self-determination and increases treatment engagement, with self-determination theory research demonstrating that when patients experience sup-port for their needs for autonomy, competence, and relatedness, they are more likely to be autonomously self-regulated and show better adherence and health outcomes [26]. While general communication principles provide a foundation for effective interactions [18], therapeutic contexts require domain-specific considerations that address individual patient needs rather than strict adherence to conversational maxims—quantity (appropriate infor-mation level), quality (truthfulness), relation (relevance), and manner (clarity). Therapeutic communications need to provide information at a level appropriate for the patient’s emo-tional state, maintain authenticity rather than strict factual accuracy, address emotional needs rather than logical relevance, and use clarity that matches the patient’s communica-tion style and therapeutic readiness. 
+
+# D Phase 1 Detailed Results  
+
+> (a) Empathy (b) Safety
+
+Figure 11: Overall performance rankings calculated as average win rate across all pairwise head-to-head comparisons, showing complete reversal in model rankings between dimensions. 36 (a) Empathy pairwise win rates (b) Safety pairwise win rates 
+
+Figure 12: Complete head-to-head win rates for all 21 pairwise comparisons. Each cell displays the row model’s win rate against the column model. Models ordered by performance (best to worst) within each dimension. 
+
+# E Phase 2 Detailed Results 
+
+(a) Overall Preference (b) Safety 
+
+Figure 13: Phase 2 performance rankings calculated as average win rate across all pairwise comparisons. 37 (a) Overall Preference (b) Safety 
+
+Figure 14: Complete head-to-head win rates for all pairwise comparisons. Models ordered by performance within each dimension.  
+
+> (a) Overall Preference (b) Safety
+
+Figure 15: Statistical significance matrices using McNemar’s test ( α=0.05, n=600). △ =row wins, ∇ = column wins, = = no significant difference. 38 F Representative Examples from Confusion Matrix Cells 
+
+(a) Safety examples 
+
+(b) Overall Preference examples 
+
+Figure 16: Representative examples from confusion matrix cells. Response cells are color-coded: purple (both evaluators agree), teal (human winner), pink (LLM winner), white (neither selected). 39 G Prolific Crowd-Sourced Validation Studies 
+
+G.1 Base Model vs. MODPO Survey 
+
+> (a)
+> (b)
+> (c)
+
+40 (d) (e) 
+
+> (f)
+
+Figure 17: Prolific validation: Base Model vs. MODPO Survey (n=200 questions, 10 annotators each, with attention checks). (a) Win rates by criterion; SURVEY is consistently preferred across all seven evaluation criteria. (b) Non-tie binary agreement with human reliability context. (c) Agreement levels (3-class, all questions including ties). (d, e) 3-class confusion matrices (LLM vs. human majority); rows are human-majority labels, columns are LLM predictions. (f) LLM accuracy stratified by human consensus (non-tie questions only). 41 G.2 MODPO Maxim vs. MODPO Survey 
+
+> (a)
+> (b)
+> (c)
+
+42 (d) (e) 
+
+> (f)
+
+Figure 18: Prolific validation: MODPO Maxim vs. MODPO Survey (n=100 ques-tions, 18 annotators each, with attention checks). (a) Win rates by criterion. (b) Non-tie binary agreement with human reliability context. (c) Agreement levels (3-class, all ques-tions including ties). (d, e) 3-class confusion matrices (LLM vs. human majority); rows are human-majority labels, columns are LLM predictions. (f) LLM accuracy stratified by human consensus (non-tie questions only). 43

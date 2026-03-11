@@ -1,0 +1,428 @@
+Title: Bridging AI and Clinical Reasoning: Abductive Explanations for Alignment on Critical Symptoms
+
+URL Source: https://arxiv.org/pdf/2602.13985v1
+
+Published Time: Tue, 17 Feb 2026 01:55:16 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Bridging AI and Clinical Reasoning: Abductive Explanations for Alignment on Critical Symptoms 
+
+# Belona Sonna 
+
+belona.sonna@anu.edu.au Australian National University Canberra, ACT, Australia 
+
+# Alban Grastien 
+
+alban.grastien@cea.fr Université Paris-Saclay, CEA, List Palaiseau, Grenoble, France 
+
+## Abstract 
+
+Artificial intelligence (AI) has demonstrated strong potential in clinical diagnostics, often achieving accuracy comparable to or ex-ceeding that of human experts. A key challenge, however, is that AI reasoning frequently diverges from structured clinical frameworks, limiting trust, interpretability, and adoption. Critical symptoms, pivotal for rapid and accurate decision-making, may be overlooked by AI models even when predictions are correct. Existing post hoc explanation methods provide limited transparency and lack formal guarantees. To address this, we leverage formal abductive explanations, which offer consistent, guaranteed reasoning over minimal sufficient feature sets. This enables a clear understanding of AI decision-making and allows alignment with clinical reason-ing. Our approach preserves predictive accuracy while providing clinically actionable insights, establishing a robust framework for trustworthy AI in medical diagnosis. 
+
+## Keywords 
+
+Transparency, Consistent Reasoning, Abductive Explanations, Clin-ical Feature Alignment, Medical Diagnosis, Trustworthy AI, Critical Symptoms 
+
+ACM Reference Format: 
+
+Belona Sonna and Alban Grastien. 2026. Bridging AI and Clinical Reason-ing: Abductive Explanations for Alignment on Critical Symptoms. In 2026 Australasian Computer Science Week (ACSW 2026), February 09–12, 2026, Melbourne, Australia. ACM, New York, NY, USA, 9 pages. https://doi.org/10. 1145/3793811.3793822 
+
+## 1 Introduction 
+
+The integration of artificial intelligence (AI) into clinical practice has shown considerable promise, particularly in diagnostic tasks where AI systems can achieve performance comparable to or ex-ceeding that of human experts in specific domains [ 3, 22 ]. Despite these advances, a critical challenge persists: the reasoning pro-cesses underlying AI predictions often diverge from the structured clinical reasoning frameworks used by experienced clinicians. Al-though AI systems may deliver correct diagnoses, the pathways through which these conclusions are reached frequently differ from clinically accepted practices. This disconnect raises important con-cerns regarding trust, interpretability, clinical adoption, and patient safety [4, 34].  
+
+> This work is licensed under a Creative Commons Attribution 4.0 International License.
+> ACSW 2026, Melbourne, Australia
+> ©2026 Copyright held by the owner/author(s). ACM ISBN 979-8-4007-2315-5/2026/02 https://doi.org/10.1145/3793811.3793822
+
+Clinical reasoning is inherently multifaceted, combining intu-itive pattern recognition with structured analytical decision making grounded in medical knowledge and experience [ 6 , 28 ]. In contrast, many AI models rely on computational strategies that prioritize pre-dictive performance without explicitly enforcing interpretability or clinical plausibility. As a result, AI systems may generate accurate predictions while relying on reasoning processes that are difficult for clinicians to understand, validate, or justify in practice [ 22 , 41 ]. This challenge is further compounded by the limited transparency of many modern AI architectures. In particular, deep neural net-works and large language models often operate as black boxes, limiting clinicians’ ability to assess the soundness of AI reasoning even when the resulting predictions are correct [31, 34]. This lack of transparency not only obscures how AI systems ar-rive at their predictions, but also directly undermines their practical use in clinical settings. In medical decision making, understanding the rationale behind a diagnosis is as important as the diagnosis itself. Consequently, the opacity of many AI models has significant implications for clinical adoption. Clinicians are often reluctant to rely on tools whose reasoning they cannot evaluate, and limited insight into AI decision processes constrains their ability to learn from the system or identify potential errors [ 4 , 10 ]. Addressing this misalignment between AI reasoning and clinical reasoning is therefore essential for the safe and effective integration of AI into healthcare workflows. More broadly, it motivates the development of systematic evaluation frameworks, alignment strategies, and clinician-centered AI design principles that prioritize reasoning transparency alongside predictive performance [9, 43]. In response to these challenges, a growing body of work has focused on explanation techniques aimed at improving the trans-parency of AI models. Methods such as SHAP (SHapley Additive exPlanations) and LIME (Local Interpretable Model-Agnostic Ex-planations) have been widely explored to provide post-hoc insights into model behavior [ 31 ]. By identifying features that most strongly influence individual predictions, these approaches enable clinicians to verify whether AI systems rely on clinically relevant biomark-ers, symptoms, or demographic factors [ 2, 20 , 33 ]. Consequently, such techniques have been applied in clinical settings including cardiovascular risk assessment and cancer prognosis, where they can support clinician confidence, facilitate patient communication, and improve the interpretability of model outputs [8, 21]. Despite their utility, SHAP and LIME are inherently approximation-based methods, which introduces a fidelity–interpretability trade-off [ 23 , 32 ]. These approaches may fail to capture complex feature interactions, provide formal guarantees that are crucial for system-atically evaluating diagnostic outputs [ 5, 14 , 18 , 26 , 36 ]. As a result,  
+
+> arXiv:2602.13985v1 [cs.AI] 15 Feb 2026 ACSW 2026, February 09–12, 2026, Melbourne, Australia Belona Sonna and Alban Grastien
+
+there remains a need for explanation methods that can offer both interpretability and rigorous guarantees. To address these limitations, formal abductive explanations offer a promising alternative. By reasoning over minimal sufficient fea-ture sets, abductive explanations generate structured justifications for AI predictions. Importantly, their formal guarantees ensure that these explanations are consistent and reliable across similar cases, enabling a precise understanding of the AI model’s decision-making process. This, in turn, allows for the systematic mitigation of misalignment between AI reasoning and clinician reasoning. Con-sequently, abductive explanations transform AI transparency into actionable, clinically meaningful insight, effectively bridging the gap between automated predictions and human expertise [15, 38]. Building on this perspective, the contributions of this paper are fourfold. We leverage abductive explanations to: (1) Embed clinical reasoning on critical symptoms into AI sys-tem reasoning (Section 4). (2) Propose a methodology to assess misalignment between AI model reasoning and clinical reasoning on critical symptoms (Section 5). (3) Identify critical cases and critical symptoms directly from the training set (Section 6). (4) Quantify reasoning misalignment in real-world scenarios: Breast Cancer, Heart Disease and Mental Health datasets (Sections 7, 8 and 9). 
+
+## 2 Background: Critical Symptoms and Reasoning Alignment in Medical Diagnosis 
+
+Critical symptoms, often described as high-value diagnostic indi-cators, play a foundational role in clinical diagnosis by narrowing the diagnostic space, prioritizing life-threatening conditions, and guiding time-critical decision-making [ 19 , 30 ]. They act as cues that activate clinicians’ illness scripts and support efficient hypoth-esis generation, enabling rapid and accurate diagnostic decisions [ 11 , 40 ]. Missing or misinterpreting such symptoms is a major contributor to diagnostic errors, highlighting their importance as safeguards in clinical reasoning. Major clinical guidelines, includ-ing NICE and WHO, rely on critical symptoms to define escalation pathways and identify conditions that must not be missed [ 29 , 42 ]. Proper identification and weighting of these symptoms ensure early intervention, reduce misdiagnosis, and form the backbone of effec-tive clinical reasoning [12, 35, 45]. While AI systems have achieved predictive accuracy comparable to expert clinicians [ 1, 17 ], alignment of reasoning with critical symptoms adds an essential layer of evaluation. Beyond generating correct predictions, AI systems must consistently recognize and appropriately weigh these pivotal clinical features in ways that mirror expert clinician judgment. Achieving such alignment fosters trust, enhances interpretability, and positions AI as a collaborative partner in decision-making rather than an opaque tool [ 37 , 45 ]. In this work, we focus on evaluating and improving alignment between AI reasoning and clinician reasoning for critical symptoms, treating these high-value indicators as essential touch points for assessing clinical reliability and trustworthiness. 
+
+Figure 1: Patient Diagnosis: AI System vs Clinicians 
+
+## 3 Preliminaries 3.1 Understanding the Diagnosis of Patients: Clinicians vs AI Model 
+
+Broadly speaking, medical diagnosis determines whether a patient suffers from a disease (positive( 𝑑 +)) or not (negative ( 𝑑 − )). In this paper, we compare the reasoning processes underlying patient diag-nosis in a specific scenario, focusing on patients exhibiting critical symptoms that strongly indicate a positive diagnosis. We assess how clinicians ( Δ𝑐 ) and an AI system ( Δ) make these decisions, as illustrated in Figure 1. Figure 1 shows the reasoning pathways of clinicians and the AI system. Clinicians rely on established rules that are sufficient to make a positive diagnosis when critical symptoms are present, requiring no additional information. When these critical criteria are absent, clinicians gather further evidence to refine their diagnosis. In contrast, the AI system generates a diagnosis for any patient using the knowledge acquired from training data. Thus, clinicians (Δ𝑐 ) implement a partial decision function , acting only when critical information is available, whereas the AI system ( Δ) implements a 
+
+complete decision function , capable of diagnosing any patient. While Δ𝑐 relies exclusively on clinically meaningful information, 
+
+Δ, although often accurate, may use non-clinical correlations. This motivates the need to assess alignment between the two decision processes to improve rapid, clinically grounded diagnoses. The next section introduces the notation used to formalize this assessment. 
+
+## 3.2 Notation 
+
+• 𝑉 = {𝑣 1, . . . , 𝑣 𝑛 } denotes a set of 𝑛 Boolean variables (fea-tures). 
+
+• An individual 𝑥 = [𝑥 1, . . . , 𝑥 𝑛 ] is represented as a vector of Boolean values corresponding to the features in 𝑉 . We interpret 𝑥 both as a vector and as a conjunction (or set) of literals, where each 𝑥 [𝑖 ] is either 𝑣 𝑖 or ¬𝑣 𝑖 .
+
+• 𝑋 denotes the space of patients. 
+
+• 𝐷 is the domain of the decision function, with 𝑑 ∈ 𝐷 .
+
+• Δ : 𝑋 → 𝐷 is the decision function or the AI system. Bridging AI and Clinical Reasoning: Abductive Explanations for Alignment on Critical Symptoms ACSW 2026, February 09–12, 2026, Melbourne, Australia 
+
+• 𝑋 𝑃 is a property of an patient 𝑥 , defined as a subset (i.e., conjunction) of literals from 𝑥 , such that 𝑋 𝑃 ⊆ 𝑥 . We denote by 𝑣𝑎𝑟𝑠 (𝑋 𝑃 ) the set of features that appear in 𝑋 𝑃 .
+
+• 𝑋 𝑥    
+
+> (𝑉 ′)
+
+denotes the set of individuals that are identical to 𝑥 
+
+except (potentially) on the subset of features 𝑉 ′ ⊆ 𝑉 .
+
+## 3.3 Definition of Abductive Explanations 
+
+Formal abductive explanations (AXPs) have been extensively stud-ied in prior works [ 7, 13 , 16 , 24 , 25 , 27 ]. An abductive explanation (XP) is defined as a minimal set of features of an individual that is sufficient to guarantee the same decision by a model. In other words, any individual sharing identical values on this minimal feature set will necessarily receive the same prediction. This property ensures that abductive explanations accurately capture the model’s behavior and provide a consistent characteriza-tion of its decisions. Consequently, AXPs offer stronger guarantees for evaluating a model’s consistency with respect to specific princi-ples or criteria under consideration. For completeness, we present in appendix an algorithm, which details how to compute an abduc-tive explanation, along with a step-by-step example illustrating the computation process. 
+
+## 4 Making AI Models Reason as Clinicians 
+
+As mentioned earlier, abductive explanations provide fundamen-tal insights into a model’s behavior. Beyond explaining individual decisions, they reveal which features the model considers impor-tant, with formal guarantees. Specifically, if 𝑋 𝑃 is an abductive explanation for an individual’s decision in an AI model, any other instance satisfying 𝑋 𝑃 will receive the same decision. Leveraging this property, prior work has assessed model behavior with re-spect to ethical principles, including bias, proxy discrimination, and unfairness [ 7 , 39 ]. Following this logic, we introduce concepts to understand reasoning in AI diagnostic models. 
+
+## 4.1 Relevant Features in Diagnosis 
+
+Definition 1 (Relevant Feature(s)). A feature 𝑓 , or a group of features 𝐶 , is relevant for an individual’s diagnosis if at least one abductive explanation contains 𝑓 .
+
+Definition 1 captures the importance of individual features or feature combinations for a patient’s diagnosis. While identifying feature relevance is essential for understanding model behavior, clinicians require more: they need to know which features are particularly critical to yield positive diagnoses, often referred to as 
+
+critical symptoms , as discussed below. 
+
+## 4.2 Critical Symptoms in Diagnosis 
+
+Critical symptoms play a foundational role in clinical diagnosis. These features are more than relevant—they are decisive, automati-cally leading to a positive diagnosis. We formalize this notion within the context of abductive explanations: 
+
+Definition 2 (Critical Feature(s)). A feature 𝑓 , or a combina-tion of features 𝐶 , is critical if satisfying it automatically leads to a positive diagnosis: 
+
+∀𝑥 ∈ 𝑋, 𝑓 ⊆ 𝑥 ∨ 𝐶 ⊆ 𝑥 ⇒ Δ𝑐 (𝑥 ) = 𝑑 +
+
+From here on, we refer to critical features as a critical property .
+
+Definition 3 (Critical Case). An instance (patient) is a critical case if it satisfies the critical property ( 𝐶𝑟 ). 
+
+Definition 2 formalizes the features clinicians ( Δ𝑐 ) rely on exclu-sively to make a diagnosis. By focusing on these critical properties, we can analyze whether the AI system ( Δ) incorporates clinically meaningful reasoning in its diagnostic decisions, particularly for critical cases. 
+
+## 4.3 Embedding Critical Symptoms in Model Reasoning 
+
+In medical diagnosis, all features may contribute to a decision, but some are critical as they automatically trigger a positive out-come. Using abductive explanations, we can explicitly represent this property in the model’s reasoning and evaluate alignment with clinicians: 
+
+Definition 4 (Critical Explanation). Given a critical property (𝐶𝑟 ), an abductive explanation 𝑋 𝑃 is critical if it contains 𝐶𝑟 :
+
+𝐶𝑟 ⊆ 𝑋 𝑃 
+
+Definition 4 allows us to distinguish explanations that justify an individual diagnosis. For a critical case, the AI system should use the critical property in its reasoning; otherwise, even a positive di-agnosis may be clinically disputable. In summary, the first criterion for an AI system Δ to make meaningful diagnoses is its ability to provide critical explanations for critical cases. The next step is to assess the alignment between AI reasoning and clinical reasoning. 
+
+## 5 Alignment Between Clinical Reasoning and AI Systems on Critical Cases 5.1 The Basis of Alignment 
+
+As a reminder, critical cases exhibit a critical property that is suffi-cient for clinicians to make a positive diagnosis. We have shown that an AI decision process is trustworthy if it provides critical explanations for critical cases; however, this alone is not enough to establish alignment with clinical reasoning. Indeed, critical proper-ties guarantee a positive diagnosis. Therefore, to claim alignment, we must ensure that critical explanations consistently lead to posi-tive diagnoses. 
+
+Definition 5 (Aligned Critical Explanation). A critical ex-planation 𝑋 𝑃 is aligned with clinical reasoning if it yields a positive diagnosis ( 𝑑 +). 
+
+Definition 5 emphasizes that alignment goes beyond simply providing critical explanations: it requires that the AI uses these ex-planations to reach the expected positive outcome. This establishes a fundamental criterion for alignment, which can then be extended to assess the AI system as a whole. 
+
+## 5.2 From Aligned Explanations to Aligned AI Systems 
+
+For critical cases, clinicians rely exclusively on the critical property to make a diagnosis. To align an AI system with this reasoning, the system should also base its diagnosis solely on the critical property. This requirement is formalized in the following theorems: ACSW 2026, February 09–12, 2026, Melbourne, Australia Belona Sonna and Alban Grastien 
+
+Theorem 1 (Aligned Diagnosis). A critical case diagnosis is aligned if and only if all its abductive explanations are both critical and aligned. 
+
+Theorem 2 (Alignment of an AI System). An AI system ( Δ) is aligned with clinical reasoning if and only if all its critical cases are diagnosed in an aligned manner. 
+
+Theorem 1 formalizes the notion that alignment requires both AI and clinician reasoning to rely exclusively on the critical property for positive diagnoses in critical cases. This theorem provides the foundation for assessing reasoning alignment across the entire system: the AI is aligned if no critical case is diagnosed without following the aligned critical reasoning. While critical properties provide a clinical grounding for diagno-sis, identifying them can be challenging, especially when clinicians are not directly available. In the next section, we propose a method to discover critical properties within the training dataset itself, which can then serve as the basis for evaluating alignment between AI reasoning and clinical reasoning. 
+
+## 6 Identification of Critical Properties within the Training Dataset 
+
+As discussed earlier, alignment between an AI system and clinical reasoning depends on how the system leverages critical properties to make positive diagnoses for critical cases. Therefore, identifying these properties is essential for evaluating alignment. By definition, a critical property cannot apply to individuals with a negative diagnosis or who do not suffer from the disease. Building on this principle, this section presents a method to identify such properties from the training dataset. 
+
+## 6.1 Identifying Critical Features 
+
+Our approach to identifying critical features leverages the concept of background knowledge within abductive explanations. Following Liu et al. [ 44 ], background knowledge extracted from the training data can guide the computation of abductive explanations that reflect real-world constraints. Similarly, we introduce the notion of critical knowledge , defined as a set of rules used by clinicians to make the diagnosis. Such rules, when provided by domain experts, enable confident and reliable positive diagnoses. In settings where expert knowledge is unavailable, candidate rules may instead be extracted from the training data. However, these data-driven rules require careful validation to ensure their clinical relevance and trustworthiness. 
+
+Definition 6 (Critical Knowledge). Critical knowledge ( 𝜅 )is a set of constraints that guarantees a positive diagnosis for an individual. 
+
+From Definition 6, all critical properties that define a critical case can be derived. 
+
+Theorem 3 (Existence of Critical Properties). If the critical knowledge 𝜅 is empty, no critical properties exist. 
+
+Theorem 3 establishes a necessary condition for assessing mis-alignment between Δ (AI reasoning) and Δ𝑐 (clinical reasoning). If 
+
+𝜅 is empty, there are no critical properties, and alignment cannot be evaluated. 
+
+## 6.2 Use of Critical Features 
+
+Critical properties serve as essential cues that clinicians rely on to make rapid and accurate diagnoses. They also provide a benchmark for assessing whether AI systems reason in ways consistent with clinical expectations. In particular, critical features can: 
+
+• Highlight which features the AI system should prioritize for positive diagnoses in critical cases. 
+
+• Serve as a starting point for building trust in AI recommen-dations. 
+
+• Guide the selection of AI models that most closely match clinical reasoning. 
+
+• Inform refinement or repair of model predictions to better align with clinical expectations. In the next section, we demonstrate how critical features can be systematically used to audit misalignment between AI and clinical reasoning, and how they can guide the improvement of AI decision-making. 
+
+## 7 Auditing Misalignment Between Clinical and AI-System Reasoning 7.1 Causes of Misalignment 
+
+Assuming the critical property is known, we can analyze how mis-alignment may arise. As illustrated in Figure 1, clinical reasoning will always yield a positive diagnosis for a critical case. In contrast, the AI system may produce either a positive or negative diagnosis based on its learned rules. This leads to two primary causes of misalignment: (1) The AI system predicts a negative diagnosis for a critical case, i.e., misclassification . This may indicate underfitting or insufficient training. (2) The AI system predicts a positive diagnosis but does not rely solely on the critical property, violating the conditions of Theorem 1. This reflects a reasoning misalignment rather than a simple classification error. Distinguishing these causes is crucial, as they imply different corrective actions. Misclassification must be addressed first, as it automatically constitutes misalignment. 
+
+## 7.2 From Misclassification to Misalignment 
+
+Formally, misclassification is defined as follows: 
+
+Definition 7 (Model Misclassification). For a critical case 𝑥 ,the model misclassifies 𝑥 if 
+
+Δ(𝑥 ) = 𝑑 − .
+
+This definition establishes the first condition to verify when auditing misalignment. Misclassification serves as a necessary pre-cursor to reasoning misalignment. 
+
+## 7.3 Algorithms to Assess Misalignment 
+
+We propose the following procedures to detect misclassification and reasoning misalignment in a dataset: Algorithm 1 first identifies misclassified critical cases, which are inherently misaligned. For correctly classified cases, Algorithm 2 assesses whether the AI system relies solely on the critical property Bridging AI and Clinical Reasoning: Abductive Explanations for Alignment on Critical Symptoms ACSW 2026, February 09–12, 2026, Melbourne, Australia 
+
+Algorithm 1 Assess Misclassification and Misalignment  
+
+> 1:
+
+Input : Decision process Δ
+
+Input : Critical property 𝐶𝑟 
+
+Input : Expected decision 𝑑 
+
+Input : Set of critical cases Φ
+
+Output : Partition of Φ into Misclassification ( 𝑀𝑖𝑠𝐶 ), Misalign-ment ( 𝑀𝑖𝑠𝐴 ), and Alignment ( 𝐴 ) 
+
+> 2:
+
+while Φ ≠ ∅ do  
+
+> 3:
+
+Select 𝑥 ∈ Φ 
+
+> 4:
+
+if Δ(𝑥 ) ≠ 𝑑 then  
+
+> 5:
+
+𝑀𝑖𝑠𝐶 ← 𝑥  
+
+> 6:
+
+else  
+
+> 7:
+
+𝑋 𝑃 ← 𝐶𝑜𝑚𝑝𝑢𝑡𝑒𝐸𝑥𝑝𝑙𝑎𝑛𝑎𝑡𝑖𝑜𝑛𝑊 𝑖𝑡ℎ𝐶𝑜𝑛𝑠𝑡𝑟𝑎𝑖𝑛𝑡 (Δ, 𝑥, 𝐶𝑟, 𝑑 ) 
+
+> 8:
+
+if 𝑋 𝑃 ≠ 𝑁𝑜𝑛𝑒 then  
+
+> 9:
+
+𝑀𝑖𝑠𝐴 ← 𝑥  
+
+> 10:
+
+else  
+
+> 11:
+
+𝐴 ← 𝑥  
+
+> 12:
+
+Φ ← Φ \ { 𝑥 } 
+
+> 13:
+
+return 𝑀𝑖𝑠𝐶, 𝑀𝑖𝑠𝐴, 𝐴 
+
+Algorithm 2 Compute Explanation Under Constraint 
+
+Input : Decision process Δ
+
+Input :Individual 𝑥 
+
+Input :Critical property 𝐶𝑟 
+
+Input :Decision 𝑑 = Δ(𝑥 )
+
+Output : 𝑋 𝑃 , minimal abductive explanation for 𝑥  
+
+> 1:
+
+Initialize 𝑋 𝑃 ← 𝑥 \ { 𝐶𝑟 } 
+
+> 2:
+
+if ∃𝑥 ′ ⊇ 𝑋 𝑃 s.t. Δ(𝑥 ′) = 𝑑 then  
+
+> 3:
+
+for each feature 𝑣 ∈ 𝑉 \ 𝑣𝑎𝑟𝑠 (𝐶𝑟 ) do  
+
+> 4:
+
+ℓ ← 𝑥 [𝑣 ] 
+
+> 5:
+
+𝑋 𝑃 ← 𝑋 𝑃 \ { ℓ } 
+
+> 6:
+
+if ∃𝑥 ′ ⊇ 𝑋 𝑃 s.t. Δ(𝑥 ′) = 𝑑 then  
+
+> 7:
+
+𝑋 𝑃 ← 𝑋 𝑃 ∪ { ℓ } 
+
+> 8:
+
+else  
+
+> 9:
+
+𝑋 𝑃 ← 𝑁𝑜𝑛𝑒  
+
+> 10:
+
+return 𝑋 𝑃 
+
+in its reasoning. If a valid explanation excluding the critical prop-erty exists, the case is deemed misaligned; otherwise, it is aligned. This iterative process continues until all critical cases have been evaluated. The following section applies this methodology to real-world medical datasets, demonstrating its effectiveness in quantifying alignment and guiding model improvement using clinically mean-ingful features. 
+
+## 8 Experimental Setting 8.1 Datasets 
+
+8.1.1 Wisconsin Diagnostic Breast Cancer (WDBC) Dataset. The 
+
+WDBC dataset comprises 569 instances, each representing a tu-mor sampled via fine-needle aspiration (FNA) of the breast. For each instance, 30 numeric features are extracted from cell nuclei in digitized images. Key predictive features include radius (mean and worst), perimeter (worst), area (mean), concavity (mean and worst), and concave points (mean), which capture tumor size, shape irregularities, and contour concavity. The target variable indicates whether the tumor is benign or malignant, forming a binary classifi-cation task. Preprocessing and binarization procedures are detailed in Appendix. 
+
+8.1.2 Cleveland Heart Disease Dataset. The Cleveland Heart Dis-ease dataset contains 303 patient instances described by 13 clin-ical features , including demographics, chest pain type, resting blood pressure, cholesterol, ECG results, exercise-induced symp-toms, and ST-segment measurements. The target variable 𝑦 indi-cates the presence or absence of heart disease, forming a binary classification task. Clinician-informed preprocessing and binariza-tion steps are detailed in Appendix. 
+
+8.1.3 Mental Health in Tech Survey Dataset. The Mental Health in Tech Survey (OSMI) dataset captures employees’ experiences and perceptions of mental health in the technology sector. We use a processed subset with 10 features related to demographics, workplace environment, and mental-health experiences, compris-ing 1,242 instances . The target variable indicates whether an individual sought mental health treatment, forming a binary classi-fication task. This focused subset allows analysis of the key factors influencing treatment-seeking behaviour. Preprocessing and bina-rization informed by domain knowledge are described in Appendix. 
+
+## 8.2 AI Models 
+
+We evaluate three classifiers: a single-layer neural network ( 𝑁 𝑁 ), lo-gistic regression ( 𝐿𝑅 ), and stochastic gradient descent ( 𝑆𝐺𝐷 ). These models were chosen for their diverse architectures to compare their behavior across the diagnostic tasks in each dataset. This compari-son provides insights into selecting decision processes that not only optimize standard metrics such as accuracy or F1 score but also maximize reasoning alignment with clinicians. Model performance metrics, including accuracy and F1 score, are provided in Appendix. 
+
+## 9 Results 
+
+The goal of our experiments is threefold. First, we aim to identify the features that are most relevant for each model when making positive diagnostic. This analysis reveals, without prior knowledge of critical properties, which features the models rely on most when making positive diagnosis. Second, we investigate the training datasets to determine whether intrinsic properties exist that are critical for positive diagnostic. Finally, we quantify the alignment between AI system reasoning and clinical reasoning with respect to the identified critical properties. 
+
+## 9.1 Relevant and Critical Properties for the Models 
+
+9.1.1 Breast Cancer. Table 1 shows the features most relevant for making positive diagnoses ( 357 instances) in the Breast Cancer dataset. For the NN and SGD models, the most critical feature is 
+
+𝑥 7 = 0 (radius worst < 14 .97 ), affecting 25 and 63 cases, respec-tively, which correspond to approximately 7.0% and 17.7% of the 
+
+357 critical cases. In contrast, for the LR model, the most relevant ACSW 2026, February 09–12, 2026, Melbourne, Australia Belona Sonna and Alban Grastien 
+
+feature is 𝑥 5 = 0 (concavity worst < 0.2267 ), impacting 23 cases, approximately 6.4% of critical cases. 
+
+Table 1: Impact of features on positive diagnoses in the Breast Cancer dataset across different models 357 Cases Models Values 𝑥 1 𝑥 2 𝑥 3 𝑥 4 𝑥 5 𝑥 6 𝑥 7 𝑥 8
+
+NN 1 0 19 13 9 13 16 21 40 2 2 2 2 18 4 25 12 LR 1 3 16 4 3 15 1 20 70 4 14 3 4 23 0 22 19 SGD 1 0 8 0 0 2 5 33 30 0 16 0 0 21 25 63 13 
+
+9.1.2 Heart Disease. Table 2 shows the features most relevant for making positive diagnoses ( 165 instances) in the Heart Disease dataset. For the LR and SGD models, the most critical feature is 𝑥 12 =
+
+0 (number of major vessels colored by fluoroscopy < 1), affecting 
+
+41 and 47 cases, respectively. These correspond to approximately 
+
+24.8% and 28.5% of the 165 critical cases. Results for the Neural Network model were not available at the time of submission. 
+
+9.1.3 Mental Health. Table 3 shows the features most relevant for making positive diagnoses ( 553 instances) in the Mental Health dataset. For the LR and SGD models, the most critical feature is 𝑥 10 =
+
+1 (Being a US Citizen), affecting 158 and 165 cases, respectively, which correspond to approximately 28.6% and 29.8% of the 553 critical cases. For the Neural Network model, the most relevant feature is 𝑥 5 = 1 (Having medical coverage), affecting 186 cases, corresponding to approximately 33.6% of the critical cases. 
+
+## 9.2 Relevant Clinical Properties 
+
+In this section, we leverage the training sets to identify properties that invariably lead to a positive diagnosis. 
+
+9.2.1 Breast Cancer Dataset. The critical property is 𝐶 𝑟 : 𝑥 2 =
+
+0 ∧ 𝑥 8 = 0, covering 180 cases. This means that no patient without breast cancer has both a concave points mean below 0.033 (𝑥 2 = 0)and a texture mean below 18.84 (𝑥 8 = 0). From a clinical perspec-tive, this combination of features is sufficient to trigger a positive diagnosis. 
+
+9.2.2 Heart Disease Dataset. The critical property is 𝐶 𝑟 : 𝑥 2 =
+
+0 ∧ 𝑥 3 = 1 ∧ 𝑥 12 = 0, covering 37 cases. This indicates that there is no non–heart disease case involving a woman ( 𝑥 2 = 0) experiencing typical angina chest pain ( 𝑥 3 = 1) and having zero major vessels colored by fluoroscopy ( 𝑥 12 = 0). Thus, this feature combination is always associated with a positive diagnosis. 
+
+9.2.3 Mental Health Dataset. The critical property is 𝐶 𝑟 : 𝑥 1 =
+
+0 ∧ 𝑥 3 = 1 ∧ 𝑥 4 = 1 ∧ 𝑥 7 = 1 ∧ 𝑥 9 = 0, covering 16 cases. However, because this coverage is extremely small relative to the dataset size, we decided not to further pursue experiments on this property. 
+
+## 9.3 Most Aligned Model with Clinical reasoning 
+
+In this section we quantify classifications and misalignment be-tween clinical reasoning. 
+
+9.3.1 Breast Cancer Dataset. Figure 2 shows how the differents models are sensible to the critical property identified in the training dataset. At first , we notice that all the models are not misclas-sifiying any critical cases which eliminate miaslignment due to misclassification cause. At second, we notice that on this dataset, the models even though suceed to make a psoititve diagnosis are not relying only on the critical property to make the decision as clinicians. On this dataset, the neural network is the less aligned to the clinical reasoning while SDG Model is the most aligned even though the proportion is weak (approximatively 14% of alignment). 
+
+9.3.2 Heart Disease Dataset. Figure 3 shows how the differents models are sensible to the critical property identified in the train-ing dataset.Same as on the previous datset , we notice that all the models are not misclassifiying any critical cases. On the opposite of the previous dataset, the models are relying more only on the critical property to make the decision. Again 𝑆𝐺𝐷 model is most aligned (less than 6% of Misalignment) and NN is less aligned (ap-procimatively 14% of misalignment). 
+
+## 10 Discussion 
+
+Our experiments provide several insights into the alignment be-tween AI models and clinician reasoning across different datasets. For the Breast Cancer dataset, the features most relevant for a positive diagnosis were 𝑥 7 for the NN and SGD models, and 𝑥 5 for the LR model. However, when we consider the dataset’s critical property, 𝐶 𝑟 : 𝑥 2 = 0 ∧ 𝑥 8 = 0, we notice that none of the features deemed most relevant by the models are part of this critical property. Consequently, in the third phase of our experiments, we observed a substantial misalignment between the models and clinician reason-ing. This finding highlights that simply inspecting which features the models consider most important can give clinicians a signal: if these features are not part of the critical property, it may indicate potential misalignment. In contrast, the Heart Disease dataset shows a different pattern. Both the LR and SGD models identified 𝑥 12 as the most relevant feature. Importantly, this feature is also part of the critical property, 
+
+𝐶 𝑟 : 𝑥 2 = 0 ∧ 𝑥 3 = 1 ∧ 𝑥 12 = 0. As a result, the models exhibit better alignment with clinician reasoning, reinforcing the observation that alignment improves when the features critical for model predictions coincide with clinically defined critical properties. An additional factor affecting alignment appears to be the prepro-cessing of the datasets. For the Breast Cancer dataset, feature bina-rization was performed statistically (using the median), whereas for the Heart Disease dataset, thresholds were defined based on clinical knowledge. Although not exhaustively tested, this difference sug-gests that incorporating domain expertise in feature processing can improve the alignment between AI models and clinical reasoning, emphasizing the value of expert input in AI development. Finally, it is important to consider the nature of AI models versus clinical reasoning. Clinicians rely primarily on critical properties to make rapid and accurate diagnoses. AI models, however, can pro-cess multiple features simultaneously and may identify additional relevant factors beyond the critical properties. In our methodol-ogy, abductive explanations enumerate all potential reasons for a positive diagnosis. Consequently, if only some of these reasons are Bridging AI and Clinical Reasoning: Abductive Explanations for Alignment on Critical Symptoms ACSW 2026, February 09–12, 2026, Melbourne, Australia 
+
+Table 2: Impact of features on positive diagnoses in the Heart Disease dataset across different models 165 Cases Models Values 𝑥 1 𝑥 2 𝑥 3 𝑥 4 𝑥 5 𝑥 6 𝑥 7 𝑥 8 𝑥 9 𝑥 10 𝑥 11 𝑥 12 𝑥 13 
+
+LR 1 4 12 15 1 1 0 6 0 5 4 13 10 28 0 0 10 11 4 3 0 0 10 18 8 7 41 12 SGD 1 13 5 29 6 5 0 18 0 2 3 16 6 90 1 9 13 17 7 0 13 16 11 4 8 47 1
+
+Table 3: Impact of features on positive diagnoses in the Mental Health dataset across different models 553 Cases Models Values 𝑥 1 𝑥 2 𝑥 3 𝑥 4 𝑥 5 𝑥 6 𝑥 7 𝑥 8 𝑥 9 𝑥 10 
+
+NN 1 44 47 29 75 186 56 147 50 65 138 
+
+0 19 24 67 75 80 5 26 20 58 22 LR 1 61 34 25 94 109 6 101 23 69 158 
+
+0 24 18 33 134 71 2 28 5 60 38 SGD 1 63 44 28 84 58 22 173 46 74 165 
+
+0 26 25 37 111 60 0 54 11 52 36 
+
+Figure 2: Quantifying Misalignment on the Breast Cancer Dataset. 
+
+Figure 3: Quantifying Misalignment on the Heart Disease Dataset. 
+
+critical, strict alignment criteria may label the model as misaligned even when it partially agrees with clinical reasoning. To address this, we propose a relaxed definition of alignment: 
+
+Theorem 4 (Diagnosis Alignment). Given a critical property 
+
+𝐶 𝑟 , the diagnosis of a critical instance 𝑥 is aligned if Δ(𝑥 ) = 𝑑 + and at least one of the abductive explanations for Δ(𝑥 ) contains the critical property. 
+
+Theorem 4 allows us to capture alignment for critical cases even when the model identifies additional, non-critical reasons for a pos-itive diagnosis. Moreover, it enables clinicians to test hypotheses on non-critical cases. Recall Figure 1, where Δ𝑐 is a partial deci-sion function only providing diagnoses for critical cases. Using Theorem 4, clinicians can evaluate whether their hypotheses for non-critical cases are also consistent with model reasoning. Fu-ture work will focus on validating this approach and extending alignment assessment across all patient cases. ACSW 2026, February 09–12, 2026, Melbourne, Australia Belona Sonna and Alban Grastien 
+
+## 11 Conclusion 
+
+In this work, we investigated the alignment between clinical rea-soning and AI model decision-making in medical diagnostics, fo-cusing on critical cases where rapid and accurate diagnosis is es-sential. Leveraging formal abductive explanations, we identified relevant and critical features that drive AI predictions, and con-trasted them with the features clinicians rely upon to make positive diagnoses. Our experimental studies across three datasets—Breast Cancer, Heart Disease, and Mental Health in Tech—highlighted several key findings. First, the features deemed most relevant by AI models do not always correspond to the critical properties used by clinicians, as observed in the Breast Cancer dataset, resulting in substantial misalignment. Conversely, in the Heart Disease dataset, alignment was stronger when model-relevant features coincided with clinician-defined critical properties, underscoring the importance of domain-informed preprocessing and feature selection. Second, the notion of abductive explanations proved effective in formally capturing the reasoning process of AI models, allowing us to differentiate between correct predictions that are clinically aligned and those that are not. Finally, we proposed an alignment criterion (Theorem 4) that accounts for cases where AI models identify alternative reasons for a positive diagnosis, providing a flexible yet clinically meaningful framework for evaluating reasoning consistency. Our results demonstrate that reasoning alignment is a comple-mentary dimension to predictive accuracy, offering a new lens to evaluate the trustworthiness of AI systems in healthcare. By in-tegrating abductive explanations with critical property analysis, clinicians and AI developers can better identify misalignment, audit model behavior, and guide model refinement to ensure diagnostic decisions are both accurate and clinically meaningful. Future work will extend this framework to additional datasets and explore its potential for real-time clinical decision support, ultimately bridging the gap between AI reasoning and human clinical expertise. 
+
+## Acknowledgments 
+
+We thank Patrik Haslum (Australian National University) and Alban Grastien (CEA List) for their guidance throughout this research, as well as for their insightful feedback and careful reviews, which significantly improved the quality of this work. 
+
+## References 
+
+[1] S. A. Ali, K. R. Arain, N. U. A. Mushtaq, and O. U. Rehman. 2023. Interpretable Deep Learning for Brain Tumor Diagnosis: Occlusion Sensitivity-Driven Explainability in MRI Classification. VFAST Transactions on Software Engineering 5 (2023), 15–28. doi:10.1145/3591234 [2] S. Baral, S. Satpathy, and R. Satpathy. 2024. Predictive models for chronic cardiac disease with LIME and SHAP. None (2024). [3] P. Brodeur et al . 2024. Superhuman performance of a large language model on the reasoning tasks of a physician. arXiv.org (2024). [4] C. J. Cai, S. Winter, D. F. Steiner, L. Wilcox, and M. Terry. 2019. "Hello AI": Uncov-ering the onboarding needs of medical practitioners for human-AI collaborative decision-making. In Unpublished .[5] J. Contreras, A. Winterfeld, J. Popp, and T. Bocklitz. 2024. Spectral zones-based SHAP/LIME: Enhancing interpretability in spectral deep learning models through grouped feature analysis. Analytical Chemistry (2024). [6] P. Croskerry. 2018. Adaptive expertise in medical decision making. Medical Teacher (2018). [7] Adnan Darwiche. 2020. On the reasons behind decisions. Proceedings of the AAAI Conference on Artificial Intelligence 34, 04 (2020), 2930–2937. [8] A. Datta, W. A. W. Wasi, F. Muntasir, and M. Nafis. 2024. LIME-RAY: What does a neural network see from X-rays? None (2024). [9] S. S. Everett et al . 2025. From tool to teammate: A randomized controlled trial of clinician-AI collaborative workflows for diagnosis. medRxiv (2025). [10] Ethan Goh, Robert J. Gallo, Jason Hom, Eric Strong, Yingjie Weng, Hannah Kerman, Joséphine A Cool, Zahir Kanjee, Andrew S. Parsons, Neera Ahuja, Eric Horvitz, Daniel Yang, Arnold Milstein, Andrew P.J. Olson, Adam Rodman, and Jonathan H. Chen. 2024. Large Language Model Influence on Diagnostic Reasoning: A Randomized Clinical Trial. JAMA network open (2024). https: //api.semanticscholar.org/CorpusID:268379845 [11] Mark L Graber, Nina Franklin, and Gautham Gordon. 2012. Diagnostic error in medicine: analysis of 42 cases. BMJ Quality & Safety 21, 7 (2012), 535–542. [12] Xu He, Y. Wang, Y. Xun, R. Shao, and Y. Jiao. 2024. Explainable AI for Clinical Rea-soning: Reliability Challenges and Evidence-Based Practice. Artificial Intelligence in Medicine 132 (2024), 102200. doi:10.1016/j.artmed.2024.102200 [13] Xuanxiang Huang and João Marques-Silva. 2023. From Robustness to Ex-plainability and Back Again. CoRR abs/2306.03048 (2023). arXiv:2306.03048 doi:10.48550/ARXIV.2306.03048 [14] Xuanxiang Huang and Joao Marques-Silva. 2024. On the failings of Shapley values for explainability. International Journal of Approximate Reasoning 171 (2024), 109112. doi:10.1016/j.ijar.2023.109112 Synergies between Machine Learning and Reasoning. [15] M. S. Islam et al . 2025. Explainable AI in healthcare: Leveraging machine learning and knowledge representation for personalized treatment recommendations. 
+
+Journal of Posthumanism (2025). [16] Yacine Izza, Alexey Ignatiev, Peter J. Stuckey, and Joao Marques-Silva. 2023. Delivering Inflated Explanations. ArXiv abs/2306.15272 (2023). https://api. semanticscholar.org/CorpusID:259262097 [17] W. Jin, X. Li, and G. Hamarneh. 2024. Evaluating Explainable AI on Multi-Modal Medical Imaging Tasks: Clinical Relevance Assessment. Medical Image Analysis 
+
+85 (2024), 102689. doi:10.1016/j.media.2024.102689 [18] R. Kandala, A. K. Moharir, and D. A. Nayak. 2025. From explainability to action: A generative operational framework for integrating XAI in clinical mental health screening. arXiv.org (2025). [19] Jerome P Kassirer and Richard I Kopelman. 2010. Learning Clinical Reasoning .Lippincott Williams & Wilkins. [20] T. Khater, A. Hussain, S. A. Mahmoud, and S. Yasen. 2023. Explainable AI for breast cancer detection: A LIME-driven approach. In International Conference on Developments in eSystems Engineering .[21] M. Laatifi et al . 2023. Explanatory predictive model for COVID-19 severity risk employing machine learning, shapley addition, and LIME. Scientific Reports 
+
+(2023). [22] U. Maharana et al . 2025. Right prediction, wrong reasoning: Uncovering LLM misalignment in RA disease diagnosis. arXiv.org (2025). [23] A. Mahrouk, R. C. Poonia, S. Pramanik, and F. R. Trejo-Macotela. 2025. Epistemic limits of local interpretability in self-modulating cognitive architectures. Frontiers in Artificial Intelligence (2025). [24] Joao Marques-Silva. 2022. Logic-Based Explainability in Machine Learning. ArXiv 
+
+abs/2211.00541 (2022). https://api.semanticscholar.org/CorpusID:253244432 [25] Joao Marques-Silva. 2023. Disproving XAI Myths with Formal Methods – Initial Results. 27th International Conference on Engineering of Complex Computer Systems (ICECCS) (2023), 12–21. https://api.semanticscholar.org/CorpusID: 259076178 [26] Joao Marques-Silva and Xuanxiang Huang. 2024. Explainability Is Not a Game. 
+
+Commun. ACM 67, 7 (July 2024), 66–75. doi:10.1145/3635301 [27] Joao Marques-Silva and Alexey Ignatiev. 2022. Delivering Trustworthy AI through Formal XAI. Proceedings of the AAAI Conference on Artificial Intelligence (2022). [28] S. Mcallister, H. Tedesco, S. Kruger, E. Ward, C. Marsh, and S. Doeltgen. 2020. Clinical reasoning and hypothesis generation in expert clinical swallowing exam-inations. International journal of language and communication disorders (2020). [29] National Institute for Health and Care Excellence. 2023. Chest Pain of Recent Onset: Assessment and Diagnosis. https://www.nice.org.uk/guidance/cg95. [30] Geoffrey Norman, Meredith Young, and Lee Brooks. 2007. Non-analytical models of clinical reasoning: the role of experience. Medical Education 41, 12 (2007), 1140–1145. [31] Olcar Ozdemi. 2024. Explainable AI (XAI) in Healthcare: Bridging the Gap between Accuracy and Interpretability. Journal of Science, Technology and Engi-neering Research (2024). [32] O. Ozdemir. 2024. Explainable AI (XAI) in healthcare: Bridging the gap between accuracy and interpretability. None (2024). [33] A. V. Ponce-Bobadilla, V. Schmitt, C. Maier, S. Mensing, and S. Stodtmann. 2024. Practical guide to SHAP analysis: Explaining supervised machine learning model predictions in drug development. Clinical and Translational Science (2024). [34] A. I. F. Poon and J. Sung. 2021. Opening the black box of AIMedicine. Journal of Gastroenterology and Hepatology (2021). [35] Adam Rosenfeld and colleagues. 2025. Explainable AI in Clinical Decision Support: Bridging the Gap Between Accuracy and Interpretability. Journal of Medical Internet Research 27, 3 (2025), e34567. doi:10.2196/34567 Bridging AI and Clinical Reasoning: Abductive Explanations for Alignment on Critical Symptoms ACSW 2026, February 09–12, 2026, Melbourne, Australia 
+
+[36] A. M. A. Salih et al . 2023. A perspective on explainable artificial intelligence methods: SHAP and LIME. Advanced Intelligent Systems (2023). [37] M. Salimparsa, K. Sedig, D. Lizotte, S. S. Abdullah, N. Chalabianloo, and F. Muanda. 2025. Explainable AI for Clinical Decision Support Systems: Literature Review, Key Gaps, and Research Synthesis. Informatics 12, 2 (2025), 45. doi:10.3390/ informatics12020045 [38] M. A. Shakir et al. 2024. Developing interpretable models for complex decision-making. In Conference of the Open Innovations Association .[39] Belona Sonna and Alban Grastien. 2026. On Explaining Proxy Discrimination and Unfairness in Individual Decisions Made by AI Systems. In AI 2025: Advances in Artificial Intelligence , Miaomiao Liu, Xin Yu, Chang Xu, and Yiliao Song (Eds.). Springer Nature Singapore, Singapore, 260–273. [40] Ian G Stiell and George A Wells. 1999. Methodologic standards for the devel-opment of clinical decision rules in emergency medicine. Annals of Emergency Medicine 33, 4 (1999), 437–447. [41] A. Waqas et al . 2025. REASONING BEYOND ACCURACY: EXPERT EVALUATION OF LARGE LANGUAGE MODELS IN DIAGNOSTIC PATHOLOGY. medRxiv 
+
+(2025). [42] World Health Organization. 2022. Integrated Management of Adult and Adoles-cent Illness (IMAI). https://www.who.int/publications. [43] K. Wu et al . 2025. MedCaseReasoning: Evaluating and learning diagnostic rea-soning from clinical case reports. arXiv.org (2025). [44] Jinqiang Yu, Alexey Ignatiev, Peter Stuckey, Nina Narodytska, and Joao Marques-Silva. 2023. Eliminating the Impossible, Whatever Remains Must Be True: On Extracting and Applying Background Knowledge in the Context of Formal Expla-nations. Proceedings of the AAAI Conference on Artificial Intelligence 37 (2023). [45] V. et al. Yuan. 2024. Artificial Intelligence for Guideline-Based Evaluation of Cardiac Function. Circulation 150, 11 (2024), e4370367. doi:10.1161/ CIRCULATIONAHA.124.4370367

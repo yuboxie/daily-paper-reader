@@ -62,3 +62,272 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-03-11T02:51:43.347Z'
+    - tag: LLM HUM
+      description: 查找大语言模型（LLM）在幽默计算与生成方面的研究论文
+      enabled: true
+      keywords:
+        - keyword: LLM humor
+          keyword_cn: 大语言模型幽默
+          query: Large Language Models humor computation and generation
+        - keyword: computational humor
+          keyword_cn: 计算幽默
+          query: computational humor research and methodologies
+        - keyword: humor detection
+          keyword_cn: 幽默识别
+          query: humor detection and recognition using LLMs
+        - keyword: humor generation
+          keyword_cn: 幽默生成
+          query: automatic humor generation with generative AI
+        - keyword: joke understanding
+          keyword_cn: 笑话理解
+          query: LLM capability in joke understanding and explanation
+        - keyword: sarcasm detection
+          keyword_cn: 讽刺检测
+          query: sarcasm and irony detection in natural language processing
+        - keyword: pun generation
+          keyword_cn: 双关语生成
+          query: computational pun generation and wordplay
+        - keyword: humor evaluation
+          keyword_cn: 幽默评估
+          query: metrics for evaluating humor in machine-generated text
+      intent_queries:
+        - query: survey of large language models for computational humor
+          query_cn: 大语言模型计算幽默综述
+          enabled: true
+          source: manual
+          note: ''
+        - query: benchmarking LLMs on humor recognition and generation tasks
+          query_cn: 大语言模型在幽默识别与生成任务上的基准测试
+          enabled: true
+          source: manual
+          note: ''
+        - query: fine tuning language models for creative and humorous writing
+          query_cn: 针对创意与幽默写作的语言模型微调
+          enabled: true
+          source: manual
+          note: ''
+        - query: theoretical frameworks for humor computation in AI
+          query_cn: 人工智能中幽默计算的理论框架
+          enabled: true
+          source: manual
+          note: ''
+        - query: evaluating the sense of humor in state of the art LLMs
+          query_cn: 评估前沿大语言模型的幽默感
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T03:49:29.657Z'
+    - tag: LLM AC
+      description: 查找LLM做情感计算和共情对话的论文
+      enabled: true
+      keywords:
+        - keyword: LLM
+          keyword_cn: 大语言模型
+          query: Large Language Models
+        - keyword: Affective Computing
+          keyword_cn: 情感计算
+          query: Affective Computing and Sentiment Analysis
+        - keyword: Emotional Intelligence
+          keyword_cn: 情感智能
+          query: Artificial Emotional Intelligence in LLMs
+        - keyword: Emotion Recognition
+          keyword_cn: 情绪识别
+          query: Emotion Recognition in Conversation
+        - keyword: Empathetic Response
+          keyword_cn: 共情回复生成
+          query: Empathetic Response Generation
+        - keyword: Psychological Support
+          keyword_cn: 心理支持
+          query: LLMs for Psychological Support and Counseling
+        - keyword: Chain of Empathy
+          keyword_cn: 共情链
+          query: Chain of Empathy prompting for LLMs
+      intent_queries:
+        - query: benchmarking empathy in large language models
+          query_cn: 大语言模型共情能力基准测试
+          enabled: true
+          source: manual
+          note: ''
+        - query: fine tuning LLMs for empathetic conversation
+          query_cn: 针对共情对话的大语言模型微调
+          enabled: true
+          source: manual
+          note: ''
+        - query: prompt engineering for emotional intelligence in AI
+          query_cn: 提升AI情感智能的提示工程
+          enabled: true
+          source: manual
+          note: ''
+        - query: evaluating emotional support capabilities of LLMs
+          query_cn: 评估大语言模型的情感支持能力
+          enabled: true
+          source: manual
+          note: ''
+        - query: LLM based emotion recognition and sentiment classification
+          query_cn: 基于大语言模型的情绪识别与情感分类
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T04:12:32.508Z'
+    - tag: LH LLM
+      description: 查找Long-horizon LLM（长程/长上下文大语言模型）的相关论文
+      enabled: true
+      keywords:
+        - keyword: Long-horizon LLM
+          keyword_cn: 长程大语言模型
+          query: Long-horizon large language models research papers
+        - keyword: Long context window
+          keyword_cn: 长上下文窗口
+          query: LLMs with extended context window length
+        - keyword: Infinite context
+          keyword_cn: 无限上下文
+          query: Techniques for infinite context processing in LLMs
+        - keyword: Needle in a haystack
+          keyword_cn: 大海捞针测试
+          query: Needle in a haystack evaluation for long context LLMs
+        - keyword: Memory mechanism
+          keyword_cn: 记忆机制
+          query: External memory and retrieval augmented generation for long horizons
+        - keyword: Context compression
+          keyword_cn: 上下文压缩
+          query: KV cache compression and context distillation for long sequences
+        - keyword: Recurrent LLM
+          keyword_cn: 循环大模型
+          query: Recurrent neural network structures for long-horizon language modeling
+      intent_queries:
+        - query: State of the art methods for long horizon reasoning in LLMs
+          query_cn: 大语言模型长程推理的最新方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: Benchmark datasets for evaluating long context large language models
+          query_cn: 评估长上下文大语言模型的基准数据集
+          enabled: true
+          source: manual
+          note: ''
+        - query: Efficient attention mechanisms for processing extremely long sequences
+          query_cn: 处理极长序列的高效注意力机制
+          enabled: true
+          source: manual
+          note: ''
+        - query: Survey of long range dependency modeling in transformer architectures
+          query_cn: Transformer架构中长程依赖建模的综述
+          enabled: true
+          source: manual
+          note: ''
+        - query: Optimization of KV cache for long horizon document understanding
+          query_cn: 针对长程文档理解的KV缓存优化
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T04:07:00.567Z'
+    - tag: LLM MR
+      description: 查找大语言模型（LLM）在药物推荐系统中的应用及相关研究论文
+      enabled: true
+      keywords:
+        - keyword: LLM
+          keyword_cn: 大语言模型
+          query: Large Language Models
+        - keyword: drug recommendation
+          keyword_cn: 药物推荐
+          query: drug recommendation systems
+        - keyword: medication recommendation
+          keyword_cn: 用药推荐
+          query: medication recommendation algorithms
+        - keyword: generative AI
+          keyword_cn: 生成式人工智能
+          query: generative artificial intelligence in healthcare
+        - keyword: clinical decision support
+          keyword_cn: 临床决策支持
+          query: clinical decision support systems for medication
+        - keyword: personalized medicine
+          keyword_cn: 个性化医疗
+          query: personalized drug recommendation using LLMs
+        - keyword: knowledge graph
+          keyword_cn: 知识图谱
+          query: knowledge graph enhanced drug recommendation
+        - keyword: electronic health records
+          keyword_cn: 电子健康记录
+          query: LLM for drug recommendation based on EHR
+      intent_queries:
+        - query: survey of large language models for drug recommendation
+          query_cn: 大语言模型在药物推荐中的综述
+          enabled: true
+          source: manual
+          note: ''
+        - query: LLM based personalized medication recommendation systems
+          query_cn: 基于大语言模型的个性化用药推荐系统
+          enabled: true
+          source: manual
+          note: ''
+        - query: integrating knowledge graphs with LLMs for drug suggestion
+          query_cn: 结合知识图谱与大语言模型的药物建议
+          enabled: true
+          source: manual
+          note: ''
+        - query: evaluating LLMs in clinical drug recommendation tasks
+          query_cn: 评估大语言模型在临床药物推荐任务中的表现
+          enabled: true
+          source: manual
+          note: ''
+        - query: fine tuning large language models for medical prescription
+          query_cn: 针对医疗处方微调大语言模型
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T04:12:21.194Z'
+    - tag: LLM MH
+      description: 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文
+      enabled: true
+      keywords:
+        - keyword: LLM
+          keyword_cn: 大语言模型
+          query: Large Language Models
+        - keyword: Mental Health
+          keyword_cn: 心理健康
+          query: Mental health applications and diagnosis
+        - keyword: Psychiatry
+          keyword_cn: 精神病学
+          query: Computational psychiatry and LLMs
+        - keyword: Psychotherapy
+          keyword_cn: 心理治疗
+          query: AI-assisted psychotherapy and counseling
+        - keyword: Depression
+          keyword_cn: 抑郁症
+          query: LLM for depression detection and analysis
+        - keyword: Anxiety
+          keyword_cn: 焦虑症
+          query: Large language models for anxiety assessment
+        - keyword: Sentiment Analysis
+          keyword_cn: 情感分析
+          query: Emotional and sentiment analysis in mental health
+        - keyword: Clinical Psychology
+          keyword_cn: 临床心理学
+          query: LLMs in clinical psychology research
+      intent_queries:
+        - query: Applications of large language models in mental health diagnosis
+          query_cn: 大语言模型在心理健康诊断中的应用
+          enabled: true
+          source: manual
+          note: ''
+        - query: LLM based conversational agents for psychological counseling
+          query_cn: 基于大语言模型的心理咨询对话代理
+          enabled: true
+          source: manual
+          note: ''
+        - query: Ethical considerations of using LLMs in mental healthcare
+          query_cn: 在心理健康医疗中使用大语言模型的伦理考量
+          enabled: true
+          source: manual
+          note: ''
+        - query: Fine tuning large language models for mental health support
+          query_cn: 针对心理健康支持微调大语言模型
+          enabled: true
+          source: manual
+          note: ''
+        - query: Review of natural language processing in clinical psychology
+          query_cn: 临床心理学中的自然语言处理综述
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T04:11:46.646Z'

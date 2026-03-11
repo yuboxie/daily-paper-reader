@@ -1,0 +1,265 @@
+Title: Multi-dimensional Assessment and Explainable Feedback for Counselor Responses to Client Resistance in Text-based Counseling with LLMs
+
+URL Source: https://arxiv.org/pdf/2602.21638v1
+
+Published Time: Thu, 26 Feb 2026 01:33:23 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Multi-dimensional Assessment and Explainable Feedback for Counselor Responses to Client Resistance in Text-based Counseling with LLMs 
+
+1st Anqi Li 
+
+Zhejiang University Westlake University 
+
+Hangzhou, China lianqi@westlake.edu.cn 
+
+2nd Ruihan Wang 
+
+Westlake University 
+
+Hangzhou, China 0009-0008-5975-644X 
+
+4th Zhaoming Chen 
+
+Westlake University 
+
+Hangzhou, China 0000-0001-7811-6167 
+
+4th Yuqian Chen 
+
+Westlake University 
+
+Hangzhou, China 0009-0000-3330-9731 
+
+5rd Yu Lu 
+
+Westlake University 
+
+Hangzhou, China 0000-0001-6971-3680 
+
+6th* Yi Zhu 
+
+Westlake University 
+
+Hangzhou, China yuna zhu@126.com 
+
+7th* Yuan Xie 
+
+Westlake University 
+
+Hangzhou, China xieyuan@westlake.edu.cn 
+
+8th* Zhenzhong Lan 
+
+Westlake University 
+
+Hangzhou, China lanzhenzhong@westlake.edu.cn 
+
+Abstract —Effectively addressing client resistance is a sophisti-cated clinical skill in psychological counseling, yet practitioners often lack timely and scalable supervisory feedback to refine their approaches. Although current NLP research has examined overall counseling quality and general therapeutic skills, it fails to provide granular evaluations of high-stakes moments where clients exhibit resistance. In this work, we present acomprehensive pipeline for the multi-dimensional evaluation of human counselors’ interventions specifically targeting client resistance in text-based therapy. We introduce a theory-driven framework that decomposes counselor responses into four distinct communication mechanisms. Leveraging this framework, we curate and share an expert-annotated dataset of real-world counseling excerpts, pairing counselor-client interactions with professional ratings and explanatory rationales. Using this data, we perform full-parameter instruction tuning on a Llama-3.1-8B-Instruct backbone to model fine-grained evaluative judg-ments of response quality and generate explanations underlying. Experimental results show that our approach can effectively distinguish the quality of different communication mechanisms (77-81% F1), substantially outperforming GPT-4o and Claude-3.5-Sonnet (45-59% F1). Moreover, the model produces high-quality explanations that closely align with expert references and receive near-ceiling ratings from human experts (2.8-2.9/3.0). A controlled experiment with 43 counselors further confirms that receiving these AI-generated feedback significantly improves counselors’ ability to respond effectively to client resistance. 
+
+Index Terms —psychological counseling, text-based, response to resistance, large language models 
+
+I. I NTRODUCTION 
+
+Psychological counseling is a profoundly interactive and dialogue-driven process, the efficacy of which depends largely on the counselor’s capacity to navigate complex interpersonal dynamics. Central to these challenges is the phenomenon of client resistance, where clients oppose or diverge from the es-tablished therapeutic trajectory [1], [2]. Counselors’ responses to such resistance are therefore crucial: when addressed skill-Maybe it’s just her way. 
+
+> Counselor
+> Client
+
+Even now, it’s still hard for you to let go of 
+
+your negative feelings toward your mother. 
+
+If she could think and act more like a normal 
+
+person, I wouldn’t feel this way.   
+
+> Counselor
+> No Stance Alignment
+> No Respect for Autonomy
+
+What you should 
+
+do is to let it go. 
+
+> Counselor
+
+What 
+
+did she do that made her seem unusual to you?  
+
+> Weak Emotional Resonance
+> Counselor
+
+She sees things in ways you can’t accept.  
+
+> Strong Stance Alignment
+
+you realize she may always be this way, what 
+
+When 
+
+hurts most? Strong Conversational Orientation 
+
+> Counselor
+
+It sounds like more than anger -- there’s deep  
+
+> Strong Emotional Resonance
+
+disappointment. Do you wanna talk more about it?  
+
+> Strong Conversational Orientation
+
+You do have some complaints abou t her.       
+
+> Weak Conversational Orientation
+> The client resists by attributing the issue entirely to the mother,
+> rejecting the counselor 'sexploration of their own emotions.
+
+Fig. 1. Overview of our framework for evaluating counselor responses to client resistance. The framework comprises four core communication mechanisms: Respect for Autonomy , Stance Alignment , Emotional Resonance ,and Conversational Orientation . For each mechanism, responses are further categorized into three levels of expression: no expression, weak expression, and strong expression. Our computational approach simultaneously identifies the strength of these dimensions along with their underlying explanations. 
+
+fully, it can open a pathway to uncovering clients’ underlying conflicts; when mishandled, it may erode the therapeutic alliance or result in premature termination. Skillfully responding to client resistance remains a chal-lenge, largely due to the fact that counselors often receive limited and delayed feedback regarding the quality of their in-terventions. In traditional training and supervision, feedback is 
+
+> arXiv:2602.21638v1 [cs.CL] 25 Feb 2026
+
+typically sparse, retrospective, and dependent on expert avail-ability, making it difficult for counselors, especially novices, to recognize suboptimal responses or explore alternative strate-gies in a timely manner [3], [4]. As a result, counselors may repeatedly rely on habitual response patterns, even when these patterns inadvertently reinforce resistance. This issue is further exacerbated in text-based counseling settings, where supervision is less structured and many non-verbal interac-tional cues are absent. Although experienced supervisors can evaluate counselor responses along multiple dimensions, such assessments are neither scalable nor consistently accessible to the broader workforce. Existing research has explored the feasibility of applying Natural Language Processing (NLP) to provide counselors with feedback [5]. Some studies focus on macro-level anal-ysis, such as classifying overall dialogue quality or under-standing global constructs like the therapeutic alliance using LLMs [6]. Others concentrate on assessing competencies in specific counseling skills, such as empathy [7] and reflective listening [8], by differentiating between high and low quality or providing numeric scores. However, these approaches are generally designed for broad counseling contexts and evaluate discrete, isolated skills. They lack a dedicated framework to evaluate how counselors navigate specific, high-stakes clinical moments, particularly in responding to client resistance. To address this gap, this study establishes an integrated pipeline spanning theoretical framework, annotated data con-struction, model development, and empirical validation. In collaboration with psychological experts, and by adapting and synthesizing established theories [9]–[11], we propose a four-dimensional framework for evaluating counselor re-sponses to client resistance in text-based counseling. Mov-ing beyond holistic judgments, this framework decomposes counselor replies along four interrelated yet distinct commu-nication mechanisms: respect for autonomy, stance alignment, emotional resonance, and conversational orientation, thereby providing clear and operational criteria for assessment. Guided by this framework, we curate a high-quality an-notated dataset of resistance-response excerpts drawn from real-world counseling scenarios. Trained psychology students assign multi-dimensional ratings and craft explanatory ra-tionales with high reliability. Leveraging this dataset, we conduct full-parameter instruction tuning on a Llama-3.1-8B-Instruct backbone. Experimental results demonstrate that our model substantially outperforms the zero-shot performance of advanced general-purpose LLMs, including GPT-4o and Claude-3.5-Sonnet, across all four communication mecha-nisms. Specifically, our model achieves macro-F1 scores of up to 81%, compared to approximately 45% for the strongest baseline. Further ablation studies show that incorporating ex-plicit textual explanations during training yields an additional improvement of around 4 F1 points over models trained solely with labels, highlighting the critical role of explanation-based supervision. Beyond classification, our model is also capable of generating high-quality explanatory feedback. Both automated and human evaluations confirm the effectiveness of the generated explanations: our model nearly doubles the BLEU-1 score of top-tier baselines (0.60 vs. 0.32) and receives near-ceiling human ratings (2.8-2.9 out of 3.0) in terms of framework consistency, evidence anchoring, and clarity and specificity. These results indicate that the model not only identifies suboptimal counselor responses but also provides theoretically grounded and actionable guidance. Finally, we examine the practical utility of AI-generated feedback for assisting counselor to address client resistance. In a con-trolled between–within experiment with 43 counselors, those receiving model-generated feedback show significantly greater improvements in response quality than a control group without LLM-based feedback. These results highlight the potential of our approach as a scalable, theory-informed tool for supporting counselor skill development. Our framework, dataset, and models will be made available at the following URL. II. R ELATED WORK 
+
+Computational Analysis in Mental Health Counseling. 
+
+Recent studies have increasingly applied NLP techniques to the automated analysis and understanding of large-scale mental health-related conversations [12]. Some studies adopt a dialogue-level perspective, assessing global constructs such as treatment fidelity [4], the counselor–client therapeutic al-liance [13], clients’ personality traits [14], [15], and mental health states including anxiety and depression symptoms [5]. In parallel, other work conducts fine-grained, process-level analyses to identify counselors’ intervention intents and strate-gies [16], as well as clients’ suicide intent [17], behaviors [18], and emotional states [19], [20]. In addition, research on evaluating counselor performance has largely focused on the quality of specific counseling skills, most notably empathy [7] and reflective listening [8]. 
+
+LLM for Providing Feedback to Counselors. With the emer-gence of large language models, a growing body of work has begun to leverage LLMs to provide structured feedback and evaluation to support counselors [21]. Some studies incorpo-rate expert knowledge into LLMs through carefully designed prompts, enabling models to analyze counselor–client dia-logues and assess the therapeutic alliance across dimensions. These approaches further identify systematic weaknesses in counselors’ relationship-building abilities and offer targeted guidance for improvement [6]. Beyond alliance-focused anal-ysis, [22] introduced a multi-level feedback framework for peer counseling, training a small-scale LLM to infer the counseling goal, identify specific areas for improvement, and propose an alternative response given a specific situation. Similarly, [23] proposed the CARE system, which diagnoses the counseling strategies required in a given situation and suggests example responses during practice sessions. Through user studies, they demonstrated that CARE effectively supports skill development among novice counselors. Despite this progress, relatively little work has explicitly addressed client resistance, a critical yet challenging phe-nomenon in psychological counseling. Recently, [24] devel-oped an automatic model to detect and classify client fine-grained resistance behaviors. In contrast, our work takes a fur-ther step by focusing on the quality of counselors’ responses to client resistance , aiming to provide more direct and actionable guidance for counselors to adapt and refine their intervention strategies. III. E VALUATION FRAMEWORK 
+
+To identify the core dimensions of therapists’ moment-to-moment responses that effectively address clients’ interper-sonal resistance, we propose a novel framework for multi-dimensional analysis of counselor responses. The framework was developed through close collaboration with professional clinical supervisors who possess extensive experience in both psychotherapy practice and therapist supervision. Drawing on established psychological theories [9], [25], we synthesize key dimensions that are central to addressing client resistance in practice and systematically adapt them to the context of text-based counseling. The proposed framework comprises four core communi-cation mechanisms that collectively offer a comprehensive perspective on how counselors respond to client resistance: Re-spect for Autonomy , Stance Alignment , Emotional Resonance ,and Conversational Direction . For each mechanism, counselor responses are evaluated across three levels of expression: (0) 
+
+No Expression , where the mechanism is entirely absent; (1) 
+
+Weak Expression , where it is present but only minimally articulated; and (2) Strong Expression , where it is clearly and substantively demonstrated. We illustrate this framework using the following client resistance scenario: the counselor invites the client to consider self-care, while the client resists the suggestion by framing rest as incompatible with their perceived family responsibility .
+
+(1) Respect for Autonomy. Respect for Autonomy refers to the counselor’s recognition and support of the client’s self-determination, a foundational principle underlying the entire therapeutic process. A no expression of autonomy respect is marked by didactic responses that pressure the client toward compliance (e.g., If you burn out, that will hurt your family more—that’s truly irresponsibility ). In contrast, a 
+
+strong expression affirms the client’s values and encourages exploration of their own thoughts without imposing outcomes (e.g., Exactly, being the backbone of your family carries a great deal of responsibility ). 
+
+(2) Emotional Resonance. Emotional resonance indicates the counselor’s ability to accurately perceive, understand, and re-flect the client’s deep emotional experiences, fostering a sense of containment and psychological safety that is beneficial for the decrease of the resistance behaviors and advancement of therapeutic processes. A no expression neglects or distorts the client’s emotions (e.g, From a family systems perspective, an overfunctioning backbone can foster dependency in others. ). A weak expression reflects superficial empathy, focusing only on external events or rational analysis (e.g., Yes, having family responsibilities is not easy. ). A strong expression articulates the client’s underlying emotions and intentions (e.g, Carrying that weight alone must be exhausting and lonely at times. ). 
+
+(3) Stance Alignment. Stance alignment refers to the coun-selor’s adjustment of their communication to align with with client’s position or perspective. A no expression indicates an oppositional or challenging stance (e.g, But have you considered that believing you’re indispensable may reflect an unbalanced family pattern? ). A weak expression positions the counselor as a detached, third-party observer, acknowledging the situation without fully engaging with the client’s perspec-tive (e.g., This is a real dilemma. ). A strong expression 
+
+demonstrates cognitive alignment with the client, support-ing their values while collaboratively exploring constructive approaches (e.g, Your family comes first—that’s clear and admirable. Let’s figure out how you can keep being their strong support, but in a way that doesn’t wear you down over time. )
+
+(4) Conversational Orientation. Conversational direction de-scribes how the therapist’s response can guide the conversa-tion toward a deeper and a more meaningful exploration of the client’s psychological status, alleviating client resistance by fostering a sense of direction within the session. A no expression persuade or debate with the client that lead the counseling process toward a negative trajectory (e.g., Now we should finish today’s stress assessment form first. ). A 
+
+weak expression use repetitive responses or aimless questions can contribute to conversational stagnation (e.g., It’s true. ). A strong expression provides a clear, collaborative path for exploration (e.g., What does an ideal, well-functioning backbone look like in your mind? ). IV. D ATA COLLECTION 
+
+To enable computational evaluation of counselors’ responses to client resistance, we construct a dataset grounded in the proposed framework. 
+
+A. Data Source 
+
+Our data is sourced from two research available counseling dialogue datasets available for research purposes: ClientBehav-ior [18] and ObserverWAI [6]. Both datasets consist of text-based counseling conversations between clients and licensed counselors, collected from online mental health platforms in China. To identify client utterances exhibiting resistance, we apply RECAP [24], an automated resistance detection tool with a reported accuracy of 91.41%. For each detected resistance utterance, we retrieve the counselor’s immediate subsequent response, thereby constructing paired samples of client resistance contexts and corresponding counselor inter-ventions. 
+
+B. Annotation Task and Process a) Annotators Recruitment and Training: Prior psycho-logical research has demonstrated that assessing the quality of counselor responses to client resistance is a highly challenging task, one that cannot be reliably performed by crowdwork-ers [26]. To ensure high-quality annotations, we recruited five licensed counselors as annotators, each with over ten TABLE I STATISTICS OF THE COLLECTED RESISTANCE RESPONSE EVALUATION DATASET .                    
+
+> Dimension No Weak Strong Total
+> Respect for Autonomy 561 2761 514 3836 Stance Alignment 445 2654 737 3836 Emotional Resonance 1299 2262 275 3836 Conversation Orientation 1561 1813 462 3836
+
+years of clinical practice and formal supervisory experience. All annotators received structured training using a detailed annotation manual and framework-specific guidelines before the annotation process. 
+
+b) Conversational Mechanisms Annotation: In our anno-tation task, annotators were presented with pairs consisting of a counseling dialogue segment ending with a client resistance utterance and the subsequent counselor response. For each such pair, annotators were instructed to assess the counselor response along four predefined conversational mechanisms derived from our proposed framework. Specifically, for each mechanism, they rated whether it was: not expressed, weakly expressed, or strongly expressed within the given context of client resistance. 
+
+c) Explanations Crafting: Following the categorical an-notations, annotators were also asked to provide detailed explanations for their labels. Each explanation should first analyze the client’s resistance behavior and then examine the counselor’s response. The analysis must highlight the elements of the response that are critical for the assigned annotation category and provide a natural-language explanation in accor-dance with the evaluation criteria. For instance, considering the resistance context and the first counselor response in Figure 1, an example explanation is as follows: Client Resistance Analy-sis: The client rejects the counselor’s statement regarding their unresolved feelings toward their mother and instead attributes responsibility for their emotional state to the mother’s behav-ior. Counselor Response Analysis: The counselor’s remark, “Maybe it’s just her way,” functions as a defense of the mother or as minimization of the harm experienced by the client, positioning the counselor in cognitive opposition to the client. Therefore, the response is categorized as No Stance Alignment. d) Quality Control: To ensure annotation reliability, each sample was independently labeled by two annotators. Dis-agreements were resolved by a third annotator, and the final label was determined via majority vote. The inter-annotator agreement, measured using Cohen’s κ, ranged from 0.74 to 0.77 across the four communication mechanisms, indicating substantial agreement and reflecting the overall quality and consistency of the annotations. To further assess the quality of the annotated explanations, two taxonomy developers who were not involved in the anno-tation process to conduct an independent evaluation. A total of 100 samples were randomly selected, and the evaluators reviewed both the annotated communication mechanism levels and the accompanying explanations. Explanations were rated along three dimensions: framework consistency (whether the explanation correctly interprets and applies the core concept of the corresponding framework dimension), evidence anchoring (whether the explanation is explicitly grounded in specific language or behaviors in the counselor’s response), and clarity and specificity (whether the explanation is clearly articulated, concrete, and easy to understand). Each dimension was rated on a 3-point Likert scale. The average scores across the three dimensions were 2.82 0.38 , 2.84 0.37 , and 2.80 0.40 , respectively, indicating that the explanations are of consistently high quality. The resulting corpus comprises 3,836 samples, each anno-tated with conversational mechanisms and accompanied by explanations provided by trained annotators. 
+
+e) Privacy and Ethics: Both source datasets are restricted to research use, with all personally identifiable information removed. Our collected data will follow the same protocol, re-quiring institutions to apply and sign a data-sharing agreement. This work makes no treatment recommendations or diagnostic claims. V. E XPERIMENT AND RESULTS 
+
+Using our collected dataset, we develop a computational approach that leverages large language models to evaluate counselor responses to client resistance. 
+
+A. Problem Definition 
+
+For each sample, comprising the dialogue history ending with client resistance and the counselor’s subsequent response, the task is to assess the level of each communication mecha-nism as no , weak , or strong expression, and to generate free-text explanations justifying these assessments. 
+
+B. Experiment Setup 
+
+We employ 5-fold cross-validation to mitigate bias from random data splits and ensure a stable evaluation of model performance. The dataset is partitioned into five folds via stratified sampling, preserving the original distribution across all folds. To address class imbalance, we apply random oversampling on the training set within each fold to balance the sample sizes across different classes. For each fold, four parts are used for training, and the remaining one is held out for validation. We perform full-parameter fine-tuning of the LLaMA-3.1-8B-Instruct model on the training set. Training runs for 3 epochs with an initial learning rate of 1 × 10 −5,and is regulated by early stopping based on the validation loss to prevent overfitting. The best model checkpoint from each fold is selected for final evaluation. During inference, we use deterministic decoding with temperature as 0 and top-p as 1.0 to ensure reproducible outputs. The final performance metrics are reported as the mean and standard deviation across all five folds. 
+
+C. Baselines 
+
+We additionally evaluate a range of advanced LLMs un-der zero-shot prompting. The evaluation includes leading TABLE II COMPARISON OF CLASSIFICATION PERFORMANCE BETWEEN THE BASELINE MODEL AND OUR MODEL ON THE FOUR COMMUNICATION MECHANISMS .RESULTS ARE REPORTED IN TERMS OF MACRO -F1 AND ACCURACY , WITH THE BEST -PERFORMING MODEL IN EACH COLUMN SHOWN IN BOLD .                                                                                                                                                                                                                                                           
+
+> Model Name Respect for Autonomy Stance Alignment Emotional Resonance Conversational Orientation F1 Acc. F1 Acc. F1 Acc. F1 Acc.
+> Claude-3.5-Sonnet 41 .61 ±0.99 57 .06 ±1.56 52 .59 ±1.41 53 .10 ±1.09 55 .59 ±1.44 60 .77 ±1.21 45 .36 ±1.62 45 .13 ±1.97
+> GPT-4o 45 .37 ±1.33 53 .31 ±1.38 58 .61 ±1.99 63 .87 ±1.29 53 .16 ±1.05 61 .52 ±1.21 41 .72 ±0.63 44 .26 ±0.48
+> Qwen2.5-7B-Instruct 27 .92 ±1.57 34 .91 ±1.56 22 .97 ±1.54 25 .34 ±1.18 29 .34 ±1.35 39 .49 ±1.69 27 .33 ±1.21 30 .63 ±1.61
+> Qwen2.5-14B-Instruct 33 .43 ±1.71 32 .20 ±0.64 32 .97 ±1.29 43 .35 ±0.93 30 .04 ±1.38 37 .38 ±2.06 29 .75 ±1.04 29 .67 ±1.17
+> Qwen2.5-32B-Instruct 34 .72 ±1.43 44 .24 ±1.83 37 .73 ±1.42 47 .08 ±1.26 33 .32 ±1.43 38 .35 ±1.15 30 .01 ±0.91 29 .64 ±0.81
+> Qwen2.5-72B-Instruct 38 .90 ±1.86 52 .16 ±1.94 42 .10 ±2.22 52 .16 ±1.37 39 .24 ±0.95 44 .92 ±0.95 36 .62 ±0.84 40 .74 ±0.94
+> Llama3.1-8B-Instruct 22 .13 ±0.51 29 .20 ±1.37 30 .55 ±1.23 33 .97 ±1.63 25 .57 ±1.28 31 .25 ±0.47 29 .37 ±1.18 30 .74 ±1.13
+> Llama3.1-70B-Instruct 38 .06 ±1.41 35 .79 ±0.57 36 .62 ±1.88 39 .11 ±0.93 41 .38 ±1.66 49 .06 ±1.38 34 .46 ±0.49 33 .91 ±0.66
+> Our Model 80 .92 ±1.55 87 .06 ±0.85 77 .56 ±1.78 84 .06 ±1.37 77 .34 ±3.67 78 .68 ±3.32 77 .87 ±0.54 77 .64 ±0.56
+> - Explanations 73 .24 ±1.92 83 .38 ±0.57 70 .17 ±1.30 80 .74 ±0.42 73 .23 ±2.67 75 .52 ±3.21 73 .21 ±1.48 74 .15 ±1.73
+
+TABLE III COMPARISON OF EXPLANATION GENERATION PERFORMANCE BETWEEN THE BASELINE MODEL AND OUR MODEL . R ESULTS ARE REPORTED IN TERMS OF 
+
+BLEU-1/2, R OUGE -1/2/L, AND HUMAN EVALUATIONS , WITH THE BEST -PERFORMING MODEL IN EACH COLUMN SHOWN IN BOLD .                                                                                                                                                                                                                              
+
+> Model Name Automatic Evaluation Human Evaluation BLEU-1 BLEU-2 Rouge-1 Rouge-2 Rouge-L Framework Consistency Evidence Anchoring Clarity & Specificity
+> Claude-3.5-Sonnet 32 .45 ±0.39 20 .45 ±0.18 47 .58 ±0.08 19 .02 ±0.11 29 .14 ±0.05 1.94 ±0.73 1.94 ±0.73 2.18 ±0.48
+> GPT-4o 24 .87 ±0.51 14 .23 ±0.26 42 .46 ±0.16 14 .70 ±0.14 25 .13 ±0.09 2.04 ±0.82 2.00 ±0.80 2.40 ±0.49
+> Qwen2.5-7B-Instruct 17 .94 ±0.61 9.99 ±0.31 39 .20 ±0.09 12 .46 ±0.07 21 .69 ±0.15 1.90 ±0.73 1.90 ±0.73 2.26 ±0.48
+> Qwen2.5-14B-Instruct 6.22 ±0.67 3.45 ±0.37 30 .82 ±0.38 8.58 ±0.18 15 .85 ±0.24 2.08 ±0.66 2.00 ±0.60 2.32 ±0.47
+> Qwen2.5-32B-Instruct 15 .52 ±0.20 9.00 ±0.11 40 .28 ±0.16 13 .54 ±0.06 22 .65 ±0.07 2.22 ±0.58 2.18 ±0.55 2.34 ±0.47
+> Qwen2.5-72B-Instruct 18 .49 ±0.54 10 .66 ±0.32 40 .54 ±0.20 13 .94 ±0.15 23 .50 ±0.20 2.10 ±0.64 2.08 ±0.63 2.28 ±0.45
+> Llama-3.1-8B-Instruct 7.30 ±0.23 4.09 ±0.13 32 .87 ±0.23 10 .28 ±0.13 19 .11 ±0.15 1.46 ±0.61 1.52 ±0.64 1.92 ±0.44
+> Llama-3.1-70B-Instruct 4.58 ±0.12 2.60 ±0.06 30 .91 ±0.17 9.42 ±0.08 18 .61 ±0.06 1.54 ±0.64 1.52 ±0.64 2.04 ±0.40
+> Our Model 60 .34 ±0.33 43 .39 ±0.30 63 .08 ±0.14 33 .71 ±0.15 41 .09 ±0.20 2.78 ±0.58 2.73 ±0.66 2.88 ±0.33
+
+closed-source models such as GPT-4o [27] and Claude-3.5-Sonnet [28], as well as open-source models from the Qwen2.5-Instruct family (7B, 14B, 32B, and 72B) [29] and the Llama-3.1-Instruct family (8B and 70B) [30]. All baseline models are evaluated under a unified protocol. 
+
+D. Ablation Study 
+
+We evaluated the contribution of explanation supervision to model performance through an ablation study. Specifically, we fully fine-tuned the Llama-3.1-8B-Instruct backbone using only the dimension-level ratings, without incorporating the corresponding explanations during training. To maintain task consistency between training and evaluation, the model was configured to predict only dimension scores, without gener-ating explanations, at test time. The learning rate was set to 
+
+5 × 10 −6, with all other experimental settings kept identical to the main experiment. 
+
+E. Results 
+
+We analyze the effectiveness of our computational approach in evaluating counselors’ responses to client resistance, to-gether with the quality of the generated explanations. Ta-ble II reports the classification performance (macro-F1 and accuracy), while Table III presents both automatic evalua-tion metrics (BLEU-1, BLEU-2, ROUGE-1, ROUGE-2, and ROUGE-L) and human evaluation results (framework consis-tency, evidence anchoring, and clarity and specificity) for the explanations generated by baseline models and our proposed approach across the four communication mechanisms. 
+
+a) Communication Mechanisms Identification Task :
+
+Overall, general-purpose LLMs struggle to accurately dif-ferentiate among the three levels of communication mecha-nisms. Advanced closed-source models, including GPT-4o and Claude-3.5-Sonnet, consistently achieve state-of-the-art perfor-mance across all four dimensions, significantly outperforming open-source counterparts with smaller parameter sizes. Among the evaluated dimensions, Conversational Orientation emerges as the most challenging for existing models: even the strongest baseline models fail to exceed approximately 45% in both macro-F1 and accuracy. In contrast, our approach achieves substantial improvements across all four communication dimensions, with macro-F1 scores ranging from 77% to 81%. Relative to the best-performing general-purpose LLMs, our model yields gains of more than 20 F1 points overall, and up to 35.5 F1 points in the Respect for Autonomy dimension. Further per-class analysis indicates that these improvements are primarily driven by a significant increase in recall for the No expression 
+
+category. This capability is particularly critical for real-world applications, as accurately identifying counselor responses that exhibit severely deficient performance is essential for providing effective feedback and preventing the reinforcement of suboptimal counseling interventions. 
+
+Fine-tuning on task-specific data yields substantial gains, and explanation-augmented training further enhances per-formance. Empirical results demonstrate that fine-tuning the backbone model on our proposed task-specific dataset leads to a significant improvement in classification performance across all communication dimensions. In contrast, the base Llama-3.1-8B-Instruct model attains relatively low F1 scores, ranging from 22.13 to 30.55. After fine-tuning, the model achieves a remarkable 2-4× increase in performance. For example, in the 
+
+Respect for Autonomy dimension, the F1 score rises sharply from 22.13 to 80.92, indicating a substantial enhancement. Moreover, our findings underscore the additional value of explanation-based supervision. Compared with models trained solely on numerical scores, those incorporating textual ex-planations achieve higher performance across all four com-munication mechanisms, with improvements of at least 4 F1 points. This result suggests that integrating explicit rationales provides complementary supervisory signals beyond labels alone, enabling the model to better learn the underlying communicative principles. 
+
+b) Explanation Generation Task : The performance of our model significantly surpasses all baseline models across both automatic and human evaluation metrics. In terms of automatic lexical overlap, our model achieves a BLEU-1 score of 0.60, nearly doubling the performance of the strongest base-line, Claude-3.5-Sonnet (0.32). These results indicate that the explanations generated by our model maintain an exceptionally high level of lexical alignment and semantic consistency with the gold-standard human references. Beyond surface-level metrics, human expert evaluations further confirm the model’s superiority across all three dimen-sions. Our model consistently receives near-perfect ratings, ranging from 2.8 to 2.9, which markedly outperforms the scores of GPT-4o and Claude-3.5-Sonnet. This superior perfor-mance demonstrates the model’s robust capability to generate high-quality, actionable feedback that is both theoretically grounded and contextually precise, highlighting its significant potential as a supportive tool for counselors. VI. P ROOF -OF -CONCEPT STUDY WITH COUNSELORS 
+
+We further examine whether real-time AI-based scoring and feedback can support counselors in adjusting their responses to client resistance in a more appropriate and effective manner. We adopted a mixed between–within experimental design. A total of 43 novice counselors were recruited and randomly assigned to either a control group ( N = 21 ) or an experimental group ( N = 22 ). Participants in both groups first completed a pre-phase, during which they were asked to respond to 10 client utterances exhibiting resistance. They then proceeded to a post-phase, in which they revisited the same counseling contexts and revised their original responses from the pre-phase. During the post phase, participants in the control group received no feedback, whereas those in the experimental group were provided with AI-generated evaluation scores and explanatory feedback on their pre-phase responses. All counselors’ responses were subsequently evaluated us-ing our proposed model to obtain multi-dimensional quality scores. We employed Linear Mixed-Effects Models (LMMs) for each dimension to account for the nested structure of repeated measures within participants. The models included      
+
+>                    
+>       
+>    
+> 
+> Interaction Effect: β= 0.30 (p < 0.001) Interaction Effect: β= 0.28 (p < 0.001) Interaction Effect: β= 0.20 (p < 0.001) Interaction Effect: β= 0.30 (p < 0.001)
+> Fig. 2. Interaction effects between experimental groups and phases across four dimensions. Solid green lines represent the control group, while dashed orange lines represent the experimental group. Points denote the mean values, and error bars indicate 95% confidence intervals. The results reveal a significant performance surge in the Experimental Group across all dimensions following the intervention, whereas the Control Group maintains a stable baseline.
+
+Condition (Experimental vs. Control) and Phase (Pre-test vs. Post-test) as fixed main effects, along with their interaction term. As illustrated in Figure 2, the analysis reveals a sta-tistically significant Condition × Phase interaction across all communication mechanisms. While both groups performed comparably at baseline, the interaction term confirms that counselors in the experimental group achieved substantially greater gains in the post-test phase than those in the control group. This robust interaction underscores the efficacy of AI-driven feedback in refining counseling interventions. Post-experimental semi-structured interviews with the ex-perimental group further validated these quantitative gains. Participants evaluated the system across three core dimensions using a 5-point Likert scale: (1) Increasing awareness of areas needing improvement ( M = 4 .38 , SD = 0 .65 ); (2) Providing clear directions for response refinement ( M =4.14 , SD = 0 .56 ); and (3) Enhancing confidence in managing resistant clients ( M = 3 .86 , SD = 0 .89 ). Thematic analysis of participants’ free-text reflections revealed several key benefits. Nine participants noted that the feedback allowed for the timely identification of specific weaknesses and actionable improvement paths. Seven participants emphasized that the multi-dimensional nature of the feedback fostered more com-prehensive and well-rounded responses. Furthermore, many expressed a strong interest in integrating the system into their ongoing reflective practice, particularly during moments of clinical uncertainty. Regarding future enhancements, partici-pants suggested the inclusion of concrete response exemplars, which represents a promising avenue for subsequent system iterations. VII. C ONCLUSION 
+
+We propose a novel framework, dataset, and computational approach for distinguishing the multi-dimensional quality of counselor responses to client resistance in text-based counsel-ing. Our method enables fine-grained evaluation of counselors’ responses while providing interpretable explanations for its judgments. Furthermore, through a proof-of-concept study, we demonstrate that delivering AI-generated evaluative feedback to counselors can effectively improve their ability to respond to client resistance. ETHICS STATEMENT 
+
+Data Privacy and Release. All experts involved in the annotation process were bound by strict confidentiality agree-ments, and the data were stored on secure, encrypted servers with access restricted to authorized personnel only. The anno-tated dataset will be released exclusively for research purposes, with access granted only upon submission and approval of a data use application. 
+
+Ethical Oversight. The study protocol was reviewed and approved by the Institutional Review Board (IRB) of our university (number withheld for anonymous review). Senior counselors were recruited as annotators with informed consent and were fairly compensated at a rate of approximately 60-80 RMB per hour. Participants involved in the proof-of-concept study also provided informed consent and received compensation of 40 RMB. 
+
+Intended Use of Automatic Feedback. While our model demonstrates strong performance in evaluating responses, we emphasize that it is not designed as a replacement for pro-fessional clinical judgment. In our controlled experiment, participants were explicitly informed that the feedback was AI-generated and were instructed to use it as a supplemental resource. REFERENCES [1] L. E. Beutler, F. Rocco, C. M. Moleiro, and H. Talebi, “Resistance.” 
+
+Psychotherapy: Theory, Research, Practice, Training , vol. 38, no. 4, p. 431, 2001. [2] C. F. Newman, “Understanding client resistance: Methods for enhancing motivation to change,” Cognitive and Behavioral Practice , vol. 1, no. 1, pp. 47–69, 1994. [3] C. E. Hill and K. M. O’Brien, “Helping skills,” Washington, DC: American Psychological Association , 1999. [4] D. C. Atkins, M. Steyvers, Z. E. Imel, and P. Smyth, “Scaling up the evaluation of psychotherapy: evaluating motivational interviewing fidelity via statistical text classification,” Implementation Science , vol. 9, no. 1, p. 49, 2014. [5] N. K. Iyortsuun, S.-H. Kim, M. Jhon, H.-J. Yang, and S. Pant, “A review of machine learning and deep learning approaches on mental health diagnosis,” in Healthcare , vol. 11, no. 3. MDPI, 2023, p. 285. [6] A. Li, Y. Lu, N. Song, S. Zhang, L. Ma, and Z. Lan, “Understanding the therapeutic relationship between counselors and clients in online text-based counseling using LLMs,” in Findings of the Association for Computational Linguistics: EMNLP 2024 , Y. Al-Onaizan, M. Bansal, and Y.-N. Chen, Eds. Miami, Florida, USA: Association for Computational Linguistics, Nov. 2024, pp. 1280–1303. [Online]. Available: https://aclanthology.org/2024.findings-emnlp.69/ [7] A. Sharma, A. Miner, D. Atkins, and T. Althoff, “A computational approach to understanding empathy expressed in text-based mental health support,” in Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP) , 2020, pp. 5263– 5276. [8] V. P´ erez-Rosas, K. Resnicow, R. Mihalcea et al. , “Pair: Prompt-aware margin ranking for counselor reflection scoring in motivational inter-viewing,” in Proceedings of the 2022 conference on empirical methods in natural language processing , 2022, pp. 148–158. [9] K. Resnicow and F. McMaster, “Motivational interviewing: moving from why to how with autonomy support,” International Journal of Behavioral Nutrition and Physical Activity , vol. 9, no. 1, p. 19, 2012. [10] D. B. Rosengren, B. Hartzler, J. S. Baer, E. A. Wells, and C. W. Dunn, “The video assessment of simulated encounters-revised (vase-r): Reliability and validity of a revised measure of motivational interviewing skills,” Drug and Alcohol Dependence , vol. 97, no. 1-2, pp. 130–138, 2008. [11] A. A. Di Bartolomeo, H. A. Westra, S. Javdan, and D. A. Olson, “The resistance vignette task: Validating a rapid measure of therapist skill at managing resistance,” Journal of Clinical Psychology , vol. 78, no. 9, pp. 1851–1865, 2022. [12] A. B. Shatte, D. M. Hutchinson, and S. J. Teague, “Machine learning in mental health: a scoping review of methods and applications,” 
+
+Psychological medicine , vol. 49, no. 9, pp. 1426–1448, 2019. [13] S. B. Goldberg, N. Flemotomos, V. R. Martinez, M. J. Tanana, P. B. Kuo, B. T. Pace, J. L. Villatte, P. G. Georgiou, J. Van Epps, Z. E. Imel et al. , “Machine learning and natural language processing in psychotherapy research: Alliance as example use case.” Journal of counseling psychology , vol. 67, no. 4, p. 438, 2020. [14] A. S. Khan, H. Ahmad, M. Z. Asghar, F. K. Saddozai, A. Arif, and H. A. Khalid, “Personality classification from online text using machine learning approach,” International journal of advanced computer science and applications , vol. 11, no. 3, pp. 460–476, 2020. [15] Y. Yan, L. Ma, A. Li, J. Ma, and Z. Lan, “Predicting the big five personality traits in chinese counselling dialogues using large language models,” 2024. [Online]. Available: https://arxiv.org/abs/2406.17287 [16] J. Cao, M. Tanana, Z. Imel, E. Poitras, D. Atkins, and V. Srikumar, “Observing dialogue in therapy: Categorizing and forecasting behavioral codes,” in Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics , 2019, pp. 5599–5611. [17] G. Coppersmith, R. Leary, P. Crutchley, and A. Fine, “Natural language processing of social media as screening for suicide risk,” Biomedical informatics insights , vol. 10, p. 1178222618792860, 2018. [18] A. Li, L. Ma, Y. Mei, H. He, S. Zhang, H. Qiu, and Z. Lan, “Understanding client reactions in online mental health counseling,” in Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , A. Rogers, J. Boyd-Graber, and N. Okazaki, Eds. Toronto, Canada: Association for Computational Linguistics, Jul. 2023, pp. 10 358–10 376. [Online]. Available: https://aclanthology.org/2023.acl-long.577/ [19] M. J. Tanana, C. S. Soma, P. B. Kuo, N. M. Bertagnolli, A. Dembe, B. T. Pace, V. Srikumar, D. C. Atkins, and Z. E. Imel, “How do you feel? using natural language processing to automatically rate emotion in psychotherapy,” Behavior research methods , vol. 53, no. 5, pp. 2069– 2082, 2021. [20] S. Kusal, S. Patil, J. Choudrie, K. Kotecha, D. Vora, and I. Pappas, “A systematic review of applications of natural language processing and future challenges with special emphasis in text-based emotion detection,” 
+
+Artificial Intelligence Review , vol. 56, no. 12, pp. 15 129–15 215, 2023. [21] D. Demszky, D. Yang, D. S. Yeager, C. J. Bryan, M. Clapper, S. Chand-hok, J. C. Eichstaedt, C. Hecht, J. Jamieson, M. Johnson et al. , “Using large language models in psychology,” Nature Reviews Psychology ,vol. 2, no. 11, pp. 688–701, 2023. [22] A. Chaszczewicz, R. Shah, R. Louie, B. Arnow, R. Kraut, and D. Yang, “Multi-level feedback generation with large language models for em-powering novice peer counselors,” in Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , 2024, pp. 4130–4161. [23] S.-L. Hsu, R. S. Shah, P. Senthil, Z. Ashktorab, C. Dugan, W. Geyer, and D. Yang, “Helping the helper: Supporting peer counselors via ai-empowered practice and feedback,” Proceedings of the ACM on Human-Computer Interaction , vol. 9, no. 2, pp. 1–45, 2025. [24] A. Li, Y. Chen, Y. Lu, Z. Chen, Y. Xie, and Z. Lan, “Recap: Resistance capture in text-based mental health counseling with large language models,” 2026. [Online]. Available: https://arxiv.org/abs/2601.14780 [25] A. A. Di Bartolomeo, S. Shukla, H. A. Westra, N. Shekarak Ghashghaei, and D. A. Olson, “Rolling with resistance: A client language analysis of deliberate practice in continuing education for psychotherapists,” 
+
+Counselling and Psychotherapy Research , vol. 21, no. 2, pp. 433–441, 2021. [26] M. B. Cooper, A. A. Di Bartolomeo, H. A. Westra, D. A. Olson, and T. Boritz, “A test of psychotherapists’ and nontherapists’ recognition of correct and incorrect process in managing client resistance,” Counselling and Psychotherapy Research , vol. 23, no. 4, pp. 1097– 1107, 2023. [Online]. Available: https://onlinelibrary.wiley.com/doi/abs/ 10.1002/capr.12653 [27] OpenAI, “Gpt-4 technical report,” arXiv preprint arXiv:2303.08774 ,2023. [28] Anthropic, “The claude 3 model family: Opus, sonnet, haiku,” https: //api.semanticscholar.org/CorpusID:268232499, 2024, [Accessed 16-04-2024]. [29] A. Yang, B. Yang, B. Zhang, B. Hui, B. Zheng, B. Yu, C. Li, D. Liu, F. Huang, H. Wei, H. Lin, J. Yang, J. Tu, J. Zhang, J. Yang, J. Yang, J. Zhou, J. Lin, K. Dang, K. Lu, K. Bao, K. Yang, L. Yu, M. Li, M. Xue, P. Zhang, Q. Zhu, R. Men, R. Lin, T. Li, T. Xia, X. Ren, X. Ren, Y. Fan, Y. Su, Y. Zhang, Y. Wan, Y. Liu, Z. Cui, Z. Zhang, and Z. Qiu, “Qwen2.5 technical report,” arXiv preprint arXiv:2412.15115 , 2024. [30] AI@Meta, “Llama 3 model card,” 2024. [Online]. Available: https://github.com/meta-llama/llama3/blob/main/MODELCARD.md

@@ -1,0 +1,347 @@
+Title: LLM-Grounded Dynamic Task Planning with Hierarchical Temporal Logic for Human-Aware Multi-Robot Collaboration
+
+URL Source: https://arxiv.org/pdf/2602.09472v1
+
+Published Time: Wed, 11 Feb 2026 01:34:35 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# LLM-Grounded Dynamic Task Planning with Hierarchical Temporal Logic for Human-Aware Multi-Robot Collaboration 
+
+Shuyuan Hu 1†, Tao Lin 1,2†, Kai Ye 1,3, Yang Yang 1,4, Tianwei Zhang 1,3∗
+
+Fig. 1. A demonstration of the proposed dynamic planning with the human instruction, “Give Person A the bottle and Person B the chips.” At Snapshot 1, the system detected the persons’ movement, so it began planning for the possible future positions of the persons. At Snapshot 2, the positions of the persons invalidated the original plan, so the current actions stopped immediately, and the system switched to the new plan once it’s ready. 
+
+Abstract — While Large Language Models (LLM) enable non-experts to specify open-world multi-robot tasks, the gen-erated plans often lack kinematic feasibility and are not efficient, especially in long-horizon scenarios. Formal methods like Linear Temporal Logic (LTL) offer correctness and optimal guarantees, but are typically confined to static, offline settings and struggle with computational scalability. To bridge this gap, we propose a neuro-symbolic framework that grounds LLM reasoning into hierarchical LTL specifications and solves the corresponding Simultaneous Task Allocation and Planning (STAP) problem. Unlike static approaches, our system resolves stochastic environmental changes—such as moving users or updated instructions—via a receding horizon planning (RHP) loop with real-time perception, which dynamically refines plans through a hierarchical state space. Extensive real-world experi-ments demonstrate that our approach significantly outperforms baseline methods in success rate and interaction fluency while minimizing planning latency. 
+
+I. I NTRODUCTION 
+
+Long-horizon multi-robot collaboration in dynamic, human-centric environments requires not only complex co-
+
+> †
+
+These authors contributed equally to this work. 
+
+> 1
+
+The Shenzhen Institute of Artificial Intelligence and Robotics for Society, Shenzhen, China 
+
+> 2
+
+Harbin Institute of Technology, Harbin, China 
+
+> 3
+
+The Chinese University of Hong Kong-Shenzhen, Shenzhen, China 
+
+> 4
+
+Tsinghua Shenzhen International Graduate School, Shenzhen, China  
+
+> ∗
+
+Corresponding Author: zhangtianwei@cuhk.edu.cn 
+
+ordination but also profound robustness against unforeseen changes. A fundamental challenge lies in bridging two dis-tinct tiers of robotic intelligence. Low-level control, encom-passing motion planning and reactive controllers, excels at executing atomic actions, such as pick, place and handover .However, it lacks the semantic context to reason about a task’s purpose or adapt when its underlying assumptions are violated [1]. In contrast, high-level intelligence encompasses cognitive capabilities, including perceiving the world seman-tically, formulating long-term strategies, and adapting to new information. The robust deployment of multi-robot systems in human-centric environments hinges on establishing aseamless link in which low-level actions are guided by high-level, context-aware, and formally grounded reasoning. Two prominent but largely separate paradigms have emerged to tackle high-level motion planning. On one hand, planners based on LLM and Vision-Language Models (VLM) demonstrate remarkable flexibility in interpreting human intent and proposing plans from an open-world envi-ronment [2], [3], [4]. Yet, they often lack formal guarantees, struggling to ensure that generated plans are dynamically feasible, logically sound, especially in multi-agent settings. On the other hand, formal methods such as LTL [5] provide a rigorous mathematical framework for specifying complex tasks and synthesising plans with provable correctness. Their 
+
+> arXiv:2602.09472v1 [cs.RO] 10 Feb 2026
+
+primary limitation, however, is their reliance on a static, fully known world model, making them brittle and unsuitable for direct application in dynamic environments[6]. Moreover, integrating formal planning methods into a real-time system poses a significant challenge: the time complexity of main-stream formal methods increases exponentially with the state space [7]. To bridge this gap, we propose a framework that grounds LLM reasoning into a Hierarchical variant of LTL on finite traces (LTL f ), denoted H-LTL f , which significantly reduces the search space of multi-robot planning. By operating within a receding horizon loop, our system synthesizes high-level strategy with real-time perception, enabling robust execution in dynamic, human-centric environments, as shown in Fig.1. Our main contributions are:  
+
+> •
+
+We proposed a neuro-symbolic method for online dy-namic multi-robot planning of long-horizon tasks in human-aware environments.  
+
+> •
+
+We extend H-LTL f based formal planning from a static tool to a dynamic STAP engine via integrating it with RHP.  
+
+> •
+
+We have built and validated the efficiency of our frame-work on a multi-robot dynamic human environment. II. R ELATED WORKS 
+
+A. Formal Methods for Planning 
+
+Formal planning methods provide a mathematically rigor-ous way to specify and synthesise robot behaviour. Temporal-logic formalisms such as LTL can express rich temporal requirements over task sequences and safety conditions, com-bining them with automata planners offers completeness and, in many cases, optimality guarantees. Building on this foun-dation, recent LLM-based approaches increasingly integrate with formal planners rather than replacing them. LaMMA-P [8] couples LLM-driven subtask allocation and PDDL problem generation with a classical planner (Fast Downward) for long-horizon multi-agent tasks, while DEXTER-LLM [4] integrates LTL-based mission abstraction, LLM subtask generation, and optimisation-based scheduling for dynamic multi-robot coordination. However, traditional temporal-logic planning methods struggle with long-horizon tasks where all requirements are encoded as a single flat LTL formula: the corresponding automaton quickly becomes intractable and difficult to in-terpret as task complexity and horizon grow. Luo et al. introduce hierarchical LTL specifications [5] that decompose a global specification into loosely coupled sub-specifications, significantly reducing automaton size and scaling formal guarantees to long-horizon multi-robot tasks. Providing the formal backbone for Nl2HLTL2Plan [9], which uses LLMs to translate natural-language instructions into hierarchical LTL specifications to solve long-horizon multi-robot func-tions as an open loop without feedback. 
+
+B. Language-Conditioned Robotic Planning 
+
+The LLM and VLM methods have recently shown promise as zero-shot planners in robotics, decomposing long-term natural-language goals into ordered sub-task action sequences for a single robot [10], [11].While powerful, these systems predominantly target single-robot settings; two critical gaps remain when scaling LLM-based planning paradigms from single-robot autonomy to truly collaborative teams: (i) task allocation across multiple agents under spatio-temporal restriction and (ii) retaining robustness when ob-jects, layouts, or partner robots change at run time. COHER-ENT [12] extends LLM-driven planning to heterogeneous multi-robot teams while modelling it as a static sequential planning problem without spatio-temporal coordination.                                                 
+
+> TABLE I COMPARISON OF LLM-BASED MULTI -ROBOT PLANNING METHODS
+> Formal Planning Dynamic Planning Dynamic Contexts Real-World Deployment [13] ✗✗✗✗
+> [3] ✗Offline O-MOVE ✓
+> [12] ✗Offline FAIL ✗
+> [14] ✗Offline RES, FAIL ✓
+> [9] H-LTL f✗✗✓
+> [8] PDDL Offline FAIL ✗
+> [4] TL Online O-MOVE, RES GOAL, FAIL ✗
+> OURS H-LTL fOnline H-MOVE, O-MOVE, RES, GOAL, FAIL ✓
+> Abbrev.: H-MOVE = human position/posture change, O-MOVE =object moved/pose changed, GOAL = instruction change or priority update, RES = multi-robot resource conflict or deadlock, FAIL
+> = execution-level failure such as grasp/control failure, PDDL =Planning Domain Definition Language; ✓= supported; ✗= not supported or not reported.
+
+C. Human Aware Multi-Robot Collaboration 
+
+Foundational tasks in robot-human and multi-robot teams, like object handovers and co-manipulation, have been studied thoroughly [15], [16]. Such works, however, typically handle short, structured interactions (e.g., passing an item) rather than long-horizon missions. There are emerging works on leveraging foundation models for more generalizable hu-man–robot teaming by involving humans to provide high-level guidance or corrections [14]. However, most prior approaches rely on open-loop planning, which involves human dynamics only at discrete checkpoints (e.g., task initiation or error correction) and assumes a relatively static environment during execution [3], [12]. While recent work such as DEXTER-LLM [4] has begun to explore online coordination mechanisms to handle dynamic updates, its validation remains confined to simulation environments. As summarised in Table I, to the best of our knowledge, our approach is the first to deploy an LLM-based online planning framework in the real world. Fig. 2. The proposed method flowchart. In the Hierarchical Team Models panel, we illustrate the hierarchical team models for two leaf specifications and two robots. The product team models corresponding to each leaf specification are shown inside the regions shaded in light orange and light green. Within each product team model, ζ1in are drawn as purple bidirectional dashed arrows, while ζ2in are drawn as pink unidirectional arrows. Inter-spec transitions    
+
+> ζ1inter are shown as blue bidirectional arrows, and ζ2inter are shown as red unidirectional arrows. The path marked in yellow highlights a specific plan.
+
+III. S YSTEM FRAMEWORK AND METHODS 
+
+We formulate the collaboration problem as STAP in dy-namic environments. In this work, without loss of generality, we instantiate the available atomic skills as Pick , Place ,and Handover to demonstrate the framework’s capability in high-interaction scenarios. Our method introduces a closed-loop task-planning framework that empowers multi-robot systems to execute long-horizon tasks from natural-language instructions in dynamic, human-aware environments. The ar-chitecture, depicted in Fig. 2, comprises three core, intercon-nected stages: (1) a real-time, open-vocabulary 3D perception module that builds and maintains a semantic representation of the world; (2) a high-level planning module, where an LLM reason about the scene, and output hierarchical team models; and (3) a low-level robot dispatch and control module that selects the next action dynamically from the hierarchical team models and executes the actions. 
+
+A. Open-vocabulary 3D Perception 
+
+We use a fixed RGB-D camera. For each incoming frame 
+
+Ft, we build an object-centric 3D scene to track and predict human trajectory in parallel. 
+
+Open-vocabulary 2D parsing. We first apply Recognize-Anything[17] to obtain open-vocabulary class labels 
+
+{ct,i }Ni=1 for all N objects detected. These labels condition Grounding DINO[18] to generate 2D bounding boxes {bt,i },which are refined into pixel-accurate masks {mt,i } by SAM 2[19]. From each (bt,i , m t,i ), we extract two images (a crop and a background-removed mask) and compute CLIP-based[20] visual features, fused by a weighted sum to form a single descriptor: 
+
+ft,i := Embed 
+
+
+
+F rgb  
+
+> t
+
+, b t,i , m t,i 
+
+
+
+. (1) 
+
+Language-Guided 3D Localization. To locate the target object specified in the human instruction, we compute the cosine similarity between the CLIP text embedding of the target object name and the visual feature embeddings ft,i of all detected objects. The object with the highest similarity score is identified as the target. Subsequently, the target ob-ject’s mask mt,i is back-projected with its depth to produce the object point cloud Pt,i for downstream pickup planning. 
+
+Person tracking and trajectory prediction. In parallel, we run YOLOv11[21] for person detection and a lightweight, self-trained person classifier to maintain identities in im-age space. A compact recurrent network forecasts short-horizon human trajectories, providing future human position estimates for downstream planning. For each person i ∈{1, . . . , N }, the observed (3D) trajectory over Tobs frames is 
+
+X(i)1: Tobs = {x(i)1 , x(i)2 , . . . , x(i) 
+
+> Tobs
+
+}, x(i) 
+
+> t
+
+∈ R3. (2) and our prediction is denoted by 
+
+Y(i)1: Tpred = {ˆx(i)
+
+> Tobs +1
+
+, . . . , ˆx(i) 
+
+> Tobs +Tpred
+
+}. (3) 
+
+B. Hierarchical Linear Temporal Logic 
+
+Linear Temporal Logic consists of atomic propositions 
+
+AP , Boolean operators (conjunction ∧, negation ¬), and temporal operators such as next ⃝, until U and eventually 
+
+♢ϕ:
+
+ϕ ::= ⊤ | π | ϕ1 ∧ϕ2 | ¬ ϕ | ⃝ ϕ | ϕ1 U ϕ2 | ♢ϕ, (4) where ⊤ stands for true statement, and π ∈ AP .We focus on syntactically co-safe LTL (sc-LTL), i.e., formulas in positive normal form using only ♢ and U
+
+(negation appears only before atomic propositions). sc-LTL can be satisfied by finite prefixes, which suits finite-duration robot tasks. 
+
+Hierarchical sc-LTL[5]: Let K denote the number of levels labelled from high to low as L1, . . . , L K . Each level 
+
+Lk contains nk sc-LTL formulas donated as ϕik. The hier-archical specification is Φ = {ϕik | k ∈ [K], i ∈ [nk]} and obeys:  
+
+> •
+
+For k ∈ [K − 1] , each ϕik is derived from formulas at level Lk+1 . 
+
+> •
+
+For k ∈ { 2, ..., K }, each formula is included in exactly one formula at level Lk−1. 
+
+> •
+
+Atomic propositions appear exclusively at the lowest level LK .We call each ϕik a flat specification; nodes form ahierarchy graph where edges indicate that one specification is used as a composite proposition inside another. Leaf nodes at LK contain only atomic propositions; non-leaf nodes are compositions of lower-level formulas. 
+
+C. Hierarchical Team Models 
+
+To solve the simultaneous task allocation and planning problem, we construct a search space that integrates robot ca-pabilities with the hierarchical specifications (the hierarchical team models in Fig. 2). This is achieved by first modelling individual leaf specifications and then interconnecting them. 
+
+Product Team Models: We utilise a standard weighted Transition System (TS) to model the discrete motion capa-bilities of each robot. For each leaf specification ϕ ∈ Φleaf ,we convert it into a Nondeterministic Finite Automaton (NFA) denoted as A(ϕ). Consistent with [5], we identify a decomposition set DA ⊆ QA allowing task segmentation. A Product Team Model , denoted P(ϕi), is constructed by taking the union of individual product automata P(ri, ϕ i)
+
+which formed by the Cartesian product of a robot’s TS and A(ϕ) for all robots. To support both sequential and simultaneous collaboration tasks, we define two types of in-spec switch transitions ζin within P(ϕi):
+
+(i) Sequential ( ζ1
+
+> in
+
+): At decomposition states q ∈ D A, control transfers from robot r to r′ without altering the task progress 
+
+q ∈ D A to allow sequential independent sub-tasks execution. 
+
+(ii) Simultaneous ( ζ2
+
+> in
+
+): For tasks requiring simultaneous states (e.g., handovers), control transfers from robot r to a designated partner r′ once r reaches a rendezvous configu-ration. The state of r persists, allowing r′ to subsequently satisfy the joint atomic propositions required to advance the NFA. 
+
+Hierarchical Team Models: The Hierarchical Team Model P approximates the entire search space as a set of loosely interconnected sub-spaces, where each sub-space corresponds to a product team model P(ϕ). These sub-spaces are linked via two types of inter-spec switch transitions that capture the dependencies defined in the H-LTL f structure: 
+
+(i) Task-Switching ( ζ1
+
+> inter
+
+): Allows a robot to switch its focus from one leaf specification ϕ to another ϕ′ while maintain-ing the same physical state. This occurs at decomposition states and enables the planner to optimize the ordering of independent tasks. 
+
+(ii) Progression ( ζ2
+
+> inter
+
+): Connects the completion of one task to the commencement of another. Specifically, it transitions from an accepting state of P(ϕ) to a decomposition state of 
+
+P(ϕ′), reflecting the progression through the hierarchy. The problem is strictly formulated as finding a path through P—composed of robot actions and switch tran-sitions—that satisfies the root specification ϕ11. We then employ an A* graph search algorithm to find the optimal path within this model, minimizing the cumulative cost J =PNr=1 cr , representing the total execution time or energy. 
+
+D. Receding Horizon Execution and Replanning 
+
+Unlike static environments where a pre-computed plan remains valid indefinitely, human-centric settings introduce two primary sources of uncertainty: stochastic interaction durations and dynamic spatial conflicts .To address these, we adopt a receding horizon planning strategy. Rather than executing a fixed open-loop sequence, our framework continuously updates the optimal policy over the remaining task horizon based on the current observed state st and predicted future states. This RHP loop consists of three tiers: 
+
+1) Horizon Update and Plan Refinement 
+
+In the hierarchical team model P, the optimal path relies on the temporal synchronization between robots. However, the duration of robot-to-human cooperative tasks is inher-ently stochastic due to human variability. We essentially treat the completion of every sub-task as a step in the receding horizon loop. Specifically, we implement a progress-triggered re-optimization . Whenever a robot traverses an edge in the product team model P(ϕ)—signifying the completion of an atomic action π or transition ζin /ζinter —we update the state of the search to the current world state st. We then re-solv the search algorithm on P to generate a new optimal suffix path for the remaining horizon (specifications Φrem ). This ensures that the allocation of idle robots is dynamically adjusted based on the actual time-to-completion of peers, rather than outdated initial estimates. 
+
+2) Reactive Safety Constraints 
+
+This layer acts as a safety shield and an immediate error recovery mechanism. At each time step t, the low-level controller verifies the validity of the current action against real-time perception. Execution is immediately halted, and a replanning request is triggered if the current state st violates critical constraints 1) Kinematic Infeasibility: The immediate next action 
+
+at+1 is blocked or unreachable. 2) Intrusion Risk: The human is predicted to enter the robot’s workspace Wr during a high-velocity maneu-ver. In these cases, the horizon is reset, and a new specification 
+
+Φ′ is generated based on the halt state, and operations resume after a new feasible plan is synthesised. 
+
+3) Predictive Horizon Adaptation 
+
+To mitigate latency caused by human movement, we extend the RHP look-ahead mechanism to handle the Ab-sence Risk —where a human is predicted to leave the robot’s workspace Wr .Leveraging the trajectory prediction Y1: Tpred , the system forecasts a most probable future state spred where the user enters a different workspace Wr′ . We solve the planning problem for this predicted horizon in parallel with the current execution. Crucially, the system performs a Plan Takeover 
+
+only when the actual observed state st converges to spred .This allows the RHP framework to seamlessly switch to the pre-computed optimal strategy the moment the environmen-tal change is confirmed, eliminating planning latency. IV. R2R & R2H H ANDOVER PLANNING 
+
+To accomplish the collaborative handover task with mul-tiple manipulators, we define four general-purpose skills that cover diverse scenarios: pick, handover r2r, handover r2h, and place. To balance user experience and operational ef-ficiency, the motion planning for all skills is designed to run in a planning mode at any time. Instead of targeting a single deterministic pose [22], each skill considers a set of feasible goal states. Multiple candidate trajectories are planned in parallel, enabling fast solutions that reduce user waiting time while improving efficiency. 
+
+A. Pick and Place 
+
+We focus on cylindrical objects. We generate a library of grasp candidates based on object point clouds. In col-laborative handover tasks, it is essential to ensure that the receiving side has sufficient space to grasp the object. We filter these candidates by simulating a co-grasping scenario with a human hand model, discarding pairs that result in collision or are too close, as shown in Fig. 3. The remaining feasible pairs form the target set for motion planning. For each pair of grasps, the desired grasp of the receiving arm is defined as the complementary configuration of the pair. When manipulators hold different objects and a direct handover cannot be performed, we define the place skill. For placement, valid poses are sampled from planar surfaces within the intersection of the robots’ reachable regions. 
+
+B. Robot-to-robot Handover 
+
+We define the robot-to-robot (R2R) handover (han-dover r2r) skill, which enables inter-robot handovers to extend the reach of objects. Since there exist infinitely many candidate poses within the overlap of two robots’ workspaces, we optimise the handover position using two criteria: Feasibility – Each robot’s reachable region is modelled as a sphere derived from its base position and reach radius. We identify the inscribed sphere at the intersection of the two reachable regions and uniformly sample candidate poses within it. Feasibility increases as the pose approaches the   
+
+> Fig. 3. Pick planning pipeline.
+> Fig. 4. The proposed robot-to-robot handover method.
+
+spherical intersection centre. Time efficiency – For each sampled pose, we compute the distance from both manipulators’ current end-effectors and take the maximum distance as a proxy for execution time. In addition, optimal handover orientations are calculated by considering both the current joint states of both arms and candidate grasp poses. Once a feasible handover pose is determined, we address the collision-avoidance challenge inherent to contact states. As shown in Fig.4, the receiving arm first moves to a pre-handover position that is collision-free, then executes a linear motion along the approaching vector to achieve secure grasping. After the transfer, the giving arm retreats by a short distance to reduce the risk of collisions in subsequent motions. 
+
+C. Robot-to-Human Handover 
+
+Unlike R2R handover, R2H prioritizes user ergonomics over kinematic optimality. We define the handover target within a comfort zone (forearm raised 90°–120° close to the torso), allowing the planner to adapt to the user’s estimated posture. V. E XPERIMENTAL RESULTS AND EVALUATIONS 
+
+In our implementation, we employ GPT-4o-mini as the reasoning engine, balancing semantic understanding with the rapid inference speed necessary for our receding horizon framework. In this section, we design a series of experiments to address the following research questions: 
+
+Q1: Can multiple manipulators collaboratively extend their combined workspace to serve users with object han-dovers over an extensive spatial range? 
+
+Q2: Can the proposed dynamic planning mechanism effectively handle dynamic scenarios, such as moving users or dynamically changing task instructions? 
+
+Q3: Can the H-LTL f planning module improve efficiency when processing multiple simultaneous tasks? 
+
+Q4: Can the framework effectively avoid/resolve conflicts during collaborative handovers? 
+
+A. Multi-robot collaborative handover in dynamic environ-ments 
+
+To evaluate the scalability and robustness of the proposed approach, we developed a custom simulation environment that enables us to simulate unforeseen environmental dynam-ics, specifically (1) real-time shifts in target locations and (2) 
+
+the injection of new tasks during execution. We procedurally generate long-horizon collaborative tasks involving varying numbers of objects and logical constraints. The complexity is categorised by the number of base tasks ( Ntask ∈ { 1, 2, 4}), the number of available fixed-base robots ( Nrobot ∈ { 1, 2, 4})and different topological layouts of fixed-base robots (a square or a line) and resulting in a comprehensive test suite ranging from simple single-robot executions (1-1) to complex multi-robot coordination scenarios with different topological layouts (4-4-square, 4-4-line) Fig.5.  
+
+> Fig. 5. Simulation experiment setup for 2-4-square and 2-4-line. 1
+
+Following the baseline used in [9], [3], we compared our method with SMART-LLM [13]. This LLM-based multi-robot task planner generates Python scripts with predefined action APIs for task decomposition and task allocation. We implemented an enhanced version of [13], denoted [13]-R, that replans using the new world state when its plan is inval-idated by environment dynamics. We evaluate performance using three key metrics: (i) Success Rate : The percentage of trials where all goal conditions are met without violation of kinematic feasibility. (ii) Time Cost : The total time cost to finish all the tasks (in seconds), reflecting the efficiency of the task allocation and motion planning. (iii)Token Usage :The average number of tokens consumed per query to the LLM, representing the computational cost and latency of the reasoning module. The statistical results are presented in TABLE II. Our framework demonstrates superior performance across all dimensions, particularly as problem complexity increases. 
+
+Scalability (Q1) : While SMART-LLM performs adequately on simple tasks (1-1, 1-2), its success rate degrades signif-icantly as the number of tasks increases (dropping to 19%                                                                                          
+
+> 1This figure illustrates the setup for the simulation experiments and does not represent the sim setup for the real-world hardware experiment. TABLE II PERFORMANCE COMPARISON IN SIMULATION . M ETRICS REPORTED ARE
+> SUCCESS RATE (%), T IME COST (S), AND TOKEN USAGE .
+> Tasks–Robots Success Rate(%) ↑Time Cost(s) ↓Token Usage ↓
+> Ours [13]-R Ours [13]-R Ours [13]-R 1-1 100 100 1.0 1.0 261 2690 2-1 100 99 2.1 2.1 470 3252 4-1 100 96 4.4 4.4 885 4493 1-2 100 100 2.1 2.1 264 3611 2-2 100 68 2.2 2.8 473 4386 4-2 97 41 4.5 6.7 896 6595 1-4-line 100 79 4.4 4.4 374 4616 2-4-line 99 39 9.5 9.5 607 4907 4-4-line 93 19 19.4 19.3 1259 7385 1-4-square 100 94 2.1 2.1 264 4243 2-4-square 100 40 2.3 2.7 471 5598 4-4-square 95 22 4.7 7.9 902 7587
+
+in the 4-4-line setting). This is largely because generating long, monolithic Python scripts increases the probability of logical hallucinations and syntax errors. In contrast, our method maintains a high success rate (93%) even in the most complex scenarios, validating the robustness of the H-LTL f
+
+structure. 
+
+Plan Quality (Q3) : Our method consistently achieves lower time costs compared to the baseline. The formal planning engine optimises task allocation globally based on the hi-erarchical team model, whereas SMART-LLM relies on the LLM’s inherent (and often suboptimal) sequencing bias. 
+
+Token Efficiency : A distinct advantage of our approach is the significant reduction in token usage. By extracting concise hierarchical specifications rather than generating verbose executable code, our method reduces token con-sumption by 80-94%. This efficiency is critical for real-time dynamic replanning, enabling faster query responses and lower operational costs. 
+
+B. Real-world multi-robot collaboration involving human participants 
+
+To demonstrate the generality of our approach, as il-lustrated in Fig. 6, our experimental setup consists of two heterogeneous manipulators, namely an Elfin-3 and a UR5, which collaborate to perform handover tasks. The manipu-lators are equipped with the left and right BrainCo robotic hands, respectively, with effective reaching radii of 0.7 m and 0.9 m. An Intel RealSense D435 camera captures both RGB and depth images of the environment.  
+
+> Fig. 6. Real-world experiment setup.
+
+We construct a dataset containing six experimental sce-narios, where nearby objects refer to objects that are in the same robot’s workspace as the user, and distant objects refer to objects that require R2R handover to deliver to the user: 
+
+T1: A single user requests a distant object (Q1). 
+
+T2: A single user requests a distant object while walking into the other robot’s workspace during the handover process (Q2). 
+
+T3: A single user requests a nearby object, after a short delay, issues a new request for another distant object (Q2). 
+
+T4: Two users located at different robots’ workspaces simultaneously request nearby objects, then a new request is issued to deliver an object in the shared workplace to either of the users. (Q3). 
+
+T5: Two users located at different robots’ workspaces simultaneously request distant objects that both require inter-robot collaboration (Q4). 
+
+T6: Two users located at different robots’ workspaces request nearby objects while switching their positions during the task, leading to combined challenges of dynamic adap-tation and multi-task coordination (Q2, Q3, Q4).  
+
+> Fig. 7. Statistical results from real-world experiments. Avg. Replanning Count denotes the average number of plan regenerations required to com-plete a task (trials exceeding 3 are marked as failures).
+
+We first evaluate whether the proposed system can sustain robust performance when users move during execution. For each task, we conducted 20 experimental trials. As sum-marised in Fig. 7, our method maintains a better performance across all tasks (T1–T6). In the dynamic interruption scenario (T2), our system reduces execution time by over 50%. This validates our reactive safety constraints: the system detects the kinematic infeasibility of the planned handover caused by user movement, triggering an immediate halt and efficient recovery. In complex conflict scenarios (T5, T6), our method maintains a significantly lower replanning count compared to the baseline. This confirms that the hierarchical team models effectively prevent the generation of invalid plans or deadlocks that force the baseline into frequent iterative retries. These results indicate that our H-LTL f -based receding horizon planning pipeline sustains both correctness and responsiveness under real-time human motion. 
+
+C. Advantages of Receding Horizon Formal Planning over Pure LLM Generation 
+
+While LLMs exhibit remarkable flexibility in decompos-ing natural language into action sequences, they function as probabilistic token generators and lack an internal world model, often producing plans that are logically invalid or kinematically infeasible in multi-robot settings. By ground-ing LLM outputs into a receding horizon formal planning engine based on Hierarchical Team Models, our framework provides two critical advantages: 
+
+(i) Dynamic Efficiency via Receding Horizon Optimiza-tion. While LLMs struggle to optimise schedules under stochastic human interactions, our framework ensures exe-cution efficiency through the horizon update and plan re-finement mechanism described in Sec. III-D. Unlike static planners that rely on estimated durations, our system mon-itors state transitions and re-solves the Hierarchical Team Model when sub-tasks are completed. For instance, in T4, if a robot finishes a handover early, the RHP loop immediately generates a new optimal suffix path to assign pending tasks to the free agent, significantly minimising team idle time rather than waiting for a rigid schedule, significantly minimising team idle time as in Fig.7.  
+
+> Fig. 8. Typical LLM failure modes prevented by formal planning checks.
+
+(ii) Correct-by-Construction Safety and Feasibility. The formal planning engine operates on a strict transition system (the Product Team Model). It strictly enforces preconditions and mutual-exclusion constraints encoded in the automaton, rejecting any action sequence that violates the system dy-namics. Two typical failure modes inherent to pure LLM planning, which our formal engine prevents, are illustrated in Fig. 8: 
+
+Shared Object Conflict: The LLM occasionally proposes a “simultaneous-hold” handover, essentially hallucinating that robots can rigidly grasp multiple objects without a synchronised transfer protocol. Our formal team model ex-plicitly encodes mutual exclusion regarding object possession and instead generates a safe two-phase exchange (placing followed by a regrasp). 
+
+Kinematic Violation: To minimise sequence length, the LLM often commands a robot to pick/handover an object outside its physical workspace. The formal planner will invalid the plan that is unreachable in the robot’s transition graph and searches for a viable alternative path. D. Reducing Replanning Latency via Predictive planning and Parallel Motion Planning 
+
+Operating in human-centric, time-sensitive settings re-quires minimising perceived latency. Two bottlenecks are prominent: (i) LLM-based high-level replanning, and (ii) mo-tion planning when multiple manipulators must coordinate (e.g., R2R handover). We address both by: (a) Predictive planning , which forecasts short-horizon human trajectories and preemptively submits a replanning request to the LLM when reachability assumptions are likely to change; and (b) Parallel motion planning for multi-robot skills (e.g. R2R handover), which spawns candidate trajectories simultane-ously for different arms and grasp pairs. 
+
+TABLE III 
+
+ABLATION ON HRC FLUENCY METRICS OVER ALL TASKS .                                         
+
+> Variant H-IDLE
+> ↓(%) R-IDLE
+> ↓(%) C-ACT
+> ↑(%) F-DEL
+> ↓(%)
+> Ours (full) 67 .1±17 .238 .8±10 .164 .9±11 .9−4.5±8.6
+> w/o P.P. 70 .8±16 .745 .4±11 .363 .5±15 .0−4.4±7.9
+> w/o P.M.P. 68 .6±17 .942 .7±11 .960 .8±14 .0−4.2±8.6
+
+Abbrev.: P.T. = Predictive Trigger, P.M.P. = Parallel motion planning 
+
+Following the HRC fluency metrics in [23], we report Hu-man Idle Time (H–IDLE), Robot Idle Time (R–IDLE), Con-current Activity (C–ACT), and Functional Delay (F–DEL). 2
+
+We conduct an ablation across all tasks, comparing our com-plete system against (i) removing the predictive trigger and (ii) removing parallel planning. Results are shown in Table III. Both components contribute: predictive planning chiefly reduces human and robot waiting (H–IDLE, R–IDEL), while parallel planning primarily cuts robot waiting (R–IDLE) and improves synchrony (C–ACT). VI. C ONCLUSION 
+
+In this work, we presented a neuro-symbolic framework for multi-robot task planning that grounds LLM reasoning into H-LTL f specifications within a receding horizon loop, ensuring dynamic feasibility and efficiency in human-aware environments as validated in real-world experiments. Future work will extend this framework to large-scale heterogeneous fleets, focusing on dynamic coalition formation for open-ended missions. REFERENCES [1] S. Wang, M. N. Nikoli´ c, T. L. Lam, Q. Gao, R. Ding, and T. Zhang, “Robot manipulation based on embodied visual perception: A survey,” CAAI Transactions on Intelligence Technology, 2025. 1 [2] Z. Yan, S. Li, Z. Wang, L. Wu, H. Wang, J. Zhu, L. Chen, and J. Liu, “Dynamic open-vocabulary 3d scene graphs for long-term language-guided mobile manipulation,” IEEE Robotics and Automation Letters, vol. 10, no. 5, pp. 4252–4259, 2025. 1 [3] Y. Wang, R. Xiao, J. Y. L. Kasahara, R. Yajima, K. Nagatani, A. Yamashita, and H. Asama, “Dart-llm: Dependency-aware multi-robot task decomposition and execution using large language models,” 2025. 1, 2, 6 
+
+> 2
+
+H–IDLE/R–IDLE: percentage of total task time the respective agent is inactive; C–ACT: percentage of time at least two agents are concurrently active; F–DEL: percentage of time between one robot finishing and the other starting. Higher C–ACT is better; lower H–IDLE, R–IDLE, F–DEL are better. [4] Y. Zhu, J. Chen, X. Zhang, M. Guo, and Z. Li, “Dexter-llm: Dynamic and explainable coordination of multi-robot systems in unknown environments via large language models,” 2025. 1, 2 [5] X. Luo and C. Liu, “Simultaneous task allocation and planning for multi-robots under hierarchical temporal logic specifications,” IEEE Transactions on Robotics, 2025. 1, 2, 4 [6] T. Bin, H. Yan, N. Wang, M. N. Nikoli´ c, J. Yao, and T. Zhang, “A survey on the visual perception of humanoid robot,” Biomimetic Intelligence and Robotics, p. 100197, 2024. 2 [7] V. Kurtz and H. Lin, “Temporal logic motion planning with convex op-timization via graphs of convex sets,” IEEE Transactions on Robotics, vol. 39, no. 5, pp. 3791–3804, 2023. 2 [8] X. Zhang, H. Qin, F. Wang, Y. Dong, and J. Li, “Lamma-p: Gen-eralizable multi-agent long-horizon task allocation and planning with lm-driven pddl planner,” in 2025 IEEE International Conference on Robotics and Automation (ICRA). IEEE, 2025. 2 [9] S. Xu, X. Luo, Y. Huang, L. Leng, R. Liu, and C. Liu, “Nl2hltl2plan: Scaling up natural language understanding for multi-robots through hierarchical temporal logic task representation,” 2024. 2, 6 [10] Octo Model Team, D. Ghosh, H. Walke, K. Pertsch, K. Black, O. Mees, S. Dasari, J. Hejna, C. Xu, J. Luo, T. Kreiman, Y. Tan, L. Y. Chen, P. Sanketi, Q. Vuong, T. Xiao, D. Sadigh, C. Finn, and S. Levine, “Octo: An open-source generalist robot policy,” in Proceedings of Robotics: Science and Systems, Delft, Netherlands, 2024. 2 [11] M. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. Foster, G. Lam, P. Sanketi, Q. Vuong, T. Kollar, B. Burchfiel, R. Tedrake, D. Sadigh, S. Levine, P. Liang, and C. Finn, “Openvla: An open-source vision-language-action model,” arXiv preprint arXiv:2406.09246, 2024. 2 [12] K. Liu, Z. Tang, D. Wang, Z. Wang, B. Zhao, and X. Li, “Coherent: Collaboration of heterogeneous multi-robot system with large language models,” arXiv preprint arXiv:2409.15146, 2024. 2 [13] S. S. Kannan, V. L. Venkatesh, and B.-C. Min, “Smart-llm: Smart multi-agent robot task planning using large language models,” arXiv preprint arXiv:2309.10062, 2023. 2, 6 [14] Z. Mandi, S. Jain, and S. Song, “Roco: Dialectic multi-robot col-laboration with large language models,” in 2024 IEEE International Conference on Robotics and Automation (ICRA). IEEE, 2024, pp. 286–299. 2 [15] M. Costanzo, G. De Maria, and C. Natale, “Handover control for human-robot and robot-robot collaboration,” Frontiers in Robotics and AI, vol. 8, p. 672995, 2021. 2 [16] E. V. Mascaro, D. Sliwowski, and D. Lee, “HOI4ABOT: Human-object interaction anticipation for human intention reading assistive roBOTs,” in 7th Annual Conference on Robot Learning, 2023. 2 [17] Y. Zhang, X. Huang, J. Ma, Z. Li, Z. Luo, Y. Xie, Y. Qin, T. Luo, Y. Li, S. Liu, et al., “Recognize anything: A strong image tagging model,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2024, pp. 1724–1732. 3 [18] S. Liu, Z. Zeng, T. Ren, F. Li, H. Zhang, J. Yang, Q. Jiang, C. Li, J. Yang, H. Su, et al., “Grounding dino: Marrying dino with grounded pre-training for open-set object detection,” in European conference on computer vision. Springer, 2024, pp. 38–55. 3 [19] N. Ravi, V. Gabeur, Y.-T. Hu, R. Hu, C. Ryali, T. Ma, H. Khedr, R. R¨ adle, C. Rolland, L. Gustafson, et al., “Sam 2: Segment anything in images and videos,” arXiv preprint arXiv:2408.00714, 2024. 3 [20] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark, et al., “Learning transferable visual models from natural language supervision,” in International conference on machine learning. PmLR, 2021, pp. 8748–8763. 3 [21] R. Khanam and M. Hussain, “Yolov11: An overview of the key architectural enhancements,” 2024. [Online]. Available: https: //arxiv.org/abs/2410.17725 3 [22] C. Meng, T. Zhang, D. Zhao, and T. L. Lam, “Fast and comfort-able robot-to-human handover for mobile cooperation robot system,” Cyborg and Bionic Systems, vol. 5, p. 0120, 2024. 5 [23] C. A. Garcia, W. Montalvo-Lopez, and M. V. Garcia, “Human-robot collaboration based on cyber-physical production system and mqtt,” Procedia manufacturing, vol. 42, pp. 315–321, 2020. 8

@@ -1,0 +1,1143 @@
+Title: Precedent-Informed Reasoning: Mitigating Overthinking in Large Reasoning Models via Test-Time Precedent Learning
+
+URL Source: https://arxiv.org/pdf/2602.14451v1
+
+Published Time: Tue, 17 Feb 2026 02:33:53 GMT
+
+Number of Pages: 39
+
+Markdown Content:
+# Precedent-Informed Reasoning: Mitigating Overthinking in Large Reasoning Models via Test-Time Precedent Learning 
+
+Qianyue Wang 1 2 Jinwu Hu 1 2 Huanxiang Lin 1 Bolin Chen 1
+
+Zhiquan Wen 1 2 Yaofo Chen 1 2 Yu Rong 3 Mingkui Tan 1 †   
+
+> 1South China University of Technology, 2Pazhou Laboratory, 3DAMO Academy, Alibaba Group
+
+Abstract 
+
+Reasoning in Large Language Models (LLMs) often suffers from inefficient long chain-of-thought traces with redundant self-exploration and validation, which inflate computational costs and even degrade performance. In-spired by human reasoning patterns where people solve new problems by leverag-ing past related cases to constrain search spaces and reduce trial-and-error, we propose 
+
+Precedent Informed Reasoning ( PIR ) trans-forming LRMs’ reasoning paradigm from ex-haustive self-exploration to guided learning from precedents. PIR addresses two key chal-lenges: what precedents to adopt and how to utilize them. First, Adaptive Precedent Selec-tion (APS) constructs, for each question and LRM, a compact set of precedents that are both semantically related and informative for the model. It ranks examples by a joint score with semantic similarity and model perplexity, then adapts the amount of precedents to maximize perplexity reduction. Second, Test-time Ex-perience Internalization (TEI) is treated as the test-time learning on precedent-informed instruction, updating lightweight adapters to internalize solution patterns and use them as a prior during subsequent reasoning. Experi-ments across mathematical reasoning, scien-tific Q&A, and code generation demonstrate that PIR consistently shortens reasoning traces while maintaining or improving final accuracy across LLMs, yielding outstanding accuracy-efficiency trade-offs. 
+
+1 Introduction 
+
+Large Language Models (LLMs) (OpenAI, 2023; Touvron et al., 2023) have demonstrated strong performance on a range of natural language processing tasks, including question answer-ing (Wang et al., 2025c) and text generation (Wang et al., 2025a). However, standard LLMs exhibit 
+
+> 1Corresponding author: mingkuitan@scut.edu.cn.
+
+degraded performance in complex reasoning sce-narios that require multi-step deduction and co-herent integration of intermediate conclusions. To address this limitation, Large Reasoning Mod-els (LRMs) (Sui et al., 2025), such as Ope-nAI’s o1 (OpenAI et al., 2024) and DeepSeek-R1 (DeepSeek-AI et al., 2025), have been devel-oped to decompose complex problems into step-by-step reasoning, leading to substantial improve-ments on reasoning-intensive tasks (Hendrycks et al., 2021; Cobbe et al., 2021; LI et al., 2024). Unfortunately, LRMs often engage in redun-dant self-exploration (Qiao et al., 2025) and val-idation (Chiang and Lee, 2024) in reasoning-intensive tasks, a phenomenon referred to as over-thinking (Sui et al., 2025; Chen et al., 2025b). This redundancy increases unnecessary token gen-eration and computation, which raises reasoning cost and even hurts accuracy when the model over-commits to exploration. Recently, numerous methods have been pro-posed to mitigate overthinking in LRMs, which can be broadly categorized into two types. Multi-model collaboration methods (Yang et al., 2025b; Pan et al., 2025; Hu et al., 2025a) decompose rea-soning processes by difficulty and distribute them across models of different scales, reducing the number of generated tokens for complex reasoning tasks. Single-model optimization methods focus on improving inference efficiency within a single model, through high-cost retraining (Muennighoff et al., 2025) or via test-time control strategies such as dynamic early stopping (Manvi et al., 2024) and reasoning compression (Zhang et al., 2025). While these methods are effective in reducing computa-tional cost or inference latency, they largely oper-ate by controlling the length or budget of the rea-soning trace, without altering the underlying trial-and-error-based reasoning. As a result, each ques-tion is still treated as an independent reasoning in-stance, and LRMs are not explicitly encouraged to 1   
+
+> arXiv:2602.14451v1 [cs.AI] 16 Feb 2026 Normal Reasoning Precedent -informed Reasoning
+> Answer Answer
+> Query
+> Precedent
+> Self Exploration Precedent Guide
+> No Precedent
+
+Figure 1: The illustration of different reasoning paradigms. Unlike normal reasoning that relies on self-exploration, precedent-informed reasoning leverages precedent experience to reduce the search space, im-proving reasoning efficiency. 
+
+reuse solution patterns across questions. In contrast, when solving complex reasoning problems, humans adopt a precedent-based rea-soning style , recalling or retrieving a set of sim-ilar precedents and imitating their solution pat-terns (Polya, 1945) to constrain the solution search space, reducing trial-and-error exploration. As il-lustrated in Figure 1, we aim to seek a reason-ing paradigm for LRMs that aligns with human precedent-based reasoning, enabling LRMs to solve problems by imitating the solution patterns in precedents instead of relying solely on self-exploration. However, enabling precedent-based reasoning in LRMs raises two challenges: (i) What to imitate? Given a question and a target LRM, how to select a set of precedents that are both semantically related and informative to guide the model’s reasoning. (ii) How to imitate? We need a mechanism that enables the model to actively in-ternalize solution patterns from precedents and use them as a prior for subsequent reasoning. In this work, we propose Precedent Informed 
+
+Reasoning ( PIR ) at test time to mitigate over-thinking by transforming the reasoning process of LRMs from redundant self-exploration to prece-dent internalization and precedent-guided reason-ing. Specifically, we introduce Adaptive Precedent 
+
+Selection ( APS ), which combines semantic sim-ilarity and model perplexity to adaptively deter-mine a compact set of informative precedents for each question. We further propose Test-time 
+
+Experience Internalization ( TEI ), which treats precedent-guided reasoning as test-time learning on a precedent-informed instruction constructed from the selected precedents and the target ques-tion, enabling the model to internalize their so-lution patterns and reason on a reduced solu-tion search space to improve reasoning efficiency. Main contributions are as follows: • From Self-Exploration to Precedent-informed Reasoning Paradigm. We introduce a precedent-based reasoning paradigm that mitigates the overthinking phenomenon by replacing redundant self-exploration and validation with precedent internalization, constraining LRMs to asmaller, strategy-guided search space. • PIR: Test-time Precedent Selection and Experience Internalization. We propose precedent-informed Reasoning, a test-time method that i) uses Adaptive Precedent Se-lection to choose a compact set of precedents and ii) applies Test-time Experience Internal-ization to internalize the solution patterns in precedents via label-free test-time learning on precedent-informed instructions. • Empirical accuracy–efficiency trade-offs across tasks and models. We demonstrate on mathematical reasoning, scientific ques-tion answering, and code generation bench-marks across multiple LRMs that our method consistently shortens reasoning traces and re-duces computation while matching or im-proving accuracy, achieving strong accu-racy–efficiency trade-offs. 
+
+2 Related Work 
+
+2.1 Efficient Reasoning for LRMs 
+
+Efficient reasoning is critical for balancing model performance and computational cost, and exist-ing approaches to improving the efficiency of LRMs can be broadly grouped into two cate-gories. Multi-model collaboration methods ex-ploit the complementarity of models with dif-ferent capacities for complex reasoning tasks. SpecReason (Pan et al., 2025) delegates part of the base model’s reasoning tasks to a smaller model for speculative execution. Speculative Think-ing (Yang et al., 2025b) primarily uses a smaller model for reasoning, with a larger model provid-ing intervention and correction as needed. While effective to some extent, these methods require considerable GPU resources to support the simul-taneous loading of models with different scales, which limits their practical usability. Single-Model Optimization methods aim to improve 2reasoning efficiency within a single model, either through training-time refinement or test-time con-trol. Training strategies such as L1 (Aggarwal and Welleck, 2025) and s1 (Muennighoff et al., 2025) modify reasoning patterns through extensive fine-tuning to reduce redundancy. Test-time methods include dynamic early exiting (Manvi et al., 2024) like DEER (Yang et al., 2025a)), which uses piv-otal tokens to control output length via a single heuristic without considering the intrinsic limita-tion of reasoning behavior in LRMs and reasoning compression (Zhang et al., 2025) like SEAL (Chen et al., 2025a)), which compresses reasoning trajec-tories by adjusting the internal representations of LRMs. 
+
+2.2 Test time In-context Learning 
+
+In-context learning (ICL) allows LLMs to lever-age information explicitly provided in the prompt rather than relying solely on their imperfect para-metric memory (Wang et al., 2023b). ICL im-proves performance within few references but the improvement is limited by prompt format-ting, example ordering, and context length con-straints (Bornschein et al., 2025). Test-time learn-ing takes an active parameter fine-tuning approach that updates the model on a small batch of test examples to adapt to the input distribution, and is proven to be effective in a variety of set-tings (Gozeten et al., 2025; Sun et al., 2020; Gandelsman et al., 2022; Wang et al., 2023a). TLM (Hu et al., 2025b) shows that using perplex-ity as the adaptation objective and adapting solely to the input content, without requiring task labels, can yield improvements in task performance. 
+
+3 Problem Statement and Motivation 
+
+Problem statement. Given a question q, we use a reasoning-enhanced model Mθ to produce an an-swer, and at test time we have an additional set of solved precedents Es = {(qi, a i)}Ni=1 . For each 
+
+q, we select a reference set E⋆s (q) from an ad-ditional precedent set Es and apply lightweight test-time parameter updates, obtaining an adapted model M ⋆θ conditioned on q and its references. The adapted model M ⋆θ then generates a reason-ing trajectory and final answer for q by imitating the reasoning patterns in E⋆s (q), with the goal of reducing reasoning length and computational cost while preserving or improving task accuracy rela-tive to the base model Mθ.Algorithm 1: The pipeline of PIR.                                                                                                                                     
+
+> Require: Question q,solved precedent set
+> Es={(qi, a i)}Ni=1 ,model Mwith parameters
+> Θ,pre-selection size k,max reference budget p,instruction template I.
+> Ensure: Reasoning result y
+> 1: // Reference example pre-selection
+> 2: Construct Ek⊂Esby selecting the kexamples with the largest semantic similarity sibetween qand each qi,where siis computed via Eq. (1). 3: Construct Ep⊂Ekby selecting the pexamples with the largest Reference Score RS ifor (qi, a i)∈Ek, where
+> RS iis computed from the question perplexity of qiunder
+> MΘvia Eq. (4). 4: // Adaptive number of reference examples
+> 5: Construct the question-only instruction I0=I(q)whose perplexity P0=P(I0; Θ) is computed under Θ.6: for m= 1 , . . . , p do
+> 7: Construct the precedent-informed instruction Im=
+> I q, {(q(j), a (j))}mj=1
+> using the first mexamples in Ep,whose perplexity P(Im; Θ) under parameters Θyields the relative reduction ∆P(Im,Θ) = P0−P(Im; Θ) .8: Choose m⋆such that ∆P(Im⋆,Θ) ≥∆P(Im,Θ) for all m= 1 , . . . , p .9: Set E⋆
+> 0(q) = {(q(j), a (j))}m⋆
+> j=1 .10: Set I⋆=Im⋆.11: // Test-time instruction adaptation for solution inter-nalization
+> 12: Initialize LoRA parameters ∆Θ = BA by sampling A
+> from a Gaussian distribution, and Bis initialized to 0.13: Update ∆Θ by one backward pass to minimize
+> P(I⋆; Θ + ∆Θ) as in Eq. (6). 14: Obtain adapted parameters Θ⋆= Θ + ∆Θ .15: // Reasoning for final answer
+> 16: Generate the reasoning process and final answer yfor q
+> using Mwith parameters Θ⋆.
+
+Motivation. Humans often solve hard problems by recalling a few precedents, abstracting reusable strategies, and applying them to new instances, es-pecially in legal case judgment (Liu et al., 2025), disease diagnosis (Yin et al., 2025), and com-plex mathematical problem solving (Polya, 1945), which narrows the search space and reduces trial-and-error exploration. In contrast, LRMs are not explicitly encouraged to internalize and reuse so-lution patterns across questions and tackle each query in isolation with much exploration and val-idation for solution, leading to overthinking with increased computational cost and potential perfor-mance degradation. The gap between precedent-based reasoning and model behavior motivates us to develop a method that enables LRMs to reason based on actively imimitating and internalizing the solution patterns from precedents, steering them away from purely self-exploraton and reducing re-dundancy while maintaining task performance. 30 1 2 3 4 5                             
+
+> 0
+> 25
+> 50
+> 75
+> 100
+> Accuracy (%)  88
+> 52
+> 36.53 012345
+> Number of Reference Examples (e)
+> 0k
+> 10k
+> 20k
+> 30k
+> Length(tokens)
+> 1655.82 3743.48
+> 22101.56 (a) DeepSeek-R1-DQ-7B 012345
+> 0
+> 25
+> 50
+> 75
+> 100
+> Accuracy (%)  94
+> 68.6
+> 57.69 012345
+> Number of Reference Examples (e)
+> 0k
+> 10k
+> 20k
+> 30k
+> Length(tokens)
+> 2285.34 3138.15
+> 13135.62 (b) DeepSeek-R1-DQ-32B 012345
+> 0
+> 25
+> 50
+> 75
+> 100
+> Accuracy (%)  93
+> 70.93
+> 61.54 012345
+> Number of Reference Examples (e)
+> 0k
+> 10k
+> 20k
+> 30k
+> Length(tokens)
+> 2284.34 3137.15
+> 11775.93 (c) QwQ-32B
+
+Figure 2: The accuracy and length on DeepSeek-R1-Qwen2.5-7B/32B and QwQ-32B as incrementally vary the number of RS -filtered precedents in the reasoning prompt. Best accuracy gains are achieved within the given reference budget. We evaluate 100 randomly sampled instances per dataset. Markers denote the best result for each model-dataset pair: • as MATH500, ■ as GPQA Diamond, ▲ as LiveCode Bench. See Appendix B for details. 
+
+4 Precedent-informed Reasoning 
+
+In this paper, we propose Precedent Imitation 
+
+Reasoning ( PIR ), a precedent-guided test-time adaptation framework that mitigates overthink-ing by shifting LRMs from exhaustive self-exploration and self-validation to precedent-informed reasoning. Our design is organized around two central questions: (i) what to imitate? 
+
+and (ii) how to imitate? For what to imitate , Adap-tive Precedent Selection (APS) selects, for each question and target model, a compact set of prece-dents with an adaptive total amount by semantic similarity to the target question and model-specific informativeness measured by perplexity. For how to imitate , Test-time Experience Internalization (TEI) performs test-time adaptation on the LoRA module to a precedent-informed instruction built from the selected precedents so that the model in-ternalizes their solution patterns and uses them as a behavioral prior during subsequent reasoning, thereby reducing redundant exploration and verifi-cation. The pseudo-code of PIR is in Algorithm 1. 
+
+4.1 Adaptive Precedent Selection 
+
+To address what to imitate , we propose Adaptive 
+
+Precedent Selection ( APS ), which constructs a compact precedent set E⋆(q) from external prece-dent set Es for each question q and target model 
+
+MΘ pair. APS first performs coarse filtering by ranking candidates with a joint score of question-level semantic similarity and model perplexity. In-spired by the idea of prequential evaluation (Born-schein et al., 2025), which determines hyperpa-rameters by considering the downstream perfor-mance, we progressively add one from top-ranked precedents together with the given question to form precedent-informed instructions and deter-mine the precedent size that yields the largest marginal perplexity reduction for the instruction, which reflects the benefit of subsequent test-time adaptation (Hu et al., 2025b). We detail its two stages, starting with multi-criteria pre-selection and followed by task-aware budget determination. 
+
+Top-k Semantic Similarity Selection. Given a target question q and a precedent set Es =
+
+{(qi, a i)}Ni=1 , we measure the semantic relevance between q and each precedent question qi in an embedding space: 
+
+si = cos  ϕ(q), ϕ (qi), (qi, a i) ∈ Es, (1) where ϕ(q) and ϕ(qi) are the embeddings of the target question and the precedent question. Ek is formed by the top-k examples with the highest si.
+
+Top-p Reference Score Selection. For each 
+
+(qi, a i) ∈ Ek, we further assess how familiar it is to the target reasoning model MΘ by the per-plexity of its question tokens {x1, . . . , x |qi|}:
+
+Pi = exp 
+
+− 1
+
+|qi|
+
+> |qi|
+
+X
+
+> t=1
+
+log pMΘ (xt | x<t )
+
+ . (2) Let P denote the set of Pi. Since perplexity val-ues can vary by orders of magnitude across models 4and are on a different scale from cosine similarity scores, we apply min–max normalization to Pi:
+
+bPi = max( P) − P i
+
+max( P) − min( P) , (3) We then define the Reference Score as: RS i = si + bPi. (4) This score prioritizes precedents that are both se-mantically relevant to q and informative for MΘ
+
+to imitate. We then take the Top-p precedents by the highest RS i to form Ep. Next, we decide how many precedents to use from Ep to best support reasoning and we conduct a preliminary study, leading to the following observation: 
+
+Observation 1: No universal optimal prece-dent quantity. From Figure 2, the best number of precedents for accuracy varies across model-dataset pairs, reflecting differences in models’ context utilization as well as variation in task diffi-culty. This motivates an adaptive determination of the number of precedents. Based on Observation 1 , we design an adap-tive quantity determination mechanism inspired by prequential evaluation (Bornschein et al., 2025) for the downstream task. We select the reference budget that maximizes the perplexity reduction of the precedent-informed instruction (see Ap-pendix B.1), which benefits subsequent adapta-tion (Hu et al., 2025b). We sort Ep in descend-ing order of RS i and construct a sequence of precedent-informed instructions {Im}pm=1 , where 
+
+Im contains the target question and the first m ex-amples. For each Im, we compute the relative per-plexity reduction ∆P (Im, Θ) , compared with the question-only instruction and choose: 
+
+m⋆ = arg max 
+
+> m∈[1 ,p ]
+
+ −∆P (Im, Θ) . (5) The example subset E⋆ 
+
+> 0
+
+, composed of the top m⋆
+
+examples from Ep, is used in the next stage of PIR. 
+
+4.2 Test-time Experience Internalization Observation 2: Examples alone do not guaran-tee efficient reasoning. Figure 2 shows that the precedent quantity that maximizes accuracy does not necessarily minimize reasoning length. This suggests that appending precedents as passive in-context is insufficient, motivating a mechanism that enables the model to adapt to the selected precedents and actively use them as reasoning prior, instead of trial-and-error self-exploration. Based on Observation 2 , we introduce Test-time Experience Internalization (TEI), which treats the change of reasoning behavior as a test-time learning task to instructions for precedent-informed reasoning. For each question q, we con-struct a precedent-informed instruction Im⋆ that concatenates q with its selected reference prece-dents E⋆ 
+
+> 0
+
+. Instead of expensive offline supervised fine-tuning that requires additional labeled data for every target model, we keep the base parameters 
+
+Θ frozen and update only lightweight LoRA (Hu et al., 2022) with parameters ∆Θ by minimiz-ing the model perplexity on Im⋆ , which yields an instance-wise adaptation without task labels (Hu et al., 2025b). TEI optimizes the objective as: 
+
+min  
+
+> ∆Θ
+
+P(Im⋆ ; Θ + ∆Θ) , (6) where P(·; Θ + ∆Θ) denotes the perplexity un-der the adapted model. This adaptation results in an adapted model M ⋆ with parameters Θ + ∆Θ .
+
+M ⋆ generates the reasoning and final answer for q
+
+under the behavioral prior encoded by Im⋆ .By enforcing low perplexity on precedent-informed instructions, TEI encourages the model to adapt to internalize solution patterns in prece-dents and constrain reasoning in a smaller search space (Hu et al., 2025b), reducing redundant ex-ploration and maintaining task performance. 
+
+5 Experiment 
+
+5.1 Experiment Setting Datasets. We consider three families of reasoning-intensive tasks: mathematical reasoning, multi-disciplinary scientific question answering (QA), and code generation. For mathematical reason-ing, we use GSM8K (Cobbe et al., 2021), MATH500 (Hendrycks et al., 2021), and AMC AIME (LI et al., 2024). For scientific QA, we report results on GPQA D IAMOND (Rein et al., 2024). For code generation, we use the L IVE -CODE BENCH (Jain et al., 2025). For each dataset, we evaluate the performance on the test set and treat the training set as the precedent set without question overlap. More details are in Appendix C. 
+
+Baselines and Metrics. 
+
+We compare PIR with a comprehensive set of baselines. We report representative reason-ing models, including DeepSeek-R1-Distilled-Qwen2.5-7B/14B/32B (DeepSeek-AI et al., 2025) and QwQ-32B (Team, 2025). From Related Work 5Table 1: Accuracy ( acc ., %) and average thinking length ( token .) across methods and datasets. Best and second-best results are in bold and underlined. All methods including PIR use DeepSeek-R1-32B as the backbone model.                                                                                     
+
+> Method GSM8K MATH500 AMC AIME GPQA Diamond LiveCodeBench
+> acc .token .acc .token .acc .token .acc .token .acc .token .
+> DeepSeek-R1-7B 92.60 380.24 87.00 2576.49 58.33 3858.16 22.80 5020.86 32.68 5775.04 DeepSeek-R1-14B 92.60 265.91 86.00 2408.36 57.76 3523.09 24.66 4411.01 36.57 5432.53 DeepSeek-R1-32B 94.20 263.04 86.80 2269.37 59.92 3661.52 36.30 5028.59 41.02 5224.52 QwQ-32B (Team, 2025) 93.60 290.32 88.00 3318.15 63.00 4600.75 37.42 5585.19 42.99 5575.36 prompt to concise (Wei et al., 2022) 94.00 182.42 90.50 2161.51 54.50 3286.95 31.98 4120.47 45.50 5611.31 L1-max (Aggarwal and Welleck, 2025) 93.40 1198.63 87.80 1624.55 60.60 3832.18 25.81 3769.06 37.76 4983.77 s1-32B (Muennighoff et al., 2025) 96.00 1023.26 90.00 2922.14 53.96 5958.03 60.72 3402.53 31.96 4603.04 DEER (Yang et al., 2025a) 91.00 392.25 90.40 1280.75 51.93 4112.46 54.20 3402.51 37.05 4341.08 SEAL (Chen et al., 2025a) 89.30 279.49 84.00 2096.87 42.34 6354.78 56.13 3468.96 39.03 5709.02 Specutive Thinking (Yang et al., 2025b) 94.45 899.83 90.40 1943.84 64.60 4941.73 51.37 5031.91 40.07 6265.42 SpecReason (Pan et al., 2025) 96.00 1075.98 92.00 2380.78 43.00 6354.78 44.43 4885.98 42.63 5589.44 PIR (Ours) 95.60 197.03 93.20 1485.36 67.40 2935.83 65.22 3024.81 57.11 4023.37
+
+in Appendix 2, we compare with representative methods for efficient reasoning. For single-model optimization, we consider both fine-tuning-based and training-free approaches. The fine-tuning-based methods include s1-32B (Muennighoff et al., 2025),L1 (Aggarwal and Welleck, 2025). The training-free methods include DEER (Yang et al., 2025a), SEAL (Chen et al., 2025a). For multi-model collaboration, we include Specutive Thinking (Yang et al., 2025b) and SpecRea-son (Pan et al., 2025). We report two metrics: (i) the average reasoning length measured at the to-ken level, denoted as tokens ; (ii) the final answer accuracy, denoted as acc . Details about baselines and metrics are in Appendix D.2 and F. 
+
+Implementation Details. 
+
+For APS , we set k to 10 and p to 5 (Bornschein et al., 2025). We use bge-large-en-v1.5 (Xiao et al., 2023) to encode embeddings. For TIE ,LoRA is applied to Wq and Wv to adapt to the precedent-informed instruction and the rank is 8. During the adaptation process, the train epoch is 1 and the learning rate is 3e−5. All experiments are conducted on 4 ×NVIDIA A800 GPUs with CUDA 11.2. Main experimental results are based on the DeepSeek-R1-Distilled-32B. Details are in Appendix D. 
+
+5.2 Comparison Experiment Balanced Accuracy-Efficiency Trade-off across Domains. From Table 1, PIR achieves the best accuracy-efficiency trade-off on AMC AIME, GPQA Diamond, and LiveCodeBench. PIR im-proves accuracy by 11.61%, while reducing aver-age reasoning length by 28.30% over the second-best method on LiveCodeBench. This advantage 
+
+Table 2: Statistics of the occurrence of precedent refer-ence behaviors before and after applying TEI . Details of the behavior detection are in Appendix G.             
+
+> Dataset PIR (w/o TLM) PIR (full) GSM8k 0.00 1.08 MATH500 0.18 2.64 AMC AIME 0.11 5.38 GPQA Diamond 0.57 5.81 LiveCodeBench 0.04 8.19
+
+arises from the reasoning experience contained in the provided precedents and the precedent-informed reasoning enhanced through test-time adaptation, which reduces redundant exploration and validation, and achieves accurate prediction. 
+
+Adaptive Reasoning Length by Task Diffi-culty. PIR scales its reasoning length with task difficulty. PIR costs 197.03 tokens on GSM8K, in-creases to 1485.36 tokens on MATH500, and fur-ther to 2935.83 tokens on AMC-AIME on average. This adjustment is enabled by the reasoning pat-terns provided from selected examples while ef-fectively preserving the native reasoning capabili-ties of the base model for harder cases. 
+
+Advantages of High-Difficulty Tasks. As stated before, PIR attains the highest accuracy and a shortest reasoning trace on hard multi-step datasets compared with other baselines on AMC-AIME, GPQA Diamond, and LiveCodeBench. This makes it practical for challenge math solv-ing, scientific Q&A, and code generation, where both correctness and inference cost are critical. 
+
+5.3 Reasoning Behavior Analysis Test-Time Adaptation Promotes Precedent-Informed Reasoning. From Table 2, TEI in-creases the frequency of precedent reference be-6Table 3: The statistical results of attention score above average in one reasoning path in token ( HT .) and segment (HS .) level. Best results are in bold . More calculation details are in Appendix H.                                                                                               
+
+> Method GSM8K MATH500 AMC AIME GPQA Diamond LiveCodeBench
+> HT .HS .HT .HS .HT .HS .HT .HS .HT .HS .
+> DeepSeek-R1-32B 65.81 65.03 26.83 30.86 19.17 22.56 14.11 18.57 11.82 18.44 l1-max 60.20 64.90 41.97 37.78 23.06 28.00 36.96 37.20 33.63 29.17 s1-32B 73.97 69.22 59.92 39.18 32.15 33.64 42.46 40.65 34.79 35.56 DEER 77.00 71.80 59.10 41.18 39.62 44.97 40.08 38.46 34.39 30.42 SEAL 77.46 76.07 53.01 41.91 44.22 44.97 37.02 39.46 34.73 31.72 Speculative Thinking 63.48 68.39 35.28 43.44 27.98 25.05 19.18 22.90 24.65 24.86 SpecReason 68.16 64.90 44.36 53.83 37.46 35.91 29.44 35.68 28.53 32.62 PIR(Ours) 88.74 80.11 62.27 56.24 48.26 46.35 47.63 44.71 44.72 39.71
+
+Table 4: Time (seconds) and GPU memory (GB) cost of different methods across datasets. Within an A800, PIR is the second-fastest method in most case, with latency close to DEER (best) and substantially faster than the base model. With accuracy improvements over DEER (Table 1), PIR offers a favorable accuracy–efficient trade-off.                                                                                                                   
+
+> Method GSM8K MATH500 AMC AIME GPQA Diamond LiveCodeBench
+> Time GPU Time GPU Time GPU Time GPU Time GPU
+> DeepSeek-R1-32B 18.06 72.00 114.40 72.00 174.35 72.00 224.00 72.00 246.72 72.00 QwQ-32B 59.35 72.00 145.67 72.00 211.96 72.00 253.27 72.00 253.06 72.00 prompt to concise 27.43 72.00 104.15 72.00 142.28 72.00 161.92 72.00 242.33 72.00 s1-32B 140.48 72.00 206.75 72.00 226.54 72.00 49.05 72.00 191.75 72.00 l1-max 23.19 40.00 51.15 40.00 49.30 40.00 58.34 40.00 62.07 40.00 DEER 15.23 72.00 21.75 72.00 67.73 72.00 47.26 72.00 53.90 72.00 SEAL 45.61 72.00 76.43 72.00 247.40 72.00 146.21 72.00 254.14 72.00 Speculative Thinking 139.23 112.00 192.15 112.00 291.64 112.00 243.27 112.00 164.68 112.00 SpecReason 129.15 112.00 61.38 112.00 250.09 112.00 180.86 112.00 208.46 112.00 PIR (Ours) 21.66 73.18 46.65 74.73 54.57 75.62 48.05 76.32 55.80 77.15
+
+havior while passive prompting with precedents triggers few such behaviors. The result indicates the effectiveness of TEI increases active precedent reference behaviors, which correlates with shorter reasoning trace. 
+
+Attention-based Evidence that Shortening Comes from Redundancy Reduction. To verify that shorter reasoning results from removing re-dundancy (Yang et al., 2025a), we compute token and segment-level salience ratios ( HT . and HS .)based on above-average attention to the </think> 
+
+token (details in Appendix H.2) (Choi et al., 2025). From Table 3, the base model exhibits a long-tail pattern on hard benchmarks that both HT. 
+
+and HS. are less than 20% (Newman, 2005; Foss et al., 2013). While the compared methods im-prove the HT. and HS. , PIR consistently achieves best across datasets, indicating its shortens reason-ing by discarding low-impact redundancy. 
+
+Acceptable Time and Computational Cost when Considering Accuracy-Efficient Trade-off. From Table 4, the input augmentation and adaptation introduce extra time cost, which is obvious on the easy task dataset GSM8K with 18.06s by the base model and 21.66s by PIR. However, on a challenging dataset, such as AMC AIME, PIR reduces the overall latency from 174.35 s to 54.57 s, yielding a 3.19 × speedup over the base model. Furthermore, all methods com-plete reasoning within an NVIDIA A800, PIR re-quires 73.18 to 77.15 GB GPU memory, which is comparable to the base model (72 GB). PIR is practically deployable under realis-tic GPU constraints and acceptable time cost when considering the outstanding reasoning per-formance. Stage-wise time cost of PIR is in Ap-pendix I. 
+
+5.4 Ablation Study Effect of Adaptive Precedent Selection. From Table 5, removing precedents consistently de-grades accuracy and efficiency. On AMC-AIME, accuracy drops by 5.60% and the average reason-ing length increases by 18.3%. This indicates that high-quality, model-aware precedents contain ex-perience and effectively narrow the solution search space, steering the model toward shorter and more reliable reasoning paths, especially for tasks that require multi-step deduction. 
+
+Effect of Test-time Experience Internaliza-
+
+7Table 5: Ablation results. w/o reference example removes reference examples from input context. w/o instruction adaptation disables test-time adaption and uses only precedent informed prompting for reasoning. 
+
+Method GSM8K MATH500 AMC AIME GPQA Diamond LiveCodeBench 
+
+acc . token . acc . token . acc . token . acc . token . acc . token .
+
+DeepSeek-R1-32B 94.20 263.04 86.80 2269.37 59.92 3661.52 36.30 5028.59 41.02 5224.52 w/o APS 94.60 253.22 88.80 1819.20 61.80 3472.31 55.15 4219.80 45.02 5045.93 w/o TEI 95.40 281.37 90.60 3725.20 63.60 3933.19 56.88 5169.49 46.46 5383.76 PIR (Ours) 95.60 197.03 93.20 1485.36 67.40 2935.83 65.22 3024.81 57.11 4023.37 GSM8K MATH500 AMC_AIME GPQA 
+
+> Diamond
+> LiveCode
+> Bench
+> 0
+> 2k
+> 4k
+> 6k
+> Length(tokens)
+> -376.28
+> -1257.65
+> -2169.55
+> -993.54
+> -1052.09
+> Base Model
+> Our Method
+
+(a) The token cost for models with or without PIR. GSM8K MATH500 AMC_AIME GPQA  
+
+> Diamond
+> LiveCode
+> Bench
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Accuracy(%)
+> +2.6 +6.1
+> +2.8
+> +30.6
+> +3.9
+> Base Model
+> Our Method
+
+(b) The accuracy for models with or without PIR. 
+
+Figure 3: Scalability of PIR across different reasoning models, with average accuracy (%) and reasoning to-kens on different models reported for each dataset. 
+
+tion. Without test-time adaptation, PIR attains moderate accuracy but generates longer reason-ing traces. On MATH500, PIR without test-time adaptation to instruction costs 2.5 times reasoning length while the accuracy is reduced by 2.6%, in-dicating the model needs additional reasoning to understand the context and find the final answer to the question without the instruction adaptation. This verifies that test-time adaptation is the key to internalizing solution patterns from precedents, yielding high accuracy and concise reasoning. 
+
+5.5 More Discussion PIR Scales Robustly across Reasoning Mod-els of Different Sizes. From We apply PIR to QwQ-32B and DeepSeek-R1-Distilled-Qwen2.5-7B/14B and the result is shown in Figure 3. PIR consistently reduces the reasoning length and in-creases accuracy across the dataset on different base models. This robustness follows from the 
+
+Table 6: Comparison of example selection strategies under the same test-time experience internalization set-ting. We isolate the effect of PIR’s dual-dimension, adaptive selection by contrasting it with fixed-size ( e =
+
+n) and single-dimension strategies (random, semantic-only, perplexity-only and SIFT (H¨ ubotter et al., 2025)). See Appendix J.2 for details of settings.                                                      
+
+> Sampling MATH500 GPQA Diamond LiveCodeBench Strategy acc .token .acc .token .acc .token .
+> e=0 88.80 1819.20 36.15 4219.80 40.02 5224.52 e=1 87.00 2517.10 37.21 3291.51 36.54 5193.00 e=2 89.00 2239.31 49.30 3968.34 40.38 5840.62 e=3 94.00 2345.72 32.79 4186.22 38.46 4991.40 e=4 90.00 2154.91 35.88 4173.04 42.31 4919.39 e=5 86.00 2260.14 33.81 3615.65 40.38 4853.44 random 84.00 2059.22 27.56 5858.57 19.24 6887.21 sematic similarity 85.00 1842.22 20.97 3803.77 46.15 5168.35 perplexity 82.35 2815.35 22.68 5042.83 26.92 6033.10 SIFT 85.19 3390.38 21.38 6946.68 28.85 7180.35 PIR(Ours) 93.20 1485.36 57.11 3148.82 54.72 4834.88
+
+model-aware design that the reference examples are selected by jointly considering semantic rele-vance and model familiarity, and test-time adap-tation adapts the base model to the precedent-informed reasoning with model-specific signals. Case study of reasoning results is in Appendix K. 
+
+Adaptive Example Selection Tailored Out-performs Alternative Sampling Strategies. Ta-ble 6 shows that PIR achieves the best per-formance trade-off compared with fixed-count question-model aware filtering and other single dimension example selection strategies. On Live-CodeBench, where PIR attains 54.72% accuracy with 4834.88 tokens, compared to fixed precedents amounting to 3 and 57.11% accuracy with 3148.82 tokens on GPQA Diamond when alternating with SIFT (H¨ ubotter et al., 2025). These results con-firm that the dual consideration from question and model and the adaptive selection mechanism of reference examples selection are necessary to sup-ply informative precedents for effective precedent-informed reasoning adaptation. 86 Conclusion 
+
+We propose Precedent Informed Reasoning that transforms LRMs’ reasoning paradigm from ex-haustive self-exploration to guided learning from precedents. First, Adaptive Precedent Selection 
+
+constructs a compact set of precedents that are se-mantically related and informative for the model. Second, Test-time Experience Internalization 
+
+adopts test-time learning on precedent-informed instruction, updating lightweight adapters to inter-nalize solution patterns and use them as a prior during subsequent reasoning. 
+
+References 
+
+Pranjal Aggarwal and Sean Welleck. 2025. L1: Con-trolling how long a reasoning model thinks with reinforcement learning. In Second Conference on Language Modeling .Jorg Bornschein, Clare Lyle, Yazhe Li, Amal Rannen-Triki, Xu Owen He, and Razvan Pascanu. 2025. Fine-tuned in-context learners for efficient adapta-tion. Preprint , arXiv:2512.19879. Runjin Chen, Zhenyu Zhang, Junyuan Hong, Souvik Kundu, and Zhangyang Wang. 2025a. SEAL: Steer-able reasoning calibration of large language models for free. In Second Conference on Language Mod-eling .Xingyu Chen, Jiahao Xu, Tian Liang, Zhiwei He, Jianhui Pang, Dian Yu, Linfeng Song, Qiuzhi Liu, Mengfei Zhou, Zhuosheng Zhang, and 1 others. 2025b. Do not think that much for 2+ 3=? on the overthinking of long reasoning models. In Forty-second International Conference on Machine Learn-ing .Cheng-Han Chiang and Hung-yi Lee. 2024. Over-reasoning and redundant calculation of large lan-guage models. In Proceedings of the 18th Confer-ence of the European Chapter of the Association for Computational Linguistics, EACL 2024 - Vol-ume 2: Short Papers, St. Julian’s, Malta, March 17-22, 2024 , pages 161–169. Association for Computa-tional Linguistics. Daewon Choi, Jimin Lee, Jihoon Tack, Woomin Song, Saket Dingliwal, Sai Muralidhar Jayanthi, Bhavana Ganesh, Jinwoo Shin, Aram Galstyan, and Sra-van Babu Bodapati. 2025. Think clearly: Improving reasoning via redundant token pruning. In Findings of the Association for Computational Linguistics: EMNLP 2025 , pages 21437–21451, Suzhou, China. Association for Computational Linguistics. Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, Christopher Hesse, and John Schulman. 2021. Training verifiers to solve math word prob-lems. Preprint , arXiv:2110.14168. DeepSeek-AI, Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, Xiaokang Zhang, Xingkai Yu, Yu Wu, Z. F. Wu, Zhibin Gou, Zhihong Shao, Zhuoshu Li, Ziyi Gao, and 81 oth-ers. 2025. Deepseek-r1: Incentivizing reasoning ca-pability in llms via reinforcement learning. CoRR ,abs/2501.12948. S. Foss, D. Korshunov, and S. Zachary. 2013. Heavy-tailed and long-tailed distributions. In An Introduc-tion to Heavy-Tailed and Subexponential Distribu-tions , pages 7–42. Springer New York, New York, NY. Yossi Gandelsman, Yu Sun, Xinlei Chen, and Alexei A. Efros. 2022. Test-time training with masked autoen-coders. In Advances in Neural Information Process-ing Systems 35: Annual Conference on Neural In-formation Processing Systems 2022, NeurIPS 2022, New Orleans, LA, USA, November 28 - December 9, 2022 .Halil Alperen Gozeten, Muhammed Emrullah Ildiz, Xuechen Zhang, Mahdi Soltanolkotabi, Marco Mondelli, and Samet Oymak. 2025. Test-time train-ing provably improves transformers as in-context learners. In Forty-second International Conference on Machine Learning .Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric Tang, Dawn Song, and Jacob Steinhardt. 2021. Measuring mathematical problem solving with the MATH dataset. In Thirty-fifth Conference on Neural Information Processing Systems Datasets and Benchmarks Track (Round 2) .Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. 2022. Lora: Low-rank adaptation of large language models. In ICLR . OpenReview.net. Jinwu Hu, Dongjin Yang, Langyu Bian, Zhiquan Wen, Yufeng Wang, Yaofo Chen, Bin Xiao, Yuanqing Li, and Mingkui Tan. 2025a. Beyond fast and slow: Cognitive-inspired elastic reasoning for large lan-guage models. Preprint , arXiv:2512.15089. Jinwu Hu, Zitian Zhang, Guohao Chen, Xutao Wen, Chao Shuai, Wei Luo, Bin Xiao, Yuanqing Li, and Mingkui Tan. 2025b. Test-time learning for large language models. In Forty-second International Conference on Machine Learning .Jonas H¨ ubotter, Sascha Bongni, Ido Hakimi, and An-dreas Krause. 2025. Efficiently learning at test-time: Active fine-tuning of llms. In ICLR . Open-Review.net. Naman Jain, King Han, Alex Gu, Wen-Ding Li, Fan-jia Yan, Tianjun Zhang, Sida Wang, Armando Solar-Lezama, Koushik Sen, and Ion Stoica. 2025. Live-codebench: Holistic and contamination free evalua-
+
+9tion of large language models for code. In The Thir-teenth International Conference on Learning Repre-sentations .Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph Gon-zalez, Hao Zhang, and Ion Stoica. 2023. Effi-cient memory management for large language model serving with pagedattention. In Proceedings of the 29th Symposium on Operating Systems Princi-ples, SOSP 2023, Koblenz, Germany, October 23-26, 2023 , pages 611–626. ACM. Jia LI, Edward Beeching, Lewis Tunstall, Ben Lipkin, Roman Soletskyi, Shengyi Costa Huang, Kashif Ra-sul, Longhui Yu, Albert Jiang, Ziju Shen, Zihan Qin, Bin Dong, Li Zhou, Yann Fleureau, Guillaume Lam-ple, and Stanislas Polu. 2024. Numinamath. [https: //huggingface.co/AI-MO/NuminaMath-CoT](https: //github.com/project-numina/aimo-progress-prize/ blob/main/report/numina dataset.pdf). Chao-Lin Liu, Po-Hsien Wu, and Yi-Ting Yu. 2025. Labeling case similarity based on co-citation of le-gal articles in judgment documents with empiri-cal dispute-based evaluation. In JSAI-isAI , volume 15692 of Lecture Notes in Computer Science , pages 96–113. Springer. Rohin Manvi, Anikait Singh, and Stefano Ermon. 2024. Adaptive inference-time compute: Llms can predict if they can do better, even mid-generation. CoRR ,abs/2410.02725. Niklas Muennighoff, Zitong Yang, Weijia Shi, Xi-ang Lisa Li, Li Fei-Fei, Hannaneh Hajishirzi, Luke Zettlemoyer, Percy Liang, Emmanuel J. Cand` es, and Tatsunori Hashimoto. 2025. s1: Simple test-time scaling. CoRR , abs/2501.19393. Mark EJ Newman. 2005. Power laws, pareto dis-tributions and zipf’s law. Contemporary physics ,46(5):323–351. OpenAI, :, Aaron Jaech, Adam Kalai, Adam Lerer, Adam Richardson, Ahmed El-Kishky, Aiden Low, Alec Helyar, Aleksander Madry, Alex Beutel, Alex Carney, Alex Iftimie, Alex Karpenko, Alex Tachard Passos, Alexander Neitz, Alexander Prokofiev, Alexander Wei, Allison Tam, and 244 others. 2024. Openai o1 system card. Preprint ,arXiv:2412.16720. OpenAI. 2023. GPT-4 technical report. CoRR ,abs/2303.08774. Rui Pan, Yinwei Dai, Zhihao Zhang, Gabriele Oliaro, Zhihao Jia, and Ravi Netravali. 2025. Specreason: Fast and accurate inference-time compute via spec-ulative reasoning. arXiv preprint arXiv:2504.07891 .G. Polya. 1945. How to Solve It: A New Aspect of Mathematical Method , 2 edition. Princeton Univer-sity Press, Princeton, NJ. Ziqing Qiao, Yongheng Deng, Jiali Zeng, Dong Wang, Lai Wei, Fandong Meng, Jie Zhou, Ju Ren, and Yaoxue Zhang. 2025. Concise: Confidence-guided compression in step-by-step efficient reasoning. 
+
+CoRR , abs/2505.04881. David Rein, Betty Li Hou, Asa Cooper Stickland, Jackson Petty, Richard Yuanzhe Pang, Julien Di-rani, Julian Michael, and Samuel R. Bowman. 2024. GPQA: A graduate-level google-proof q&a bench-mark. In First Conference on Language Modeling .Yang Sui, Yu-Neng Chuang, Guanchu Wang, Jiamu Zhang, Tianyi Zhang, Jiayi Yuan, Hongyi Liu, An-drew Wen, Shaochen Zhong, Hanjie Chen, and Xia Ben Hu. 2025. Stop overthinking: A survey on efficient reasoning for large language models. 
+
+CoRR , abs/2503.16419. Yu Sun, Xiaolong Wang, Zhuang Liu, John Miller, Alexei A. Efros, and Moritz Hardt. 2020. Test-time training with self-supervision for generalization un-der distribution shifts. In Proceedings of the 37th In-ternational Conference on Machine Learning, ICML 2020, 13-18 July 2020, Virtual Event , volume 119 of 
+
+Proceedings of Machine Learning Research , pages 9229–9248. PMLR. Qwen Team. 2025. Qwq-32b: Embracing the power of reinforcement learning. Hugo Touvron, Louis Martin, Kevin Stone, Peter Al-bert, Amjad Almahairi, Yasmine Babaei, Niko-lay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, and 1 others. 2023. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288 .Qianyue Wang, Jinwu Hu, Zhengping Li, Yufeng Wang, Daiyuan Li, Yu Hu, and Mingkui Tan. 2025a. Generating long-form story using dynamic hierar-chical outlining with memory-enhancement. In 
+
+NAACL (Long Papers) , pages 1352–1391. Associ-ation for Computational Linguistics. Renhao Wang, Yu Sun, Yossi Gandelsman, Xin-lei Chen, Alexei A. Efros, and Xiaolong Wang. 2023a. Test-time training on video streams. CoRR ,abs/2307.05014. Xinyi Wang, Wanrong Zhu, Michael Saxon, Mark Steyvers, and William Yang Wang. 2023b. Large language models are latent variable models: Ex-plaining and finding good demonstrations for in-context learning. Advances in Neural Information Processing Systems , 36:15614–15638. Yiping Wang, Shao-Rong Su, Zhiyuan Zeng, Eva Xu, Liliang Ren, Xinyu Yang, Zeyi Huang, Xuehai He, Luyao Ma, Baolin Peng, Hao Cheng, Pengcheng He, Weizhu Chen, Shuohang Wang, Simon Shaolei Du, and Yelong Shen. 2025b. Thetaevolve: Test-time learning on open problems. Preprint ,arXiv:2511.23473. 
+
+10 Yufeng Wang, Jinwu Hu, Ziteng Huang, Kunyang Lin, Zitian Zhang, Peihao Chen, Yu Hu, Qianyue Wang, Zhuliang Yu, Bin Sun, Xiaofen Xing, Qingfang Zheng, and Mingkui Tan. 2025c. Enhancing user-oriented proactivity in open-domain dialogues with critic guidance. In Proceedings of the Thirty-Fourth International Joint Conference on Artificial Intelli-gence, IJCAI 2025, Montreal, Canada, August 16-22, 2025 , pages 8268–8276. ijcai.org. Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Brian Ichter, Fei Xia, Ed H. Chi, Quoc V. Le, and Denny Zhou. 2022. Chain-of-thought prompt-ing elicits reasoning in large language models. In 
+
+NeurIPS .Shitao Xiao, Zheng Liu, Peitian Zhang, and Niklas Muennighoff. 2023. C-pack: Packaged resources to advance general chinese embedding. Preprint ,arXiv:2309.07597. Chenxu Yang, Qingyi Si, Yongjie Duan, Zheliang Zhu, Chenyu Zhu, Zheng Lin, Li Cao, and Weiping Wang. 2025a. Dynamic early exit in reasoning models. 
+
+CoRR , abs/2504.15895. Wang Yang, Xiang Yue, Vipin Chaudhary, and Xiao-tian Han. 2025b. Speculative thinking: Enhancing small-model reasoning with large model guidance at inference time. CoRR , abs/2504.12329. Wang Yang, Xiang Yue, Vipin Chaudhary, and Xiao-tian Han. 2025c. Speculative thinking: Enhancing small-model reasoning with large model guidance at inference time. CoRR , abs/2504.12329. Pei Yin, Junjie Song, Yassine Bouteraa, Leren Qian, Diego Mart´ ın, and Mohammad Khishe. 2025. Acognitive few-shot learning for medical diagnosis: A case study on cleft lip and palate and parkinson’s disease. Expert Syst. Appl. , 262:125713. Jintian Zhang, Yuqi Zhu, Mengshu Sun, Yujie Luo, Shuofei Qiao, Lun Du, Da Zheng, Huajun Chen, and Ningyu Zhang. 2025. Lightthinker: Thinking step-by-step compression. Preprint , arXiv:2502.15589. 
+
+A Limitation 
+
+We discuss limitations of PIR to encourage further research and follow-up work: • Benefit depends on precedent quality and coverage. 
+
+PIR benefits from access to relevant prece-dents. when coverage is limited or domains evolve rapidly, the incremental gains from retrieval and internalization may be smaller. In the worst case, the framework can fall back to the base model’s inference with-out harming correctness, while dynamically maintained precedent set (Wang et al., 2025b) are a promising direction to improve robust-ness over time. • Runtime overhead. PIR introduces retrieval and a lightweight test-time internalization step, which adds latency and computational cost. In Table 4, the overhead remains prac-tical relative to most baselines, and motivates future systems optimizations, such as caching and batched retrieval to further reduce cost. 
+
+B The Details of Pre-experiment 
+
+Prompt. We adopted a prompt template for inte-grating examples in the pre-experiment. The tem-plate instructs the model to answer the target ques-tion by actively referencing solutions provided in the input examples, to minimize exploration of al-ternative solution paths, and to present the final an-swer enclosed in \boxed{} . The full prompt tem-plate used in the pre-experiment is included in this appendix. 11 Prompt Template for Integrating Examples 
+
+Answer the given question by referencing the solution in the provided examples: Given question: {Given Question }
+
+—————— Provided examples: Question 1: {Question 1 }
+
+Solution 1: {Solution 1 }
+
+—————— Question 2: {Question 2 }
+
+Solution 2: {Solution 2 }
+
+—————— ... Since the provided examples are similar to the given question, you can actively reference the solution of the provided examples to answer the given question. You can reduce the exploration of the solution to the given question and the verification of local results. Put the final answer of the given question in boxed {} .
+
+Note : Since the number of selected samples varies dy-namically for a given question and model, the ellipsis ‘. . . ‘ here indicates that the quantity is uncertain. 
+
+Pre-experiment sample size. The pre-experiment used 100 problem instances as aquick validation set to probe the effect of the num-ber of provided examples on both accuracy and token consumption. For comparability, instances were sampled from the target test set (MATH500, GPQA Diamond, LiveCodeBench) such that each sampled subset comprised the same number of examples used throughout the pre-experiment analyses. 
+
+Experimental settings in pre-experiment. The pre-experiment was run under the following set-tings: • Context window (max tokens): 32k. • Hardware: single NVIDIA A800 (1 × A800) for rapid iteration in the pre-experiment stage. • Decoding temperature: 0 (deterministic de-coding) to stabilize comparisons across dif-ferent example counts. 
+
+Table 7: The result of pre-experiment for DeepSeek-R1-Distilled-Qwen2.5-7B. e = k means there are k ex-amples provided in the input prompt.                                            
+
+> MATH500 GPQA Diamond LiveCodeBench
+> acc .token .acc .token .acc .token .
+> e=0 87.00 2576.49 41.86 5482.81 21.15 25058.90 e=1 88.00 2019.90 40.00 4411.38 19.23 25189.14 e=2 82.00 1754.70 42.00 4110.14 28.84 22101.56
+> e=3 82.00 1655.82 46.00 3943.48 36.53 23313.76 e=4 86.00 2109.38 48.00 4069.18 30.76 24710.72 e=5 84.00 1960.30 54.00 3783.68 32.69 24720.68
+
+Table 8: The result of pre-experiment for DeepSeek-R1-Distilled-Qwen2.5-32B. e = k means there are k examples provided in the input prompt.                                            
+
+> MATH500 GPQA Diamond LiveCodeBench
+> acc .len .acc .len .acc .len .
+> e=0 91.00 3055.53 63.95 9243.30 55.76 19482.96 e=1 92.00 2285.34 46.51 8706.31 53.84 16686.50 e=2 88.00 3101.46 66.67 6267.77 57.69 14190.69 e=3 94.00 2660.18 55.81 4466.50 50.00 14973.87 e=4 88.00 3766.13 68.60 3482.04 48.07 13135.62
+> e=5 91.00 2732.41 70.93 3138.15 42.14 16656.68
+
+Table 9: The result of pre-experiment for QwQ-32B. 
+
+e = k means there are k examples provided in the input prompt.                                            
+
+> MATH500 GPQA Diamond LiveCodeBench
+> acc .len .acc .len .acc .len .
+> e=0 92.00 3671.68 65.11 9242.30 57.69 13973.98 e=1 91.00 2284.34 48.84 8705.31 59.61 14082.94 e=2 92.00 3100.47 66.67 6266.77 61.54 13747.86 e=3 93.00 2659.18 55.81 4465.50 50.00 13556.00 e=4 88.00 3765.13 68.60 3481.04 51.06 11775.93
+> e=5 84.00 2731.41 70.93 3137.15 51.92 11815.53
+
+Evaluation protocol and metrics. For each model and for each example-count condition e ∈{0, 1, . . . , 5}, we report two primary metrics: ac-curacy (acc) and average generated length (to-kens). Tables in this appendix (Tables 6–8) present the pre-experiment results for three model config-urations (DeepSeek-R1-Distilled-Qwen2.5-32B, QwQ-32B, and DeepSeek-R1-Distilled-Qwen2.5-7B) across the three task families (MATH500, GPQA Diamond, LiveCodeBench). The detailed evaluation results are in Table 7, Table 8 and Ta-ble 9. 
+
+Brief summary of pre-experiment findings. 
+
+Based on a rapid validation using 100 instances, we derive two practical insights: (1) the optimal number of examples relies on the interaction be-tween model capacity and task type, implying that a fixed example count does not uniformly improve performance; (2) in specific combinations of mod-els and tasks, adding examples can increase to-12 ken consumption or even slightly reduce accu-racy. These observations guided the configuration choices for larger-scales experiments reported in the main paper. 
+
+B.1 Instruction Template in PIR Prompt Template for Integrating Examples 
+
+Answer the given question by referencing the solution in the provided examples: Given question: {Given Question }
+
+—————— Provided examples: Question 1: {Question 1 }
+
+Solution 1: {Solution 1 }
+
+—————— Question 2: {Question 2 }
+
+Solution 2: {Solution 2 }
+
+—————— ... Since the provided examples are similar to the given question, you can actively reference the solution of the provided examples to answer the given question. You can reduce the exploration of the solution to the given question and the verification of local results. Put the final answer of the given question in boxed {} .
+
+> Note : Since the number of selected samples varies dy-namically for a given question and model, the ellipsis ‘. . . ‘ here indicates that the quantity is uncertain.
+
+C The Details of Dataset 
+
+We evaluate our methods on a set of widely used benchmark datasets. Concretely, our adopted datasets include GSM8K (Cobbe et al., 2021), MATH500 (Hendrycks et al., 2021), AMC AIME (LI et al., 2024), GPQA Diamond (Rein et al., 2024), and LiveCodeBench (Jain et al., 2025). AMC AIME is a combined dataset derived from NuminaMath-CoT (LI et al., 2024), consist-ing of AMC and AIME problem sets collected from the AoPS Wiki with the reference solutions realigned into a chain-of-thought (CoT) format us-ing GPT-4o. For comparison and controlled eval-uation, we construct precedent set and test set for each dataset with no instance overlap. The specific number of precedent and test samples for each dataset is presented in Table 10. The details of the 
+
+Table 10: Sample Counts of Different Datasets for Precedent and Test Samples           
+
+> GSM8K MATH500 AMC AIME GPQA Diamond LiveCodeBench precedent 2000 2000 2000 700 880 test 500 500 500 200 175
+
+sources of precedent and test instances for each dataset are as follows: • GSM8K (Cobbe et al., 2021). Grade School Math 8K, a widely adopted standard bench-mark for evaluating models’ fundamental arithmetic thinking capabilities, consisting of grade-school math word problems. The precedent set and the test set in paper are the corresponding training and test set from Nu-minaMath (LI et al., 2024) with GPT-4o to reformat reference solutions from the origi-nal problems into the CoT format. • MATH500 (Hendrycks et al., 2021). MATH is a challenging dataset for evaluating ad-vanced mathematical reasoning, covering al-gebra, geometry, number theory, and cal-culus. It requires complex, multi-step de-ductions and serves as a difficult bench-mark. In our experiment, we use the MATH500 (Hendrycks et al., 2021) subset. The MATH500 subset used in our experi-ments can be found on its Hugging Face page. The precedent set of this dataset is from the corresponding training set in Numina-Math (LI et al., 2024). • AMC AIME (LI et al., 2024). A subset of AMC and AIME, encompasses approxi-mately 4,300 curated problems spanning di-verse mathematical domains including arith-metic, geometry, combinatorics, and algebra. These problems, sourced from AoPS Wiki, are characterized by well-defined answers in either multiple-choice (AMC) or integer (AIME) format. The difficulty ranges from intermediate (AMC 10/12 level) to highly challenging (AIME-level), requiring multi-step reasoning and non-trivial problem-solving strategies. The The precedent set and the test set in paper are the corre-sponding training and test set from Nu-minaMath (LI et al., 2024). To ensure dataset quality and avoid overlap with ex-isting benchmarks such as MATH, we per-13 form embedding-based decontamination, re-taining only non-overlapping instances. So-lutions are reformatted into chain-of-thought style using GPT-4o. • GPQA Diamond (Rein et al., 2024). GPQA Diamond is a challenging domain-specific question collection focused on physics, chemistry, and biology reasoning prob-lems. The questions are expert-crafted to be “Google-proof”, requiring graduate-level domain knowledge and deep reasoning, such that even well-informed non-specialists achieve low accuracy. In this paper, the test set is GPQA Diamond and the precedent set is GPQA main. GPQA main dataset is avail-able at this link. • LiveCodeBench (Jain et al., 2025). Live-CodeBench is a programmatic reasoning benchmark divided by difficulty levels. The difficulty tiers reflect problem complexity in real competitive programming contexts: easy corresponds to introductory-level contests, medium to intermediate challenges, and hard to advanced or expert-level tasks, often re-quiring non-trivial algorithms, careful imple-mentation, or multi-step reasoning. We use the latest LiveCodeBench, v6 as the test set and use old LiveCodeBench including v1 to v5 as the precedent set. LiveCodeBench is available at this link. 
+
+D Implementation Details 
+
+D.1 Implementation Details of PIR 
+
+All training and evaluation experiments are con-ducted using an NVIDIA A800 GPU, with 80 GB of memory, under CUDA version 12.1. Our method is implemented using the PyTorch frame-work with PyTorch, version 2.5.1. The training framework for test-time LoRA finetune follows the implementation of TLM 1.
+
+D.2 Implementation Details of Baselines. The Deployment Details of Model Baselines. 
+
+We evaluated several publicly available foundation models. For all foundation models listed below, in-ference was conducted with temperature set to 0 ,
+
+top-p set to 1.0 , and utilized the vLLM inference framework :
+
+> 1https://github.com/Fhujinwu/TLM
+
+• QwQ-32B • DeepSeek-R1-Distill-Qwen-7B • DeepSeek-R1-Distill-Qwen-14B • DeepSeek-R1-Distill-Qwen-32B 
+
+The Implementation Details of Prompt to think concise. 
+
+At inference time (no additional training), we follow the concise thinking instruction (Wei et al., 2022) to prompt the base model, DeepSeek-R1-Distill-Qwen-32B to minimize unnecessary inter-mediate steps and stop once the solution is de-termined, while preserving correctness with an 8k window size. The detailed prompt is as follows: The Prompt for Thinking Concise 
+
+{question } Think briefly about the answer. 
+
+The Implementation Details of L1. L1 utilizes Length Controlled Policy Optimization (LCPO), a reinforcement learning technique, to train lan-guage models capable of adhering to specified generation length constraints during reasoning tasks. We specifically compare against the L1-Max variant, designed to control the maximum length of the generated output (e.g., Chain-of-Thought) while maintaining task accuracy. For our reproduction experiments using L1-Max: the maximum target token length (‘ngold‘) was set to 
+
+8192 , including the input prompt; inference em-ployed deterministic decoding with temperature set to 0 .
+
+The Implementation Details of Speculative Thinking. The Speculative Thinking framework enhances a small model by delegating difficult rea-soning spans to a larger model via structural cues and reflective phrases—using a dual-model setup: 
+
+DeepSeek-R1-Distill-Qwen-7B as the specula-tive model ( MS , 1×A800) and DeepSeek-R1-Distill-Qwen-32B as the target ( MT , 1×A800). Both run on vLLM (Kwon et al., 2023) with ten-sor parallelism 6, and we sample 5 completions per instance. All intervention rules follow (Yang et al., 2025c), including trigger lexicons (affirma-tive/reflective/verification), takeover token bud-gets (n1, n 2, n 3), and the reflection cap Cthresh .
+
+The Implementation of s1-32B. We apply s1-32B 2 with window size 8192 and temperature 0. The model runs by vLLM on NVIDIA A800*1. 
+
+> 2https://github.com/simplescaling/s1
+
+14 The Implementation of DEER. We develop DEER 3 to first install dependencies by executing pip install -r requirements.txt; it is recommended to deploy using the vLLM framework, where the path to the DeepSeek-R1-Distilled-Qwen2.5-32B as core model needs to be specified during run-time, with –max length 8192 set to configure the window length, –temperature 0 to control the gen-eration temperature, and parameters such as the threshold 0.95 and thinking ratio 0.6 adjusted as required, before starting the deployment via bash ./bashes/bash-vllm-deer.sh. 
+
+The Implementation of SEAL. We develop SEAL 4 from first install dependencies via pip install -r requirements.txt vllm==0.5.1 trans-formers==4.42.3 and set up latex2sympy. Use VLLM for inference with the DeepSeek-R1-Distilled-Qwen2.5-32B as core model, configur-ing max tokens=8192 (window length) and tem-perature=0 in the inference script. After saving re-sults, run evaluation using evaluation/eval.sh with appropriate PROMPT TYPE and model path to complete the deployment. 
+
+The Implementation of SpecReason. 
+
+E The Result on 32k Window Size 
+
+We report the evaluation results of locally de-ployed models with a 32k context window on mul-tiple datasets, in Figure 11. The results are broadly consistent with those in the original paper, indicat-ing the correctness of our local software and hard-ware infrastructure and supporting the reliability of our other experimental findings. 
+
+F The Details of Evaluation Metrics 
+
+We report two primary evaluation indicators in this work: (1) accuracy (acc) and (2) token consump-tion (tokens). Below we describe the exact compu-tation procedures used for both metrics. 
+
+Accuracy (acc). Accuracy is measured as the proportion of examples for which the model’s final answer matches the reference answer. Concretely, for each test instance we obtain the model’s final answer string (the content returned by the model that is intended to be the solution). Prior to string comparison we apply lightweight normalization to both the model output and the reference: 1. Trim leading and trailing whitespace. 
+
+> 3https://github.com/yourusername/DEER
+> 4https://github.com/VITA-Group/SEAL
+
+2. If the model returns an answer wrapped in 
+
+\boxed{...} (or other LaTeX box mark-ers), we extract and compare the boxed content (i.e., compare the substring inside 
+
+\boxed{...} ). After these normalization steps we perform an ex-act string match . An example is counted as correct if and only if the normalized model string == the normalized reference string. The reported acc is the fraction of correct instances over the evalua-tion set. 
+
+Token consumption (tokens). Token consump-tion for a generated text is measured using the same tokenizer associated with the evaluated model. For a generated string we compute the encoded tokens with special tokens disabled and count the number of token ids. In code: In the tables we report the average token count across the evaluation examples for each condition (e.g., per-example average token length). Note that by setting add_special_tokens=False we in-tentionally exclude model-specific special tokens from the token count so the reported values reflect the tokenized length of the raw textual output only. 
+
+G The details of the detection of the precedent reference reasoning behavior in the reasoning path 
+
+We detect and quantify precedent reference rea-soning behavior , defined as segments of a gen-erated chain of thought that reproduce patterns from provided examples, using a compact pattern-matching pipeline. Briefly, we first solicit 5-10 prototype reference patterns from a large reference model and form a matching set P = {p1, . . . , p m}. In this pa-per, we match the pattern: (1) ”...reference exam-ple...”; (2) ”...Reference example...”; (3) ”...From example...”; (4) ”...from example...”; (5) ”...in ex-ample...”; (6) ”...In example...” Given a generated CoT S = ( s1, . . . , s n), we mark a step si as imitative if it matches any pj ∈ P 
+
+under normalized exact/regex or fuzzy n-gram cri-teria. The per-instance precedent reference count is 
+
+C(S) = 
+
+> n
+
+X
+
+> i=1
+> m
+
+X
+
+> j=1
+
+1[si matches pj ],
+
+and we report normalized rates Rsteps = C(S)/n 
+
+15 Table 11: Accuracy ( acc ., %) and average reasoning length ( token .) of models under a 32k context window.                                                       
+
+> Method GSM8K MATH500 AMC AIME GPQA Diamond LiveCodeBench
+> acc .token .acc .token .acc .token .acc .token .acc .token .
+> DeepSeek-R1-7B 92.60 440.39 88.91 4519.88 60.20 9305.71 27.45 17040.71 37.10 20331.73 DeepSeek-R1-14B 93.40 465.91 89.80 3973.30 60.20 7440.76 47.64 9678.51 47.95 16099.46 DeepSeek-R1-32B 95.00 464.54 91.00 4020.06 66.00 7312.36 53.80 11733.01 53.40 17384.53 QwQ-32B 96.20 1261.63 94.29 3875.44 66.90 6096.18 53.15 11732.34 57.32 15163.50
+
+and Rtokens = C(S)/T (S) (with T (S) the token length using the tokenizer in Appendix F). The detection pipeline applies lightweight normalization (lowercasing, whitespace collapse, strip formatting), exact/regex checks for phrase-and structure-based patterns, and a fuzzy n-gram overlap test to capture paraphrased precedent ref-erence. We count each match (optionally collaps-ing multiple matches per step) and report mean and standard deviation of C(S), Rsteps , and Rtokens 
+
+across conditions. Spot checks were used to vali-date the detector and to tighten rules where com-mon mathematical phrases caused false positives. This conservative, scalable procedure yields in-terpretable, lower-bound estimates of example-influenced reasoning. 
+
+H The details of the calculation of high token ( HT .) and high segment ( HS .)
+
+In this subsection we give concise, implementation-ready definitions of the attention-based scores used to identify high-token and 
+
+high-segment contributions, and we explain how these statistics are used to quantify redundancy in the reasoning trace. Our notation and core formulas follow the methodology introduced in (Choi et al., 2025). 
+
+H.1 The calculation of attention score in token and segment level 
+
+Let the model produce a reasoning trace of length 
+
+T (tokens) that is periodically probed by insert-ing a short summarization prompt ending with a special end-of-thinking token </think> (see (Choi et al., 2025)). For each attention layer ℓ ∈{1, . . . , L } and each head h ∈ H we denote the attention weight from the </think> query to to-ken t as 
+
+α(ℓ,h )
+
+> </think> →t
+
+.
+
+Following the paper, the per-layer–per-head token importance score is defined as 
+
+s(ℓ,h ) 
+
+> t
+
+= α(ℓ,h )
+
+> </think> →t
+
+, (7) which measures how much the injected summa-rizer token focuses on token t (higher values indicate greater contribution to the summarized thought). We typically aggregate these granular scores into a single token-level score by averaging across heads and layers: 
+
+st = 1
+
+L · | H|
+
+> L
+
+X
+
+> ℓ=1
+
+X
+
+> h∈H
+
+s(ℓ,h ) 
+
+> t
+
+. (8) To obtain a segment/step score, we first partition the reasoning trace into N contiguous reasoning steps (segments) r1, . . . , r N , where each segment 
+
+r is a set of consecutive tokens. The per-step (per-layer) aggregated score used in the paper is 
+
+c(ℓ) 
+
+> r
+
+= 1
+
+|H| · | r|
+
+X
+
+> h∈H
+
+X
+
+> t∈r
+
+s(ℓ,h ) 
+
+> t
+
+, (9) and we obtain a final segment score by averaging over layers: 
+
+cr = 1
+
+L
+
+> L
+
+X
+
+> ℓ=1
+
+c(ℓ) 
+
+> r
+
+. (10) Equations (1) to (4) above mirror the token / step scoring used to drive structure-aware pruning in (Choi et al., 2025). 
+
+H.2 The calculation of HT . and HS .
+
+We convert continuous importance scores into bi-nary indicators for high-token and high-segment 
+
+membership via simple thresholding. Let τtok and 
+
+τseg denote token- and segment-level thresholds respectively. Two common and robust choices for these thresholds are: • Percentile thresholding: set τtok to the p-th percentile of {st}Tt=1 (we use p = 80 by de-fault), and set τseg to the p-th percentile of 
+
+{cr}Nr=1 .16 Table 12: Stage time analysis. Adapt . and Reason . represent time adaptation and time reasoning respectively.                         
+
+> Method GSM8K MATH500 AMC AIME GPQA Diamond LiveCodeBench
+> Adapt. Reason. Adapt. Reason. Adapt. Reason. Adapt. Reason. Adapt. Reason.
+> Ours (DeepSeek-R1-32B) 0.99 30.672 1.13 45.52 1.34 53.23 1.05 46.66 1.3 54.5
+
+• Z-score thresholding: set τtok = μs + λσ s
+
+and τseg = μc + λσ c, where μs, σ s are the mean and standard deviation of {st}, μc, σ c
+
+those of {cr}, and λ a small constant (e.g., 
+
+λ = 1 ). Using a chosen thresholding rule, define the high-token set 
+
+HT = { t : st ≥ τtok }, HT . = |HT |
+
+T ,
+
+and the high-segment set 
+
+HS = { r : cr ≥ τseg }, HS . = |HS |
+
+N .
+
+Thus HT . is the fraction of tokens classified as high-contribution, and HS . is the fraction of rea-soning steps (segments) that are high-contribution under the same criterion. 
+
+H.3 How HT . and HS .
+
+Intuitively, reasoning traces with substantial re-dundancy exhibit many tokens and segments that receive little attention from the summarizer token 
+
+</think> ; correspondingly, only a small subset of tokens/segments are truly informative. Therefore: • Low HT . or HS . indicates high re-dundancy: when the fraction of high-contribution tokens/segments is small, the trace contains a long tail of low-importance tokens that are likely redundant (this observa-tion is empirically supported by (Choi et al., 2025)). • Complementary redundancy score: for convenience one can report redundancy as the complement, e.g. 
+
+Redundancy tok = 1 − HT ., 
+
+Redundancy seg = 1 − HS ., 
+
+so larger values indicate more redundancy. • Practical interpretation: a low HS . (few high-contribution steps) suggests that the model explored many low-value reasoning chunks (contiguous redundant segments). This motivates step-aware pruning: evict to-kens from low-cr steps first, as done in (Choi et al., 2025). 
+
+Implementation notes. (1) We compute all at-tention weights after forwarding the injected sum-marization prompt and reading the attention from the </think> query as in Eqn. (1) above. (2) In practice we use the percentile threshold (80th) as default because it is robust across datasets; results are stable under modest changes to p or λ. (3) All token counts and aggregations use the same tok-enizer conventions described in Appendix F. 
+
+I The details of the reasoning process in PIR 
+
+I.1 The details of stage-wise time cost for PIR 
+
+This subsection analyzes the stage-wise time cost of PIR by decomposing inference into two phases: a lightweight adaptation stage, where the model performs test-time experience internalization via LoRA updates using dynamically selected prece-dents, and a reasoning stage, where the adapted model generates the reasoning trace and final an-swer. Table 12 shows that the adaptation stage in-troduces a consistently small overhead across all benchmarks (0.99–1.34s), while the reasoning stage dominates total latency and increases with task difficulty, ranging from about 30 seconds on GSM8K to over 50 seconds on AMC AIME and LiveCodeBench. Across datasets, adaptation ac-counts for only 2–3% of the corresponding rea-soning time, indicating that the additional compu-tation introduced by test-time adaptation is neg-ligible in practice. This efficiency is enabled by parameter-efficient LoRA updates with very few optimization steps. Despite introducing an explicit adaptation phase, PIR reduces the overall end-to-end infer-ence time on complex tasks. By internalizing rel-evant problem-solving patterns before inference, the model avoids redundant self-exploration dur-ing reasoning, and the small adaptation overhead 17 Table 13: The details result of scalability of PIR across different reasoning models.                                                                                               
+
+> Method GSM8K MATH500 AMC AIME GPQA Diamond LiveCodeBench
+> acc .token .acc .token .acc .token .acc .token .acc .token .
+> QwQ-32B 92.40 1672.23 88.00 3318.15 64.45 5297.53 48.84 6132.83 30.77 6723.94 Ours(QwQ-32B) 95.80 738.24 90.00 1557.84 68.77 2126.18 55.56 4033.46 34.62 5587.40 DeepSeek-R1-7B 89.60 478.28 87.00 2576.49 62.53 2207.90 41.86 5482.81 15.38 7055.57 Ours(DeepSeek-R1-7B) 92.60 362.50 88.80 2055.53 64.40 1475.00 45.21 4862.41 19.25 6568.69 DeepSeek-R1-14B 90.80 439.25 86.00 2408.36 63.75 4223.15 31.40 5241.13 21.15 6433.59 Ours(DeepSeek-R1-14B) 92.20 360.17 88.40 1842.08 66.00 1618.75 45.83 3576.72 25.00 5117.71 DeepSeek-R1-32B 94.20 263.04 87.00 2021.68 59.92 3661.52 55.81 5307.51 30.77 6103.94 Ours(DeepSeek-R1-32B) 95.60 197.03 91.00 1549.96 67.40 2935.83 68.60 3048.82 34.62 4834.88
+
+Table 14: Average number of dynamic precedents se-lected for different datasets.       
+
+> Dataset Num. GSM8K 1.19 MATH500 1.56 AMC AIME 2.73 GPQA Diamond 2.43 LiveCodeBench 2.23
+
+is more than offset by the resulting reduction in reasoning time. Overall, these results demonstrate that the adaptation mechanism in PIR is computa-tionally lightweight and enables a favorable trade-off between inference efficiency and reasoning ef-fectiveness. 
+
+I.2 The details dynamic example across datasets 
+
+This subsection examines the dynamic behavior of precedent selection in PIR. Table 14 reports the av-erage number of dynamic precedents selected per query by the Adaptive Precedent Selection (APS) module. Across all benchmarks, the number of selected precedents remains small, ranging from 1.19 on GSM8K to 2.73 on AMC AIME, indicating that PIR relies on a compact set of highly informa-tive examples rather than a large demonstration set. More complex datasets (e.g., AMC AIME, GPQA Diamond, and LiveCodeBench) require more precedents on average than simpler ones, re-flecting the adaptive nature of APS: harder prob-lems benefit from multiple complementary solu-tion patterns, whereas simpler problems are often sufficiently guided by a single precedent. By selecting a small yet informative set of precedents and internalizing them via test-time LoRA adaptation, PIR transforms external demon-strations into a short-term behavioral prior. This design reduces both adaptation cost and redundant exploration during inference, contributing to the overall efficiency and practicality of the method. 
+
+J The details of more discussion 
+
+In this subsection, we report the implementation setting that we discussed in Section 5.5. 
+
+J.1 The details of the scalability experiment of PIR The Details for Scalability. Table 13 reports the scalability evaluation of PIR across several reason-ing models and datasets. For each model we show two metrics: accuracy (acc.) and average gener-ated token length (token.). The table demonstrates that PIR consistently improves or preserves accu-racy while substantially reducing token consump-tion across model scales. For instance, applying our method to QwQ-32B increases GSM8K accu-racy from 92.4% to 95.8% while shrinking average token length from 1672.23 to 738.24; similarly, on DeepSeek-R1-32B the accuracy on MATH500 in-creases from 87% to 91% with a concomitant to-ken reduction, from 2021.68 to 1549.96). These patterns hold across other datasets (AMC AIME, GPQA Diamond, LiveCodeBench), indicating that the approach scales favorably with model capac-ity and dataset type: larger gains in token effi-ciency are observed when the baseline trace con-tains more redundant exploration, and accuracy improvements are largest when the integrated ex-amples closely match the target problem structure. The full table provides per-dataset and per-model numbers used for the quantitative comparisons in Section 5.5. 
+
+J.2 The Details of Comparison with Alternate Example Selection 
+
+We evaluate several alternative strategies for se-lecting reference examples in our experiments; be-low we briefly summarize the concrete implemen-18 tations used for the comparisons reported in the paper. • Fixed e = k examples. For a given target question we construct the prompt using a de-terministic, fixed number e = k of examples. The selection pipeline applies the same re-trieval and ranking procedure used through-out the paper and then deterministically takes the top k items to form the prompt. This strat-egy isolates the effect of example count while keeping the retrieval policy constant. • Random selection. For each target question we uniformly sample k examples from the available precedent set without replacement. We repeat experiments with multiple inde-pendent random seeds and report averaged metrics; this baseline measures the sensitivity of performance to unguided example choice. • SIFT-based selection. SIFT(H¨ ubotter et al., 2025) selects examples by scoring candidate items according to the structural-and-feature similarity criteria described in the main text (e.g., template overlap, key-phrase matches, and coarse structural alignment). We then pick the top-k candidates under the SIFT score for prompt construction. This method targets examples that are structurally most in-formative for the given question. All selection variants were evaluated under the same decoding and runtime settings reported in Appendix B; comparison results shown in the main paper and supplementary tables quantify the trade-offs between selection sophistication, accu-racy, and token-efficiency. 
+
+K Case Study of PIR 
+
+We report representative optimization cases for each reasoning task to illustrate the practical ef-fectiveness of our method. 19 K.1 Example Case in MATH500 Base Model Input: 
+
+Pat is to select six cookies from a tray containing chocolate chip, oatmeal, and peanut butter cookies. How many different assortments of six cookies can be selected? 
+
+Length of reasoning: 1715 tokens 
+
+Model Reasoning: 
+
+Okay, so Pat needs to select six cookies from a tray that has chocolate chip, oatmeal, and peanut butter cookies. There are at least six of each type, so we don’t have to worry about running out of any particular kind. The question is asking how many different assortments of six cookies can be selected. Since cookies of the same type aren’t distinguishable, it’s a problem about combinations with repetition. Hmm, let me think. I remember that when you have to choose items with repetition allowed, the formula is something like  n+k−1
+
+> k
+
+, where n is the number of types and k is the number of items to choose. In this case, n would be 3 because there are three types of cookies, and k is 6 because Pat is selecting six cookies. So, plugging into the formula, it should be  3+6 −16
+
+ which simplifies to  86
+
+. Wait, let me make sure I remember the formula correctly. Yeah, the formula for combinations with repetition is  n+k−1
+
+> k
+
+,so that’s correct. Calculating  86
+
+. I know that  nk
+
+ is equal to n! 
+
+> k!( n−k)!
+
+. So,  86
+
+ would be 8! 6! ·(8 −6)! which is 8! 6! ·2! . Let me compute that. First, 8! is 40320, 6! is 720, and 2! is 2. So, 40320 divided by (720 × 2) is 40320 1440 . Let me do that division. 40320 divided by 1440. Hmm, 1440 times 28 is 40320 because 1440 × 10 is 14400, 
+
+1440 × 20 is 28800, and 1440 × 8 is 11520. Adding 28800 and 11520 gives 40320. So, 28. Therefore,  86
+
+ is 28. Wait, but let me think again. Is this the right approach? So, the problem is about selecting six cook-ies where order doesn’t matter and repetition is allowed because you can have multiple cookies of the same type. So, yes, combinations with repetition is the right way to go. Alternatively, I can think of it as a stars and bars problem. The number of ways to distribute six identical cookies into three distinct types. The formula for that is also  n+k−1
+
+> k
+
+, which is the same as before. So, that gives me the same result, 28. Let me try to visualize it. Imagine you have six cookies, and you need to separate them into three groups: chocolate chip, oatmeal, and peanut butter. To separate them, you can use two dividers. For example, if you have six stars (representing cookies) and two bars (representing dividers), the number of arrangements is the number of ways to arrange these eight symbols, where six are stars and two are bars. The number of such arrangements is  82
+
+ because you choose two positions out of eight to place the bars. Wait, hold on,  82
+
+ is 28 as well. So, that’s consistent with the previous calculation. So, whether I think of it as  86
+
+ or  82
+
+, it’s the same result because of the symmetry in combinations. Just to make sure, let me compute  82
+
+. 8! 2! ·(8 −2)! = 40320 2×720 = 40320 1440 = 28 . Yep, same answer. So, is 28 the correct number of different assortments? Let me think of a smaller case to verify. Suppose instead of six cookies, Pat is selecting two cookies from three types. Then, the number of assortments should be  3+2 −12
+
+ =  42
+
+ = 6 . Let’s list them: 1. Two chocolate chip 2. Two oatmeal 3. Two peanut butter 4. One chocolate chip and one oatmeal 5. One chocolate chip and one peanut butter 6. One oatmeal and one peanut butter 
+
+20 That’s six, which matches the formula. So, the formula works for a smaller case. Therefore, I can be confident that for six cookies, the number is 28. Wait, another way to think about it is using generating functions. The generating function for each type of cookie is 1 + x + x2 + x3 + · · · since you can take any number of each type. Since there are three types, the generating function is (1 + x + x2 + · · · )3. We need the coefficient of x6 in this expansion. But (1+ x+x2 +· · · ) is equal to 11−x , so the generating function becomes 
+
+ 11−x
+
+3
+
+. The expansion of (1 − x)−3 is the sum from n = 0 to infinity of  n+3 −13−1
+
+xn, which is P∞
+
+> n=0
+
+ n+2 2
+
+xn. Therefore, the coefficient of x6 is  6+2 2
+
+ =  82
+
+ = 28 . So, that’s another way to confirm it. Alternatively, if I didn’t remember the formula, I could try to list all possible combinations, but that would be tedious for six cookies. However, for a better understanding, maybe I can think of it as variables. Let me denote the number of chocolate chip cookies as c, oatmeal as o, and peanut butter as p.We have c + o + p = 6 , where c, o, p are non-negative integers. The number of solutions to this equation is the number of different assortments. To find the number of non-negative integer solutions, the formula is  n+k−1
+
+> k−1
+
+, where n is the total number of items, and k is the number of variables. In this case, n is 6, and k is 3, so it’s  6+3 −13−1
+
+ =  82
+
+ = 28 . So, that’s consistent as well. Wait, so in this case, n is 6 and k is 3, so the formula is  6+3 −13−1
+
+ =  82
+
+. So, that’s another way to get 28. I think I’ve verified it multiple ways: combinations with repetition, stars and bars, generating functions, and setting up the equation with variables. All lead to the same answer, 28. So, I feel confident that 28 is the correct number of different assortments. Just to recap, the problem is about selecting six cookies from three types with unlimited supply (since there are at least six of each). The key is that the order doesn’t matter, and we can have multiple cookies of the same type. So, it’s a classic combinations with repetition problem, which is solved by the formula  n+k−1
+
+> k
+
+, where n is the number of types and k is the number of items to choose. Plugging in n = 3 and k = 6 , we get  86
+
+ = 28 .Therefore, the number of different assortments is 28. **Final Answer** The number of different assortments of six cookies that can be selected is 28 .
+
+Final Answer: 
+
+Pat needs to select six cookies from a tray containing chocolate chip, oatmeal, and peanut butter cookies. Since there are at least six of each type, we don’t have to worry about running out of any particular kind. The problem is about combinations with repetition, where the formula is  n+k−1
+
+> k
+
+,with n being the number of types (3) and k being the number of items to choose (6). Using the formula, we get: 3 + 6 − 16
+
+
+
+=
+
+86
+
+
+
+Calculating  86
+
+: 86
+
+
+
+= 8! 6! · (8 − 6)! = 40320 720 · 2 = 40320 1440 = 28 
+
+This result can also be verified using the stars and bars method, generating functions, and setting up the equation with variables, all leading to the same answer. Thus, the number of different assortments of six cookies that can be selected is 28 .
+
+21 Our Method 
+
+Input: 
+
+<|User|> Given question: Answer the given question by referencing the solution in provided ex-amples: Given question: Pat is to select six cookies from a tray containing only chocolate chip, oatmeal, and peanut butter cookies. There are at least six of each of these three kinds of cookies on the tray. How many different assortments of six cookies can be selected? (Note that cookies of the same type are not distinguishable.) Provided examples: Question 1:A pizza parlor offers six toppings. What is the greatest number of four-topping pizzas that can be made such that no two pizzas have the same topping combination? Solution: Because there are 6 choices of toppings, and each pizza must have 4 of them, there are  64
+
+ = 15 four-topping pizzas. Since the provided examples are similar to the given question, you can actively reference the solution of provided examples to answer the given question. You can reduce the exploration of the solution to the given question and the verification of local results. Put the final answer of the given question in \boxed {} .
+
+Length of reasoning: 1762 tokens 
+
+Model reasoning: 
+
+Okay, so I have this problem where Pat needs to select six cookies from a tray that has chocolate chip, oatmeal, and peanut butter cookies. There are at least six of each kind, so I don’t have to worry about running out of any type. The question is asking how many different assortments of six cookies Pat can select. It also mentions that cookies of the same type aren’t distinguishable, which I think means that if I pick two chocolate chip cookies, they’re the same as any other two chocolate chip cookies. Hmm, this seems similar to some problems I’ve heard about before, maybe something to do with combinations or permutations. Wait, the example given was about pizza toppings, and they used combinations. Let me think about that. In the pizza problem, they had six toppings and wanted to know how many four-topping pizzas they could make without repeating any combination. They used the combination formula, which is n choose k, where n is the total number of items, and k is how many you’re choosing. So, in that case, it was 6 choose 4, which is 15. But in this cookie problem, it’s a bit different because instead of choosing a specific number of toppings, we’re choosing six cookies, and each cookie can be one of three types. So, it’s more like a problem where you have multiple categories and you want to know how many ways you can distribute a certain number of items among those categories. I remember something about stars and bars in combinatorics. Let me recall. The stars and bars theorem is used to find the number of ways to distribute identical objects into distinct bins. In this case, the cookies are identical within each type, so the types are the bins, and the cookies are the objects. So, we have six identical cookies (stars) and three types (bars). The formula for this is (n + k - 1) choose (k - 1), where n is the number of objects and k is the number of bins. So, plugging in the numbers, n is 6 cookies, and k is 3 types. So, the formula becomes (6 + 3 -1) choose (3 - 1), which simplifies to (8) choose (2). Let me calculate that. 8 choose 2 is 28. So, does that mean there are 28 different assortments? Wait, let me make sure I’m applying the formula correctly. The formula is (n + k - 1) choose (k -1), so n is 6, k is 3. So, 6 + 3 - 1 is 8, and 3 - 1 is 2. So, yes, 8 choose 2 is 28. That seems right. Another example: three types of cookies and choosing three cookies. The formula would be (3 + 3 - 1) choose (3 - 1) = 5 choose 2 = 10. Let me see if that makes sense. The possible combinations would be: 3 chocolate chip 3 oatmeal 3 peanut butter 2 chocolate chip and 1 oatmeal 
+
+22 2 chocolate chip and 1 peanut butter 2 oatmeal and 1 chocolate chip 2 oatmeal and 1 peanut butter 2 peanut butter and 1 chocolate chip 2 peanut butter and 1 oatmeal 1 of each type That’s 10 combinations, which matches the formula. So, the formula seems to hold. Therefore, going back to the original problem, with six cookies and three types, the number of different assortments is 28. So, I think that’s the answer. Final Answer The number of different assortments of six cookies that can be selected is 28 .
+
+Final Answer: 
+
+To determine the number of different assortments of six cookies that can be selected from a tray containing chocolate chip, oatmeal, and peanut butter cookies, we use the stars and bars theorem. This theorem helps us find the number of ways to distribute identical objects (cookies) into distinct bins (types of cookies). The formula for this is given by: n + k − 1
+
+k − 1
+
+
+
+where n is the number of objects (cookies) and k is the number of bins (types of cookies). In this problem, n = 6 and k = 3 .Plugging in the values, we get: 6 + 3 − 13 − 1
+
+
+
+=
+
+82
+
+
+
+Calculating this, we find: 82
+
+
+
+= 28 
+
+Thus, the number of different assortments of six cookies that can be selected is 28 .
+
+Case Analysis. 
+
+This case illustrates how our method reduces un-necessary exploratory reasoning by leveraging a single relevant example. The baseline model gen-erates a very long (6.8k-token) chain of thought, repeatedly revisiting derivative checks, special cases, and base-dependent interpretations. In con-trast, our method (1) anchors the reasoning pro-cess to a structurally similar example, (2) sup-presses redundant local verification, and (3) directs the model toward an appropriate algebraic pattern. As a result, the reasoning length decreases from 
+
+6829 to 1762 tokens (a 74% reduction ) while preserving full correctness. This demonstrates that the proposed mechanism effectively curbs unnec-essary exploration and produces concise, reliable reasoning traces. 23 K.2 Example Case in Physics of GPQA Diamond Base Model Input: 
+
+In a parallel universe where a magnet can have an isolated North or South pole, Maxwell’s equa-tions look different. But, specifically, which of those equations are different? 
+
+Length of reasoning: 2198 tokens 
+
+Model Reasoning: 
+
+Okay, so I’m trying to figure out which of Maxwell’s equations would be different in a universe where magnets can have isolated North or South poles. Hmm, interesting. I remember that in our universe, magnets always come in pairs—North and South poles. You can’t have just one pole by itself. That’s why when you break a magnet, you just get two smaller magnets, each with both poles. So, in this parallel universe, that rule doesn’t apply. They can have isolated poles. Maxwell’s equations are the foundation of electromagnetism, right? There are four main equa-tions: Gauss’s Law for electricity, Gauss’s Law for magnetism, Faraday’s Law of Induction, and Amp` ere’s Law (with Maxwell’s addition). Let me recall each of them. 1. **Gauss’s Law for Electricity**: This relates the electric flux through a closed surface to the charge enclosed. The equation is ∇ · E = ρ/ε 0. This one deals with electric charges, so if there are isolated magnetic charges, does this equation change? I don’t think so because this is about electric charges, not magnetic ones. 2. **Gauss’s Law for Magnetism**: This states that the magnetic flux through a closed surface is zero, ∇ · B = 0 . In our universe, this is because there are no magnetic monopoles—only dipoles. But in this parallel universe, they have isolated North or South poles, which are essentially mag-netic monopoles. So, this equation must change. Instead of zero, it should relate to the magnetic charge density. Maybe something like ∇ · B = μ0ρm, where ρm is the magnetic charge density. 3. **Faraday’s Law of Induction**: This describes how a changing magnetic field induces an elec-tric field. The equation is ∇ × E = −∂B/∂t . I don’t think the presence of magnetic monopoles affects this directly. It’s about the relationship between electric and magnetic fields in time-varying situations. So, probably this equation remains the same. 4. **Amp` ere’s Law with Maxwell’s Addition**: This relates the integrated magnetic field around a closed loop to the electric current and the rate of change of electric flux through the loop. The equation is ∇ × B = μ0J + μ0ε0∂E/∂t . Now, if there are magnetic charges, would this equa-tion change? In our universe, Amp` ere’s Law accounts for the current and displacement current. If magnetic monopoles exist, maybe there’s a dual version where electric currents are related to magnetic fields. Wait, actually, in the presence of magnetic monopoles, there should be a dual version of Amp` ere’s Law for magnetic currents. So, perhaps the equation would have an addi-tional term involving the magnetic current density, something like ∇ × B = μ0J + μ0ε0∂E/∂t +
+
+something with magnetic current. But I’m not entirely sure about the exact form. Maybe it’s more about the symmetry between electric and magnetic fields. Wait, let me think again. In our universe, Maxwell’s equations are symmetric if you swap electric and magnetic fields, but only if you consider the speed of light. But since in this universe, magnetic monopoles exist, the symmetry might be more explicit. So, perhaps both Gauss’s laws for electric and magnetic fields would have charge densities, and both Amp` ere’s and Faraday’s laws would have current terms. So, in our universe, Gauss’s Law for magnetism is ∇ · B = 0 because there are no magnetic monopoles. If there are, it should be ∇ · B = μ0ρm, similar to how Gauss’s Law for electricity is 
+
+∇ · E = ρ/ε 0.Similarly, Amp` ere’s Law in our universe is ∇ × B = μ0J + μ0ε0∂E/∂t . If there are magnetic monopoles, maybe there’s a dual term. Wait, actually, in the presence of magnetic monopoles, the equations would have a dual structure. So, perhaps Amp` ere’s Law would also include a term involving the magnetic current, similar to how Gauss’s Law for magnetism includes the magnetic 
+
+24 charge density. But I’m not sure if that’s the case. Let me check my reasoning. In our universe, without magnetic monopoles, the divergence of B is zero. With magnetic monopoles, it’s non-zero. Similarly, in our universe, the curl of E is related to the time derivative of B. If there are magnetic monopoles, maybe the curl of B would also have a term related to the time derivative of E, but I think that’s already accounted for in Amp` ere’s Law with Maxwell’s addition. Wait, no, in Amp` ere’s Law, the displacement current is ∂E/∂t , which is already there. So, maybe the change is only in Gauss’s Law for magnetism. But wait, if magnetic monopoles exist, then there should be a magnetic current, just like electric current. So, in addition to the electric current J in Amp` ere’s Law, there should be a magnetic current term in Faraday’s Law. Hmm, I’m getting a bit confused. Let me try to recall. In the presence of magnetic monopoles, the equations become more sym-metric. So, Gauss’s Law for magnetism becomes ∇ · B = μ0ρm, and Faraday’s Law becomes 
+
+∇ × E = −∂B/∂t − μ0Jm, where Jm is the magnetic current density. Similarly, Amp` ere’s Law would have a term involving the electric current and the displacement current, but maybe also a term involving the magnetic current? Or perhaps it’s the other way around. Wait, no. Let me think about the structure. In our universe, the equations are: 1. ∇ · E = ρ/ε 0 2. ∇ · B = 0 3. ∇ × E = −∂B/∂t 4. ∇ × B = μ0J + μ0ε0∂E/∂t 
+
+If we introduce magnetic monopoles, then equation 2 becomes ∇ · B = μ0ρm. Then, equation 3, which is Faraday’s Law, would need to account for magnetic currents. So, it would become 
+
+∇ × E = −∂B/∂t − μ0Jm, where Jm is the magnetic current density. Similarly, equation 4, Amp` ere’s Law, would need to account for electric currents and displacement current, but since we already have magnetic monopoles, maybe it remains the same? Or perhaps it also gets a term involving the magnetic current? I’m not sure. Wait, actually, in the presence of magnetic monopoles, the equations become fully symmetric. So, both Gauss’s laws have charge densities, and both curl equations have current densities and time derivatives. So, equation 3 would have a term involving the magnetic current, and equation 4 would have a term involving the electric current and displacement current. But I think the displacement current is already there, so maybe equation 4 doesn’t change, but equation 3 does. Alternatively, maybe both equations 3 and 4 get additional terms. Let me try to write them out. With magnetic monopoles: 1. ∇ · E = ρe/ε 0 (unchanged) 2. ∇ · B = μ0ρm (changed) 3. ∇ × E = −∂B/∂t − μ0Jm
+
+(changed) 4. ∇ × B = μ0Je + μ0ε0∂E/∂t (unchanged, except maybe units?) Wait, but in our universe, the displacement current is ∂E/∂t , which is related to the rate of change of electric field. If there are magnetic monopoles, maybe there’s a similar term for the magnetic field? Or perhaps not, because the displacement current is a result of the changing electric field affecting the magnetic field, and if magnetic monopoles exist, maybe the changing magnetic field affects the electric field in a similar way, but that’s already captured in Faraday’s Law. I think the main changes are in Gauss’s Law for magnetism and Faraday’s Law. So, equation 2 changes to include magnetic charge density, and equation 3 changes to include magnetic current density. But I’m not entirely certain. Let me try to look for a pattern. In the absence of magnetic monopoles, the equations are asymmetric because ∇· B = 0 and ∇× E has no current term. If we introduce magnetic monopoles, we should have ∇ · B = μ0ρm and ∇ × E = −∂B/∂t − μ0Jm.So, both equations 2 and 3 change. Wait, but in our universe, equation 4 is ∇ × B = μ0J + μ0ε0∂E/∂t . If we have magnetic monopoles, would equation 4 also change? Or is it only equations 2 and 3? I think equation 4 doesn’t change because it’s about the magnetic field generated by electric currents and displacement currents. The presence of magnetic monopoles would affect the sources of the magnetic field (equation 2) and the induced electric fields (equation 3). So, equation 4 remains the same, but equation 3 gets an additional term for the magnetic current. So, in summary, the two equations that would be different are: 
+
+25 2. Gauss’s Law for Magnetism: ∇ · B = μ0ρm instead of 0.3. Faraday’s Law of Induction: ∇ × E = −∂B/∂t − μ0Jm instead of just −∂B/∂t .Therefore, the answer is that Gauss’s Law for magnetism and Faraday’s Law of Induction are different. 
+
+Final Answer: 
+
+In a universe where isolated magnetic poles exist, Maxwell’s equations would differ in two key aspects. The Gauss’s Law for magnetism, which originally states that the divergence of the magnetic field is zero ( ∇ · B = 0 ), would instead account for magnetic charge density, becoming 
+
+∇ · B = μ0ρm. Additionally, Faraday’s Law of Induction, which originally relates the curl of the electric field to the time derivative of the magnetic field ( ∇ × E = − ∂B 
+
+> ∂t
+
+), would include a term for magnetic current density, resulting in ∇ × E = − ∂B 
+
+> ∂t
+
+− μ0Jm. Therefore, the two equations that are different are: 
+
+∇ · B = μ0ρm and ∇ × E = − ∂B
+
+∂t − μ0Jm
+
+Standard Answer: Let’s call E and B the electric and magnetic fields, respectively: The ones related to the circulation of the electric field and the divergence of the magnetic field is correct, since knowing that magnets can have an isolated pole means that magnetic monopoles exist and, thus, the contributions of magnetic charges and magnetic currents must be included in the equa-tions. The way to include them is to ”symmetry-copy” the other equations, with the following dictionary: E ↔ B; electric charge ↔ magnetic charge; electric current ↔ magnetic current. In this way, the equations that become modified, with added terms, are the ones related to the circulation (or curl, in differential form) of E, and to the divergence (or flux in integral form) of B.The ones related to the divergence and the curl of the magnetic field is incorrect, because the one with the curl does not change, since it already includes all symmetric contributions appearing in its symmetric equation (curl of electric field). The one related to the divergence of the magnetic field is incorrect because that equation does get changed, but it’s not the only one; the equation for the curl (or circulation) of E also changes. The one related to the circulation of the magnetic field and the flux of the electric field is incorrect because none of those equations are changed, since they already include the symmetric terms appearing in their symmetric equations (circulation of E and flux of B). The final answer is: The ones related to the circulation of the electric field and the divergence of the magnetic field. 
+
+26 Our Method 
+
+Input: 
+
+<|User|> Given question: Answer the given question by referencing the solution in provided ex-amples: Given question: In a parallel universe where a magnet can have an isolated North or South pole, Maxwell’s equations look different. But, specifically, which of those equations are different? Provided examples: Question 1:The Lagrangian density of some system can be written as 
+
+a(Fij )∂iAj + bA igij Aj . Here, F represents the electromagnetic field tensor; ∂ represents the partial derivative symbol, g is the metric tensor, and subscripts and superscripts represent indices 
+
+i, respectively; a and b are constants. What is the equation of motion of such a system? Solution: The given lagrangian is very similar to the electromagnetic one, with one F replaced by ∂A (instead of ∂A − ∂A ), and with a mass term. To solve this, one must know how to deal with indices. The equation of motion comes from applying the Euler-Lagrange equation to the lagrangian. In this equation, the term with the derivative with respect to A leads to 2bA α, while the other one leads to 2a(∂β Aα − ∂αAβ ). Putting everything together, we get the answer. The final answer is: 
+
+Ai = ab ∂j F ji .Question 2:If Maxwell’s equations are written in potential form, one of them is given by 
+
+∇2A − ∂2 
+
+> ∂t 2
+
+A = ∇(∇ · A + ∂∂t V ) − J (ignoring constants), where A and V are the vector and scalar potentials, respectively, and J is the electric current density. Now imagine that magnetic monopoles exist, but they can only form currents (i.e., charge density of magnetic monopoles, 
+
+ρM = 0 , but current density of magnetic monopoles, JM , could be not 0). And, further, assume that the magnetic current density can be described by the curl of some vector function jm. In that case, how would the previous equation change? Solution: Since the magnetic current density, JM , can be written as ∇ × jm, the relations between 
+
+E, B and the potentials become: B = ∇ × A, E = −∇ V − ∂∂t A + jm. Plugging this into the Maxwell equation related to the curl of B (the one that leads to the given equation) and doing some algebra, one gets to the addition of the − ∂∂t jm term. The final answer is: A term − ∂∂t jm is added to the right side of the equation. Question 3:In a parallel universe where a magnet can have an isolated North or South pole, Maxwell’s equations look different. But, specifically, which of those equations are different? Solution: Let’s call E and B the electric and magnetic fields, respectively: The ones related to the circulation of the electric field and the divergence of the magnetic field is correct, since knowing that magnets can have an isolated pole means that magnetic monopoles exist and, thus, the contributions of magnetic charges and magnetic currents must be included in the equations. The way to include them is to ”symmetry-copy” the other equations, with the following dictionary: E ↔ B; electric charge ↔ magnetic charge; electric current ↔ magnetic current. In this way, the equations that become modified, with added terms, are the ones related to the circulation (or curl, in differential form) of E, and to the divergence (or flux in integral form) of B. The ones related to the divergence and the curl of the magnetic field is incorrect, because the one with the curl does not change, since it already includes all symmetric contributions appearing in its symmetric equation (curl of electric field). The one related to the divergence of the magnetic field is incorrect because that equation does get changed, but it’s not the only one; the equation for the curl (or circulation) of E also changes. The one related to the circulation of the magnetic field and the flux of the electric field is incorrect because none of those equations are changed, since they already include the symmetric terms appearing in their symmetric equations (circulation of E and flux of B). 
+
+27 The final answer is: The ones related to the circulation of the electric field and the divergence of the magnetic field. .Since the provided examples are similar to the given question, you can actively reference the solution of provided examples to answer the given question. You can reduce the exploration of the solution to the given question and the verification of local results. Put the final answer of the given question in { } .Solution: Because there are 6 choices of toppings, and each pizza must have 4 of them, there are  64
+
+ = 15 four-topping pizzas. Since the provided examples are similar to the given question, you can actively reference the solution of provided examples to answer the given question. You can reduce the exploration of the solution to the given question and the verification of local results. Put the final answer of the given question in { } .
+
+Length of reasoning: 292 tokens 
+
+Model reasoning: 
+
+Okay, so I have this question about Maxwell’s equations in a universe where magnets can have isolated North or South poles. That means magnetic monopoles exist, right? I remember from my physics classes that Maxwell’s equations assume there are no magnetic monopoles, so if they do exist, some of the equations must change. Looking at the provided examples, especially Question 3, the solution talks about how the exis-tence of magnetic monopoles affects Maxwell’s equations. It mentions that the equations related to the circulation of the electric field (curl E) and the divergence of the magnetic field (div B) are the ones that change. In the standard Maxwell’s equations, the divergence of B is zero because there are no magnetic monopoles. But if monopoles exist, div B would be proportional to the magnetic charge density. Similarly, the curl of E is usually -dB/dt, but with magnetic currents, there would be an additional term related to the magnetic current density. So, applying this to the question, the equations that would be different are the ones involving the curl of E and the divergence of B. The other equations, like the curl of B and the divergence of E, remain the same because they already account for the symmetric terms when considering electric charges and currents. Therefore, the answer should be that the equations related to the circulation of the electric field and the divergence of the magnetic field are the ones that change. 
+
+Final Answer: 
+
+The equations that change are those involving the curl of the electric field and the divergence of the magnetic field, as magnetic monopoles introduce new terms into these equations. The ones related to the circulation of the electric field and the divergence of the magnetic field. 
+
+Case Analysis. 
+
+This case illustrates how our example-guided method turns broad exploratory reasoning into a focused, correct solution with much lower cost. The baseline model executed a long, iterative chain that revisited alternative hypotheses and performed redundant checks, arriving at the right answer but with substantial wasted reasoning effort. In contrast, our method directly leverages struc-turally similar examples to constrain the search space and apply the appropriate domain-level transformation, producing a concise, correct derivation with far fewer tokens and far less detour. Overall, the comparison highlights three practical benefits of the approach: (1) it enforces relevant abstractions from examples so the model reasons at the right level, (2) it substantially reduces un-necessary hypothesis testing and token use, and (3) it yields clearer, more reproducible answers — de-sirable properties for scientific QA and other high-precision tasks. 28 K.3 Example Case in Medium of Livecode Bench Base Model Input: 
+
+You are an expert Python programmer. You will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests. ### Question: You are given an n x n square matrix of integers grid. Return the matrix such that: The diagonals in the bottom-left triangle (including the middle diagonal) are sorted in non-increasing order. The diagonals in the top-right triangle are sorted in non-decreasing order. Example 1: Input: grid = [[1,7,3],[9,8,2],[4,5,6]] Output: [[8,2,3],[9,6,7],[4,5,1]] Explanation: The diagonals with a black arrow (bottom-left triangle) should be sorted in non-increasing order: [1, 8, 6] becomes [8, 6, 1]. [9, 5] and [4] remain unchanged. The diagonals with a blue arrow (top-right triangle) should be sorted in non-decreasing order: [7, 2] becomes [2, 7]. [3] remains unchanged. Example 2: Input: grid = [[0,1],[1,2]] Output: [[2,1],[1,0]] Explanation: The diagonals with a black arrow must be non-increasing, so [0, 2] is changed to [2, 0]. The other diagonals are already in the correct order. Example 3: Input: grid = [[1]] Output: [[1]] Explanation: Diagonals with exactly one element are already in order, so no changes are needed. Constraints: 
+
+grid.length == grid[i].length == n 1 <= n <= 10 -10ˆ5 <= grid[i][j] <= 10ˆ5 
+
+### Format: You will use the following starter code to write the solution to the problem and enclose your code within delimiters. 
+
+``` python class Solution: def sortMatrix(self, grid: List [List[int]]) -> List[List[int]]: 
+
+``` 
+
+### Answer: (use the provided format with backticks) 
+
+Length of reasoning: 4285 tokens 
+
+Model Reasoning: 
+
+Okay, I need to solve this problem where I have to sort the diagonals of a square matrix in a specific way. Let’s see the problem statement again. So, the matrix is n × n. The task is to sort the diagonals in two different ways depending on which triangle they’re in. The bottom-left triangle, including the middle diagonal, should have their diagonals sorted in non-increasing order. The top-right triangle’s diagonals should be sorted in non-decreasing order. Hmm, let’s break this down. First, I need to identify which diagonals belong to which triangle. Then, for each diagonal, I sort it accordingly and place it back into the matrix. 
+
+29 Wait, how are the diagonals structured? For a square matrix, each diagonal can be identified by the sum of the row and column indices. For example, in a 3 × 3 matrix, the main diagonal has 
+
+i + j = 2 (since indices start at 0). The diagonals above it have lower sums, and those below have higher sums. Wait, no. Wait, for a 3 × 3 matrix, the main diagonal is i − j = 0 . But perhaps it’s easier to think in terms of the sum i + j. Let me think: for a 3 × 3 matrix, the main diagonal is i + j = 2 (since 
+
+0 + 2 = 2 , 1 + 1 = 2 , 2 + 0 = 2 ). The diagonals below it (like the bottom-left triangle) would have i + j> = 2 . Wait, no. Wait, for a 3 × 3 matrix, the bottom-left triangle includes the main diagonal and the ones below it. So, for each diagonal, if i + j is greater than or equal to a certain value, it’s in the bottom-left. Wait, maybe I should think about the diagonals as starting from the bottom-left corner. So, the main diagonal is part of the bottom-left triangle. So, for each diagonal, if it’s in the bottom-left triangle, we sort it in non-increasing order. Otherwise, in the top-right, we sort in non-decreasing. So, how to determine which diagonals are in which triangle. Let’s think about the sum i + j. For a given diagonal, the sum is s = i + j. For the bottom-left triangle, including the main diagonal, the sum s is >= (n-1) - (i - j) ? Wait, maybe I’m complicating it. Alternatively, perhaps the bottom-left triangle consists of all cells where i> = j. Because for a square matrix, the main diagonal is where i = j. So, the bottom-left triangle includes all cells where i> = j, and the top-right includes where i<j .Wait, no. Because in the first example, the grid is 3×3. The bottom-left triangle includes the main diagonal and the cells below it. So, for each cell (i, j ), if i> = j, it’s in the bottom-left. So, the diagonals for the bottom-left are those where i − j is the same. Wait, no, because the diagonals are defined by i − j being constant. So, for each diagonal, the difference i − j is the same. So, for the bottom-left triangle, the diagonals are those where i − j> = 0 . Because for i> = j, the difference is non-negative. Wait, no. Because for a 3 × 3 matrix, the main diagonal is i − j = 0 . The diagonals below it have i − j = 1 , 2, etc. So, the bottom-left triangle includes all diagonals where i − j> = 0 . The top-right includes those where i − j< 0.Wait, but in the first example, the bottom-left triangle includes the main diagonal and the ones below. So, for each diagonal, if i − j is >= 0, it’s in the bottom-left. So, for each such diagonal, we need to sort it in non-increasing order. Wait, but how to collect the elements for each diagonal. For a given diagonal, the elements are those where i − j is a constant. So, for each possible difference d, collect all elements where 
+
+i − j = d.But wait, for a square matrix, the possible differences d range from −(n − 1) to n − 1. For example, in a 3 × 3 matrix, d can be −2, −1, 0, 1, 2.So, for each d, collect all elements where i − j = d. Then, for each such diagonal, determine whether it’s in the bottom-left or top-right. Wait, but for d> = 0 , it’s in the bottom-left. For d< 0, it’s in the top-right. So, for each d in the range from −(n − 1) to n − 1:- If d> = 0 : collect the elements, sort in non-increasing order. - If d< 0: collect the elements, sort in non-decreasing order. Wait, but wait. Let’s see the first example: Input grid is: 
+
+1 7 3 9 8 2 4 5 6 
+
+The main diagonal is 1, 8, 6. So, d = 0 . So, we sort this in non-increasing order: 8, 6, 1.Then, the diagonal with d = 1 : elements are 9, 5. So, sorted in non-increasing order: 9, 5.Diagonal d = 2 : 4. So, remains 4.
+
+30 For d = −1: elements are 7, 2. So, sorted in non-decreasing order: 2, 7.
+
+d = −2: 3. Remains 3.So, the output is: 
+
+8 2 3 9 6 7 4 5 1 
+
+Which matches the example. So, the approach is correct. So, the steps are: 1. For each diagonal in the bottom-left triangle ( i − j> = 0 ), collect the elements, sort them in non-increasing order, and place them back. 2. For each diagonal in the top-right triangle ( i − j< 0), collect the elements, sort them in non-decreasing order, and place them back. Wait, but how to collect the elements for each d.Let’s think about how to collect the elements for a given d.For d> = 0 :The diagonal starts at (d, 0) and goes up to (n − 1, n − 1 − d). Wait, no. Wait, for d = 0 , the diagonal is (0 , 0) , (1 , 1) , (2 , 2) . For d = 1 , it’s (1 , 0) , (2 , 1) . For d = 2 , it’s (2 , 0) .Wait, for d> = 0 , the starting point is (d, 0) , and each step increases i by 1 and j by 1 until i
+
+reaches n − 1.Wait, no. For d = 1 , the elements are (1 , 0) , (2 , 1) . So, for d = 1 , the starting i is d, j is 0. Then, 
+
+i increases by 1, j increases by 1 until i < n and j < n .Wait, but for d = 2 in a 3 × 3 matrix, the starting i is 2, j is 0. Then, i + 1 is 3 which is beyond 
+
+n − 1(2) , so only one element. So, for d> = 0 , the elements are (d, 0) , (d + 1 , 1) , . . . until i < n and j < n .For d< 0:The diagonal starts at (0 , −d) and goes down to (n − 1 + d, n − 1) . For example, d = −1: starts at (0 , 1) , then (1 , 2) . For d = −2: starts at (0 , 2) .So, for d< 0, the starting point is (0 , −d), and each step increases i and j by 1 until i < n and 
+
+j < n .So, the plan is: Loop over each possible d from −(n − 1) to n − 1.For each d:collect the elements along the diagonal i − j = d.sort the elements as per the rule. then, place them back into the matrix. So, how to implement this in Python. First, get the size n of the grid. 
+
+n = len(grid) 
+
+Then, for each d in range from −(n − 1) to n − 1:collect the elements. sort them. replace them. But how to collect the elements for each d.Let’s think about d> = 0 :
+
+start_i = d start_j = 0 
+
+then, for each step, i increases by 1, j increases by 1, until i < n and j < n .
+
+31 So, for d> = 0 :
+
+elements = [] i = d j = 0 while i < n and j < n: elements.append(grid[i][j]) i += 1 j += 1 
+
+Similarly, for d< 0:
+
+start_i = 0 start_j = -d 
+
+then, i increases by 1, j increases by 1 until i < n and j < n .So, for d< 0:
+
+elements = [] i = 0 j = -d while i < n and j < n: elements.append(grid[i][j]) i += 1 j += 1 
+
+Once the elements are collected, we sort them. If d> = 0 : sort in non-increasing order (reverse=True). Else: sort in non-decreasing order (reverse=False). Then, we need to place the sorted elements back into the grid. So, for d> = 0 :
+
+i = d j = 0 k = 0 while i < n and j < n: grid[i][j] = sorted_elements[k] i += 1 j += 1 k += 1 
+
+Similarly for d< 0.So, putting it all together. But wait, in the code, for d in range( −(n − 1) , n ): Wait, in Python, the range is exclusive of the end. So, for n = 3 , the range is from −2 to 3, but the end is 3, so it’s up to 2. So, the code would loop d from −2, −1, 0, 1, 2.Yes. So, the code should work. Now, let’s write the code. 
+
+class Solution: def sortMatrix(self, grid: List[List[int]]) -> List[List[int]]: n = len(grid) for d in range(-(n-1), n): 
+
+32 if d >= 0: i, j = d, 0 else: i, j = 0, -d elements = [] while i < n and j < n: elements.append(grid[i][j]) i += 1 j += 1 if d >= 0: elements.sort(reverse=True) else: elements.sort() if d >= 0: i, j = d, 0 else: i, j = 0, -d k = 0 while i < n and j < n: grid[i][j] = elements[k] i += 1 j += 1 k += 1 return grid 
+
+Wait, but in the code, the grid is modified in place. So, the function returns the same grid object, but modified. But in Python, when you pass a list to a function and modify it, the original list is modified. So, the function can return grid. Testing the code with the first example. Another test case: grid = [[0,1],[1,2]] 
+
+n = 2 .
+
+d can be −1, 0, 1.
+
+d = 1 : elements are (1 , 0) which is 1. So, sorted in non-increasing order is [1] .
+
+d = 0 : elements are (0 , 0) = 0 , (1 , 1) = 2 . So, sorted in non-increasing order is [2 , 0] .
+
+d = −1: elements are (0 , 1) = 1 . So, sorted in non-decreasing is [1] .So, the grid becomes: 
+
+2 1 1 0 
+
+Which is correct. So, the code should handle all cases. Now, let’s think about the code. But wait, in the code, the for loop is for d in range( −(n − 1) , n ). But in Python, the range function can’t handle negative starts if the end is positive. Wait, no, it can. For example, range(-2,3) gives -2, -1, 0, 1, 2. Yes. 
+
+33 So, the code is correct. So, the final code is as written. 
+
+Final Answer: 
+
+To solve this problem, we need to sort the diagonals of a given square matrix in specific ways. The diagonals in the bottom-left triangle (including the main diagonal) should be sorted in non-increasing order, while the diagonals in the top-right triangle should be sorted in non-decreasing order. ### Approach 1. **Identify Diagonals**: Each diagonal in the matrix can be identified by the difference between the row and column indices (i - j). For a given diagonal, this difference is constant. 2. **Classify Diagonals**: Diagonals where the difference (i - j) is non-negative belong to the bottom-left triangle and should be sorted in non-increasing order. Diagonals where the difference is negative belong to the top-right triangle and should be sorted in non-decreasing order. 3. **Collect and Sort Elements**: For each diagonal, collect the elements, sort them according to the specified order, and then place them back into the matrix. ### Solution Code 
+
+``` python from typing import List class Solution: def sortMatrix(self, grid: List[List[int]]) -> List[List[int]]: n = len(grid) for d in range(-(n-1), n): if d >= 0: i, j = d, 0 else: i, j = 0, -d elements = [] while i < n and j < n: elements.append(grid[i][j]) i += 1 j += 1 if d >= 0: elements.sort(reverse=True) else: elements.sort() if d >= 0: i, j = d, 0 else: i, j = 0, -d k = 0 while i < n and j < n and k < len(elements): grid[i][j] = elements[k] i += 1 j += 1 k += 1 return grid 
+
+``` 
+
+### Explanation 
+
+34 1. **Loop Through Diagonals**: The loop iterates over all possible diagonal differences from -(n-1) to n-1. 2. **Collect Elements**: For each diagonal, elements are collected by moving along the diagonal from the starting point until the boundaries of the matrix are reached. 3. **Sort Elements**: Depending on whether the diagonal is in the bottom-left or top-right triangle, the elements are sorted in non-increasing or non-decreasing order, respectively. 4. **Replace Elements**: The sorted elements are then placed back into their respective positions in the matrix. 
+
+35 Our Method 
+
+Input: 
+
+<|User|> Given question: Given question: You are an expert Python programmer. You will be given a question (problem specification) and will generate a correct Python program that matches the specification and passes all tests. ### Question: You are given an n x n square matrix of integers grid. Return the matrix such that: The diagonals in the bottom-left triangle (including the middle diagonal) are sorted in non-increasing order. The diagonals in the top-right triangle are sorted in non-decreasing order. Example 1: Input: grid = [[1,7,3],[9,8,2],[4,5,6]] Output: [[8,2,3],[9,6,7],[4,5,1]] Explanation: The diagonals with a black arrow (bottom-left triangle) should be sorted in non-increasing order: [1, 8, 6] becomes [8, 6, 1]. [9, 5] and [4] remain unchanged. The diagonals with a blue arrow (top-right triangle) should be sorted in non-decreasing order: [7, 2] becomes [2, 7]. [3] remains unchanged. Example 2: Input: grid = [[0,1],[1,2]] Output: [[2,1],[1,0]] Explanation: The diagonals with a black arrow must be non-increasing, so [0, 2] is changed to [2, 0]. The other diagonals are already in the correct order. Example 3: Input: grid = [[1]] Output: [[1]] Explanation: Diagonals with exactly one element are already in order, so no changes are needed. Constraints: 
+
+grid.length == grid[i].length == n 1 <= n <= 10 -10ˆ5 <= grid[i][j] <= 10ˆ5 
+
+### Format: You will use the following starter code to write the solution to the problem and enclose your code within delimiters. 
+
+``` python class Solution: def sortMatrix(self, grid: List[List[int]]) -> List[List[int]]: 
+
+``` 
+
+### Answer: (use the provided format with backticks) and put the final answer in 
+
+\boxed{}.<|Assistant|><think> 
+
+Length of reasoning: 1154 tokens 
+
+Model reasoning: 
+
+To solve the problem of sorting the diagonals of an n×n matrix as required, we first clarify the core task: sort diagonals in the bottom-left triangle (including the main diagonal) in non-increasing order and those in the top-right triangle in non-decreasing order, then return the modified matrix. First, we need to identify how to group elements into diagonals. A key observation is that each diagonal in the matrix can be uniquely defined by the difference 
+
+d = row index (i) − column index (j).
+
+For an n×n matrix, d ranges from −(n − 1) (minimum, e.g., (0 , n − 1) where i − j = −n + 1 ) to 
+
+n − 1 (maximum, e.g., (n − 1, 0) where i − j = n − 1). We further classify diagonals based 
+
+36 on d: if d ≥ 0, the diagonal belongs to the bottom-left triangle (including the main diagonal where d = 0 ); if d< 0, it belongs to the top-right triangle. For example, in a 3×3 matrix, d = 1 
+
+corresponds to the diagonal with positions (1 , 0) and (2 , 1) , while d = −1 corresponds to (0 , 1) 
+
+and (1 , 2) .The solution follows three core steps: grouping, sorting, and backfilling. First, we traverse the entire matrix to group elements by their d value. We use a dictionary where the key is d and the value is a list of (i, j ) positions belonging to that diagonal. This ensures we collect all elements of each diagonal for subsequent processing. Next, for each diagonal group, we extract the elements and sort them according to the rule: non-increasing order if d ≥ 0 (bottom-left triangle) and non-decreasing order if d< 0 (top-right triangle). Finally, we place the sorted elements back into their original positions in the matrix—since we collected positions in the order of increasing row index, we maintain the diagonal’s direction when backfilling. In code implementation, we first create a deep copy of the input matrix to avoid modify-ing the original data, which adheres to the principle of side-effect-free functions. We then use 
+
+defaultdict from the collections module to efficiently group positions by d. For each d in the dictionary, we extract the elements from the copied matrix, sort them as required, and iterate over the stored positions to assign the sorted elements back. Single-element diagonals (e.g., d = 2 in a 
+
+3 × 3 matrix, corresponding to (2 , 0) ) require no special handling, as sorting a single element has no effect. Example 1 illustrates the validity of this approach. Given the input matrix 
+
+[[1 , 7, 3] , [9 , 8, 2] , [4 , 5, 6]] ,
+
+we process each diagonal: for d = 0 (main diagonal), the elements [1 , 8, 6] are sorted non-increasingly to [8 , 6, 1] , which are assigned to positions (0 , 0) , (1 , 1) , and (2 , 2) ; for d = 1 , the elements [9 , 5] remain unchanged after non-increasing sorting; for d = −1, the elements [7 , 2] are sorted non-decreasingly to [2 , 7] , assigned to (0 , 1) and (1 , 2) . The resulting matrix is 
+
+[[8 , 2, 3] , [9 , 6, 7] , [4 , 5, 1]] ,
+
+which matches the expected output. Example 2 further verifies the solution. For the input matrix 
+
+[[0 , 1] , [1 , 2]] ,
+
+the main diagonal (d = 0) with elements [0 , 2] is sorted non-increasingly to [2 , 0] , assigned to 
+
+(0 , 0) and (1 , 1) ; diagonals d = 1 (position (1 , 0) ) and d = −1 (position (0 , 1) ) are single-element and unchanged. The final output is 
+
+[[2 , 1] , [1 , 0]] ,
+
+consistent with the example. The complete code is as follows: 
+
+from collections import defaultdict from typing import List class Solution: def sortMatrix(self, grid: List[List[int]]) -> List[List[int]]: n = len(grid) new_grid = [row.copy() for row in grid] #Deep copy to preserve input diagonals = defaultdict(list) # Group positions by d = i - j for i in range(n): 
+
+37 for j in range(n): d = i - j diagonals[d].append((i, j)) # Sort each diagonal group and backfill for d in diagonals: positions = diagonals[d] elements = [new_grid[i][j] for i, j in positions] # Sort non-increasing for bottom-left, non-decreasing for top-right elements.sort(reverse=True) if d >= 0 else elements.sort() # Assign sorted elements back to original positions for idx, (i, j) in enumerate(positions): new_grid[i][j] = elements [idx] return new_grid 
+
+The core strengths of this approach lie in its clarity and efficiency: grouping by d = i − j accu-rately identifies all diagonals, ensuring correct application of sorting rules; deep copying preserves the input matrix; and backfilling in the original position order maintains the diagonal structure. The time complexity is O(n2 log k), where k is the maximum length of a diagonal (up to n), which is efficient for n×n matrices. 
+
+Final Answer: 
+
+Answer: To solve this problem, we need to sort the diagonals of a given square matrix in a specific manner. The diagonals in the bottom-left triangle (including the middle diagonal) should be sorted in non-increasing order, while the diagonals in the top-right triangle should be sorted in non-decreasing order. ### Approach 1. **Identify Diagonals**: Each diagonal in the matrix can be identified by the difference between the row and column indices (i - j). This difference, referred to as ‘d‘, helps group elements into their respective diagonals. 2. **Group Elements by Diagonals**: For each element in the matrix, compute the diagonal identifier ‘d‘ and group the elements based on this identifier. 3. **Sort Diagonals**: For each diagonal group: - If the diagonal is part of the bottom-left triangle (i.e., ‘d >= 0‘), sort the elements in non-increasing order. - If the diagonal is part of the top-right triangle (i.e., ‘d <0‘), sort the elements in non-decreasing order. 4. **Reconstruct the Matrix**: After sorting the elements of each diagonal, place them back into their respective positions in the matrix. ### Solution Code 
+
+from typing import List from collections import defaultdict class Solution: def sortMatrix(self, grid: List[List[int]]) -> List[List[int]]: n = len(grid) new_grid = [row.copy() for row in grid] diagonals = defaultdict(list) for i in range(n): for j in range(n): d = i - j diagonals[d].append((i, j)) for d in diagonals: 
+
+38 positions = diagonals[d] elements = [new_grid[i][j] for (i, j) in positions] if d >= 0: elements.sort(reverse=True) else: elements.sort() for idx, (i, j) in enumerate(positions): new_grid[i][j] = elements[idx] return new_grid 
+
+The ones related to the circulation of the electric field and the divergence of the magnetic field. 
+
+Case Analysis. 
+
+Considering the unique nature of code reason-ing—where correctness cannot be directly veri-fied during the reasoning process and the reason-ing must continue until a complete code snippet is generated—the overall reasoning length is in-evitably prolonged. Nevertheless, even under such constraints, the optimized reasoning method still exhibits rich example reference behavior (as high-lighted in the boxed regions). Such references, se-mantically grounded in prior examples, effectively reduce the need for self-verification and redundant exploratory steps, thereby enhancing the overall efficiency of the reasoning process. 39

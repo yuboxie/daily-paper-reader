@@ -1,0 +1,366 @@
+Title: Sequential Counterfactual Inference for Temporal Clinical Data: Addressing the Time Traveler Dilemma
+
+URL Source: https://arxiv.org/pdf/2602.21168v1
+
+Published Time: Wed, 25 Feb 2026 02:14:15 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# Sequential Counterfactual Inference for Temporal Clinical Data: Addressing the Time Traveler Dilemma 
+
+Jingya Cheng 1,∗, Alaleh Azhir 1,∗, Jiazi Tian 1, and Hossein Estiri 1,+ 
+
+> 1
+
+Massachusetts General Hospital, Boston, MA, USA hestiri@mgh.harvard.edu  
+
+> 2
+
+*Equal contribution (co–first authors)  
+
+> 3
+
++Corresponding author 
+
+Abstract. Counterfactual inference enables clinicians to ask “what if” questions about patient outcomes, but standard methods assume feature independence and simultaneous modifiability—assumptions violated by longitudinal clinical data. We introduce the Sequential Counterfac-tual Framework , which respects temporal dependencies in electronic health records by distinguishing immutable features (chronic diagnoses) from controllable features (lab values) and modeling how interventions propagate through time. Applied to 2,723 COVID-19 patients (383 Long COVID heart failure cases, 2,340 matched controls), we demonstrate that 38–67% of patients with chronic conditions would require biologically im-possible counterfactuals under naive methods. We identify a cardiorenal cascade (CKD → AKI → HF) with relative risks of 2.27 and 1.19 at each step, illustrating temporal propagation that sequential—but not naive—counterfactuals can capture. Our framework transforms counter-factual explanation from “what if this feature were different?” to “what if we had intervened earlier, and how would that propagate forward?”— yielding clinically actionable insights grounded in biological plausibility. 
+
+Keywords: Counterfactual inference · Temporal data · Electronic health records 
+
+· Long COVID · Explainable AI 
+
+# 1 Introduction 
+
+Counterfactual reasoning lies at the heart of clinical decision-making. When a patient develops an adverse outcome, clinicians naturally ask: “What if we had started treatment earlier?” “What if blood pressure had been better controlled?” “Could this have been prevented?” These questions reflect a fundamental mode of medical reasoning of understanding not just what happened, but what could have happened under different circumstances. The rise of machine learning in healthcare has created new opportunities to formalize counterfactual reasoning at scale. Given a predictive model f that estimates a patient’s risk, counterfactual explanation methods seek to identify the minimal changes to a patient’s features that would alter the predicted out-come [1]. For a patient predicted to be high-risk, a counterfactual might reveal:  
+
+> arXiv:2602.21168v1 [cs.LG] 24 Feb 2026 2Cheng et al.
+
+“If your HbA1c were 6.5% instead of 8.2%, your predicted risk would decrease from 73% to 41%.” Such explanations promise to transform opaque risk scores into actionable clinical insights. However, a fundamental problem emerges when applying standard counter-factual methods to longitudinal clinical data: these methods assume that features are independent and simultaneously modifiable. In cross-sectional settings— predicting loan default from a single snapshot of financial features, for instance— this assumption may be reasonable. But clinical data is inherently temporal . A patient’s diabetes diagnosis in 2019 affects their kidney function in 2020, which affects their cardiovascular risk in 2021. Features are not independent; they are causally linked across time. This temporal inconsistency gives rise to what we term the Time Traveler Dilemma . In longitudinal electronic health record data, conventional model-ing approaches may inadvertently incorporate information that would not have been available at the prediction timepoint, thereby introducing implicit temporal leakage and inflating apparent predictive performance. To illustrate, consider a patient with the following clinical trajectory: a di-agnosis of type 2 diabetes mellitus (E11) in 2018, progression to chronic kidney disease (N18) in 2020, acute SARS-CoV-2 infection in 2022, and subsequent development of long COVID–associated heart failure in 2023. If the analytic ob-jective is to predict the risk of long COVID–associated heart failure at or shortly after the 2022 infection, any modeling framework that aggregates the complete longitudinal record without strict temporal alignment risks incorporating down-stream clinical information. In effect, the model is allowed to “travel forward in time,” accessing events that occur after the prediction anchor. Such leak-age compromises causal interpretability and yields overly optimistic estimates of performance. A standard counterfactual method, asked to explain this patient’s heart fail-ure risk, might propose: “If diabetes (E11) were absent, heart failure risk would decrease by 45%.” But this counterfactual is biologically meaningless . The pa-tient has had diabetes for five years—it cannot be “removed.” Even more prob-lematically, the method ignores that kidney disease likely resulted from poorly controlled diabetes, and that both conditions contributed to cardiovascular vul-nerability during COVID-19 infection. The proposed counterfactual would re-quire the patient to travel back in time and never develop diabetes in the first place. Such implausible counterfactuals are not edge cases. In this paper, we demon-strate empirically that 38–67% of patients with chronic conditions would require biologically impossible counterfactuals under standard methods. For two-thirds of diabetic patients, any counterfactual that “removes” diabetes from their post-COVID feature set violates the fundamental constraint that chronic diseases persist over time. We propose the Sequential Counterfactual Framework to address these limitations. Our approach makes three key contributions: Title Suppressed Due to Excessive Length 3
+
+1. Feature Taxonomy : We partition clinical features into immutable features (chronic diagnoses that cannot be removed once present), controllable fea-tures (laboratory values and acute conditions that can change), and inter-vention features (medications and procedures that can be added). This tax-onomy encodes biological constraints that counterfactuals must respect. 2. Temporal Dependency Graph : We model dependencies between features across time periods using a directed graph learned from observational data. This structure captures how conditions at baseline affect outcomes down-stream, enabling propagation-aware counterfactual generation. 3. Plausibility Constraints : We formalize three constraints that any valid counterfactual must satisfy: immutability (chronic conditions persist), tem-poral coherence (changes must be traceable to interventions), and conditional plausibility (the counterfactual state must be statistically possible given the patient’s history). We validate our framework using a cohort of 2,723 COVID-19 patients, of whom 383 developed Long COVID heart failure. Our analysis reveals strong tem-poral dependencies: chronic conditions at baseline persist into the post-COVID period with 6–13 times higher probability than new-onset diagnoses. We identify a cardiorenal cascade—chronic kidney disease at baseline increases acute kidney injury risk 2.27-fold post-COVID, which in turn increases heart failure risk 1.19-fold—demonstrating the temporal propagation that sequential counterfactuals must capture. The remainder of this paper is organized as follows. Section 2 reviews re-lated work on counterfactual explanation, temporal clinical modeling, and Long COVID. Section 3 formalizes our sequential counterfactual framework. Section 4 presents empirical validation. Section 5 discusses implications, limitations, and future directions. 
+
+# 2 Background and Related Work 
+
+2.1 Counterfactual Explanations in Machine Learning 
+
+Counterfactual explanations have emerged as a powerful approach to inter-pretable machine learning, particularly for high-stakes decisions [1,2]. Unlike fea-ture attribution methods that explain why a prediction was made (e.g., SHAP [3], LIME [4]), counterfactual explanations identify what would need to change to ob-tain a different prediction. This framing aligns naturally with human reasoning about causation and recourse [5]. Formally, given a classifier f : X → { 0, 1} and an input x with prediction 
+
+f (x) = 1, a counterfactual explanation seeks x′ such that f (x′) = 0 while minimizing some distance d(x, x′). Wachter et al. [1] proposed solving this as an optimization problem: 
+
+x∗ = arg min  
+
+> x′
+
+λ(f (x′) − y′)2 + d(x, x′) (1) 4 Cheng et al. 
+
+where y′ is the desired outcome and λ balances prediction change against prox-imity to the original input. Subsequent work has extended this framework in several directions. Mothilal et al. [6] introduced DiCE (Diverse Counterfactual Explanations), which gener-ates multiple diverse counterfactuals to provide users with a range of options. Karimi et al. [7] distinguished between counterfactual explanations and algo-rithmic recourse, emphasizing that true recourse requires actionable changes— interventions the individual can actually perform. Poyiadzi et al. [8] proposed FACE (Feasible and Actionable Counterfactual Explanations), which constrains counterfactuals to lie on paths through the data manifold to improve feasibility. Despite these advances, existing methods share a common limitation: they treat features as independent and simultaneously modifiable. The optimization in Equation (1) allows any feature to change to any value, subject only to dis-tance penalties or simple constraints (e.g., age cannot decrease). This assumption is problematic for clinical data, where features exhibit strong temporal depen-dencies and biological constraints. 
+
+2.2 Counterfactual Inference in Healthcare 
+
+Healthcare has been an active domain for counterfactual explanation research, driven by the need for interpretable predictions in high-stakes clinical deci-sions [9,10]. Applications include explaining mortality risk predictions [10], iden-tifying modifiable risk factors for cardiovascular disease [11], and generating treatment recommendations [12]. However, clinical data poses unique challenges for counterfactual methods. First, clinical features are not independent. Comorbidities cluster (diabetes co-occurs with hypertension and kidney disease), treatments correlate with disease severity (insulin is prescribed to sicker diabetic patients), and laboratory values reflect underlying pathophysiology. Verma et al. [13] surveyed these challenges and noted that most counterfactual methods do not account for feature depen-dencies. Second, interventions have delayed and propagating effects. Starting a medication today affects laboratory values next month, which affects disease progression next year. Standard counterfactual methods, which operate on sin-gle time-point feature vectors, cannot represent these dynamics. Third, biologi-cal plausibility constrains what counterfactuals are meaningful. A counterfactual that “removes” a chronic disease diagnosis, or that normalizes a laboratory value without any treatment, may achieve low distance and flip the prediction, but it describes an impossible world. Mahajan et al. [14] proposed preserving causal relationships in counterfactual generation, but their approach focuses on cross-sectional causal graphs rather than temporal dynamics. Our work addresses these limitations by introducing temporal structure, fea-ture taxonomy, and explicit plausibility constraints into the counterfactual gen-eration process. Title Suppressed Due to Excessive Length 5
+
+2.3 Temporal Modeling in Clinical Data 
+
+The importance of temporal structure in clinical prediction has been increasingly recognized. Early work on temporal pattern mining identified sequential patterns predictive of outcomes [15]. More recent approaches have used recurrent neural networks [16], attention mechanisms [17], and transformer architectures [18] to model temporal dependencies in EHR data. Particularly relevant to our work is the Temporal Learning with Dynamic Range (TLDR) framework, which partitions patient observations into discrete temporal periods relative to an index event [19]. For a patient with COVID-19 infection as the index event, features are categorized as occurring in History 
+
+(before infection), Past (during/between infections), or Last (after infection but before outcome). This representation enables models to distinguish, for ex-ample, between hypertension at baseline (a risk factor) and hypertension post-COVID (a potential consequence). The TLDR framework has demonstrated strong predictive performance for Long COVID outcomes [20], but it has not been extended to counterfactual inference. Our work bridges temporal clinical modeling with counterfactual ex-planation, leveraging the temporal structure to define plausibility constraints. 
+
+2.4 Causal Inference and Counterfactuals 
+
+Counterfactual reasoning has deep roots in causal inference, where it occupies the highest level of Pearl’s causal hierarchy [21]. In the structural causal model (SCM) framework, counterfactuals are defined through interventions on causal mechanisms: “What would Y have been if X had been set to x′, contrary to fact?” This requires knowledge of the causal graph and functional relationships between variables. The potential outcomes framework [22,23] provides an alternative formal-ization, defining causal effects in terms of potential outcomes under treatment and control. Methods such as propensity score matching [24] and doubly robust estimation [25] enable causal effect estimation from observational data under assumptions of unconfoundedness. Our work differs from classical causal inference in several respects. We do not claim to estimate causal effects or identify causal mechanisms. Rather, we use temporal structure to define plausibility constraints on counterfactual scenarios. Our dependency graph encodes observed associations (which may reflect causal relationships, confounding, or both), not guaranteed causal effects. The advan-tage of this approach is that it can be applied to observational EHR data without requiring the strong assumptions (e.g., no unmeasured confounding) needed for causal identification. That said, our framework is compatible with causal approaches. If a vali-dated causal graph were available, it could be used to define the dependency structure and propagation operator. Our contribution is orthogonal: we address the temporal and biological constraints that any counterfactual method—causal or otherwise—must respect in clinical data. 6 Cheng et al. 
+
+2.5 Long COVID and Cardiovascular Complications 
+
+Post-acute sequelae of SARS-CoV-2 infection (PASC), commonly known as Long COVID, affects an estimated 65 million people worldwide [26]. Cardiovascular manifestations are among the most serious complications, including heart fail-ure, arrhythmias, myocarditis, and thromboembolic events [27,28]. Xie et al. [27] found that COVID-19 survivors had significantly elevated risks of heart failure (HR 1.72), dysrhythmias (HR 1.69), and stroke (HR 1.52) compared to contem-porary controls. Risk factors for cardiovascular Long COVID include pre-existing cardiometabolic conditions—particularly diabetes, hypertension, obesity, and chronic kidney dis-ease [29,30]. These conditions create a complex causal web: diabetes damages blood vessels, promoting kidney disease and hypertension; kidney disease dis-rupts fluid balance, increasing cardiac workload; COVID-19 infection then su-perimposes acute inflammation and endothelial dysfunction on this vulnerable substrate. Prior work has developed predictive models for Long COVID outcomes using machine learning [31,20], but interpretation of these models—particularly coun-terfactual explanation—has been limited. Our work addresses this gap, providing a framework for generating plausible, temporally-coherent counterfactuals that respect the complex dependencies among cardiometabolic conditions. 
+
+2.6 Summary: The Gap We Address 
+
+Despite substantial progress in counterfactual explanation, temporal clinical modeling, and Long COVID research, no existing framework adequately ad-dresses their intersection. Current counterfactual methods generate implausible scenarios when applied to longitudinal clinical data, temporal modeling frame-works have not been extended to counterfactual inference, and Long COVID studies, while identifying risk factors, have not provided tools to understand modifiable pathways to adverse outcomes. Our Sequential Counterfactual Frame-work bridges these gaps by incorporating temporal structure from clinical mod-eling into counterfactual generation, defining a biologically grounded feature taxonomy with explicit plausibility constraints, empirically demonstrating that standard methods produce impossible counterfactuals in a substantial fraction of patients, and capturing temporal propagation through clinically meaningful disease cascades. 
+
+# 3 Methods 
+
+We consider clinical data structured according to a temporal learning framework, where patient observations are partitioned into discrete temporal periods relative to an index event (here, COVID-19 infection). 
+
+Definition 1 (Temporal Feature Representation). For patient p, define the temporal feature vector τ p = ( hp, sp, lp) where: Title Suppressed Due to Excessive Length 7
+
+– h p ∈ { 0, 1}d represents features in the History period (before index event) 
+
+– s p ∈ { 0, 1}d represents features in the Past period (during/between index events) 
+
+– l p ∈ { 0, 1}d represents features in the Last period (after final index event, before outcome) Each xti ∈ { 0, 1} indicates presence of feature i in period t ∈ { h, s, l }.
+
+The outcome y ∈ { 0, 1} is predicted by a model f : {0, 1}3d → [0 , 1] trained on the concatenated temporal features: ˆy = f (h, s, l)In our application, the index event is COVID-19 infection, and the outcome is Long COVID heart failure within one year. Features include diagnoses (ICD-10), medications (RxNorm), and abnormal laboratory values (LOINC with H/L/A suffixes indicating high/low/abnormal). Standard counterfactual explanation seeks τ ′ = ( h′, s′, l′) that minimizes distance from the factual τ while changing the predicted outcome: 
+
+τ ∗ = arg min   
+
+> τ′
+
+d(τ , τ ′)s.t. f (τ ′) < θ (for risk reduction) 
+
+τ ′ ∈ X (feature constraints) (2) where d(·, ·) is a distance metric (e.g., L0, L1, or Gower distance) and X is the feasible feature space. Existing methods solve variants of Equation 2 using enumeration, gradient-based optimization, or genetic algorithms. However, these methods treat features as independent and simultaneously modifiable, ignoring temporal structure. 
+
+3.1 Feature Taxonomy for Temporal Data 
+
+We introduce a taxonomy that partitions features based on their temporal mod-ifiability: 
+
+Definition 2 (Feature Taxonomy). Partition the feature set F = {1, . . . , d }
+
+into three disjoint classes: 
+
+– Immutable features I ⊂ F : Features that cannot be counterfactually al-tered once present. If xhi = 1 for i ∈ I , then xti = 1 for all t ≥ h in any plausible counterfactual. Examples: chronic disease diagnoses (diabetes, CKD, COPD). 
+
+– Controllable features C ⊂ F : Features whose values can change across time periods, typically in response to interventions. Examples: abnormal lab-oratory values, acute conditions, symptoms. 
+
+– Intervention features R ⊂ F : Features representing actionable interven-tions. Examples: medications, procedures, therapies. 
+
+This taxonomy reflects clinical reality: a patient’s diabetes diagnosis cannot be “removed,” but their glucose level can be controlled; their kidney disease cannot be erased, but its progression can be slowed with medication. 8 Cheng et al. 
+
+3.2 Temporal Dependency Structure 
+
+Features across temporal periods are not independent. We formalize these de-pendencies using a directed graph: 
+
+Definition 3 (Temporal Dependency Graph). Define G = ( V, E ) where: 
+
+– Vertices V = {(i, t ) : i ∈ F , t ∈ { h, s, l }} represent feature-timepoint pairs 
+
+– Directed edges E represent dependencies: (i, t ) → (j, t ′) indicates that feature 
+
+i at time t influences feature j at time t′, where t ≤ t′
+
+Key dependency types include: 
+
+– Persistence : ( dx i, h ) → (dx i, l ) for chronic diagnoses 
+
+– Medication → Lab : ( rx j , h ) → (lx k, l ) for treatment effects 
+
+– Lab → Diagnosis : ( lx k, s ) → (dx i, l ) for disease progression 
+
+– Diagnosis → Complication : ( dx i, h ) → (dx j , l ) for comorbidity cascades Dependencies are estimated empirically from observational data. An edge (i, t ) → (j, t ′) is included if: 
+
+P (xt′ 
+
+> j
+
+= 1 | xti = 1) 
+
+P (xt′ 
+
+> j
+
+= 1 | xti = 0) > γ (3) where γ is a relative risk threshold (we use γ = 2 .0). 
+
+Intervention Pathway Specification. We define the following intervention 
+
+→ controllable feature edges in G, based on established clinical mechanisms: 
+
+– Insulin → Glucose normalization (glycemic control) 
+
+– ACE inhibitors (Lisinopril) → AKI prevention, Creatinine stabilization (reno-protection) 
+
+– Loop diuretics → Fluid status, Creatinine (volume management) These pathways determine which counterfactual changes to controllable features satisfy constraint P2 (temporal coherence). A counterfactual proposing normal-ized glucose without insulin in History violates P2 because no intervention pathway exists. 
+
+3.3 Plausibility Constraints 
+
+We define what constitutes a plausible counterfactual in temporal clinical data: 
+
+Definition 4 (Plausible Counterfactual). A counterfactual τ ′ = ( h′, s′, l′)
+
+is plausible with respect to factual τ = ( h, s, l) if: 
+
+(P1) Immutability : For all i ∈ I and t ∈ { h, s, l }:
+
+xti = 1 = ⇒ xt′ 
+
+> i
+
+= 1 ∀t′ ≥ tTitle Suppressed Due to Excessive Length 9
+
+(P2) Temporal Coherence : For any feature i where x′t′
+
+> i
+
+̸ = xt′ 
+
+> i
+
+, there exists an intervention j ∈ R and a directed path in G from (j, t ) to (i, t ′) with t ≤ t′.
+
+(P3) Conditional Plausibility :
+
+P (l′ | h′, s′, interventions ) > ϵ 
+
+for threshold ϵ > 0, estimated from the empirical distribution. 
+
+Constraint (P1) prevents “time travel” counterfactuals that erase chronic conditions. Constraint (P2) ensures changes have mechanistic explanations. Con-straint (P3) prevents statistically implausible counterfactuals. 
+
+Violation Detection. We operationalized plausibility constraint violations as follows: 
+
+P1 (Immutability) violation : A patient has a P1 violation if any im-mutable feature i ∈ I satisfies xhi = 1 ∧ xli = 1. Such patients have a chronic di-agnosis present in both History and Last ; any counterfactual proposing xli = 0 would require “removing” an established diagnosis. 
+
+P2 (Temporal Coherence) violation : A patient has a P2 violation if any controllable feature j ∈ C satisfies xlj = 1 (abnormal state present) while no cor-responding intervention k in the pathway set for j satisfies xhk = 1. For example, elevated glucose ( xl 
+
+> Glucose H
+
+= 1) without insulin ( xh 
+
+> Insulin
+
+= 0) constitutes a P2 violation. We computed violation rates at both the feature level (what proportion of patients with feature X would require an implausible counterfactual to flip X?) and the patient level (what proportion of patients have at least one violation of each type?). Rather than directly optimizing over the full feature space, sequential coun-terfactuals operate through a propagation operator :
+
+Definition 5 (Propagation Operator). Given an intervention r applied at time t, the propagation operator Φ generates counterfactual future states: 
+
+(s′, l′) = Φ(h, r; G, Θ )
+
+where G is the dependency graph and Θ are learned conditional distributions. 
+
+The conditional distributions PΘ (S | H) and PΘ (L | H, S) are estimated from training data: ˆP (li = 1 | hj = 1 , r k = 1) = 
+
+P 
+
+> p
+
+⊮[lpi = 1 ∧ hpj = 1 ∧ rpk = 1] 
+
+P 
+
+> p
+
+⊮[hpj = 1 ∧ rpk = 1] (4) 
+
+Counterfactual Quality Metrics We evaluate counterfactuals along four key dimensions. Predictive shift measures the change in model output, defined as 
+
+∆ˆy = f (τ ) − f (τ ′). Plausibility assesses whether the counterfactual satisfies all domain constraints, expressed as ⊮[P1 ∧ P2 ∧ P3]. Actionability indicates whether at least one modifiable feature changes, given by ⊮[∃j ∈ R : r′
+
+> j
+
+̸ =
+
+rj ]. Finally, Sparsity quantifies the number of features altered, measured as 
+
+∥τ − τ ′∥0.10 Cheng et al. 
+
+Algorithm 1 Sequential Counterfactual Generation                                                                             
+
+> Require: Factual τ= ( h,s,l), intervention rat time t, graph G, models Θ
+> Ensure: Counterfactual τ′= ( h′,s′,l′)1: h′←h;if t=hthen h ′←h⊕r
+> 2: s′∼PΘ(S|h′,r)▷Propagate to Past 3: l′∼PΘ(L|h′,s′,r)▷Propagate to Last 4: for i∈ I do ▷Enforce immutability 5: if hi= 1 or h′
+> i= 1 then
+> 6: s′
+> i←1; l′
+> i←17: end if
+> 8: end for
+> 9: ˆ y′←f(h′,s′,l′)10: return τ′, ˆ y′
+
+Application: Long COVID Heart Failure We applied our framework to pa-tients from a large academic medical center with documented COVID-19 infec-tion. Cases were defined as patients who developed heart failure (ICD-10: I50.x) within 365 days of infection, attributed to Long COVID, while controls were matched patients who recovered without Long COVID complications. Patient trajectories were partitioned into three temporal periods: History represent-ing events before the first infection, Past covering events between the first and last infection, and Last encompassing events after the last infection but before the outcome, with a 30-day buffer. Across these periods, we extracted 223 clin-ical concepts, including diagnoses (ICD-10), medications (RxNorm, VA class), and laboratory abnormalities (LOINC with H/ L/ A suffixes indicating abnor-mal values), generating binary features for each concept-period combination; the presence of a laboratory code indicates an abnormal result, whereas absence in-dicates normal or unmeasured. Concepts were further organized into a taxonomy to support counterfactual interpretation, with I representing baseline comorbidi-ties such as E11 (diabetes), I10 (hypertension), N18 (chronic kidney disease), I50 (heart failure), and E66 (obesity); C representing acute clinical events and ab-normal labs, including Glucose H, Creatinine H, Troponin H, and N17 (acute kidney injury); and R representing actionable interventions such as Lisinopril, Insulin, Metoprolol, Atorvastatin, and loop diuretics. Using these features, a gra-dient boosting machine was trained to predict Long COVID–associated heart failure, achieving an AUROC of 0.88 (95% CI: 0.84–0.91). 
+
+# 4 Results 
+
+Our analysis included 2,723 patients with documented COVID-19 infection: 383 (14.1%) cases who developed Long COVID heart failure and 2,340 (85.9%) matched controls. The median time from infection to heart failure was 109 days (IQR: 67–156). Table 1 summarizes baseline characteristics. Title Suppressed Due to Excessive Length 11                  
+
+> Table 1. Cohort Characteristics
+> Characteristic N%
+> Total patients 2,723 100.0 Cases (Long COVID HF) 383 14.1 Controls 2,340 85.9
+> Conditions at History (pre-COVID)
+> Hypertension (I10) 2,152 79.0 Type 2 Diabetes (E11) 1,239 45.5 Chronic Kidney Disease (N18) 913 33.5 Prior AKI (N17) 701 25.7 Prior Heart Failure (I50) 1,142 41.9
+> Abnormal Labs at History
+> Elevated Glucose 1,741 63.9 Elevated Creatinine 892 32.8
+
+Chronic conditions diagnosed in History persist into Last with dramatically higher probability than new-onset diagnoses (Figure 1): 
+
+– Diabetes : P (E11 l = 1 | E11 h = 1) = 0 .673 vs. P (E11 l = 1 | E11 h = 0) = 0.050 (13.5 ×)
+
+– Hypertension : P (I10 l = 1 | I10 h = 1) = 0 .520 vs. P (I10 l = 1 | I10 h = 0) = 0.091 (5.7 ×)
+
+– CKD : P (N18 l = 1 | N18 h = 1) = 0 .379 vs. P (N18 l = 1 | N18 h = 0) = 0 .030 (12.6 ×)These 6–13 fold differences demonstrate strong temporal dependencies that naive counterfactual methods ignore. We systematically classified naive counterfactual violations according to the three plausibility constraints defined in our framework (Table 2). 
+
+P1 (Immutability) violations were the dominant failure mode, affecting 54.4% of patients (n=1,481). Among patients with a chronic diagnosis coded in the Last period, the vast majority had the same diagnosis in History : 95.6% for hypertension (1,120 of 1,172), 96.0% for diabetes (834 of 869), and 87.6% for CKD (346 of 395). For these patients, any naive counterfactual proposing to “remove” the diagnosis would violate biological reality—the condition was present before COVID-19 infection and persists afterward. 12 Cheng et al. 
+
+Fig. 1. Temporal persistence of chronic conditions. Probability of diagnosis in Last period given presence (red) or absence (blue) in History. The 6–13 × differences demon-strate temporal dependencies. 
+
+P2 (Temporal Coherence) violations affected 12.0% of patients (n=328). These violations occur when naive methods propose normalizing a controllable feature without an intervention pathway. Among patients with elevated glucose in Last , 60.7% (202 of 333) had no insulin prescribed in History —meaning a counterfactual proposing “normalized glucose” lacks a mechanistic pathway. 
+
+Table 2. Plausibility Violations by Constraint Type 
+
+Constraint Definition N %
+
+Patient-level violations (at least one feature affected) 
+
+P1: Immutability Chronic dx in HISTORY persists to LAST 1,481 54.4 P2: Temporal Coherence Controllable feature lacks intervention pathway 328 12.0 Any violation At least one implausible CF required 1,561 57.3 
+
+Feature-level P1 violations (diagnosis persistence) 
+
+Hypertension (I10) Present in both HISTORY and LAST 1,120/1,172 95.6 Type 2 Diabetes (E11) Present in both HISTORY and LAST 834/869 96.0 CKD (N18) Present in both HISTORY and LAST 346/395 87.6 
+
+Feature-level P2 violations (missing intervention pathway) 
+
+Elevated glucose No insulin in HISTORY 202/333 60.7 AKI post-COVID No ACE inhibitor in HISTORY 155/232 66.8 Title Suppressed Due to Excessive Length 13 
+
+Similarly, among patients who developed AKI post-COVID, 66.8% (155 of 232) had no ACE inhibitor in History , leaving no renoprotective intervention to justify counterfactual AKI prevention. Combined, 57.3% of patients (n=1,561) would require at least one implausible counterfactual under naive methods. This majority represents patients for whom standard counterfactual explanation methods would generate biologically impos-sible or temporally incoherent scenarios. The dominance of P1 violations (54.4% vs. 12.0% for P2) underscores that chronic disease persistence is the primary barrier to naive counterfactual plausibility . This finding motivates our frame-work’s distinction between immutable features (which define the constraints) and intervention features (which define the actionable pathways). We analyzed the cascade linking CKD at History to AKI at Last to Long COVID heart failure (Figure 2). 
+
+Step 1: CKD → AKI. Among patients without prior AKI: 
+
+– P (AKI l = 1 | CKD h = 1) = 0 .068 (n=395) 
+
+– P (AKI l = 1 | CKD h = 0) = 0 .030 (n=1,627) 
+
+– Relative Risk = 2.27 Step 2: AKI → Heart Failure. – P (HF | AKI l = 1) = 0 .164 (n=232) 
+
+– P (HF | AKI l = 0) = 0 .138 (n=2,491) 
+
+– Relative Risk = 1.19 
+
+The complete cascade: CKD h
+
+> RR=2 .27
+
+−−−−−−→ AKI l
+
+> RR=1 .19
+
+−−−−−−→ HF A naive counterfactual proposing “remove AKI last” ignores that AKI was caused by upstream CKD. Sequential counterfactuals instead propose interven-tions at History (e.g., renoprotective medication) that propagate forward. Among diabetic patients, those on insulin had worse glucose control: 
+
+– P (Glucose H l = 1 | Insulin h = 1) = 0 .193 (n=605) 
+
+– P (Glucose H l = 1 | Insulin h = 0) = 0 .139 (n=634) This reflects confounding by indication: clinicians prescribe insulin to sicker patients. Insulin-treated patients had 2–3 × higher rates of CKD (51.6% vs. 22.9%), prior AKI (40.1% vs. 14.5%), and prior HF (61.8% vs. 35.7%). Naive medication counterfactuals would yield misleading conclusions without modeling this confounding structure. 14 Cheng et al.    
+
+> Fig. 2. Cardiorenal cascade. Top : Flow diagram showing CKD →AKI (RR=2.27) →HF (RR=1.19). Bottom : Naive vs. sequential approaches.
+
+# 5 Discussion 
+
+We have introduced the Sequential Counterfactual Framework, which addresses fundamental limitations of existing counterfactual methods when applied to lon-gitudinal clinical data. Our framework makes three key contributions: (1) a fea-ture taxonomy that distinguishes immutable, controllable, and intervention fea-tures; (2) plausibility constraints that ensure counterfactuals respect biological reality; and (3) a propagation operator that models how interventions at one time period affect subsequent clinical states. Our empirical validation demonstrates that these contributions are not merely theoretical. In a cohort of 2,723 COVID-19 patients, we found that 38–67% of patients with chronic conditions would require biologically impossible counterfac-Title Suppressed Due to Excessive Length 15 
+
+tuals under naive methods. The cardiorenal cascade (CKD → AKI → HF) illus-trates temporal propagation that our framework captures but naive approaches cannot. The constraint-type analysis reveals that P1 (immutability) violations are 4.5 times more common than P2 (temporal coherence) violations at the patient level. This asymmetry has practical implications: interventions to improve counterfac-tual plausibility should focus first on reframing chronic conditions as *controlled vs. uncontrolled* rather than *present vs. absent*. Our sequential counterfac-tual framework operationalizes this reframing by treating chronic diagnoses as fixed constraints and modeling intervention effects on downstream controllable features. Notably, the 87.6 percent persistence rate for CKD is lower than the 95-96for hypertension and diabetes. This may reflect coding practices (CKD stages may be coded inconsistently) or genuine clinical variation (some patients with early CKD may not have repeat documentation post-COVID). Either way, even the ”lowest” persistence rate still renders nearly 9 in 10 CKD patients ineligible for naive ”disease removal” counterfactuals. 
+
+5.1 Clinical Implications 
+
+Our framework has several implications for clinical decision support. First, it 
+
+reframes clinical questions from “what features should be different” to “when and how should we intervene.” Rather than proposing impossible scenarios like “remove diabetes,” sequential counterfactuals propose actionable interventions like “improve glucose control with medication at baseline” and model how such interventions would propagate to downstream outcomes. Second, the cardiorenal cascade findings suggest that early renoprotection 
+
+may be particularly important for CKD patients facing COVID-19 infection. The 2.27-fold increased risk of AKI among CKD patients represents a potentially modifiable pathway—ACE inhibitors and ARBs have established renoprotective effects that could attenuate this cascade. Third, the confounding by indication analysis highlights that medication counterfactuals require careful interpretation . The observation that insulin-treated patients have worse glucose control does not mean insulin is harmful; it reflects that insulin is prescribed to patients with more severe disease. Any counterfactual framework that ignores this confounding structure will generate misleading recommendations. Beyond individual counterfactual explanations, our framework enables a “sim-ulation laboratory” for clinical hypothesis generation. Researchers and clinicians could query: “What if we had started ACE inhibitors at baseline for all CKD patients? How would outcomes differ?” The propagation operator would model effects on kidney function, AKI risk, and ultimately heart failure, generating testable hypotheses for clinical trials. This vision extends to drug repurposing, intervention timing optimization, and subgroup discovery. By systematically exploring the space of plausible inter-ventions and their propagated effects, we can identify opportunities that would 16 Cheng et al. 
+
+be invisible to standard counterfactual methods operating on single time-point feature vectors. We emphasize that our framework does not make causal claims in the tech-nical sense of causal inference [21,23]. The dependency graph encodes observed associations, which may reflect causal relationships, confounding, or both. We cannot guarantee that an intervention at time t would actually produce the propagated effects our model predicts. However, our framework is compatible with causal approaches. If a vali-dated causal graph were available—from domain knowledge, randomized trials, or causal discovery methods—it could replace our association-based dependency structure. Our contribution is orthogonal: we address the temporal and biological constraints that any counterfactual method must respect, regardless of whether the underlying relationships are causal. 
+
+5.2 Limitations 
+
+Several limitations should be acknowledged. First, our validation uses single-center data , limiting generalizability. The prevalence of comorbidities and prac-tice patterns may differ across healthcare settings. Multi-center validation is needed. Second, observational confounding may persist despite matching. While we identify confounding by indication for insulin, other unmeasured confounders likely exist. Our framework does not eliminate confounding; it makes the tem-poral structure explicit so that confounding patterns can be recognized. Third, laboratory missingness is a challenge. Absence of an abnormal laboratory code may indicate a normal result or that the test was not performed. We cannot distinguish these cases, potentially biasing estimates of treatment effects on laboratory normalization. Fourth, our binary feature representation loses granularity. HbA1c of 7.1% and 11.5% are both coded as “Glucose H = 1,” though they represent very different levels of glycemic control. Future work could extend to continuous or ordinal representations. Finally, taxonomy assignment requires clinical expertise and may vary by application. What constitutes an “immutable” feature depends on context— cancer diagnoses may resolve with treatment, while diabetes is typically lifelong. Domain knowledge is essential for appropriate taxonomy specification. 
+
+5.3 Future Directions 
+
+Several directions for future work emerge from this study. First, multi-center validation across diverse populations and healthcare systems would strengthen generalizability claims. The 4CE consortium [32], with data from over 300 hos-pitals worldwide, offers a potential platform. Second, integration with causal discovery methods could improve the dependency graph. Algorithms like PC, FCI, or their continuous-optimization Title Suppressed Due to Excessive Length 17 
+
+variants could learn causal structure from observational data, providing stronger foundations for counterfactual propagation. Third, extension to continuous features and time-to-event outcomes 
+
+would increase clinical applicability. Many important clinical variables (blood pressure, creatinine, ejection fraction) are continuous, and many outcomes (mor-tality, hospitalization) are naturally modeled as survival processes. Fourth, interactive tool development would enable clinicians and re-searchers to explore counterfactual scenarios. A “simulation laboratory” inter-face could allow users to specify interventions and visualize propagated effects, facilitating hypothesis generation for clinical research. Finally, application to other Long COVID phenotypes and chronic disease trajectories would demonstrate broader utility. Cognitive impairment, fatigue, and dysautonomia are major Long COVID manifestations that may exhibit similar temporal dynamics to cardiovascular complications. 
+
+5.4 Conclusion 
+
+Standard counterfactual methods, when applied to longitudinal clinical data, generate scenarios that are biologically impossible or clinically meaningless. The Time Traveler Dilemma, proposing to “remove” chronic conditions that have been present for years, affects 38–67% of patients with cardiometabolic diseases in our Long COVID cohort. The Sequential Counterfactual Framework addresses this limitation by re-specting the temporal structure of clinical data. Through feature taxonomy, plausibility constraints, and propagation-aware counterfactual generation, we transform the question from “what if this feature were different?” to “what if we had intervened earlier, and how would that propagate forward?” This reframing aligns counterfactual explanation with clinical reasoning. Clin-icians do not ask impossible questions; they ask about interventions that could have been taken and outcomes that could have been achieved. By grounding counterfactual inference in biological plausibility, we take a step toward trust-worthy, actionable AI explanations in healthcare. 
+
+# References   
+
+> 1. Wachter, S., Mittelstadt, B., Russell, C.: Counterfactual explanations without opening the black box: Automated decisions and the GDPR. Harvard Journal of Law & Technology 31 (2), 841–887 (2017) 2. Miller, T.: Explanation in artificial intelligence: Insights from the social sciences. Artificial Intelligence 267 , 1–38 (2019) 3. Lundberg, S.M., Lee, S.I.: A unified approach to interpreting model predictions. In: Advances in Neural Information Processing Systems, pp. 4765–4774 (2017) 4. Ribeiro, M.T., Singh, S., Guestrin, C.: “Why should I trust you?” Explaining the predictions of any classifier. In: ACM SIGKDD, pp. 1135–1144 (2016) 5. Byrne, R.M.: Counterfactuals in explainable artificial intelligence (XAI): Evidence from human reasoning. In: IJCAI, pp. 6276–6282 (2019)
+
+18 Cheng et al. 6. Mothilal, R.K., Sharma, A., Tan, C.: Explaining machine learning classifiers through diverse counterfactual explanations. In: FAT*, pp. 607–617 (2020) 7. Karimi, A.H., Sch¨ olkopf, B., Valera, I.: Algorithmic recourse: From counterfactual explanations to interventions. In: FAccT, pp. 353–362 (2021) 8. Poyiadzi, R., Sokol, K., Santos-Rodriguez, R., De Bie, T., Flach, P.: FACE: Feasible and actionable counterfactual explanations. In: AAAI/ACM Conference on AI, Ethics, and Society, pp. 344–350 (2020) 9. Ghassemi, M., Oakden-Rayner, L., Beam, A.L.: The false hope of current ap-proaches to explainable artificial intelligence in health care. The Lancet Digital Health 3(11), e745–e750 (2021) 10. Caruana, R., Lou, Y., Gehrke, J., Koch, P., Sturm, M., Elhadad, N.: Intelligible models for healthcare: Predicting pneumonia risk and hospital 30-day readmission. In: ACM SIGKDD, pp. 1721–1730 (2015) 11. Chang, C.H., Tan, S., Lengerich, B., Goldenberg, A., Caruana, R.: How inter-pretable and trustworthy are GAMs? In: ACM SIGKDD, pp. 95–105 (2021) 12. Wang, T., Rudin, C.: Causal rule sets for identifying subgroups with enhanced treatment effects. INFORMS Journal on Computing 34 (3), 1626–1643 (2022) 13. Verma, S., Dickerson, J., Hines, K.: Counterfactual explanations for machine learn-ing: A review. arXiv:2010.10596 (2020) 14. Mahajan, D., Tan, C., Sharma, A.: Preserving causal constraints in counterfactual explanations for machine learning classifiers. arXiv:1912.03277 (2019) 15. Batal, I., Valizadegan, H., Cooper, G.F., Hauskrecht, M.: A temporal pattern min-ing approach for classifying electronic health record data. ACM Transactions on Intelligent Systems and Technology 4(4), 63 (2013) 16. Choi, E., Bahadori, M.T., Sun, J., Kulas, J., Schuetz, A., Stewart, W.: RETAIN: An interpretable predictive model for healthcare using reverse time attention mech-anism. In: Advances in Neural Information Processing Systems, pp. 3504–3512 (2016) 17. Song, H., Rajan, D., Thiagarajan, J.J., Spanias, A.: Attend and diagnose: Clinical time series analysis using attention models. In: AAAI, pp. 4091–4098 (2018) 18. Li, Y., Rao, S., Solares, J.R.A., Hassaine, A., Ramakrishnan, R., Canber, D., Zhu, Y., Rahimian, F., Salimi-Khorshidi, G., Mamouei, M., et al.: BEHRT: Transformer for electronic health records. Scientific Reports 10 (1), 7155 (2020) 19. Estiri, H., Strasser, Z.H., Klann, J.G., Naseri, P., Wagholikar, K.B., Murphy, S.N.: Predicting COVID-19 mortality with electronic medical records. NPJ Digital Medicine 4(1), 15 (2021) 20. Estiri, H., Strasser, Z.H., Brat, G.A., Klann, J.G., et al.: Evolving phenotypes of non-hospitalized patients that indicate Long COVID. BMC Medicine 19 (1), 249 (2021) 21. Pearl, J.: Causality: Models, Reasoning and Inference. 2nd edn. Cambridge Uni-versity Press, Cambridge (2009) 22. Rubin, D.B.: Estimating causal effects of treatments in randomized and nonran-domized studies. Journal of Educational Psychology 66 (5), 688–701 (1974) 23. Rubin, D.B.: Causal inference using potential outcomes: Design, modeling, deci-sions. Journal of the American Statistical Association 100 (469), 322–331 (2005) 24. Rosenbaum, P.R., Rubin, D.B.: The central role of the propensity score in obser-vational studies for causal effects. Biometrika 70 (1), 41–55 (1983) 25. Bang, H., Robins, J.M.: Doubly robust estimation in missing data and causal inference models. Biometrics 61 (4), 962–973 (2005) Title Suppressed Due to Excessive Length 19 26. Davis, H.E., McCorkell, L., Vogel, J.M., Topol, E.J.: Long COVID: Major findings, mechanisms and recommendations. Nature Reviews Microbiology 21 (3), 133–146 (2023) 27. Xie, Y., Xu, E., Bowe, B., Al-Aly, Z.: Long-term cardiovascular outcomes of COVID-19. Nature Medicine 28 (3), 583–590 (2022) 28. Katsoularis, I., Fonseca-Rodr´ ıguez, O., Farrington, P., Lindmark, K., Connolly, A.M.F.: Risk of acute myocardial infarction and ischaemic stroke following COVID-19 in Sweden: A self-controlled case series and matched cohort study. The Lancet 
+
+398 (10300), 599–607 (2021) 29. Ayoubkhani, D., Khunti, K., Nafilyan, V., Maddox, T., Humberstone, B., Diamond, I., Banerjee, A.: Post-COVID syndrome in individuals admitted to hospital with COVID-19: Retrospective cohort study. BMJ 372 , n693 (2021) 30. Al-Aly, Z., Xie, Y., Bowe, B.: High-dimensional characterization of post-acute se-quelae of COVID-19. Nature 594 (7862), 259–264 (2021) 31. Pfaff, E.R., Girvin, A.T., Bennett, T.D., Bhatia, A., Brooks, I.M., Deer, R.R., Dekermanjian, J.P., Jolley, S.E., Kahn, M.G., Kostka, K., et al.: Identifying who has Long COVID in the USA: A machine learning approach using N3C data. The Lancet Digital Health 4(7), e532–e541 (2022) 32. Brat, G.A., Weber, G.M., Gehlenborg, N., Avillach, P., Palmer, N.P., Chiovato, L., Cimino, J., Waitman, L.R., Omenn, G.S., Malovini, A., et al.: International electronic health record-derived COVID-19 clinical course profiles: The 4CE Con-sortium. NPJ Digital Medicine 3(1), 109 (2020)
