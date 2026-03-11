@@ -24,7 +24,7 @@ class RankGlobalPoolTest(unittest.TestCase):
             sys.path.insert(0, str(src_dir))
         cls.mod = _load_module("rank_mod", src_dir / "3.rank_papers.py")
 
-    def test_build_global_candidate_ids_merges_keyword_and_intent_queries(self):
+    def test_build_global_candidate_ids_keeps_lane_top_and_global_top(self):
         queries = [
             {
                 "type": "intent_query",
@@ -41,13 +41,18 @@ class RankGlobalPoolTest(unittest.TestCase):
                 "query_text": "Automated Algorithm Design",
                 "sim_scores": {
                     "p2": {"rank": 1, "score": 1.0},
+                    "p4": {"rank": 2, "score": 0.6},
                 },
             },
         ]
 
-        ids = self.mod.build_global_candidate_ids(queries, limit=2)
+        ids = self.mod.build_global_candidate_ids(
+            queries,
+            guaranteed_per_lane=1,
+            global_limit=3,
+        )
 
-        self.assertEqual(ids, ["p1", "p2"])
+        self.assertEqual(ids, ["p1", "p2", "p3"])
 
     def test_process_file_reranks_intent_query_on_global_pool(self):
         payload = {
@@ -113,9 +118,10 @@ class RankGlobalPoolTest(unittest.TestCase):
             self.assertEqual(len(intent_queries), 1)
             ranked = intent_queries[0].get("ranked") or []
             ranked_ids = [item.get("paper_id") for item in ranked]
-            self.assertEqual(ranked_ids, ["p2", "p1"])
-            self.assertEqual(saved.get("global_candidate_ids"), ["p1", "p2"])
-            self.assertEqual(saved.get("global_pool_limit"), 2)
+            self.assertEqual(ranked_ids, ["p1", "p2"])
+            self.assertEqual(saved.get("global_candidate_ids"), ["p2", "p1", "p3"])
+            self.assertEqual(saved.get("global_pool_limit"), 150)
+            self.assertEqual(saved.get("global_pool_guaranteed_per_lane"), 10)
 
 
 if __name__ == "__main__":

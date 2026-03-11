@@ -21,6 +21,8 @@ MAX_CHARS_PER_DOC = 850
 BATCH_SIZE = 100
 TOKEN_SAFETY = 29000
 RRF_K = 60
+GLOBAL_POOL_GUARANTEED_PER_LANE = 10
+GLOBAL_POOL_RRF_LIMIT = 150
 
 
 def log(message: str) -> None:
@@ -106,24 +108,42 @@ def get_top_ids(query_obj: Dict[str, Any]) -> List[str]:
   return list(top_ids)
 
 
+def _unique_keep_order(items: List[str]) -> List[str]:
+  seen = set()
+  out: List[str] = []
+  for item in items:
+    pid = str(item or "").strip()
+    if not pid or pid in seen:
+      continue
+    seen.add(pid)
+    out.append(pid)
+  return out
+
+
 def build_global_candidate_ids(
   queries: List[Dict[str, Any]],
   *,
-  limit: Optional[int] = None,
+  guaranteed_per_lane: int = GLOBAL_POOL_GUARANTEED_PER_LANE,
+  global_limit: int = GLOBAL_POOL_RRF_LIMIT,
 ) -> List[str]:
   """
   将所有 query lane 的候选论文合并成统一候选池。
   - 不区分 keyword / intent_query 来源；
   - 使用 rank-based RRF 做全局聚合，避免不同分数量纲直接混用；
-  - limit 用于复用旧链路的候选数量预算。
+  - 每条 lane 的前 guaranteed_per_lane 固定保留；
+  - 再加入全局 RRF 前 global_limit 篇；
+  - 最终按“固定保留 + 全局排序”去重合并。
   """
   score_map: Dict[str, float] = {}
   hit_count: Dict[str, int] = {}
+  guaranteed_ids: List[str] = []
 
   for q in queries or []:
     top_ids = get_top_ids(q)
     if not top_ids:
       continue
+    if guaranteed_per_lane > 0:
+      guaranteed_ids.extend(top_ids[:guaranteed_per_lane])
     for rank_idx, pid in enumerate(top_ids, start=1):
       paper_id = str(pid or "").strip()
       if not paper_id:
@@ -139,27 +159,10 @@ def build_global_candidate_ids(
       item[0],
     ),
   )
-  ids = [pid for pid, _score in ranked]
-  if limit is not None and limit > 0:
-    ids = ids[:limit]
-  return ids
-
-
-def resolve_global_candidate_limit(
-  intent_queries: List[Dict[str, Any]],
-  all_queries: List[Dict[str, Any]],
-) -> int:
-  """
-  统一候选池的数量预算沿用旧逻辑：
-  - 优先取 intent_query 原本的最大候选数；
-  - 若没有 intent_query 候选，再回退到全量 query 的最大候选数。
-  """
-  sizes = [len(get_top_ids(q)) for q in (intent_queries or []) if get_top_ids(q)]
-  if not sizes:
-    sizes = [len(get_top_ids(q)) for q in (all_queries or []) if get_top_ids(q)]
-  if not sizes:
-    return 0
-  return max(sizes)
+  global_ids = [pid for pid, _score in ranked]
+  if global_limit > 0:
+    global_ids = global_ids[:global_limit]
+  return _unique_keep_order(list(guaranteed_ids) + list(global_ids))
 
 
 def iter_batches(
@@ -225,13 +228,12 @@ def process_file(
     return
 
   papers_by_id = {str(p.get("id")): p for p in papers_list if p.get("id")}
-  global_pool_limit = resolve_global_candidate_limit(queries, all_queries)
   global_candidate_ids = build_global_candidate_ids(
     all_queries,
-    limit=global_pool_limit if global_pool_limit > 0 else None,
   )
   data["global_candidate_ids"] = global_candidate_ids
-  data["global_pool_limit"] = global_pool_limit
+  data["global_pool_limit"] = GLOBAL_POOL_RRF_LIMIT
+  data["global_pool_guaranteed_per_lane"] = GLOBAL_POOL_GUARANTEED_PER_LANE
   if not global_candidate_ids:
     log("[WARN] 未能从任意 query 中构建统一候选池，跳过 rerank。")
     meta_generated_at = data.get("generated_at") or ""
@@ -243,7 +245,8 @@ def process_file(
   group_start(f"Step 3 - rerank {os.path.basename(input_path)}")
   log(
     f"[INFO] 开始 rerank：queries={len(queries)}（仅 intent/语义查询），papers={len(papers_list)}，"
-    f"global_pool={len(global_candidate_ids)}，batch_size={BATCH_SIZE}，"
+    f"global_pool={len(global_candidate_ids)}（guaranteed_per_lane={GLOBAL_POOL_GUARANTEED_PER_LANE}, "
+    f"global_top={GLOBAL_POOL_RRF_LIMIT}），batch_size={BATCH_SIZE}，"
     f"max_chars={MAX_CHARS_PER_DOC}，token_safety={TOKEN_SAFETY}"
   )
 
