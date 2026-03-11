@@ -62,3 +62,58 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-03-11T02:51:43.347Z'
+    - tag: LLM HUM
+      description: 查找大语言模型（LLM）在幽默计算与生成方面的研究论文
+      enabled: true
+      keywords:
+        - keyword: LLM humor
+          keyword_cn: 大语言模型幽默
+          query: Large Language Models humor computation and generation
+        - keyword: computational humor
+          keyword_cn: 计算幽默
+          query: computational humor research and methodologies
+        - keyword: humor detection
+          keyword_cn: 幽默识别
+          query: humor detection and recognition using LLMs
+        - keyword: humor generation
+          keyword_cn: 幽默生成
+          query: automatic humor generation with generative AI
+        - keyword: joke understanding
+          keyword_cn: 笑话理解
+          query: LLM capability in joke understanding and explanation
+        - keyword: sarcasm detection
+          keyword_cn: 讽刺检测
+          query: sarcasm and irony detection in natural language processing
+        - keyword: pun generation
+          keyword_cn: 双关语生成
+          query: computational pun generation and wordplay
+        - keyword: humor evaluation
+          keyword_cn: 幽默评估
+          query: metrics for evaluating humor in machine-generated text
+      intent_queries:
+        - query: survey of large language models for computational humor
+          query_cn: 大语言模型计算幽默综述
+          enabled: true
+          source: manual
+          note: ''
+        - query: benchmarking LLMs on humor recognition and generation tasks
+          query_cn: 大语言模型在幽默识别与生成任务上的基准测试
+          enabled: true
+          source: manual
+          note: ''
+        - query: fine tuning language models for creative and humorous writing
+          query_cn: 针对创意与幽默写作的语言模型微调
+          enabled: true
+          source: manual
+          note: ''
+        - query: theoretical frameworks for humor computation in AI
+          query_cn: 人工智能中幽默计算的理论框架
+          enabled: true
+          source: manual
+          note: ''
+        - query: evaluating the sense of humor in state of the art LLMs
+          query_cn: 评估前沿大语言模型的幽默感
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T03:49:29.657Z'
