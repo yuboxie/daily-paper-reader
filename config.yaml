@@ -221,3 +221,58 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-03-11T04:07:00.567Z'
+    - tag: LLMDR
+      description: 查找大语言模型（LLM）在药物推荐系统中的应用及相关研究论文
+      enabled: true
+      keywords:
+        - keyword: LLM
+          keyword_cn: 大语言模型
+          query: Large Language Models
+        - keyword: drug recommendation
+          keyword_cn: 药物推荐
+          query: drug recommendation systems
+        - keyword: medication recommendation
+          keyword_cn: 用药推荐
+          query: medication recommendation algorithms
+        - keyword: generative AI
+          keyword_cn: 生成式人工智能
+          query: generative artificial intelligence in healthcare
+        - keyword: clinical decision support
+          keyword_cn: 临床决策支持
+          query: clinical decision support systems for medication
+        - keyword: personalized medicine
+          keyword_cn: 个性化医疗
+          query: personalized drug recommendation using LLMs
+        - keyword: knowledge graph
+          keyword_cn: 知识图谱
+          query: knowledge graph enhanced drug recommendation
+        - keyword: electronic health records
+          keyword_cn: 电子健康记录
+          query: LLM for drug recommendation based on EHR
+      intent_queries:
+        - query: survey of large language models for drug recommendation
+          query_cn: 大语言模型在药物推荐中的综述
+          enabled: true
+          source: manual
+          note: ''
+        - query: LLM based personalized medication recommendation systems
+          query_cn: 基于大语言模型的个性化用药推荐系统
+          enabled: true
+          source: manual
+          note: ''
+        - query: integrating knowledge graphs with LLMs for drug suggestion
+          query_cn: 结合知识图谱与大语言模型的药物建议
+          enabled: true
+          source: manual
+          note: ''
+        - query: evaluating LLMs in clinical drug recommendation tasks
+          query_cn: 评估大语言模型在临床药物推荐任务中的表现
+          enabled: true
+          source: manual
+          note: ''
+        - query: fine tuning large language models for medical prescription
+          query_cn: 针对医疗处方微调大语言模型
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T04:09:15.934Z'
