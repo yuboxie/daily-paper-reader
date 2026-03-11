@@ -169,3 +169,55 @@ subscriptions:
           source: manual
           note: ''
       updated_at: '2026-03-11T03:56:57.812Z'
+    - tag: LH LLM
+      description: 查找Long-horizon LLM（长程/长上下文大语言模型）的相关论文
+      enabled: true
+      keywords:
+        - keyword: Long-horizon LLM
+          keyword_cn: 长程大语言模型
+          query: Long-horizon large language models research papers
+        - keyword: Long context window
+          keyword_cn: 长上下文窗口
+          query: LLMs with extended context window length
+        - keyword: Infinite context
+          keyword_cn: 无限上下文
+          query: Techniques for infinite context processing in LLMs
+        - keyword: Needle in a haystack
+          keyword_cn: 大海捞针测试
+          query: Needle in a haystack evaluation for long context LLMs
+        - keyword: Memory mechanism
+          keyword_cn: 记忆机制
+          query: External memory and retrieval augmented generation for long horizons
+        - keyword: Context compression
+          keyword_cn: 上下文压缩
+          query: KV cache compression and context distillation for long sequences
+        - keyword: Recurrent LLM
+          keyword_cn: 循环大模型
+          query: Recurrent neural network structures for long-horizon language modeling
+      intent_queries:
+        - query: State of the art methods for long horizon reasoning in LLMs
+          query_cn: 大语言模型长程推理的最新方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: Benchmark datasets for evaluating long context large language models
+          query_cn: 评估长上下文大语言模型的基准数据集
+          enabled: true
+          source: manual
+          note: ''
+        - query: Efficient attention mechanisms for processing extremely long sequences
+          query_cn: 处理极长序列的高效注意力机制
+          enabled: true
+          source: manual
+          note: ''
+        - query: Survey of long range dependency modeling in transformer architectures
+          query_cn: Transformer架构中长程依赖建模的综述
+          enabled: true
+          source: manual
+          note: ''
+        - query: Optimization of KV cache for long horizon document understanding
+          query_cn: 针对长程文档理解的KV缓存优化
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T04:07:00.567Z'
