@@ -1,0 +1,1471 @@
+Title: SOLAR: SVD-Optimized Lifelong Attention for Recommendation
+
+URL Source: https://arxiv.org/pdf/2603.02561v1
+
+Published Time: Wed, 04 Mar 2026 01:27:34 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+Chenghao Zhang * 1 Chao Feng * 1 Yuanhao Pu * † 1 Xunyong Yang † 1 Wenhui Yu 2 Xiang Li 1 Yongqi Liu 1
+
+Lantao Hu 1 Kaiqiao Zhan 1 Han Li 1 Kun Gai 2
+
+## Abstract 
+
+Attention mechanism remains the defining oper-ator in Transformers since it provides expressive global credit assignment, yet its O(N 2d) time and memory cost in sequence length N makes long-context modeling expensive and often forces trun-cation or other heuristics. Linear attention reduces complexity to O(N d 2) by reordering computa-tion through kernel feature maps, but this refor-mulation drops the softmax mechanism and shifts the attention score distribution. In recommender systems, low-rank structure in matrices is not a rare case, but rather the default inductive bias in its representation learning, particularly explicit in the user behavior sequence modeling. Leveraging this structure, we introduce SVD-Attention , which is theoretically lossless on low-rank matrices and preserves softmax while reducing attention com-plexity from O(N 2d) to O(N dr ). With SVD-Attention, we propose SOLAR , SVD-Optimized Lifelong Attention for Recommendation, a se-quence modeling framework that supports behav-ior sequences of ten-thousand scale and candi-date sets of several thousand items in cascading process without any filtering. In Kuaishou’s on-line recommendation scenario, SOLAR delivers a 0.68% Video Views gain together with additional business metrics improvements. 
+
+## 1. Introduction 
+
+Attention has become the dominant primitive for learning global interactions in modern architectures. The Trans-former (Vaswani et al . , 2017) replaces recurrence by using attention mechanisms, which enable learning dependencies between elements based on their content, and the same operator now underpins competitive models across modal-
+
+> *
+
+Equal contribution †Work done during an internship at Kuaishou Technology 1Kuaishou Technology, Beijing, China 2Unaffiliated. Correspondence to: Chao Feng 
+
+<fengchao08@kuaishou.com >.
+
+Preprint. March 4, 2026. 
+
+Figure 1. Low rank nature of user sequence representation. This figure shows the cumulative distribution of eigenvalues from SVD decomposition. At rank 27, all information is captured. 
+
+ities, including vision systems built on tokenized patches and hierarchical windows (Dosovitskiy et al . , 2021; Liu et al ., 2021). This success has a concrete cost: standard softmax attention couples expressivity to an O(N 2d) time and memory footprint in sequence length N , which turns long-context modeling into an engineering problem rather than a modeling choice. A large body of work (Wang et al ., 2020; Kitaev et al . , 2020) attempts to decouple accuracy from quadratic scaling, but most solutions quietly change the operator being optimized. Sparse and truncated schemes reduce compute by discarding interactions (Draye et al . , 2025), which is often acceptable in tasks where local evidence dominates but becomes fragile when weak signals distributed across the sequence matter. Linear attention (Katharopoulos et al . , 2020) takes a more radical route by reordering computations through kernel feature maps, reducing complexity to O(N d 2), yet it does so by removing the softmax normalization that shapes atten-tion as a competitive allocation mechanism. The resulting score distribution shift is not cosmetic; it can induce overly smooth attention patterns and systematically underweight high-magnitude keys, an effect analyzed as magnitude ne-glect (Fan et al., 2025). Low-rank structure offers a different lever because it tar-gets redundancy in the data geometry rather than approxi-mating the attention rule. This low-rank structure appears in many scenarios: Figure 1 illustrates the low-rank phe-nomenon in user behavior sequences within recommenda-tion systems. Low-rank factorization is a long-standing tool 1
+
+> arXiv:2603.02561v1 [cs.IR] 3 Mar 2026 SOLAR: SVD-Optimized Lifelong Attention for Recommendation
+
+for capturing shared latent factors in recommendation and beyond (Koren et al . , 2009), and it continues to reappear as a practical bias in large-scale representation learning, including parameter-efficient adaptation (Hu et al ., 2022) and attention-side compression strategies in large models (DeepSeek-AI, 2024). For recommender systems, the case for low-rank is not merely aesthetic: scaling analyses show that embedding representations tend to collapse onto low-dimensional subspaces as models grow, producing embed-ding matrices that behave increasingly like low-rank objects (Guo et al ., 2024). This empirical bias suggests that the dominant cost in attention-based sequence modeling is of-ten paid to process redundancy. The tension is most visible in industrial recommendation pipelines, where models must score large candidate sets against long user histories under strict latency constraints. Target attention architectures such as DIN (Zhou et al .,2018) and DIEN (Zhou et al . , 2019) highlight the value of candidate-conditioned sequence aggregation, yet they typically operate on aggressively truncated behavior win-dows. Systems that push sequence length to the lifelong scale usually rely on retrieval or filtering to keep inference feasible, as illustrated by search-based interest modeling (Pi et al ., 2020) and two-stage interest networks (Chang et al . ,2023). These mechanisms improve throughput, but they also hard-code a selection policy that can suppress long-tail evidence and entangle modeling quality with the behavior retrieval heuristic. This paper argues that the efficiency bottleneck can be re-duced without abandoning softmax or filtering the sequence by exploiting low-rank structure explicitly. We introduce SVD-attention, which is theoretically lossless on low-rank matrices and preserves softmax while reducing attention complexity from O(N 2d) to O(N dr ). Building on this operator, we propose SOLAR , SVD-Optimized Lifelong 
+
+Attention for Recommendation, a sequence modeling frame-work that supports behavior sequences of ten-thousand scale and candidate sets of several thousand items in cascading process, without any filtering. SOLAR is designed for set-conditioned ranking, where the model must assign scores that are meaningful under competition among candidates rather than under independent point-wise evaluation. This perspective aligns with our recently proposed IFA (Yu et al . ,2024) which proposes set-wise architectures for lifelong behavior modeling, but replaces the distribution-shifting linearization with a low-rank formulation that targets the dominant computational term while maintaining the soft-max mechanism. In Section 4.2, we theoretical prove that point-wise models face ranking errors due to structural lim-its when user preferences are context-dependent and they cannot mitigate the generalization penalty induced by cor-relation from the perspectives of Ranking Bias and Gener-alization Gap. In Kuaishou ’s online deployment scenario, SOLAR delivers a 0.68% Video Views gain together with additional improvements on other business metrics. 
+
+Contributions. Our contributions are as follows: • We introduce SVD-Attention, a attention mechanism that exploits low-rank structure in the shared key– value matrix, reducing the complexity from O(N 2d)
+
+to O(N dr ) with rank-r of representations. • We build SOLAR leveraging SVD-Attention, a set-aware sequence modeling framework for recommen-dation systems and provide a theoretical analysis that exposes the ranking bias and generalization penalty of point-wise scoring in set-wise recommendation. Extensive offline benchmarks and online deployment sub-stantiate the approach. Our implemented framework has been deployed in Kuaishou APP, enabling the modeling of historical sequences with lengths on the order of tens of thousands, and contributing to business gains. 
+
+## 2. Related Work 
+
+2.1. Attention and Efficient Attention 
+
+Transformers (Vaswani et al ., 2017) rely on softmax atten-tion to express global interactions, but the quadratic depen-dence on sequence length has driven a steady stream of efficiency-oriented redesigns. One line of work enforces sparsity or locality in the attention pattern, using restricted receptive fields or sampling to avoid the full N × N inter-action map, as in Longformer (Beltagy et al . , 2020) and Reformer (Kitaev et al . , 2020). Another line reduces tokens through clustering or low-dimensional projections, with rep-resentative examples including Set Transformer (Lee et al .,2019) and Linformer (Wang et al . , 2020). Kernelized linear attention (Katharopoulos et al . , 2020) removes the softmax normalization to enable associative reordering. These ap-proaches deliver substantial speedups, yet they typically trade exactness for scalability, either by dropping interac-tions or by changing the normalization that governs how evidence competes. The distributional consequences are now well documented; Fan et al . highlights a concrete fail-ure mode where the reformulation alters attention sharpness and relative weighting in linear attention. Low-rank structure has also been explored as an efficiency lever, particularly in recommendation systems where user histories exhibit redundancy. LREA (Song et al . , 2025) compresses long-term behavior modeling through low-rank decomposition and matrix absorption to reduce serving cost. Our focus differs in the target object: rather than approximat-ing attention through heuristic sparsification or replacing softmax, we derive an SVD-based attention formulation 2SOLAR: SVD-Optimized Lifelong Attention for Recommendation                                    
+
+> Figure 2. Overview of Attention Complexity. Softmax attention explicitly forms the dense attention matrix QK ⊤∈RN×Nand then multiplies by V, resulting in O(N2d)time complexity. Linear attention leverages associativity to rewrite the computation as Q(K⊤V),avoiding the N×Nmatrix and reducing complexity to O(N d 2).SVD-Attention applies a rank-rSVD ( r≪d) to obtain a low-rank factorization. After reassembling the decomposed UΣV, the computation of Ucan theoretically be eliminated, as U⊤U=I, in low rank representations, which maintains the order of computation as in traditional attention, yielding an overall complexity of O(N dr ).
+
+that is lossless on low-rank matrices and keeps the softmax mechanism intact. 
+
+2.2. Sequential Modeling in Recommendation Systems 
+
+Attention entered industrial CTR prediction primarily through target attention, where the candidate item queries a user behavior sequence. DIN (Zhou et al . , 2018) and DIEN (Zhou et al . , 2019) exemplify this design, while self-attentive recommenders such as SASRec (Kang and McAuley, 2018) bring Transformer-style sequence model-ing into recommendation and Information Retrieval. The central obstacle in industrial deployments is not modeling flexibility but the product of candidate size and sequence length under millisecond latency budgets, pushing most systems to cap the effective history or to introduce filtering. Search-based and two-stage pipelines are the prevailing workaround. SIM (Pi et al ., 2020) scales to long histories by retrieving relevant behaviors through indexing, and TWIN (Chang et al . , 2023) extends this idea with a consistency-preserved two-stage interest model that expands the effec-tive sequence length from 100 to 10 4–10 5. TWIN V2 (Si et al ., 2024) further compresses life-cycle histories through hierarchical clustering to accommodate up to 10 6 behaviors. End-to-end alternatives attempt to reduce the mismatch in-troduced by retrieval heuristics; ETA-Net (Chen et al . , 2022) replaces explicit retrieval with hashing-based mechanisms that allow efficient target attention over longer sequences. These systems demonstrate that long behavior is valuable, but the reliance on retrieval, compression, or approximate attention makes the final scorer contingent on a separate selection or aggregation policy. Candidate-set modeling addresses a different limitation that becomes salient in cascading ranking scenarios: point-wise scoring treats candidates as independent even though the deployment objective is inherently set-conditioned. IFA (Yu et al ., 2024) first formalizes this shift by performing cross-attention between the entire candidate set and the full lifelong behavior sequence, computing candidate-specific signals without filtering and treating the candidate set as a first-class input. This set-wise paradigm is a stronger match to ranking objectives, but its practical deployment still depends on an attention operator that scales and does not distort the score distribution. Recent work also points toward scaling sequence models in recommendation, includ-ing LONGER (Chai et al ., 2025) and large-model directions motivated by scaling laws and generative recommenders (Zhang et al . , 2024; Zhai et al . , 2024). Our work targets the core bottleneck shared by these trends: efficient set-wise interaction requires an attention mechanism that can process ten-thousand scale histories and thousand-scale can-didate sets without resorting to lossy filtering or distribution-shifting linearization. 
+
+## 3. Preliminaries 
+
+Industrial rankers are typically built around per-item scoring. A request includes a user context and a candidate set pro-duced by retrieval or pre-ranking, yet the model scores each candidate in isolation and then sorts by these scores. This point-wise abstraction trades fidelity for convenience: it as-sumes an item’s relevance can be assessed without reference to the other candidates, which breaks whenever exposure is shared and user choice depends on the co-displayed candi-dates. Set-wise scoring removes this constraint by allowing an item’s score to depend on the entire candidate set, align-ing the scorer with the set-conditioned decision problem the 3SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+system actually solves. 
+
+Terminology. Consider a set-conditioned ranking prob-lem where each user/context u ∈ U is related with a candidate set Xu = {xu, 1, . . . , x u,m } ⊂ X . Let yu =[yu, 1, . . . , y u,m ]⊤ ∈ {0, 1}m denote the relevance vec-tor. Assume that (u, X u, yu) is drawn from distribution 
+
+D ∼ U × X m × { 0, 1}m.
+
+Definition 3.1 (Scoring Functions) . A scoring function is a measurable mapping that assigns a real-valued score to each candidate item. We distinguish two types of hypothesis classes: Point-wise and Set-wise scoring functions. 
+
+fpoint : U × X → R, si = fpoint (u, x u,i ), (1) 
+
+fset : U × X × X m → R, si = fset (u, x u,i , X u), (2) The point-wise class is general in industrial applications (e.g., Dual-Encoders) due to its inference efficiency, but its local independence structurally prevents modeling contex-tual features. In contrast, the set-wise class allows scores to depend on X at the cost of higher computational complexity. Given predicted scores si, we quantify model performance with Bipartite Ranking Risk, which penalizes misordered positive-negative pairs. 
+
+Definition 3.2 (Bipartite Ranking Risk) . Let P = {i | yi =1} and N = {j | yj = 0 } be the indices of relevant and irrelevant items, respectively. The ranking error of a scoring function h is: 
+
+R(f ) = ED
+
+ 1
+
+|P||N | 
+
+X
+
+> i∈P
+
+X
+
+> j∈N
+
+I(sj ≥ si)
+
+ , (3) where the term is defined as 0 if P = ∅ or N = ∅.Standard results in bipartite ranking theory establish that the optimal ranking is induced by the marginal posterior probability (Menon and Williamson, 2016). 
+
+Definition 3.3 (Bayes-optimal Scorer) . The Bayes-optimal relevance score η⋆ : U × X × X m → [0 , 1] is defined as: 
+
+η⋆(u, x u,i , X u) = P(yi = 1 | u, x u,i , X u). (4) The scoring function f ⋆(u, x u,i , X u) = η⋆(u, x u,i , X u)
+
+minimizes the pairwise ranking error R(f ).
+
+Attention Mechanism. Let L, m, d ∈ N denote the length of the user behavior sequence, the number of candidate items and the embedding dimension. The user history se-quence and candidate set are represented as 
+
+H = [ h⊤ 
+
+> 1
+
+; . . . ; h⊤ 
+
+> NL
+
+] ∈ RNL×d,C = [ c⊤ 
+
+> 1
+
+; . . . ; c⊤ 
+
+> NC
+
+] ∈ RNC ×d, (5) where ht, c i ∈ Rd denote the embeddings of historical and candidate items. The projections are defined as: 
+
+Query = CW Q, Key = HW K , Value = HW V , (6) where WQ, W K , W V ∈ Rd×d are learnable parameters. The standard softmax-attention explicitly constructs the in-teraction matrix between candidates and historical behaviors. Given Query ∈ RNC ×d and Key ∈ RNL×d, the multiplica-tion Query Key ⊤ incurs a cost of O(N 2d). The subsequent multiplication with Value ∈ RNL×d introduces an addi-tional O(N 2d) term. As a result, the overall computational complexity of softmax-attention scales as O(N 2d):
+
+Attn sm : MatMul(MatMul(Query , Key ⊤), Value) . (7) In large-scale recommendation systems, this quadratic de-pendence on the sequence and candidate sizes becomes a primary bottleneck. Practical models frequently employ lin-ear attention variants that reorder the computation to avoid explicitly forming the NC × NL attention matrix, reducing the complexity to O(N d 2), which defines as: 
+
+Attn lin : MatMul(Query , MatMul(Key ⊤, Value)) . (8) This reordering discards the softmax normalization, losing its row-stochastic weighting and often harming stability and calibration in ranking, whereas our SVD-attention preserves the original softmax attention order while reducing the com-putation. 
+
+## 4. Methodology 
+
+4.1. SVD-Attention 
+
+In attention mechanism, key and value are instantiated from the same matrix. This structure makes the remaining cost largely redundant when the behavior embeddings concen-trate in a low-dimensional subspace. This cost is largely avoidable when the behavior embeddings lie close to a low-rank subspace in SVD-Attention. Let H denote the shared key–value matrix. We compute a rank-r truncated singular value decomposition of H:
+
+H = U ΣV ⊤, U ∈ RNL×r , Σ ∈ Rr×r, V ∈ Rd×r , (9) with r ≪ min( NL, d ), and U ⊤U = Ir . Substituting into the attention operator yields 
+
+Key ⊤Value = ( HW K )⊤(HW V )= ( U ΣV ⊤WK )⊤(U ΣV ⊤WV )= W ⊤ 
+
+> K
+
+V Σ⊤(U ⊤U )Σ V ⊤WV
+
+= (( V Σ) ⊤WK )⊤(V Σ) ⊤WV
+
+(10) 4SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+where we eliminate the U ∈ RNL×r and we have: 
+
+Query = CW Q ∈ RN ×d,
+
+Key r = ( V Σ) ⊤WK ∈ Rr×d,
+
+Value r = ( V Σ) ⊤WV ∈ Rr×d.
+
+(11) Substituting this factorization into the attention computation gives same order of traditional attention: 
+
+Attn SVD : MatMul(MatMul(Query , Key ⊤ 
+
+> r
+
+), Value r )
+
+(12) This evaluation avoids forming the dense d × d product. Computing Query Key r costs O(N dr ) and multiplying by 
+
+Value ⊤ 
+
+> r
+
+costs another O(N dr ), so the forward complexity is O(N dr ). A comparison of complexity is given in Table 1. 
+
+Table 1. Complexity comparison between attention mechanisms. 
+
+Method Time Complexity 
+
+Softmax Attention O(N 2d)
+
+Linear Attention O(N d 2)
+
+SVD Attention (Ours) O(N dr )
+
+When r ≪ d, the SVD-based formulation significantly accelerates the attention computation. 4.1.1. E FFICIENT SVD F ORWARD PASS 
+
+To avoid the expensive full SVD on H ∈ RL×d, we adopt 
+
+Randomized-SVD (Halko et al . , 2011) with power itera-tions and the complexity of O(N dr ).
+
+Algorithm 1 Randomized SVD with Power Iteration 
+
+Require: Matrix H ∈ RNL×d; target rank r; number of iterations niter .
+
+Ensure: Singular values s ∈ Rr and right singular vectors 
+
+R ∈ Rd×r .Init Ω ∈ Rd×r with Ωij ∼ N (0 , 1) .
+
+for i = 1 to niter do 
+
+Ω ← H⊤(HΩ) (power iteration) 
+
+end for 
+
+Compute basis Q of HΩ via QR decomposition. Compute SVD: Q⊤H = US SR ⊤.
+
+s ← diag( S).
+
+Return: s, R .4.1.2. B ACKWARD PASS THROUGH SVD SVD operation is not trivially differentiable, hence not di-rectly scalable for back propagation. Inspired by the matrix backpropagation framework(Ionescu et al . , 2015), consider 
+
+H = U ΣV ⊤, where U ∈ RNL×r , Σ ∈ Rr×r, V ∈ Rd×r .Let the upstream gradients be ¯U = ∂L 
+
+> ∂U
+
+, ¯Σ = ∂L 
+
+> ∂Σ
+
+, ¯V = ∂L 
+
+> ∂V
+
+.The gradient w.r.t. the input matrix H (within truncated subspace) can be expressed as 
+
+∂L ∂H = ¯U Σ−1V ⊤ + U diag 
+
+ ¯Σ − U ⊤ ¯U Σ−1
+
+V ⊤
+
++ 2 U Σ sym 
+
+
+
+F ◦ (V ⊤( ¯V − V ( ¯U Σ−1)⊤U Σ)) 
+
+
+
+V ⊤
+
+(13) 
+
+where ◦ denotes element-wise product, diag and sym de-notes diagonal and symmetric operation. F ∈ Rr×r is defined as 
+
+Fij =
+
+
+
+1
+
+σ2 
+
+> i
+
+− σ2
+
+> j
+
+, i̸ = j, 
+
+0, i = j, 
+
+(14) with singular values {σi} on the diagonal of Σ. Since SVD-attention avoids computation of matrix U , we safely con-clude that ¯U ≡ 0 for any orthogonal matrix U , thus 
+
+∂L ∂H = U
+
+
+
+( ¯Σ) diag + 2Σ 
+
+
+
+F ◦ (V ⊤ ¯V )
+
+
+
+> sym
+
+
+
+V ⊤ (15) 
+
+The detailed process is provided in Appendix B. This for-mulation provides a stable and well-defined gradient for the SVD operation during training, enabling end-to-end learning with the SVD-accelerated attention mechanism. 
+
+4.2. Set-Wise Architectures Candidate Set 
+
+> User History
+> Task 1
+> PCTR
+> Attn
+> Attn
+> other pred
+> ...
+
+Figure 3. Illustration of SOLAR, an architecture that applies SVD-Attention to historical sequence modeling and includes set-wise modeling of candidate set. 
+
+We propose SOLAR, SVD-Optimized Lifelong Attention for Recommendation, an architecture that applies SVD-Attention to historical sequence modeling and includes set-wise modeling of candidate sets, achieving high efficiency in large-scale recommendation tasks. This subsection estab-lishes the theoretical superiority of Set-wise architectures over Point-wise baselines. We analyze from the perspectives of Ranking Bias and Generalization Gap to prove that: 1. When user preferences are context-dependent, Point-wise models suffer from irreducible ranking errors due to structural limitations; 2. Even trained with List-wise losses, Point-wise models cannot mitigate the generalization penalty induced by correlations. 5SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+4.2.1. R ANKING BIAS : P OINT -WISE BOTTLENECK 
+
+The following analysis demonstrate that a point-wise scor-ing function is incapable of modeling context-dependent relevance even when optimizing a ranking-consistent ob-jective (e.g., pairwise loss). First, we formalize the phe-nomenon where ground-truth preference reverses due to context changes. 
+
+Definition 4.1 (Contextual Flip) . ∃ xi, x j ∈ X with two candidate sets X(1) , X (2) ⊂ X appearing with non-zero probability, such that: 
+
+η⋆(xi, X (1) ) > η ⋆(xj , X (1) ),η⋆(xi, X (2) ) < η ⋆(xj , X (2) ). (16) Definition 4.1 captures a ubiquitous property in realistic scenarios: the relative desirability of item i versus j is not intrinsic but contingent on its surrounding candidates X.We then evaluate ranking capability via R(f ) in Def. 3.2. Since directly optimizing it is intractable, we consider the standard pairwise surrogate. Let π⋆ij (X) = I(η⋆(xi, X ) >η⋆(xj , X )) be the ideal preference. For a point-wise scorer 
+
+f ∈ F point , the surrogate population risk is: 
+
+R(f ) = EX
+
+X
+
+> i̸=j
+
+LBCE 
+
+ f (xi) − f (xj ), π ⋆ij (X) (17) where LBCE is the binary cross-entropy loss. The following theorem characterizes the asymptotic limit of a point-wise model trained on this objective (proof in Appendix C.1). 
+
+Theorem 4.2 (Bayes Limit of Point-wise Scorers) . Let 
+
+pij = P η⋆(xi, X ) > η ⋆(xj , X ) = EX [π⋆ij (X)] (18) 
+
+denote the global marginal preference probability of item i
+
+over j. The minimizer f ⋆ ∈ arg min f ∈F point R(f ) satisfies: 
+
+f ⋆(xi) − f ⋆(xj ) = log pij 
+
+1 − pij 
+
+, ∀i, j, p ij ∈ (0 , 1) . (19) 
+
+Equivalently, σ(f ⋆(xi) − f ⋆(xj )) = pij .
+
+It reveals that a point-wise model collapses context-dependent preferences into a single averaged scalar. This leads to inevitable errors when the local preference in a realized set deviates from the global average. 
+
+Corollary 4.3 (Irreducible Ranking Risk(Proof in Ap-pendix C.2)) . Under Assumption 4.1, any point-wise scorer 
+
+fpoint ∈ F point incurs a strictly positive Bipartite Ranking Risk, i.e., 
+
+R(fpoint ) > 0. (20) 
+
+Crucially, this lower bound holds for any pointwise scoring function fpoint , regardless of its objectives. In contrast, the optimal set-wise scorer f ⋆
+
+> set
+
+(x, X ) = η⋆(x, X ) achieves zero risk. 
+
+4.2.2. G ENERALIZATION BOUNDS 
+
+Consider a scenario of N requests. For each request u ∈{1, . . . , N }, a candidate set Xu = {xu, 1, . . . , x u,m } ⊂ Rd
+
+is provided, with each candidate possessing a binary label 
+
+yu,i ∈ { 0, 1}. We focus on a linear scoring head su,i =
+
+w⊤ϕ(u, x i, X u(if set-wise )) with ∥w∥2 ≤ W , and assume bounded representations ∥ϕ(·)∥2 ≤ B.For any tuple (u, X u, yu) ∈ D with si = f (u, x i, X u), let 
+
+ℓ(·) be a 1-Lipschitz loss function w.r.t. si and takes values in [0 , 1] . Denote population and empirical risk by 
+
+R(f ) = ED
+
+ℓ(f (u, x i, X u), y u,i )
+
+ˆRS (f ) = 1
+
+|S|
+
+X
+
+> (u,i )∈S
+
+ℓ(f (u, x u,i , X u), y u,i ) (21) where S denotes the training sample set. We utilize the standard bound (Bartlett and Mendelson, 2002): for any hypothesis class F, with probability at least 1 − δ,
+
+R(f ) ≤ ˆRS (f ) + 2 RS (ℓ ◦ F ) + 3 
+
+r ln(2 /δ )2T , (22) where T is the number of independent sampling units. 
+
+Theorem 4.4 (I.I.D., proof in Appendix C.3) . Assume all training samples (u, i ) are i.i.d. drawn. Let F =
+
+{(u, x, X ) 7 → w⊤ϕ(u, x, X ) : ∥w∥2 ≤ W, ∥ϕ(·)∥ ≤ B}.Then the Rademacher complexity satisfies 
+
+RS (ℓ ◦ F ) ≤ W B 
+
+√mN . (23) 
+
+Consequently, with probability at least 1 − δ, for all f ∈ F ,
+
+R(f ) − ˆRS (f ) ≤ 2W B 
+
+√mN + 3 
+
+r ln(2 /δ )2mN . (24) 
+
+Theorem 4.5 (Block Dependent, proof in Appendix C.4) .
+
+Let F = {(u, x, X ) 7 → w⊤ϕ(u, x, X ) : ∥w∥2 ≤
+
+W, ∥ϕ(·)∥ ≤ B}. Assume an average correlation condi-tion: for each request u,
+
+1
+
+m(m − 1) 
+
+X
+
+> i̸=j
+
+z⊤
+
+> u,i
+
+zu,j ≤ ρB 2, ρ ∈ [0 , 1] , (25) 
+
+where zu,i = ϕ(u, x i, X ). Then the Rademacher complexity satisfies 
+
+RS (ℓ ◦ F ) ≤ W B 
+
+√mN 
+
+p1 + ( m − 1) ρ. (26) 
+
+Consequently, with probability at least 1 − δ, for all f ∈ F ,             
+
+> R(f)−ˆRS(f)≤2W B
+> √mN
+> p1 + ( m−1) ρ+ 3
+> rln(2 /δ )2N.(27)
+
+6SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+Table 2. Main results on RecFlow, MIND, and Kuaishou. An 0.001-level improvement is considered significant for industrial CTR prediction , as supported by experiments in paper (Ma et al., 2018; Si et al., 2024; Wang et al., 2021)                                                                  
+
+> Dataset Metric DIN(Recent 50) (Zhou et al., 2018) SIM (Pi et al., 2020) LREA (Song et al., 2025) LONGER (Chai et al., 2025) TWIN (Chang et al., 2023) TWINv2 (Si et al., 2024) IFA (Yu et al., 2024) SOLAR ours RecFlow AUC ↑0.6048 0.6113 0.5695 0.6676 0.6057 0.6178 0.6769 0.6812 Logloss ↓0.0689 0.0673 0.1475 0.0638 0.0687 0.0691 0.0615 0.0610 MIND AUC ↑0.5909 0.6193 0.6211 0.6355 0.6480 0.6377 0.6697 0.6713 Logloss ↓0.1324 0.1156 0.1065 0.1137 0.1075 0.1164 0.1060 0.1052 Kuaishou AUC( mean ±std )↑0.8417 ±0.00487 0.8458 ±0.00512 0.8479 ±0.00523 0.8511 ±0.00413 0.8507 ±0.00508 0.8492 ±0.00492 0.8518 ±0.00569 0.8531 ±0.00589
+> UAUC( mean ±std )↑0.8398 ±0.00475 0.8439 ±0.00515 0.8460 ±0.00519 0.8486 ±0.00405 0.8488 ±0.00495 0.8473 ±0.00487 0.8489 ±0.00504 0.8502 ±0.00530
+
+Corollary 4.6 (Mismatch factor and extreme regimes) . Un-der the same conditions, 
+
+Rdep 
+
+Ri.i.d
+
+≃ p1 + ( m − 1) ρ. (28) We then analyze whether optimizing a Listwise loss can circumvent the penalty derived in Corollary 4.6. Let Pu =
+
+{i : yu,i = 1 } be the set of positive items for user u. The loss is defined as the average negative log-likelihood of the positive items: 
+
+ℓlist (s; Pu) = − 1
+
+|P u|
+
+X
+
+> i∈P u
+
+log exp( si)
+
+Pmj=1 exp( sj )
+
+!
+
+= − 1
+
+|P u|
+
+X
+
+> i∈P u
+
+si + log 
+
+
+
+> m
+
+X
+
+> j=1
+
+exp( sj )
+
+ .
+
+(29) 
+
+Lemma 4.7 (Lipschitz Continuity, proof in Appendix C.5) .
+
+ℓlist is L-Lipschitz w.r.t. s in ℓ2-norm, where L ≤ √2.
+
+Corollary 4.8 (Listwise Generalization Gap) . Let 
+
+C(m, ρ ) = p1 + ( m − 1) ρ, then for any hypothesis class trained with Softmax loss, the generalization gap is bounded by: 
+
+R(f ) − ˆRS (f ) ≲ 2√2W B 
+
+√mN C(m, ρ ) + O
+
+ 1
+
+√N
+
+
+
+. (30) Now that the average pairwise correlation ρ governs the generalization error, which scales with C(m, ρ ). This theo-retical insight establishes that minimizing feature correlation is necessary for reducing generalization gap. Consequently, we investigate the capabilities of different scoring architec-tures in managing this correlation. Consider a pair of items (i, j ) within a candidate list. Let 
+
+xi, x j ∈ Rd denote input feature vectors. In ranking sce-narios, items retrieved by the same request often share a dominant feature. We decompose them as: 
+
+xk = c + dk, k ∈ { i, j } (31) where c represents the shared feature and dk the item-specific discriminative feature. Assume that ∥c∥ ≫ ∥ dk∥.Minimizing ℓlist to distinguish i from j is equivalent to max-imizing the score margin ∆s = si − sj .
+
+Theorem 4.9 (Correlation Coefficients, proof in Ap-pendix C.6) . Given highly correlated inputs xi, x j , the output correlation of the pointwise model ( ρpoint ) is lower-bounded by the input smoothness, whereas the setwise model (ρset ) can asymptotically approach zero through orthogonal projection. Specifically: 
+
+ρset ≪ ρpoint (32) To conclude, our theoretical analysis establishes the fun-damental superiority of set-wise architectures from two complementary perspectives. While point-wise models suf-fer from irreducible ranking errors under contextual flips and loose generalization bounds due to correlations, set-wise models provably eliminate these biases and achieve tighter generalization limits by dynamically de-correlating representations. These results provide new understanding perspectives of context-aware modeling in ranking systems. 
+
+## 5. Evaluation 
+
+In this Section, we evaluate SOLAR compared with other common user-behavior modeling framework in industrial recommendation systems through extensive offline and large-scale industrial online experiments. 
+
+Table 3. Evaluation settings. Offline benchmarks use length-50 histories and 50-item candidate sets per request. Industrial reports online AUC with 12,000 historical behaviors and 3000 candidates. 
+
+Dataset Evaluation History length Candidate size RecFlow Offline 50 120 MIND Offline 50 50-130 Kuaishou Online 12,000 3000 
+
+Benchmark. RecFlow (Liu et al ., 2025) and MIND (Wu et al ., 2020) serve as offline benchmarks. Each instance contains a length-50 history sequence and around 50-130 candidate set, constructed by the procedure described in Ap-pendix D. Experiment on Kuaishou’s platform is evaluated online using AUC from real training, where each request contains 12 thousands historical behaviors and 3000 candi-dates. We report Logloss and AUC on RecFlow and MIND. Online experiment reports AUC and UAUC for 24 hours after the model converges during streaming training. 7SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+Baseline Setting. Two-stage baselines such as SIM (Pi et al . , 2020) apply an explicit filtering stage before scor-ing. On RecFlow and MIND, they select a subset from the length-50 history and model the top 20 retrieved behav-iors. On Kuaishou’s online experiment, they select from the 12,000 length history and model 300 behaviors per request. Other baseline frameworks stay follow the same setting with SOLAR. 
+
+5.1. Main results 
+
+Table 2 reports the main comparison on RecFlow, MIND, and Kuaishou’s online traffic. On the two offline bench-marks, SOLAR attains the best AUC and Logloss across all methods. On RecFlow, SOLAR reaches an AUC of 0.6812 
+
+and a Logloss of 0.0610 . On MIND, SOLAR achieves 
+
+0.6713 AUC and 0.1052 Logloss. On Kuaishou, SOLAR delivers the best online ranking quality. It achieves AUC 
+
+0.8531 and UAUC 0.8502 on real requests. While another set-aware framework IFA (Yu et al . , 2024) and SOLAR exhibit very close AUC on all three datasets, Section 5.3 shows that SOLAR attains this accuracy with a more effi-cient attention operator and reduced machine consumption in the online deployment. 
+
+5.2. Forward-pass efficiency of attention 
+
+We report the forward cost of the attention kernel and compare Softmax Attention, Linear Attention, and SVD-Attention. To avoid conflating algorithmic scaling with parallel scheduling effects, we run the benchmark on CPU and constrain execution to a single thread. Figure 4 reports forward latency. The plot is intended to expose scaling behavior in the same input regime used by our benchmarks. 
+
+Figure 4. Forward latency of the attention module on CPU under single-thread execution. The x-axis varies the history length N
+
+and the y-axis is the time in milliseconds. Candidate size m and embedding dimension d are held fixed. 
+
+5.3. Ablation studies 
+
+In this ablation study, we keep the overall framework fixed and only swap the attention operator. This design aims to verify whether any observed changes are attributable to the attention mechanism rather than architectural drift. Addi-tionally, since industrial feasibility is influenced by resource footprint, we also report the number of machines served in the online deployment. The machines deployed online uses CPU. We report number of cores tested under 6.14% real traffic as machine consumption. The machine consumption for online serving not only includes the forward propagation time but also the actual overhead of fetching embeddings and other related operations. Moreover, the SOLAR model is designed around two modeling components: candidate-set modeling and history-sequence modeling. We conducted ablation experiments on these two components to directly assess whether the added structure is truly necessary in the target environments. The AUC results are reported for the RecFlow and Industrial datasets. 
+
+Table 4. Attention ablation under a same set-aware framework.                                   
+
+> Dataset RecFlow Kuaishou Matrices AUC AUC (mean ±std )∆Cores Usage
+> Softmax Attn(Vaswani et al., 2017) 0.6829 0.8533 ±0.00451 base MALA(Fan et al., 2025) 0.6759 0.8525 ±0.00410 -38.09% Longformer(Beltagy et al., 2020) 0.6708 0.8539 ±0.00493 -23.80% Hiformer (Gui et al., 2023) 0.6718 0.8312 ±0.00293 -23.80% Linear Attn(Katharopoulos et al., 2020) 0.6769 0.8518 ±0.00569 -38.09% SVD-Attn without Softmax 0.6757 0.8520 ±0.00656 -Only Candidate-Set Modeling 0.6293 0.8012 ±0.00408 -Only User-History Modeling 0.6644 0.8508 ±0.00496 -SVD-Attention 0.6812 0.8531 ±0.00589 -52.38%
+
+## 6. Conclusion 
+
+Attention mechanism is key in Transformers for global credit assignment, but its O(N 2d) cost makes long-context modeling expensive. Substitute methods like Linear atten-tion achieves sub-quadratic complexity by reordering the multiplication in traditional attention through kernel feature maps, but the reordering removes softmax and alters the attention score distribution. This paper takes a different route. We derive SVD-attention from the low-rank structure of the shared key–value matrix, and the derivation preserves the conventional QKV multiplication order rather than re-placing the operator. SVD-attention is theoretically reduces the dominant attention cost from O(N 2d) to O(N dr ) with rank-r while retaining softmax. SVD-attention makes set-conditioned ranking with lifelong histories operational in an industrial recommender. Building on it, SOLAR mod-els user behavior sequences at the ten-thousand scale and scores several thousand candidates in a cascading process without filtering. Theoretical analysis further distinguishes SOLAR from point-wise scoring. While this work evaluates it only for sequential recommendation and does not analyze its behavior in language modeling, vision, or long-context retrieval, we are confident that the underlying design will transfer because low-rank structure is a recurring inductive bias in large-scale representation learning and attention re-8SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+mains the dominant mechanism for global credit assignment, so the same SVD-based acceleration can remove quadratic bottlenecks and provide the community with a practical route to scale modeling beyond recommendation systems. 
+
+## Impact Statement 
+
+This paper aims to advance machine learning by improving the computational scalability of attention through SVD- 
+
+> ATTENTION
+
+and by enabling efficient set-wise sequential modeling in recommendation. The contribution is primarily technical, reducing computation and latency under a low-rank regime while preserving the standard attention operator. Any broader societal effects are mediated by downstream applications and deployment choices, none of which we feel must be specifically highlighted here. 
+
+## References 
+
+Peter L. Bartlett and Shahar Mendelson. 2002. Rademacher and Gaussian Complexities: Risk Bounds and Struc-tural Results. J. Mach. Learn. Res. 3 (2002), 463–482. https://jmlr.org/papers/v3/ bartlett02a.html 
+
+Iz Beltagy, Matthew E. Peters, and Arman Cohan. 2020. Longformer: The Long-Document Trans-former. arXiv:2004.05150 https://arxiv.org/ abs/2004.05150 
+
+Zheng Chai, Qin Ren, Xijun Xiao, Huizhi Yang, Bo Han, Sijun Zhang, Di Chen, Hui Lu, Wenlin Zhao, Lele Yu, Xionghang Xie, Shiru Ren, Xiang Sun, Yaocheng Tan, Peng Xu, Yuchao Zheng, and Di Wu. 2025. LONGER: Scaling Up Long Sequence Modeling in Industrial Rec-ommenders. 247–256 pages. doi: 10.1145/3705328. 3748065 
+
+Jianxin Chang, Chenbin Zhang, Zhiyi Fu, Xiaoxue Zang, Lin Guan, Jing Lu, Yiqun Hui, Dewei Leng, Yanan Niu, Yang Song, and Kun Gai. 2023. TWIN: TWo-stage Interest Network for Lifelong User Behavior Mod-eling in CTR Prediction at Kuaishou. 3785–3794 pages. doi: 10.1145/3580305.3599922 
+
+Qiwei Chen, Yue Xu, Changhua Pei, Shanshan Lv, Tao Zhuang, and Junfeng Ge. 2022. Efficient Long Sequen-tial User Data Modeling for Click-Through Rate Predic-tion. arXiv:2209.12212 doi: 10.48550/ARXIV.2209. 12212 
+
+DeepSeek-AI. 2024. DeepSeek-V2: A Strong, Eco-nomical, and Efficient Mixture-of-Experts Language Model. arXiv:2405.04434 doi: 10.48550/ARXIV. 2405.04434 
+
+Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, and Neil Houlsby. 2021. An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale. https://openreview.net/ forum?id=YicbFdNTTy 
+
+Florent Draye, Anson Lei, Ingmar Posner, and Bernhard Sch ¨olkopf. 2025. Sparse Attention Post-Training for Mechanistic Interpretability. arXiv:2512.05865 doi: 10. 48550/ARXIV.2512.05865 
+
+Qihang Fan, Huaibo Huang, Yuang Ai, and Ran He. 2025. Rectifying Magnitude Neglect in Linear Atten-tion. arXiv:2507.00698 doi: 10.48550/ARXIV.2507. 00698 
+
+Huan Gui, Ruoxi Wang, Ke Yin, Long Jin, Maciej Kula, Taibai Xu, Lichan Hong, and Ed H. Chi. 2023. Hiformer: Heterogeneous Feature Interactions Learning with Trans-formers for Recommender Systems. arXiv:2311.05884 doi: 10.48550/ARXIV.2311.05884 
+
+Xingzhuo Guo, Junwei Pan, Ximei Wang, Baixu Chen, Jie Jiang, and Mingsheng Long. 2024. On the Em-bedding Collapse when Scaling up Recommendation Models. https://openreview.net/forum? id=aPVwOAr1aW 
+
+Nathan Halko, Per-Gunnar Martinsson, and Joel A. Tropp. 2011. Finding Structure with Randomness: Probabilis-tic Algorithms for Constructing Approximate Matrix Decompositions. SIAM Rev. 53, 2 (2011), 217–288. doi: 10.1137/090771806 
+
+Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. 2022. LoRA: Low-Rank Adaptation of Large Language Models. https://openreview.net/ forum?id=nZeVKeeFYf9 
+
+Catalin Ionescu, Orestis Vantzos, and Cristian Sminchisescu. 2015. Training Deep Networks with Structured Lay-ers by Matrix Backpropagation. CoRR abs/1509.07838 (2015). arXiv:1509.07838 http://arxiv.org/ abs/1509.07838 
+
+Wang-Cheng Kang and Julian J. McAuley. 2018. Self-Attentive Sequential Recommendation. 197–206 pages. doi: 10.1109/ICDM.2018.00035 
+
+Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and Fran c¸ ois Fleuret. 2020. Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention. 5156– 5165 pages. http://proceedings.mlr.press/ v119/katharopoulos20a.html 
+
+9SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+Nikita Kitaev, Lukasz Kaiser, and Anselm Levskaya. 2020. Reformer: The Efficient Transformer. https:// openreview.net/forum?id=rkgNKkHtvB 
+
+Yehuda Koren, Robert M. Bell, and Chris Volinsky. 2009. Matrix Factorization Techniques for Recommender Sys-tems. Computer 42, 8 (2009), 30–37. doi: 10.1109/ MC.2009.263 
+
+Juho Lee, Yoonho Lee, Jungtaek Kim, Adam R. Kosiorek, Seungjin Choi, and Yee Whye Teh. 2019. Set Trans-former: A Framework for Attention-based Permutation-Invariant Neural Networks. 3744–3753 pages. http:// proceedings.mlr.press/v97/lee19d.html 
+
+Qi Liu, Kai Zheng, Rui Huang, Wuchao Li, Kuo Cai, Yuan Chai, Yanan Niu, Yiqun Hui, Bing Han, Na Mou, Hongning Wang, Wentian Bao, Yunen Yu, Guorui Zhou, Han Li, Yang Song, Defu Lian, and Kun Gai. 2025. RecFlow: An Industrial Full Flow Recommen-dation Dataset. In The Thirteenth International Confer-ence on Learning Representations, ICLR 2025, Singa-pore, April 24-28, 2025 . OpenReview.net. https: //openreview.net/forum?id=vVHc8bGRns 
+
+Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo. 2021. Swin Transformer: Hierarchical Vision Transformer using Shifted Windows. 9992–10002 pages. doi: 10.1109/ ICCV48922.2021.00986 
+
+Xiao Ma, Liqin Zhao, Guan Huang, Zhi Wang, Zelin Hu, Xiaoqiang Zhu, and Kun Gai. 2018. Entire Space Multi-Task Model: An Effective Approach for Estimating Post-Click Conversion Rate. (2018), 1137–1140. doi: 10. 1145/3209978.3210104 
+
+Aditya Krishna Menon and Robert C. Williamson. 2016. Bipartite Ranking: a Risk-Theoretic Perspective. J. Mach. Learn. Res. 17 (2016), 195:1–195:102. https: //jmlr.org/papers/v17/14-265.html 
+
+Qi Pi, Guorui Zhou, Yujing Zhang, Zhe Wang, Lejian Ren, Ying Fan, Xiaoqiang Zhu, and Kun Gai. 2020. Search-based User Interest Modeling with Lifelong Sequential Behavior Data for Click-Through Rate Prediction. 2685– 2692 pages. doi: 10.1145/3340531.3412744 
+
+Zihua Si, Lin Guan, Zhongxiang Sun, Xiaoxue Zang, Jing Lu, Yiqun Hui, Xingchao Cao, Zeyu Yang, Yichen Zheng, Dewei Leng, Kai Zheng, Chenbin Zhang, Yanan Niu, Yang Song, and Kun Gai. 2024. TWIN V2: Scaling Ultra-Long User Behavior Sequence Modeling for En-hanced CTR Prediction at Kuaishou. In Proceedings of the 33rd ACM International Conference on Information and Knowledge Management, CIKM 2024, Boise, ID, USA, October 21-25, 2024 , Edoardo Serra and Francesca Spezzano (Eds.). ACM, 4890–4897. doi: 10.1145/ 3627673.3680030 
+
+Xin Song, Xiaochen Li, Jinxin Hu, Hong Wen, Zulong Chen, Yu Zhang, Xiaoyi Zeng, and Jing Zhang. 2025. LREA: Low-Rank Efficient Attention on Modeling Long-Term User Behaviors for CTR Prediction. In Proceedings of the 48th International ACM SIGIR Conference on Research and Development in Information Retrieval, SIGIR 2025, Padua, Italy, July 13-18, 2025 (SIGIR ’25) , Nicola Ferro, Maria Maistro, Gabriella Pasi, Omar Alonso, Andrew Trotman, and Suzan Verberne (Eds.). ACM, 2843–2847. doi: 10.1145/3726302.3730228 
+
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. 2017. Attention is All you Need. 5998–6008 pages. https://proceedings. neurips.cc/paper/2017/hash/ 3f5ee243547dee91fbd053c1c4a845aa-Abstract. html 
+
+Ruoxi Wang, Rakesh Shivanna, Derek Zhiyuan Cheng, Sagar Jain, Dong Lin, Lichan Hong, and Ed H. Chi. 2021. DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems. In WWW ’21: The Web Conference 2021, Vir-tual Event / Ljubljana, Slovenia, April 19-23, 2021 ,Jure Leskovec, Marko Grobelnik, Marc Najork, Jie Tang, and Leila Zia (Eds.). ACM / IW3C2, 1785–1797. doi: 10.1145/3442381.3450078 
+
+Sinong Wang, Belinda Z. Li, Madian Khabsa, Han Fang, and Hao Ma. 2020. Linformer: Self-Attention with Lin-ear Complexity. arXiv:2006.04768 https://arxiv. org/abs/2006.04768 
+
+Fangzhao Wu, Ying Qiao, Jiun-Hung Chen, Chuhan Wu, Tao Qi, Jianxun Lian, Danyang Liu, Xing Xie, Jianfeng Gao, Winnie Wu, and Ming Zhou. 2020. MIND: A Large-scale Dataset for News Recommendation. In Proceed-ings of the 58th Annual Meeting of the Association for Computational Linguistics, ACL 2020, Online, July 5-10, 2020 , Dan Jurafsky, Joyce Chai, Natalie Schluter, and Joel R. Tetreault (Eds.). Association for Compu-tational Linguistics, 3597–3606. doi: 10.18653/V1/ 2020.ACL-MAIN.331 
+
+Wenhui Yu, Chao Feng, Yanze Zhang, Lantao Hu, Peng Jiang, and Han Li. 2024. IFA: Interaction Fidelity At-tention for Entire Lifelong Behaviour Sequence Model-ing. CoRR abs/2406.09742 (2024). arXiv:2406.09742 doi: 10.48550/ARXIV.2406.09742 
+
+Jiaqi Zhai, Lucy Liao, Xing Liu, Yueming Wang, Rui Li, Xuan Cao, Leon Gao, Zhaojie Gong, Fangda Gu, Jiayuan He, Yinghai Lu, and Yu Shi. 2024. Actions 10 SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations. https: //openreview.net/forum?id=xye7iNsgXn 
+
+Buyun Zhang, Liang Luo, Yuxin Chen, Jade Nie, Xi Liu, Shen Li, Yanli Zhao, Yuchen Hao, Yantao Yao, Ellie Dingqiao Wen, Jongsoo Park, Maxim Naumov, and Wenlin Chen. 2024. Wukong: Towards a Scal-ing Law for Large-Scale Recommendation. https: //openreview.net/forum?id=8iUgr2nuwo 
+
+Guorui Zhou, Na Mou, Ying Fan, Qi Pi, Weijie Bian, Chang Zhou, Xiaoqiang Zhu, and Kun Gai. 2019. Deep Inter-est Evolution Network for Click-Through Rate Predic-tion. 5941–5948 pages. doi: 10.1609/AAAI.V33I01. 33015941 
+
+Guorui Zhou, Xiaoqiang Zhu, Chengru Song, Ying Fan, Han Zhu, Xiao Ma, Yanghui Yan, Junqi Jin, Han Li, and Kun Gai. 2018. Deep Interest Network for Click-Through Rate Prediction. In Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, KDD 2018, London, UK, August 19-23, 2018 , Yike Guo and Faisal Farooq (Eds.). ACM, 1059– 1068. doi: 10.1145/3219819.3219823 
+
+11 SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+## A. Reproducibility 
+
+The code will be published upon acceptance. 
+
+## B. Detailed Derivation of SVD Gradients 
+
+In this section, we provide a derivation of the SVD gradient with respect to the input matrix H, under the constraints of our truncated SVD-Attention mechanism. 
+
+B.1. Differential of the SVD 
+
+Let Hr = U ΣV ⊤ be the rank-r approximation of H ∈ RL×d, then: 
+
+dHr = d U ΣV ⊤ + U dΣ V ⊤ + U Σd V ⊤. (33) Since U and V are orthogonal matrices, differentiating the identity U ⊤U = I yields (d U )⊤U + U ⊤dU = 0 . Defining 
+
+ΩU = U ⊤dU and ΩV = V ⊤dV , it follows that ΩU and ΩV are skew-symmetric. Thus express the differentials as: 
+
+dU = U ΩU , dV = V ΩV . (34) Substituting Eq. (34) into Eq. (33), we obtain: 
+
+dHr = U ΩU ΣV ⊤ + U dΣ V ⊤ − U ΣΩ V V ⊤. (35) To isolate components ( dΣ , ΩU , ΩV ), we define the projected differential matrix dP as: 
+
+dP := U ⊤dHr V = Ω U Σ + dΣ − ΣΩ V . (36) 
+
+B.2. Solving the Linear System 
+
+As for the (i, j )-th entry of Eq.(36): 
+
+dPij = (Ω U )ij σj + dΣ ij − σi(Ω V )ij . (37) Noting that diagonal entries of skew-symmetric matrices are zero, and dΣ is diagonal, we have: 
+
+dPij =
+
+(
+
+dΣ ii , i = j
+
+(Ω U )ij σj − σi(Ω V )ij , i̸ = j . (38) For the off-diagonal case ( i̸ = j), we consider the transposed projection dP ⊤. With property Ω⊤ = −Ω, we derive: 
+
+dPji = (d P ⊤)ij = −σi(Ω U )ij + σj (Ω V )ij . (39) Combining Eq. (38) and Eq. (39) , we obtain two linear equations. Since our attention mechanism does not explicitly instantiate U in the forward pass, eliminating (Ω U )ij yields the solution for ΩV :
+
+(Ω V )ij = σidPij + σj dPji 
+
+σ2 
+
+> j
+
+− σ2
+
+> i
+
+= σidPij + σj dPji 
+
+−(σ2 
+
+> i
+
+− σ2 
+
+> j
+
+) . (40) 
+
+B.3. Derivation of the Gradient Matrix 
+
+We now relate these differentials to the loss function L. Let the upstream gradients be ¯U = ∂L/∂U , ¯Σ = ∂L/∂ Σ, and 
+
+¯V = ∂L/∂V . The total differential of the loss is: 
+
+dL = Tr( ¯U ⊤dU ) + Tr( ¯Σ⊤dΣ) + Tr( ¯V ⊤dV ). (41) We have ¯U ≡ 0 due to its absence in forward pass. Substituting dV = V ΩV , the equation simplifies to: 
+
+dL = Tr( ¯ΣdΣ) + Tr( P ⊤ΩV ), (42) 12 SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+where P = V ⊤ ¯V . Expanding the trace sum: 
+
+dL = X
+
+> i
+
+¯Σii dΣ ii + X
+
+> i̸=j
+
+Pji (Ω V )ij . (43) Substituting the solution for (Ω V )ij from Eq. (40): 
+
+dL = X
+
+> i
+
+¯Σii dPii − X
+
+> i̸=j
+
+Pji 
+
+σidPij + σj dPji 
+
+σ2 
+
+> i
+
+− σ2
+
+> j
+
+!
+
+. (44) We rearrange the second term to identify the coefficient of dPij . By swapping indices i and j in the second part of the summation, we derive: Sum i̸=j = X
+
+> i̸=j
+
+− Pji σi
+
+σ2 
+
+> i
+
+− σ2
+
+> j
+
+dPij − Pji σj
+
+σ2 
+
+> i
+
+− σ2
+
+> j
+
+dPji 
+
+!
+
+= X
+
+> i̸=j
+
+− Pji σi
+
+σ2 
+
+> i
+
+− σ2
+
+> j
+
++ Pij σi
+
+σ2 
+
+> i
+
+− σ2
+
+> j
+
+!
+
+dPij 
+
+= X
+
+> i̸=j
+
+σi(Pij − Pji )
+
+σ2 
+
+> i
+
+− σ2
+
+> j
+
+dPij .
+
+(45) Thus, we can define the gradient matrix G = ∂L 
+
+> ∂P
+
+such that dL = Tr( G⊤dP ). The elements of G are: 
+
+Gij =
+
+( ¯Σii , i = jσiFij (Pij − Pji ), i̸ = j (46) where Fij = 1 /(σ2 
+
+> i
+
+− σ2 
+
+> j
+
+).To align with our implementation which utilizes symmetric matrix operations, we observe that the derived term matches the structure of 2σi sym( F ◦ P )ij . Using the skew-symmetry Fji = −Fij :
+
+2 sym( F ◦ P )ij = ( F ◦ P )ij + ( F ◦ P )ji = Fij Pij + Fji Pji = Fij (Pij − Pji ). (47) Multiplying by σi, we recover the derived gradient form. Since we have identified the gradient w.r.t P : G = ∂L 
+
+> ∂P
+
+, where 
+
+dP = U ⊤dHr V , we then apply the chain rule: 
+
+dL = Tr( G⊤dP ) = Tr( G⊤U ⊤dHr V ) = Tr(( U GV ⊤)⊤dHr ). (48) Thus, the gradient w.r.t Hr is: 
+
+∂L
+
+∂H r
+
+= U GV ⊤ = U  ¯Σdiag + 2Σ sym( F ◦ (V ⊤ ¯V ))  V ⊤. (49) 
+
+B.4. Bias Derivation 
+
+We further analyze the bias of the gradients derived from rank-r subspace against full-SVD results(Ionescu et al . , 2015). Let the full-SVD of H ∈ RL×d be H = UΣV ⊤, where: 
+
+U = [ U | U⊥], Σ =
+
+Σ 00 Σ⊥
+
+
+
+, V = [ V | V⊥]. (50) Here, the complements U⊥ ∈ RL×(L−r), Σ⊥ ∈ R(L−r)×(d−r), and V⊥ ∈ Rd×(d−r). Considering that ¯U ≡ 0, the partial differential of the loss L w.r.t H is: 
+
+∂L
+
+∂H = UGV ⊤ = U  ¯Σdiag + 2 Σ sym( F ◦ (V⊤ ¯V))  V⊤. (51) 13 SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+We decompose the gradient matrix G into blocks corresponding to top-r and the other interactions: 
+
+G =
+
+ Gr,r Gr, ⊥
+
+G⊥,r G⊥,⊥
+
+
+
+. (52) Expanding the full gradient using these blocks: 
+
+∇H L = [ U | U⊥]
+
+ Gr,r Gr, ⊥
+
+G⊥,r G⊥,⊥
+
+  V ⊤
+
+V ⊤⊥
+
+
+
+= U G r,r V ⊤ + Res . (53) where 
+
+Res = U⊥G⊥,r V ⊤ + U G r, ⊥V ⊤⊥ + U⊥G⊥,⊥V ⊤⊥ . (54) The first term corresponds exactly to ∂L/∂H r . Approximation bias arises from other blocks, which is carefully derived in following discussions. Consider the blocks of V⊤ ¯V:
+
+V⊤ ¯V =
+
+V ⊤
+
+V ⊤⊥
+
+  ¯V | ¯V⊥
+
+ =
+
+V ⊤ ¯V V ⊤ ¯V⊥
+
+V ⊤⊥ ¯V V ⊤⊥ ¯V⊥
+
+
+
+(55) then the three blocks in G can be expressed as: 
+
+Gr, ⊥ = Σ · Fr, ⊥ ◦ (V ⊤ ¯V⊥ + ¯V ⊤V⊥)
+
+G⊥,r = Σ ⊥ · F⊥,r ◦ (V ⊤ ¯V⊥ + ¯V ⊤V⊥)
+
+G⊥,⊥ = ¯Σ⊥ + 2Σ ⊥ · F⊥,⊥ ◦ sym( V ⊤⊥ ¯V⊥)
+
+(56) To identify the dominant bias term, we simplify these blocks with the following observations: 1. Since the loss function only depends on the Top-r components, the upstream gradient ¯V⊥ = 0 and ¯Σ⊥ = 0 , which leads to G⊥,⊥ = 0 and V ⊤ ¯V⊥ = 0 .2. Assume the Top-r singular values are significant while the others are negligible, i.e., σ(Σ) ≫ σ(Σ ⊥). Therefore, G⊥,r 
+
+is negligible since scaled by Σ⊥.Focusing on Gr, ⊥, we further approximate F. For indices i ≤ r and j > r , the approximation σi ≫ σj ≃ 0 yields: 
+
+(Fr, ⊥)ij = 1
+
+σ2 
+
+> i
+
+− σ2
+
+> j
+
+≃ 1
+
+σ2
+
+> i
+
+=⇒ Fr, ⊥ ≃ Σ−2. (57) Substituting back into Gr, ⊥:
+
+Gr, ⊥ ≃ Σ · (Σ −2) ◦ ( ¯V ⊤V⊥) = Σ −1 ¯V ⊤V⊥. (58) Based on the derived interaction block, the explicit form of the bias E is given by the projection of the noise coupling term back to the input space: 
+
+E ≃ U G r, ⊥V ⊤⊥ = U Σ−1 ¯V ⊤(Id − V V ⊤). (59) To quantify the potential risk, we estimate the upper bound of its magnitude. Let ¯Vorth = ¯V ⊤(Id − V V ⊤) denote the component of the upstream gradient lying in the noise subspace. The magnitude of the bias is bounded by: 
+
+∥E∥ F = ∥U Σ−1 ¯Vorth ∥F ≤ ∥ U ∥2 · ∥ Σ−1∥2 · ∥ ¯Vorth ∥F = 1
+
+σr
+
+∥ ¯Vorth ∥F , (60) where σr is the smallest singular value in the signal subspace (the r-th singular value). This upper bound implies that the full gradient is prone to numerical instability as σr → 0, where the factor Σ−1 arbitrarily amplifies orthogonal noise. Our mechanism serve as a spectral regularizer by enforcing ∥E∥ = 0 , effectively filtering out high-variance components to preserve informative signals. 14 SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+## C. Proof Details 
+
+C.1. Proof of Theorem 4.2 
+
+Proof. The population risk R(f ) can be decomposed into independent optimization problems for each pair (i, j ). Let 
+
+∆ij = f (xi) − f (xj ) be the logit difference. Minimizing Eq. (17) is equivalent to minimizing each pair: 
+
+min 
+
+> ∆ij
+
+EX [π⋆ij (X) log(1 + e−∆ij ) + (1 − π⋆ij (X)) log(1 + e∆ij )] = pij log(1 + e−∆ij ) + (1 − pij ) log(1 + e∆ij ).
+
+(61) 
+
+This objective is strictly convex with respect to ∆ij . The optimality condition is: 
+
+∂Obj 
+
+∂∆ij 
+
+= −pij 
+
+e−∆ij 
+
+1 + e−∆ij + (1 − pij ) e∆ij 
+
+1 + e∆ij = 0 . (62) With σ(z) = 11+ e−z , this simplifies to: 
+
+−pij (1 − σ(∆ ij )) + (1 − pij )σ(∆ ij ) = 0 = ⇒ σ(∆ ij ) = pij . (63) Solving for ∆ij yields log( pij /(1 − pij )) .
+
+C.2. Proof of Corollary 4.3 
+
+Proof. Consider any point-wise scorer f ∈ F point . By definition, the score f (x) depends solely on item x, implying that the predicted score difference ∆ij = f (xi) − f (xj ) is a constant scalar independent of the context X. Consequently, the predicted ordering sgn(∆ ij ) is static. However, under Assumption 4.1, the ground-truth ordering sgn( η⋆(xi, X ) − η⋆(xj , X )) takes opposite values in contexts 
+
+X(1) and X(2) . Therefore, regardless of the specific value to which f converges, f must misclassify the preference relation on at least one of the contexts. Since the misclassification event occurs with probability at least min( P(X(1) ), P(X(2) )) > 0, the indicator function in the definition of Bipartite Ranking Risk (Definition 3.2) contributes a non-zero value to the expectation. Thus, R(f ) > 0.
+
+C.3. Proof of Theorem 4.4 
+
+Proof. We first bound the empirical Rademacher complexity ˆRS (ℓ ◦ F point ). Given that the loss function ℓ is 1-Lipschitz, by Talagrand’s lemma, we have: ˆRS (ℓ ◦ F point ) ≤ ˆRS (Fpoint ). (64) Let {σu,i } be i.i.d. Rademacher variables. Following the definition of Fpoint , let zu,i = ϕ(u, x u,i ) denote the latent representation. The empirical Rademacher complexity of Fpoint is: 
+
+ˆRS (Fpoint ) = Eσ
+
+h
+
+sup 
+
+> ∥w∥2≤W
+
+1
+
+mN 
+
+> N
+
+X
+
+> u=1
+> m
+
+X
+
+> i=1
+
+σu,i w⊤zu,i 
+
+i
+
+= 1
+
+mN Eσ
+
+h
+
+sup 
+
+> ∥w∥2≤W
+
+w⊤ X 
+
+> u,i
+
+σu,i zu,i 
+
+i 
+
+= WmN Eσ
+
+h X
+
+> u,i
+
+σu,i zu,i 2
+
+i
+
+, (65) where the last equality follows from 
+
+sup 
+
+> ∥w∥2≤W
+
+w⊤v = W ∥v∥2. (66) Applying Jensen’s inequality, we obtain: 
+
+ˆRS (Fpoint ) ≤ WmN 
+
+s
+
+Eσ
+
+h X
+
+> u,i
+
+σu,i zu,i 
+
+> 22
+
+i
+
+= WmN 
+
+s
+
+Eσ
+
+h X 
+
+> u,i
+
+X
+
+> v,j
+
+σu,i σv,j z⊤
+
+> u,i
+
+zv,j 
+
+i
+
+.
+
+15 SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+Since σu,i are independent with zero mean, the expectation E[σu,i σv,j ] is 1 if (u, i ) = ( v, j ) and 0 otherwise. Thus: 
+
+Eσ
+
+h X
+
+> u,i
+
+σu,i zu,i 
+
+> 22
+
+i
+
+=
+
+> N
+
+X
+
+> u=1
+> m
+
+X
+
+> i=1
+
+∥zu,i ∥22 ≤ mN B 2, (67) Substituting back, we have ˆRS (Fpoint ) ≤ WmN 
+
+√mN B 2 = W B √mN . Taking expectation over sample S yields result in (23) and (24). 
+
+C.4. Proof of Theorem 4.5 
+
+Proof. Similar to Theorem 4.4, we have: ˆRS (ℓ ◦ F set ) ≤ ˆRS (Fset ). (68) The key difference from the point-wise case is the dependency structure: requests are independent samples while items within each candidate set Xu are dependent. Hence, we use one Rademacher variable per request, i.e., {σu}Nu=1 . Define the set-wise empirical Rademacher complexity: 
+
+ˆRS (Fset ) = Eσ
+
+h
+
+sup 
+
+> ∥w∥2≤W
+
+1
+
+mN 
+
+> N
+
+X
+
+> u=1
+
+σumX
+
+> i=1
+
+w⊤zu,i 
+
+i
+
+= 1
+
+mN Eσ
+
+h
+
+sup 
+
+> ∥w∥2≤W
+
+w⊤ NX
+
+> u=1
+
+σumX
+
+> i=1
+
+zu,i 
+
+| {z }
+
+> =: ¯Zu
+
+i 
+
+= WmN Eσ
+
+h NX
+
+> u=1
+
+σu ¯Zu 2
+
+i
+
+.
+
+Applying Jensen’s inequality and expanding the squared norm: 
+
+ˆRS (Fset ) ≤ WmN 
+
+vuutEσ
+
+h NX
+
+> u=1
+
+σu ¯Zu
+
+> 22
+
+i
+
+= WmN 
+
+vuutEσ
+
+h NX
+
+> u=1
+> N
+
+X
+
+> v=1
+
+σuσv ¯Z⊤ 
+
+> u
+
+¯Zv
+
+i
+
+.
+
+Since σu are independent across users with zero mean, the cross terms vanish for u̸ = v, and E[σ2
+
+> u
+
+] = 1 . Hence: 
+
+Eσ
+
+h NX
+
+> u=1
+
+σu ¯Zu
+
+> 22
+
+i
+
+=
+
+> N
+
+X
+
+> u=1
+
+∥ ¯Zu∥22 =
+
+> N
+
+X
+
+> u=1
+> m
+
+X
+
+> i=1
+
+zu,i 
+
+> 22
+
+. (69) We now bound ∥ Pmi=1 zu,i ∥22 using the latent correlation assumption. For any fixed user u:
+
+> m
+
+X
+
+> i=1
+
+zu,i 
+
+> 22
+
+=
+
+> m
+
+X
+
+> i=1
+
+∥zu,i ∥22 + X
+
+> i̸=j
+
+z⊤
+
+> u,i
+
+zu,j ≤ mB 2 + m(m − 1) ρB 2 = mB 2 1 + ( m − 1) ρ,
+
+where we used the bound ∥zu,i ∥2 ≤ B and the correlation condition (25) . Substituting this back into the complexity bound: 
+
+ˆRS (Fset ) ≤ WmN 
+
+vuut NX
+
+> u=1
+
+mB 2 1 + ( m − 1) ρ = WmN 
+
+q
+
+N mB 2 1 + ( m − 1) ρ = W B 
+
+√mN 
+
+p1 + ( m − 1) ρ. 
+
+Taking the expectation over S yields (26) . Finally, substituting (26) and the number of independent sampling units T = N
+
+(at the user level) into the standard generalization bound (22) yields the result in (27). 
+
+C.5. Proof of Lemma 4.7 
+
+Proof. Let k = |P u|, π i = exp( si)Pmj=1 exp( sj ) be the softmax probability of item i. The gradient of ℓlist w.r.t. any score st is: 
+
+∂ℓ list 
+
+∂s t
+
+=
+
+(
+
+− 1 
+
+> k
+
++ πt, if t ∈ P u (positive item) ,πt, if t / ∈ P u (negative item) . (70) 16 SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+Compute the squared ℓ2-norm of the gradient vector ∇sℓ:
+
+∥∇ sℓ∥22 = X
+
+> t∈P u
+
+
+
+− 1
+
+k + πt
+
+2
+
++ X
+
+> t / ∈P u
+
+(πt)2 = X
+
+> t∈P u
+
+ 1
+
+k2 − 2
+
+k πt + π2
+
+> t
+
+
+
++ X
+
+> t / ∈P u
+
+π2
+
+> t
+
+= X
+
+> t∈P u
+
+1
+
+k2 − 2
+
+k
+
+X
+
+> t∈P u
+
+πt +
+
+> m
+
+X
+
+> t=1
+
+π2 
+
+> t
+
+= k · 1
+
+k2 − 2
+
+k πpos + ∥π∥22 = 1
+
+k − 2
+
+k πpos + ∥π∥22,
+
+(71) where πpos = P 
+
+> t∈P u
+
+πt ∈ [0 , 1] is the total probability mass on positive items. Since ∥π∥22 ≤ P πi = 1 and πpos ≥ 0, the maximum value is bounded by: 
+
+∥∇ sℓ∥22 ≤ 1
+
+k + 1 ≤ 2 (since k ≥ 1) . (72) Thus, ∥∇ sℓ∥2 ≤ √2, confirming the loss is √2-Lipschitz regardless of the number of positive items. 
+
+C.6. Proof of Theorem 4.9 
+
+Proof. Pointwise: Let the pointwise model be defined as zk = ϕθ (u, x k), where ϕθ is a continuous mapping. For deep neural networks with bounded weights, ϕθ is Lipschitz continuous. There exists a constant K such that: 
+
+∥zi − zj ∥ = ∥ϕθ (xi) − ϕθ (xj )∥ ≤ K∥xi − xj ∥ (73) Substituting the input decomposition, we have ∥xi − xj ∥ = ∥di − dj ∥. Since the discriminative variations are minute, the Euclidean distance between outputs is constrained to be small. Assuming ∥zi∥ = ∥zj ∥ = 1 , the squared distance is related to correlation by ∥zi − zj ∥2 = 2(1 − ρpoint ). The Lipschitz condition implies: 
+
+2(1 − ρpoint ) ≤ K2∥di − dj ∥2 = ϵ (74) Thus, ρpoint ≥ 1 − ϵ 
+
+> 2
+
+→ 1. The pointwise network preserves the topological collinearity of the input space, leading to an update conflict where gradients cannot effectively separate zi and zj .
+
+Setwise. Let the setwise model be defined as zk = ϕθ (u, x i, X u), where Xu is the candidate set. The set-wise attention mechanism computes the representation as: 
+
+zk = WV xk − X
+
+> i∈Xu
+
+αk,i xi
+
+!
+
+(75) To maximize the margin si − sj , the gradient descent encourages the attention mechanism to ignore common features and extract differences. Specifically, the aggregated context vector approximates the common component c. The effective transformation becomes a projection onto the subspace orthogonal to c:
+
+zi → P c⊥ (xi) = di, zj → P c⊥ (xj ) = dj (76) By removing the dominant common component, the output representations are dominated by the discriminative terms di
+
+and dj . Assuming the distinct features are i.i.d., they are orthogonal in high-dimensional space ( di ⊥ dj ). The resulting correlation is: 
+
+ρset ∝ d⊤ 
+
+> i
+
+dj → 0 (77) Hence we conclude that ρset ≪ ρpoint . The setwise architecture breaks the correlation bottleneck by dynamically filtering out the shared context, thereby effectively minimizing the listwise ranking loss. 
+
+## D. Construction of Datasets 
+
+RecFlow. RecFlow (Liu et al . , 2025) logs user behavior throughout a multi-stage industrial recommendation pipeline, making the candidate sets at intermediate stages directly observable rather than inferred from final exposure alone. We follow the dataset protocol and use the 2nd period from Feb 5th to Feb 18th, which contains 3,308,233 requests. Our experiments intercept the pipeline at the re-ranking stage. For each request, we take the top 120 items passed from the upstream ranking module and retain their original order as a positional reference feature. The model consumes item-side attributes, including video ID, category, and author-related fields such as upload type, age, gender, and device type, together with a user-context sequence of fixed length 50 that captures recent interactions. 17 SOLAR: SVD-Optimized Lifelong Attention for Recommendation 
+
+MIND. MIND (Wu et al . , 2020) is a large-scale benchmark derived from Microsoft News impression logs. Each labeled sample follows the format [uID, t, ClickHist, ImpLog ], where ImpLog enumerates the news articles displayed in an impression with click labels and ClickHist records the user’s previously clicked news IDs in chronological order. Each news article provides a news ID, title, abstract, body, and an editor-assigned category; the release also includes extracted entities linked to WikiData, along with knowledge triples and embeddings. We treat each impression as a request and use the displayed articles in ImpLog as the base candidate set. Beyond the real exposures, we augment the candidate set with additional negatives drawn from the full news pool: some are sampled uniformly at random, others are selected from globally popular articles, and the remainder are chosen from similar item set. 18

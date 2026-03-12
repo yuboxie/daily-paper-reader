@@ -1,0 +1,321 @@
+Title: Goal-Driven Risk Assessment for LLM-Powered Systems: A Healthcare Case Study
+
+URL Source: https://arxiv.org/pdf/2603.03633v1
+
+Published Time: Thu, 05 Mar 2026 01:23:11 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Goal-Driven Risk Assessment for LLM-Powered Systems: A Healthcare Case Study 
+
+Neha Nagaraja 
+
+School of Informatics, Computing, and Cyber Systems Northern Arizona University Flagstaff, USA nn454@nau.edu 
+
+Hayretdin Bahsi 1,2 
+
+> 1
+
+School of Informatics, Computing, and Cyber Systems Northern Arizona University, Flagstaff, USA 
+
+> 2
+
+Department of Software Science Tallinn University of Technology, Tallinn, Estonia hayretdin.bahsi@nau.edu 
+
+Abstract — While incorporating LLMs into systems offers sig-nificant benefits in critical application areas such as healthcare, new security challenges emerge due to the potential cyber kill chain cycles that combine adversarial model, prompt injection and conventional cyber attacks. Threat modeling methods enable the system designers to identify potential cyber threats and the relevant mitigations during the early stages of development. Although the cyber security community has extensive experience in applying these methods to software-based systems, the elicited threats are usually abstract and vague, limiting their effectiveness for conducting proper likeli-hood and impact assessments for risk prioritization, especially in complex systems with novel attacks surfaces, such as those involving LLMs. In this study, we propose a structured, goal driven risk assessment approach that contextualizes the threats with detailed attack vectors, preconditions, and attack paths through the use of attack trees. We demonstrate the proposed approach on a case study with an LLM agent-based healthcare system. This study harmonizes the state-of-the-art attacks to LLMs with conventional ones and presents possible attack paths applicable to similar systems. By providing a structured risk assessment, this study makes a significant contribution to the literature and advances the secure-by-design practices in LLM-based systems. 
+
+Index Terms —healthcare, large language models, cyber threats, conversational attacks, adversarial attacks, risk analysis 
+
+1. Introduction 
+
+Large Language Models (LLMs) are increasingly being adopted across diverse domains to perform a wide range of tasks, including information retrieval, text generation, sum-marization, question answering, and decision support [1]. In healthcare, LLMs to support clinical decision-making, facilitate patient communication, and automate the summa-rization of medical records [2]. As AI becomes foundational to critical infrastructure and sensitive sectors like healthcare, securing them against adversarial threats is imperative. The 2025 America’s AI Action Plan [3] underscores this urgency, calling for secure-by-design AI and structured approaches to risk assessment and vulnerability identification. Despite gains in efficiency and personalized care, inte-grating LLMs into safety-critical healthcare workflows in-troduces severe security challenges. Unlike traditional soft-ware, LLMs exhibit emergent behaviors, complex interac-tions, and are vulnerable to adversarial manipulation across inputs and internal states [4]. This exposes them to both con-ventional and AI-specific security threats. Adversaries may manipulate behavior via prompt injection [5] or jailbreak [6], extract training data through model inversion or membership inference, or leak EHR content via session memory. These threats not only compromise the integrity and availability of healthcare services but also raise serious concerns about patient privacy, regulatory compliance, and overall system trustworthiness. Recent efforts including the OWASP Top 10 for LLMs [7] aim to identify and classify security threats in LLM-powered systems. However, the field still lacks the demonstration of structured risk assessment studies that connect identified threats to risks with real-world impact. In our prior work [8], we identified and classified threats across key components of an LLM-based healthcare system using a STRIDE-based methodology, establishing a compre-hensive foundation for understanding security posture and requirements. However, while prior work, including our own, has laid the groundwork for identifying threats in LLM-based systems, there remains a critical gap in how these threats are assessed in terms of risk. Existing studies [9], [10] tend to stop at threat enumeration or qualitative assessments, without offering a structured framework to evaluate which threats are most severe, under what conditions they emerge, or how they can be systematically prioritized. Identified threats are usually abstract and vague, without being linked to potential attack scenarios and paths, which complicates the likelihood assessment of threats. It is difficult to perceive their impacts, as threats are individually elicited for each system component without being equipped with relevant information on how they induce the final impact. Thus, the lack of contextualization for the elicited individual threats does not lead to structured risk evaluation practices, reduc-ing the practical utility of existing threat models, particularly in healthcare, where LLM errors can jeopardize patient safety, clinical accuracy, and regulatory compliance. To address the current gap in structured risk assessment for LLM-based systems, we present a goal-driven risk mod-
+
+> arXiv:2603.03633v1 [cs.CR] 4 Mar 2026
+
+eling framework, demonstrated in the context of healthcare. Departing from the threats identified for each system com-ponent in the threat modeling phase, our method utilizes attack trees to contextualize individual threats to achieve three clinically grounded attacker goals: (G1) Intervening in Medical Procedures, (G2) Leakage of EHR Data, and (G3) Disruption of Access or Availability, in a healthcare system. Each attack tree demonstrates how a combination of several adversarial actions, conventional cyber attacks, LLM-specific attacks (e.g., prompt injection) or adversarial model attacks (e.g., model extraction), could achieve the given high-level goals through concrete attack scenarios and paths. Thus, our method extends beyond threat enumeration, providing an enriched context to better assess the likelihood and impact of threats for more rigorous risk scoring prac-tices. This paper makes a significant contribution by present-ing the first rigorous, structured risk assessment specifically tailored to LLM-based healthcare systems. 
+
+2. Related Work 
+
+Although LLMs are rapidly adopted in critical domains like healthcare, structured methods to assess their security risks remain scarce. Prior studies have proposed threat taxonomies for LLMs, covering behaviors like prompt in-jection, data leakage, and hallucination, using STRIDE or stakeholder-centric views [9]–[12]. While informative, these efforts focus on classification and rarely link threats to systemic impact. Traditional risk assessment frameworks have been applied in healthcare IT domains, including wire-less networks and medical infrastructure [13]. Hospital data show shared IT and market concentration cause cascading outages [14]. Yet, these methods often rely on static, coarse grained views listing isolated issues without modeling how risks evolve or interact across components through attack scenarios. They omit attacker behavior, lack attack paths, and fail to capture how vulnerabilities propagate across workflows. As a result, they fall short in reflecting the full range of risks to clinical operations and patient safety [13]. Moreover, they overlook emergent LLM behaviors, con-text sensitive outputs, evolving memory states, and prompt susceptibility that complicate static threat enumeration and demand flexible, goal-driven risk models. Similarly, IoT-and embedded-device threat models [15]–[17] provide in-sight into cyber-physical risks but overlook AI-native threats and evolving software vulnerabilities. Work on user trust and AI-driven decision-making [18] focuses on patient–AI interactions and micro-level safety, but omits system-level risk modeling. Specifically, they fail to trace how threats propagate across broader infrastructure or interconnected components. Recent studies have moved beyond taxonomies and scoring systems by applying structured models like attack-defense trees to domains such as ATM systems [19] and ML pipelines [20]. However, these frameworks remain largely unexplored for the unique risks posed by LLMs in safety-critical settings. Schiele et al. [21] demonstrated that attack-defense trees can support explainable risk reasoning, even for users with limited technical background. While their work focused on defense-oriented modeling, it highlights the broader potential of tree-based approaches for transparent security analysis. In this study, we focus on the attack modeling side and apply structured attack trees to assess and prioritize risks in LLM-based healthcare systems. This approach lays the groundwork for future extensions toward defense planning and risk remediation. In contrast to prior studies, we propose a goal-driven risk assessment framework grounded in system-level modeling and clinical impact. By combining attack tree with Likeli-hood × Impact scoring, our approach bridges the gap be-tween qualitative threat taxonomies and practical, security-by-design reasoning for LLM-based healthcare systems. 
+
+3. Methodology 
+
+To structure our risk assessment, we adopt a layered methodology integrating system modeling, threat elicitation, attack tree construction, and risk quantification. Figure 1 il-lustrates this process. We begin by modeling the architecture and trust boundaries of the LLM-based healthcare system to define its threat surface. Next, we apply established frameworks; STRIDE, MITRE ATLAS, and OWASP Top 10 for LLMs to identify threats at the component level. These threats are then mapped into goal-driven attack trees, which outline the logical steps an adversary may take to achieve specific objectives. From these trees, we derive goal-specific risks, modeling their evolution from initial conditions (preconditions) to final impact. Finally, we assess each risk using a structured Likelihood × Impact framework, enabling effective prioritization. The following subsections detail each stage of this process. 
+
+3.1. System Modeling 
+
+To support structured risk assessment, we model a repre-sentative LLM-powered healthcare system that handles sen-sitive data, provides medical guidance, and integrates third-party services. Each component introduces distinct functions and potential vulnerabilities, forming the foundation for our attack tree–based risk evaluation. This architecture builds on our prior work [8], where we applied STRIDE for threat modeling. Here, we revisit it with a risk-oriented lens to highlight the security relevance of each component. The architecture consists of five core components: Web Application : Main interface for submitting natural language queries; forwards inputs securely and initiates session flow. 
+
+Healthcare Platform : Stores EHRs and provides clinical data to the Web App and Orchestrator. Orchestrator : Serves as the system’s coordination layer. It functions as an LLM agent, managing the end-to-end interaction across internal modules and external services. It consists of Task Executor 
+
+which parses and routes user queries, manages API calls, and initiates system actions. Task Planner , which gener-ates high-level strategies and prepares structured prompts for the LLM. Data Pipeline , stores intermediate data for System Modeling     
+
+> Model architectural components
+> and security boundaries to define
+> threat surfaces.
+> Threat Modeling
+> Identify component -level threats
+> using STRIDE and extend
+> taxonomy with MITRE and
+> OWASP.
+> Attack Tree Construction
+> Build goal -driven attack trees
+> using logical operators (AND/OR)
+> Risk Assessment
+> Derive risks from attack trees
+> Risk Quantification:
+> Likelihood ×Impact
+> Assign Likelihood ×Impact
+> scores to each risk
+
+Figure 1: Overview of the proposed risk assessment methodology reasoning. External Resources : APIs for translation, clin-ical databases, and analytical tools supporting data enrich-ment and multi-language support. Large Language Model (LLM) : Core reasoning engine that generates context-aware responses from structured prompts. 
+
+Assumptions : While prior threat modeling assumed inference-only LLMs, this risk assessment considers scenar-ios involving fine-tuning or adaptation, reflecting real-world healthcare practices and expanding the threat surface. 
+
+3.2. Threat Modeling 
+
+Our threat modeling builds on prior work [8], where we applied the STRIDE-per-element methodology to iden-tify threats across the system architecture. Each component including processes, data flows, data stores, and external entities was analyzed for potential threats relevant to LLM-powered healthcare environments. In STRIDE modeling, trust boundaries mark zones with different privilege levels. We defined eight: User, Healthcare Platform, External Resources, Orchestrator, LLM Interac-tion, External Communication, Model Management, and Data Logging. Cross-boundary flows were treated as poten-tial attack paths, while intra-boundary flows were assumed secure due to mutual trust. We compiled a comprehensive attack taxonomy using the MITRE ATLAS framework, extending it with critical entries from the OWASP Top 10 for LLMs [7] and tradi-tional cybersecurity threats. To support risk structuring, we categorized the identified the threats into three types [8]: (1) Conventional cyber threats that target infrastructure (e.g., MitM, unauthorized access); (2) Adversarial ML threats that exploit or subvert underlying models; and (3) Conversational threats that manipulate LLM behavior via inputs or context (e.g., prompt injection). The threats identified in this prior analysis form the foundation for the attack tree construction and risk assessment presented in this study. By reusing these findings, we model how threats propagate across compo-nents and inform risk prioritization. 
+
+3.3. Risk Assessment 
+
+Building on our previous threat modeling, we now present a risk assessment methodology that prioritizes risks by impact and likelihood. Instead of evaluating individual threats, we derive structured risk evaluations from the goal-specific attack trees developed in this study. These trees cap-ture how adversarial actions propagate through the system under specific conditions, allowing us to analyze each risk’s severity and the systemic consequences it may trigger. 
+
+Attack Tree (AT) Modeling : To guide structured risk analysis, we constructed dedicated attack trees for each high-level security goal: G1: Intervening in Medical Pro-cedures , G2: Leakage of EHR Data , and G3: Disruption of Access or Availability . Each tree models the various ways an adversary can achieve the goal, representing the attacker’s objective as the root node and tracing multiple attack paths through intermediate conditions and subgoals. Internal nodes correspond to necessary preconditions or attack steps, organized using logical operators: AND nodes capture dependencies that must all be satisfied, while OR nodes represent alternative means to progress. Leaf nodes represent atomic attack steps or system-level actions. These trees are grounded in threats identified in our prior threat modeling work. This structure allows us to analyze how specific threats propagate across the system and which con-ditions elevate a threat’s feasibility. To further support actionable risk estimation, we model how threats evolve over time. Preconditions to Final Impact: Risk is not static; it evolves as attackers progress through various system stages. To support actionable risk estimation, we model threats along a timeline of attacker goals, cap-turing their structured evolution—essential for overcoming the limitations of vague or isolated threat descriptions. By contextualizing each threat with its preconditions (what must be true for it to occur), execution phase (how the attack unfolds), and final impact (what consequence it produces), we transform abstract threat definitions into concrete, ana-lyzable attack scenarios. 1. Preconditions : the set of system states, vulnerabilities, or assumptions that must hold for an attack to be feasible. For example, for indirect prompt injec-tion, the presence of a maliciously embedded instruction in external resources is a critical enabler. 2. Execution Phase :the observable attack behavior e.g., submitting a malicious input, injecting a task, hijacking a session. 3. Final Im-pact : the ultimate result or system compromise(e.g., incor-rect diagnosis, EHR data leakage, system downtime). This phased structure allows us to trace how individiual threats can lead to high-severity system compromises, enabling early threat interception. Furthermore, it clarifies inter-dependencies across threat types. For example, consider a threat like indirect prompt injection. In a flat description, this may be summarized as “an attacker injects a malicious prompt via an external knowledge base.” However, using our structured threat evolution model: The precondition is that the system uses external plugins or resources (e.g., a trans-lator or knowledge base) without sanitization. The execution phase involves an attacker inserting a hidden instruction into a trusted external content source. The final impact is unauthorized intervention in medical procedures (e.g., LLM recommending a contraindicated drug). This decomposition reveals that indirect prompt injection shares a precondition (unsanitized third-party inputs) with risks like knowledge base poisoning, highlighting how different threats may stem from shared vulnerabilities. We do not treat each goal (e.g., G1) as a monolithic outcome. Instead, we break them down into risk instances (e.g., G1-R1 to G1-R4), each representing a distinct form of system compromise. These risks are derived from each goal’s attack tree by identifying sub-paths that result in high-impact outcomes (e.g., misdiagnosis, unauthorized proce-dures). Each risk aggregates specific attack vectors, mapped to Likelihood × Impact scores based on feasibility and severity. This allows for more precise risk prioritization and aligns with how real-world healthcare systems assess safety-critical and privacy-relevant threats. By visualizing both attack progression and threat esca-lation, these ATs help identify: Critical preconditions that enable high-impact threats, risks that persist across multiple paths, attack paths that span multiple system components. This approach moves beyond traditional risk tables by cap-turing the dynamics and conditional logic of real-world multi-stage attacks. While threat elicitation was component-driven, the risk assessment is goal-driven, structured around the three security goals introduced above. For each goal, we identify all relevant attack paths. For each risk instance (e.g., G1-R1), we consider all associated attack paths and identify the most feasible one based on attacker capabilities and system context. The Likelihood score is then assigned based on this dominant path, using our defined Likelihood framework Table 3. We assign risk scores (Likelihood × Impact) based on their severity and relevance to real-world deployment, We analyze the preconditions, dependencies, and likely impact zones. This dual mapping; component-to-threat and threat-to-goal ensures that no critical area of the system is overlooked. The goal-driven framing also aligns with real-world risk acceptance models in healthcare, where impact is often measured in terms of harm to patient care (G1), privacy breaches (G2), and operational disruption (G3). 
+
+Risk Quantification: Likelihood × Impact Matrix To assess the severity of risks modeled in our attack trees, we adopt a structured quantification framework based on the Likelihood × Impact matrix. Each risk is evaluated along two axes: Impact: the potential severity of harm or disruption if the attack succeeds. Likelihood: the probability that the attack path will be successfully executed under real-world conditions. We assess Likelihood using a two-factor framework grounded in attacker capability: Business Rule Knowledge – the degree of procedural or domain-specific understanding required (e.g., task orchestration, clinical de-cision logic). Technical Complexity – the level of effort and sophistication needed to execute the attack (e.g., prompt crafting, session hijacking, KV-cache access [22]). A risk can be realized by various attack paths. Rather than scoring each threat individually, we evaluate the over-all risk based on the most plausible attack path i.e., the one with the highest likelihood of success under realistic system conditions. For instance, a prompt injection that directly alters a treatment suggestion is more likely than one requiring multi-stage orchestration hijacking, even if both originate from the same initial vector. This context-aware scheme supports consistent and realistic Likelihood scoring across all goals. Scores reflect both system constraints and attacker knowledge dependencies. We adopt qualitative 1–5 scales based on real-world deployments, prior literature [23], and attacker effort–reward tradeoffs. The scoring criteria for Likelihood and Impact are detailed in Table 1 and Table 2. Risk levels are computed by multiplying the Likelihood and Impact scores, which helps prioritize high -severity threats and guide defense planning. TABLE 1: Likelihood Scale for Risk Assessment               
+
+> Score Likelihood Description
+> 1Rare Extremely unlikely; requires insider access or rare conditions 2Unlikely Requires effort, stealth, or partial misconfiguration 3Possible Feasible with moderate effort or misconfigurations 4Likely Known techniques exist; moderate mitigations present 5Almost Certain High probability; exploit is trivial or seen in field
+
+TABLE 2: Impact Scale for Risk Assessment             
+
+> Score Impact Description
+> 1Negligible No clinical harm; affects UI or workflow only 2Minor Affects a few non-critical patients; easily recoverable 3Moderate Recoverable clinical harm to a single patient 4Major Serious harm to one or moderate harm to many 5Catastrophic Life-threatening harm or system-wide failures
+
+To refine our risk assessment, we categorize how each attack path contributes to risk. We define three categories: Direct, Indirect, and Situational. A Direct path causes the risk outcome immediately, without requiring secondary sys-tem behavior (e.g., a corrupted model that fails to load, resulting in unavailability). An Indirect path leads to the outcome through a side effect, often by manipulating an intermediate component. For example, an adversarial prompt that causes an LLM to enter infinite generation may over-load the request-handling infrastructure, leading to denial of service. Here, the side effect is resource exhaustion, and the intermediate component is the system’s task queue. Situational paths manifest only under specific conditions such as rare execution states or misconfigurations (e.g., an orchestrator routing failure that occurs only when two specific agents are active). These classifications are not static; the same threat can play different roles depending on the risk scenario. For instance, model tampering may be a Direct contributor to G1-R1 (misdiagnosis) but an Indirect factor in G1-R2 (unauthorized procedures). This contextual labeling clarifies how threats materialize in practice. It also influences our Likelihood scoring; Direct paths tend to be more feasible, while Indirect or Situational paths may depend on complex system conditions and thus have lower likelihoods. Additionally, this understanding informs mitiga-tion prioritization, as Direct paths often demand more urgent defenses compared to edge-case Situational threats. Overall, this threat-path classification enhances our risk reasoning by linking operational conditions with exploit feasibility. This layered methodology rooted in threat evolution, structured goal modeling, and qualitative risk scoring pro-vides actionable insights into where risks are most concen-trated and how they evolve. It also lays the foundation for future work on mitigation design and defense prioritization. Due to space constraints, this paper presents the detailed risk assessment only for Goal G1. 
+
+4. Results 
+
+Goal-Driven Risk Analysis - G1: Intervening in Med-ical Procedures 
+
+This goal captures how adversaries may manipulate the LLM-powered healthcare system to disrupt medical decision-making, potentially leading to harmful diagnoses, unsafe treatments, or unauthorized workflow changes. Fig-ure 3 illustrates the Attack Tree, where each attack path stems from the adversary’s objective and unfolds through specific system-level preconditions. These threats, grounded in our STRIDE-based modeling, are structured to reflect the sequence of enabling conditions and system actions required for successful exploitation The root node represents the adversary’s objective In-tervene in Medical Procedures and is decomposed into five major attack vectors, each modeled as a high-level child node: 
+
+Prompt injection attacks manipulate LLM inputs to influence medical recommendations. These require a Com-promise of Prompt Channel, via user hijacking, device compromise, malicious user, leaked API keys, or MitM, each modeled as OR conditions in the AT. Once access is gained, attackers inject prompts via direct [5] (explicit or obfuscated commands) or indirect [5] means embedding hidden instructions through intermediaries like translators or knowledge bases. Indirect paths require embedding hidden instructions in benign content and proceed via translator tampering, KB poisoning, social engineering, or agent tool injection. 
+
+LLM Session Mismanagement In the context of our system architecture, an LLM session refers to a coherent, stateful interaction between the user-facing web application and the underlying large language model (LLM), mediated by an orchestrator agent. This session includes the exchange of prompts and responses, contextual memory, and task-specific metadata managed during a single user interaction. As illustrated in Figure 2 , the orchestrator maintains session continuity by forwarding user inputs to the LLM, handling intermediate outputs, and retaining memory across steps to enable multi-turn reasoning and consistent clinical re-sponses. LLM session mismanagement arises when precon-ditions such as weak authentication, lack of user isolation, or missing context purging allow attackers to influence session behavior. To exploit these conditions, an attacker must first obtain session credentials (e.g., by compromising the web application), intercept traffic between the web app and orchestrator, or gain insider access to manipulate session metadata. These weaknesses, modeled as OR conditions in the Attack Tree, can lead to takeover of active sessions or manipulation of retained memory. Attackers may perform session hijacking by stealing or reusing tokens, or session fixation by injecting a predefined session ID that the system later accepts. In both cases, corrupted memory can silently redirect clinical reasoning or bypass safety constraints. User Orchestrator  
+
+> Session
+> Cache
+> Layer
+> Web
+> Application LLM
+
+Figure 2: Workflow of the LLM-based Healthcare System. 
+
+Orchestration Errors The orchestrator coordinates user queries by planning tasks, executing them, and managing data flows across components and external tools. This en-ables multi-step reasoning but also introduces a sensitive control layer. Errors arise when workflow integrity is com-promised—often due to missing checks, weak API authen-tication, or unvalidated reuse of shared memory. These are modeled as OR conditions in the Attack Tree. Once these preconditions are met, adversaries can launch several attack paths. In Task Injection, malicious tasks are added to the pipeline to trigger unauthorized behavior or invoke unsafe tools (e.g., ShadowRay attack [24]). Task Mismanagement involves reordering or misrouting tasks, leading to incon-sistent or unsafe clinical outputs. In Memory Poisoning, adversarial data is introduced into intermediate memory structures, corrupting downstream decisions. Finally, Agent-in-the-Middle [25] attacks exploit plugin-based architectures by spoofing trusted agents and injecting falsified data. To exploit these paths, attackers often require internal access to the orchestration environment (e.g., compromised MLOps tools or plugin APIs), or a foothold within the network to intercept and manipulate task pipelines. They degrade system logic and influence how the LLM interprets inputs. 
+
+Model tampering refers to unauthorized manipulation, replacement, or extraction of the deployed LLM to alter its behavior or leak internal knowledge. In our system, it can distort diagnoses, produce unsafe outputs, or compromise clinical reliability. As modeled in the AT, tampering pro-ceeds through three major paths: poisoning, replacement, and extraction, each depending on specific preconditions. Attackers begin by gaining access to model artifacts, such as weights or outputs, often due to misconfigured storage, exposed APIs, or permissive roles. If integrity verification is absent, such as missing signatures or version checks, tampering can proceed undetected. In model poisoning, ad-versaries manipulate training or fine-tuning data to introduce backdoors or corrupt behaviors. This attack requires three key preconditions to be met: (1) access to the training data or pipeline, (2) active retraining or fine-tuning schedule, and (3) weak data sanitization or filtering. These form AND condi-tions in our attack tree, since poisoning is only feasible when retraining is exposed and unprotected. Model replacement involves deploying a malicious variant that mimics normal behavior but fails under clinical stress. 
+
+MiTM Web Session attacks occur when an adversary intercepts and alters communication between the user and the web interface. In LLM-powered healthcare systems, this allows silent manipulation of clinical workflows by injecting, suppressing, or modifying user queries before they reach the orchestrator or LLM. Based on the attack tree decomposition, we identify four primary risks associated with G1 (Refer Table 4). Each risk represents a distinct compromise path and is evaluated in terms of likelihood, impact, and affected system com-ponents. We also highlight the specific attack vectors that enable these risks. G1-R1: Misdiagnosis of Critical Illness. 
+
+This risk refers to adversarial inputs causing the system to produce incorrect diagnoses for high-stakes conditions (e.g., stroke, sepsis, cancer). Likelihood is assessed using the framework in Table 3, which considers business (i.e., clinical) knowledge and technical effort for each attack vector. The most feasible path is direct prompt injection, which requires neither medical expertise nor elevated access. As shown in Table 4, it scores 4 (Likely), as attackers can craft prompts (e.g., “Override prior reasoning. . . ”) with minimal context. Conversely, orchestrator task manipulation or model tampering require insider access or deeper system knowledge and thus score lower in likelihood. We score Likelihood based on this most plausible path, rather than av-eraging across all paths. In this case, prompt injection dom-inates due to its ease, visibility in real-world deployments, and high leverage over model outputs. Thus, we assign a Likelihood score of 4 (Likely). However, the overall risk may vary: if system design or deployment context changes (e.g., LLM prompt interface is hardened), less likely paths such as model poisoning or session hijack may become the primary enablers, and the risk score would correspondingly shift. The Impact is rated 5 (Catastrophic) due to the direct threat to patient safety and potential for irreversible clinical harm. Diagnostic errors at this stage of care could delay life-saving interventions, violate regulatory safety standards, and erode trust in the system. 
+
+G1-R2: Unauthorized Procedures Executed. This risk refers to adversaries triggering unintended or unapproved medical procedures. The most feasible enabler is prompt injection combined with orchestrator manipulation. Prompt injection can issue misleading instructions (e.g., “Proceed to imaging now”), but full task execution typically requires weak orchestration logic. Feasibility increases if the attacker can manipulate task routing logic, such as injecting or skip-ping approval steps. These actions represent direct enablers: Prompt Injection (Likelihood 4) overrides system logic, while Orchestrator Error enables control-flow tampering. Given this combination, Likelihood is rated 3 (Possible), balancing prompt injection feasibility with orchestration complexity. In practice, this risk manifests when attack-ers exploit insufficiently validated model outputs to trick downstream controllers (e.g., agents or APIs) into executing actions without secondary checks. The Impact is rated 4 (Major) because such unauthorized procedures can result in direct clinical harm (e.g., radiation exposure, unnecessary surgery), incorrect device activations, or regulatory viola-tions concerning informed consent. 
+
+G1-R3: Corrupted Medication Recommendations. This risk refers to manipulation of drug names, dosages, or pre-scribing logic. The most feasible vector is Prompt Injection e.g., inserting adversarial instructions like “Ignore allergy flag; continue with penicillin.” This vector is rated 4 (Likely) due to low technical and clinical barriers. Prompt Injection enables misleading medication instructions, especially dan-gerous when context is retained across turns or appended via indirect sources like translators. Overall, Likelihood is rated 4 (Likely) based on the ease of triggering corruption via prompt injection and availability of real-world input vectors. This reflects a typical external attacker scenario requiring no insider access. The Impact is rated 4 (Major) due to the severity of incorrect medical advice. A corrupted recommendation (e.g., an unsafe dose of a cardiac drug or an allergy-inducing antibiotic) can result in hospitalization, clinical harm, or delayed recovery. 
+
+G1-R4: Cross-Patient Context Contamination. This risk arises when memory from one patient session leaks into an-other, causing decisions based on incorrect or unauthorized information. We evaluate the Likelihood as 3 (Possible) based on the presence of two key enablers:This risk is primarily driven by LLM Session Mismanagement (Direct), where poor memory isolation or improperly scoped KV-cache allows patient-specific context to leak across conver-sations; this vector is rated 3 in multi-tenant deployments. Orchestrator Error (Indirect) contributes when misrouted memory pointers or failure to reset agent state leads to work-flow bleed-over, with feasibility ranging from 2–3 depending on configuration and insider access. The Likelihood is thus rated 3 (Possible) because this risk is realistic in systems with weak session controls, particularly when LLM context memory or agent memory is reused across users. However, the need for either deployment-specific misconfiguration or insider access prevents a higher score. The Impact is rated 3 (Moderate), as this form of contamination can cause diagnostic confusion (e.g., recommending tests based on the wrong patient history), or introduce misleading context (e.g., one patient’s condition being mistakenly factored into an-other’s care plan). While serious, these issues are generally limited to individual interactions and are often reversible with audit or intervention. 
+
+5. Discussion 
+
+While this study presents a structured and goal-driven risk assessment framework for LLM-based systems, several important directions remain for future work. First, we plan to extend our risk quantification framework by integrating multi-metric scoring approaches, such as the Common Vul-nerability Scoring System (CVSS) or sector-specific threat prioritization criteria. This will allow more granular risk calibration beyond the current Likelihood × Impact model. Second, we aim to develop a comprehensive set of mitiga-tion strategies derived from the attack trees. These will in-clude both technical countermeasures (e.g., session isolation, prompt sanitization, model integrity checks) and operational safeguards (e.g., access controls, user role restrictions). By analyzing which paths most frequently lead to high-impact risks, we can also prioritize defenses more effectively. Third, we will validate our risk assessment methodology and re-sults through expert feedback from both healthcare profes-sionals and cybersecurity practitioners. This step is critical to ensure that our risk models reflect real-world conditions and capture domain-relevant threats and priorities. Finally, we plan to explore the use of LLMs them-selves to support threat modeling and risk analysis. Recent advances show that LLMs can generate attack scenarios or identify overlooked threats when guided appropriately [26]. Leveraging these models for semi-automated attack tree construction or likelihood estimation could significantly enhance scalability and reduce expert burden. 
+
+6. Conclusion 
+
+We presented a structured and goal-driven risk as-sessment framework for LLM-based healthcare systems, grounded in attack tree modeling. Starting from system-level threat elicitation, we constructed attack trees around clinically meaningful adversarial goals such as misdiagnosis, data leakage, and service disruption to trace how threats evolve through specific preconditions and execution paths. From these trees, we systematically derived high-stakes risks and quantified them using a tailored Likelihood × Impact framework that captures both technical feasibility and the specialized domain knowledge required to execute real-world attacks. This approach enables fine-grained, real-world risk prioritization and offers a scalable foundation for assessing AI-native threats in safety critical settings. By bridging abstract threat modeling with actionable risk reasoning, our work advances the security analysis of LLM-powered healthcare systems. 
+
+7. Acknowledgment 
+
+We thank the anonymous HealthSec 2025 reviewers for their valuable feedback. 
+
+References 
+
+[1] OpenAI, J. Achiam, S. Adler, and et al., “GPT-4 Technical Report,” OpenAI, Tech. Rep., 2024, available at https://arxiv.org/abs/2303. 08774. [2] K. Denecke, R. May, LLMHealthGroup, and O. Rivera Romero, “Potential of large language models in health care: Delphi study,” 
+
+Journal of Medical Internet Research , vol. 26, p. e52399, 2024. [Online]. Available: https://doi.org/10.2196/52399 [3] The White House, “Winning the race: America’s ai action plan,” July 2025. [Online]. Available: https://www.ai.gov/action-plan [4] L. Zhui, L. Fenghe, W. Xuehu, F. Qining, and R. Wei, “Ethical considerations and fundamental principles of large language models in medical education: Viewpoint,” Journal of Medical Internet Research , vol. 26, p. e60083, 2024. [Online]. Available: https://www.jmir.org/2024/1/e60083 [5] S. Rossi, A. M. Michel, R. R. Mukkamala, and J. B. Thatcher, “An early categorization of prompt injection attacks on large language models,” 2024. [Online]. Available: https://arxiv.org/abs/2402.00898 [6] J. Chu, Y. Liu, Z. Yang, X. Shen, M. Backes, and Y. Zhang, “Comprehensive assessment of jailbreak attacks against llms,” 2024. [Online]. Available: https://arxiv.org/abs/2402.05668 [7] OWASP, “Owasp top 10 for large language model applications,” 2023-2024. [Online]. Available: https://genai.owasp.org/llm-top-10-2023-24/ [8] N. Nagaraja and H. Bahsi, “Cyber threat modeling of an llm-based healthcare system,” in Proceedings of the 11th International Con-ference on Information Systems Security and Privacy - Volume 1: ICISSP , INSTICC. SciTePress, 2025, pp. 325–336. [9] R. Pankajakshan, S. Biswal, Y. Govindarajulu, and G. Gressel, “Mapping llm security landscapes: A comprehensive stakeholder risk assessment proposal,” 2024. [Online]. Available: https://arxiv. org/abs/2403.13309 [10] S. B. Tete, “Threat modelling and risk analysis for large language model (llm)-powered applications,” 2024. [Online]. Available: https://arxiv.org/abs/2406.11007 [11] R. Hamid and S. Brohi, “A review of large language models in healthcare: Taxonomy, threats, vulnerabilities, and framework,” Big Data and Cognitive Computing , vol. 8, no. 11, p. 161, 2024. [Online]. Available: https://doi.org/10.3390/bdcc8110161 [12] J. Clusmann, D. Ferber, I. C. Wiest, C. V. Schneider, T. J. Brinker, S. Foersch, D. Truhn, and J. N. Kather, “Prompt injection attacks on large language models in oncology,” 2024. [Online]. Available: https://arxiv.org/abs/2407.18981 [13] M. Aijaz, M. Nazir, and M. N. A. Mohammad, “Threat modeling and assessment methods in the healthcare-it system: A critical review and systematic evaluation,” SN Computer Science , vol. 4, no. 6, September 2023. [Online]. Available: https://doi.org/10.1007/s42979-023-02221-1 [14] W. Yurcik, A. Schick, S. North, M. T. Gastner, F. R. de Miranda, R. d. S. Avelino, A. F. d. M. Batista, G. Pluta, and I. Brooks, “Cybersecurity monitoring/mapping of usa healthcare (all hospitals): Magnified vulnerability due to shared it infrastructure, market concentration, and geographical distribution,” in Proceedings of the 2024 ACM Workshop on Cybersecurity in Healthcare (HealthSec ’24) ,2024. [Online]. Available: https://doi.org/10.1145/3689942.3694754 [15] A. Omotosho, B. A. Haruna, and O. M. Olaniyi, “Threat modeling of internet of things health devices,” Journal of Applied Security Research , vol. 14, no. 1, pp. 1–16, April 2019. [Online]. Available: https://doi.org/10.1080/19361610.2019.1545278 [16] V. Vakhter, B. Soysal, P. Schaumont, and U. Guler, “Threat modeling and risk analysis for miniaturized wireless biomedical devices,” IEEE Internet of Things Journal , vol. PP, no. 99, pp. 1–1, August 2022. [Online]. Available: https://doi.org/10.1109/JIOT.2022.3144130 [17] E. Kwarteng and M. Cebe, “Medicalharm - a threat modeling de-signed for modern medical devices,” in 2023 IEEE 22nd Interna-tional Conference on Trust, Security and Privacy in Computing and Communications (TrustCom) , 2023, pp. 1147–1156. [18] R. E. Thompson et al. , “There are rabbit holes i want to go down that i’m not allowed to go down: An investigation of security expert threat modeling practices for medical device,” in Proc. USENIX Security 2024 , 2024, pp. 4909–4926. [Online]. Available: https:// www.usenix.org/conference/usenixsecurity24/presentation/thompson [19] M. Fraile, M. Ford, O. Gadyatskaya, R. Trujillo-Rasua et al. , “Using attack-defense trees to analyze threats and countermeasures in an atm: A case study,” in Proc. IFIP PoEM 2016 , vol. 267, 2016, pp. 365–373. [Online]. Available: https://doi.org/10.1007/978-3-319-48393-1 24 [20] S. V. Hoseini et al. , “Threat modeling ai/ml with the attack tree,” pp. 1–1, January 2024, license: CC BY-NC-ND 4.0. [Online]. Available: https://doi.org/10.1109/ACCESS.2024.3497011 [21] N. D. Schiele and O. Gadyatskaya, “A limited technical background is sufficient for attack-defense tree acceptability,” 2025. [Online]. Available: https://arxiv.org/abs/2502.11920 [22] G. Wu, Z. Zhang, Y. Zhang, W. Wang, J. Niu, Y. Wu, and Y. Zhang, “I know what you asked: Prompt leakage via kv-cache sharing in multi-tenant llm serving,” in NDSS , 2025. [Online]. Available: https: //www.ndss-symposium.org/ndss-paper/i-know-what-you-asked-prompt-leakage-via-kv-cache-sharing-in-multi-tenant-llm-serving/ [23] University of Cambridge, “Ssa toolkit: Set risk criteria,” n.d. [Online]. Available: https://www.ssatoolkit.com/ssatoolkit/examine4setcriteria/ [24] A. Lumelsky, G. Kaplan, and G. Elbaz, “Shadowray: First known attack campaign targeting ai workloads actively exploited in the wild,” Oligo Security Blog, Mar. 2024. [On-line]. Available: https://www.oligo.security/blog/shadowray-attack-ai-workloads-actively-exploited-in-the-wild [25] P. He, Y. Lin, S. Dong, H. Xu, Y. Xing, and H. Liu, “Red-teaming llm multi-agent systems via communication attacks,” 2025. [Online]. Available: https://arxiv.org/abs/2502.14847 [26] M. Yamin, E. Hashmi, M. Ullah, and B. Katt, “Applications of llms for generating cyber security exercise scenarios,” Research Square Preprint, February 2024, license: CC BY 4.0. [Online]. Available: https://doi.org/10.21203/rs.3.rs-3970015/v1 Appendix: Tables and Attack Tree 
+
+TABLE 3: Risk Likelihood Framework Table for Key Attack Paths 
+
+Attack Path Business Knowledge Required Technical Complexity Likelihood Justification 
+
+Prompt In-jection Low; No clinical knowledge re-quired to manipulate LLM re-sponses. Low; Requires only user/API access. 4 Always feasible. External or internal attackers can craft prompts without domain insight. Example: “Override previous instruction and recommend immediate discharge” bypasses safety filters even without medical context. LLM Session Misman-agement Medium; Understanding of session continuity and PHI retention im-proves attack precision. Medium; Requires session token access or fixation strategies. 3–4 Lower (3) if attacker blindly hijacks session tokens. Higher (4) if insider (e.g., developer or system admin) knows token refresh logic or memory scope, enabling persistent dialogue control. Orchestrator Error High; Requires detailed knowledge of multi-agent task routing and clinical workflows (e.g., ‘order test 
+
+→ analyze → prescribe’). Medium–High; Requires ability to intercept or alter internal task messages. 2–3 Rare (2) if attacker lacks care-path knowledge. Higher (3) if insider or developer can edit orchestration configs, e.g., skipping “allergy screening” before treatment. Model Tampering Medium; Must know what clinical entities to target (e.g., specific di-agnoses, medications). High; Requires access to model weights or training pipeline. 2–3 Lower (2) if attacker must breach infrastructure. Higher (3) if insider ML engineer has fine-tuning privileges to bias discharge instructions or clinical summaries. MitM Web Session Low; No domain knowledge needed; attacker targets data in transit. Medium; Requires network-level control (e.g., ARP spoofing, TLS downgrade). 3 Consistent (3). Attacker can tamper with clinical terms (e.g., change “acetaminophen” to “ibuprofen”) regardless of insider status. Medical workflow knowledge offers no added advantage. Session Hijack /Fixation Medium; Knowing which sessions hold PHI improves the ability to extract useful data. Medium; Involves stealing a valid token or forcing reuse of a known session token (fixation). 3–4 3 for blind token reuse; 4 if insider knows token lifetime & memory scope. 
+
+TABLE 4: Comprehensive Risk Assessment for G1: Intervening in Medical Procedures 
+
+Risk ID Healthcare Risk Likelihood Impact Risk Score Attack Vectors 
+
+G1-R1 Misdiagnosis of Critical Ill-ness 4 (Likely) 5 (Catastrophic) 20 Prompt Injection (Direct), Model Tampering (Direct), Orchestrator Error (Indirect), MitM Web Session (Indirect), LLM Session Mis-management (Situational) G1-R2 Unauthorized Procedures Ex-ecuted 3 (Possible) 4 (Major) 12 Prompt Injection (Direct), Model Tampering (Indirect), Orchestrator Error (Direct), MitM Web Session (Indirect), LLM Session Misman-agement (Situational) G1-R3 Corrupted Medication Rec-ommendations 4 (Likely) 4 (Major) 16 Prompt Injection (Direct), Model Tampering (Direct), Orchestrator Error (Indirect), MitM Web Session (Direct), LLM Session Misman-agement (Indirect) G1-R4 Cross-Patient Context Con-tamination 3 (Possible) 3 (Moderate) 9 Orchestrator Error (Indirect), MitM Web Session (Direct), LLM Ses-sion Mismanagement (Direct) G1: Intervening       
+
+> in Medical
+> Procedures
+> Orchestrat
+> or Error
+> Compromi
+> se
+> Orchestrati
+> on
+> Workflow
+> Perform
+> Orchestrati
+> on
+> Manipulati
+> on
+> Task
+> Injection
+> Task
+> Mismanage
+> ment
+> Memory
+> Poisoning
+> Agent in
+> the Middle
+> Shared
+> context
+> memory
+> not
+> validated
+> Weak
+> Authenticat
+> ion
+> Lack of
+> Integrity
+> Check
+> Prompt
+> Injection
+> Compromi
+> se Prompt
+> Channel
+> Crafting
+> suitable
+> prompts
+> Direct
+> Prompt
+> Injection
+> Indirect
+> Prompt
+> Injection
+> Hidden
+> Instruction
+> are
+> integrated
+> Agent Tool
+> Injection
+> Faulty
+> MiTM
+> User
+> Hijacking
+> Stolen
+> Session API
+> Keys
+> Malicious
+> User
+> User
+> machine
+> Hijacking Obfuscatio
+> n based
+> Direct
+> Prompt
+> Injection
+> Parameter
+> based
+> Direct
+> Prompt
+> Injection
+> Optimizatio
+> n based
+> Direct
+> Prompt
+> Injection
+> Human
+> based
+> Direct
+> Prompt
+> Injection
+> Translator
+> Tampering
+> KB
+> Poisoning
+> Social
+> Engineering
+> Model
+> Tampering
+> Pre -
+> conditions
+> -MT
+> Perform
+> Model
+> Manipulati
+> on
+> Model
+> Poisoning Model
+> Replaceme
+> nt
+> Model
+> Extraction
+> Gain
+> Access to
+> Model
+> Artifacts
+> No Integrity
+> Verification
+> Pre -
+> condition -
+> MP
+> Attacks
+> possible
+> Access to
+> Training
+> Pipeline or
+> Data
+> Model
+> Retraining
+> or Fine -
+> tuning is
+> Scheduled
+> Lack of
+> Data
+> Sanitizatio
+> n or
+> Filtering
+> Data
+> Poisoning
+> Targeted
+> Poisoning
+> LLM
+> Session
+> Mismanage
+> ment
+> Pre -
+> conditions
+> -LSM Session
+> Takeover
+> attacks
+> Session
+> Hijacking
+> Session
+> Fixation
+> Weak
+> authenticat
+> ion
+> No context
+> Purging
+> Lack of
+> session
+> isolation
+> MitM Web
+> session
+
+Figure 3: Attack Tree for G1: Intervening in Medical Procedures (Zoom in to view node text clearly)

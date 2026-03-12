@@ -1,0 +1,790 @@
+Title: Data-Aware Random Feature Kernel for Transformers
+
+URL Source: https://arxiv.org/pdf/2603.04127v1
+
+Published Time: Thu, 05 Mar 2026 02:09:40 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# DATA -A WARE RANDOM FEATURE KERNEL FOR TRANSFORMERS 
+
+Amirhossein Farzam ∗
+
+Google DeepMind 
+
+Hossein Mobahi 
+
+Google DeepMind 
+
+Nolan Andrew Miller 
+
+Google DeepMind 
+
+Luke Sernau 
+
+Google DeepMind March 5, 2026 
+
+# ABSTRACT 
+
+Transformers excel across domains, yet their quadratic attention complexity poses a barrier to scaling. Random-feature attention, as in Performers , can reduce this cost to linear in the sequence length by approximating the softmax kernel with positive random features drawn from an isotropic distribution. In pretrained models, however, queries and keys are typically anisotropic. This induces high Monte Carlo variance in isotropic sampling schemes unless one retrains the model or uses a large feature budget. Importance sampling can address this by adapting the sampling distribution to the input geometry, but complex data-dependent proposal distributions are often intractable. We show that by data aligning the softmax kernel, we obtain an attention mechanism which can both admit a tractable minimal-variance proposal distribution for importance sampling, and exhibits better training stability. Motivated by this finding, we introduce DARKFormer , a Data-Aware Random-feature Kernel trans former that features a data-aligned kernel geometry. DARKFormer learns the random-projection covariance, efficiently realizing an importance-sampled positive random-feature estimator for its data-aligned kernel. Empirically, DARKFormer narrows the performance gap with exact softmax attention, particularly in finetuning regimes where pretrained representations are anisotropic. By combining random -feature efficiency with data -aware kernels, DARKFormer advances kernel-based attention in resource-constrained settings. 
+
+# 1 Introduction 
+
+The remarkable success of transformers is largely attributed to self-attention’s ability to model long-range dependencies while flexibly adapting to their input. Yet the quadratic complexity of attention mechanisms remains a critical limitation, especially for applications requiring long sequences. Random feature kernel approximations, as in Performers [Choro-manski et al., 2021], address this by linearly approximating the softmax kernel in a feature space, achieving complexity that is linear in sequence length times the sample size. Under uniform sampling, this is an asymptotically unbiased estimator for the softmax kernel. This uniform sampling strategy, however, leads to high Monte Carlo variance when inputs exhibit anisotropic structure. To achieve low estimation error with anisotropically distributed queries and keys, as is common in real-world data [Godey et al., 2024], the unbiased uniform estimator requires either large feature samples to reduce variance or extensive training to reshape input distributions toward isotropy. Importance sampling offers a principled solution by adapting the sampling distribution to match data geometry, but implementing the optimal scheme depends on input-dependent matrices that are unknown a priori and involve non-trivial computations. Motivated by these challenges, we propose a Data-Aware Random-feature Kernel for trans former s— DARKFormer —that learns a data-aligned kernel geometry and is capable of realizing importance sampling automatically. This improves the performance and stability while achieving the promised efficiency of random-feature-kernel-based attention. Building on the random feature paradigm for efficient attention, DARKFormer replaces the dot product in standard softmax attention with a Mahalanobis inner product, obtaining a data-aware kernel that automatically corrects for anisotropy. The random-feature estimator in DARKFormer learns a kernel geometry matrix Σ (parameterized via 
+
+Σ = M ⊤M ), yielding a linear-time approximation that implicitly implements an importance-sampling scheme and can yield lower-variance estimates. Because the sampling strategy can adapt to the input distribution, queries and keys need not be isotropically distributed for DARKFormer to yield accurate approximations. It naturally takes more draws where input density is enriched and fewer where it is depleted. We show that this is equivalent to importance sampling 
+
+> ∗Correspondence: a.farzam@duke.edu
+> arXiv:2603.04127v1 [cs.LG] 4 Mar 2026
+
+Data-Aware Random Feature Kernel for Transformers in the feature space, allowing DARKFormer to learn a data-aligned sampling geometry without explicitly computing per-sample importance weights. Consequently, DARKFormer enhances approximation under limited feature budgets, improving performance without requiring large samples. Furthermore, sampling random features according to input geometry can improve training stability, as we observe empirically. DARKFormer is particularly suitable for finetuning regimes, where attention input distributions are dictated by pretrained weights, demanding substantial retraining to produce isotropic query-key distributions. The learned covariance can be interpreted as learning a linear re-embedding. When this covariance matches (or approximates) the inverse input covariance, this re-embedding can (approximately) whiten the queries and keys. After this whitening, the attention kernel takes the standard softmax form. Our analysis in sections 3 and 4 motivates why aligning the sampling geometry with the representation statistics can reduce Monte Carlo error. We corroborate these findings through experiments on the Gemma model [Gemma Team et al., 2024a,b, 2025]. Our empirical observations show that DARKFormer narrows the performance gap with exact attention, enjoys more stable training dynamics, and does not require a large sample, extensive retraining, or thorough hyperparameter tuning to achieve these improvements. Notably, DARKFormer excels especially well in finetuning settings, requiring only a small amount of data to produce robust covariance matrices and adapt to the presence of whitening. Together, these results show that this data-aware framework can achieve the linear complexity of random-feature attention with lower sampling costs via importance sampling, opening new possibilities for resource-efficient transformer architectures in applications where quadratic complexity remains prohibitive, such as long-context modeling and high-resolution vision tasks. Main Contributions 
+
+Importance Sampling via DARKFormer. We introduce DARKFormer , which implements data-aligned random feature attention through a learnable covariance matrix, achieving low sample complexity with a tractable proposal distribution. 
+
+Variance Optimality and Data-Aligned Sampling. We observe that variance-optimal random-feature estima-tors require data-aligned sampling. 
+
+Efficiently Improves Performance. Experiments on Gemma demonstrate that DARKFormer narrows the per-formance gap with exact attention, with particular benefits in finetuning scenarios where query-key distributions are anisotropic. 
+
+Resource-constrained Finetuning. Our results show that DARKFormer can improve performance without large feature samples, long training cycles, or extensive hyperparameter tuning. Most notably we show that it is not necessary to train a model from scratch. The method is compatible with finetuning from pre-trained weights. This makes it particularly suitable for resource-constrained environments. 
+
+# 2 Background 
+
+Exactly computing the softmax attention entails quadratic cost in sequence length, posing a fundamental challenge for scaling. This has motivated significant research in efficient approximations [Choromanski et al., 2021, Peng et al., 2021, Likhosherstov et al., 2023], with random feature methods offering elegant linear-complexity solutions. We briefly review the attention mechanism and its random feature approximation that forms the foundation for our approach. 
+
+Attention Mechanism in Transformers. The fundamental building block of the Transformer architecture is the 
+
+attention mechanism, which captures pairwise interactions between tokens. Consider a sequence of L input tokens, each with a d-dimensional embedding, mapped via learnable projection weights to Q, K, V ∈ RL×d, which are referred to as queries , keys , and values , respectively. The classical scaled dot-product attention Vaswani et al. [2017] is then defined by 
+
+Att( Q, K, V ) = softmax 
+
+ 1√d QK ⊤
+
+V ∈ RL×d.
+
+The softmax matrix is formed by entry-wise exponentiation of the dot-product kernel, where the (i, j ) entry captures the similarity between the ith query and the jth key, normalized to obtain a probability distribution over tokens for each query. This yields L × L attention weights, which, when multiplied by V , produces the output of the attention module. The corresponding time and memory complexities are O(L2 d) and O(L2). When L is large, this becomes prohibitive in speed and storage. Various approximations and alternative formulations have therefore been proposed to mitigate this bottleneck. 
+
+Random Feature Approximation of Kernels. Rahimi and Recht [2007] introduced random feature expansions as an efficient way to approximate kernel inner products. Utilizing this foundational technique we can obtain efficient 2Data-Aware Random Feature Kernel for Transformers approximations of attention by replacing the softmax kernel κSM (q, k) := exp( q⊤k) by a random feature expansion 2.Suppose we wish to approximate a kernel κ(x, y) using an inner product of finite-dimensional feature maps, 
+
+κ(x, y) ≈ ϕ(x)⊤ ϕ(y).
+
+We can construct such ϕ(·) by sampling a set of random projections and suitably normalized basis functions. For instance, using trigonometric basis functions, we can construct the Gaussian kernel, κGauss (x, y) = exp  − 12 ∥x − y∥2,by drawing m samples ω1, . . . , ω m ∼ N (0 , I d), defining 
+
+ϕtrig  
+
+> ω
+
+(x) = h(x)
+
+> √m
+
+h
+
+cos  ω⊤ 
+
+> 1
+
+x, . . . , cos  ω⊤
+
+> m
+
+x,
+
+sin  ω⊤ 
+
+> 1
+
+x, . . . , sin  ω⊤
+
+> m
+
+xi⊤
+
+,
+
+and setting h(x) = 1 . Alternatively, since κSM (x, y) = exp   12 ∥x∥2 + 12 ∥y∥2κGauss (x, y), with h(x) = exp   12 ∥x∥2
+
+we obtain the softmax kernel. Choromanski et al. [2021] rely on the same principle, but propose an alternate construction, 
+
+Positive Random Features (PRFs), to approximate κSM , where the random feature map is defined as 
+
+ϕ+ 
+
+> ω
+
+(x) := h(x)
+
+> √m
+
+h
+
+exp  ω⊤ 
+
+> 1
+
+x, . . . , exp  ω⊤
+
+> m
+
+xi⊤
+
+, (1) with h(x) = exp  − 12 ∥x∥2 and again, isotropic iid projection vectors ω1, . . . , ω m ∼ N (0 , I d). Importantly, with this construction, Lemma 2.1 holds for PRFs. 
+
+Lemma 2.1 (Choromanski et al. [2021]) . For x, y ∈ Rd,
+
+exp  x⊤y = Eω∼N (0 ,I d)
+
+h
+
+exp  ω⊤x − 12 ∥x∥2
+
+exp  ω⊤y − 12 ∥y∥2i
+
+.
+
+Hence, PRFs yield an unbiased approximation for the softmax kernel. 
+
+Choromanski et al. [2021] argue that PRFs outperform their trigonometric counterparts, especially where kernel values are small. Building on this, they introduce Performer , an efficient transformer architecture that approximates softmax attention using PRF-based random feature maps. Choromanski et al. [2021] enforce orthogonality of ω1, . . . , ω m via a Gram-Schmidt orthogonalization, combining PRFs with orthogonal random features to reduce the variance of the empirical estimator. Given a query-key pair (q, k), the softmax kernel in Performer is then approximated via the empirical estimator of Eω∼N (0 ,I d)
+
+ϕ+ 
+
+> ω
+
+(q)⊤ϕ+ 
+
+> ω
+
+(k).
+
+Efficient Attention via Random Feature Kernels. The random feature map replaces the exponential kernel 
+
+exp( QK ⊤) with its linear approximation in the feature space (Q′(K′)⊤) where the rows of Q′, K ′ ∈ RL×m are the random feature maps of the rows of Q, K . Leveraging this linearity, we can approximate Att (Q, K, V ) without explicitly forming the L × L matrix, by first computing K′⊤ V and then left multiplying it by Q′. This ordering results in a time complexity of O(Lmd ), as illustrated in Figure 1. Storing Q′ and K′ on the other hand, requires O(Lm )
+
+memory, and the largest intermediate matrix multiplication is either (L × m) ( m × d) or (m × L) ( L × d), consuming total memory on the order of O (max {Lm, Ld }). Hence, this approximation improves computation time as long as 
+
+m < L and memory efficiency when max {d, m } < L . Performer provides an elegant unbiased approximation of the softmax kernel via PRFs. However, the feature sample sizes required to achieve good performance with these estimators can be so large that it dilutes the computational efficiency. Moreover, these approximations allocate their feature budget isotropically over the input space. For anisotropic query-key distributions, as observed in practice [Godey et al., 2024], this can waste samples on low-density directions and inflate Monte Carlo variance. These caveats motivate our data-aligned random feature kernel, which improves approximation accuracy at smaller sample sizes by relaxing the isotropy assumption. 
+
+# 3 Variance Reduction via Data-Aware Sampling 
+
+An important measure of error for random-feature kernel estimators is their Monte Carlo variance, which largely governs the performance gap with the exact exponential kernel when the number of features m is limited. We recall          
+
+> 2For mapping this to Att (Q, K, V ),qand kin κSM can be viewed as queries and keys that have absorbed the scaling by 1/√d.Normalizing this expression then produces softmax attention.
+
+3Data-Aware Random Feature Kernel for Transformers 
+
+Figure 1: The random feature attention replaces the softmax kernel with a linear approximation in the feature space, reducing the quadratic complexity in sequence length ( L) to linear in sequence length times sample size ( m). that importance sampling can achieve the minimum possible variance through a proposal density that depends on the query-key distribution. While variance-minimizing importance sampling proposals are known in principle [Sernau et al., 2024], instantiating them for PRF estimators is challenging because the optimal proposal density is typically difficult to sample from directly. We show that the optimal proposal density is anisotropic whenever the input distribution is anisotropic, motivating anisotropy as an important dimension for improving PRF-based attention. This variance analysis provides the theoretical motivation for DARKFormer, which realizes data-aware sampling through a learned covariance matrix, leading to the improvements we show in Section 4. Suppose the queries and keys are each iid draws from a distribution D on Rd with finite second moments and matching covariance matrices Λ := Cov( q) = Cov( k). Let pI (ω) = N (0 , I d) be the usual sampling density and let ψ(ω) be any alternative density with the same support. 
+
+Lemma 3.1. Define the PRF estimator with an importance factor pI (ωj )  
+
+> ψ(ωj)
+
+as 
+
+ˆκψ (q, k ) := 1
+
+m
+
+> m
+
+X
+
+> j=1
+
+h pI (ωj )
+
+ψ(ωj ) exp 
+
+
+
+ω⊤ 
+
+> j
+
+q − 12 ∥q∥2
+
+exp 
+
+
+
+ω⊤ 
+
+> j
+
+k − 12 ∥k∥2i 
+
+. (2) 
+
+Among all finite-variance ψ, the expected Monte Carlo variance Eq,k ∼D 
+
+Var ω [ˆ κψ (q, k )]  is minimized by 
+
+ψ∗(ω) ∝ pI (ω)
+
+q
+
+Bq (ω) Bk(ω),
+
+where Bx(ω) := Ex
+
+exp  2ω⊤x − ∥ x∥2 .
+
+Lemma 3.1, proved in Appendix A, shows, for general ψ(ω), how importance sampling achieves an alignment with the input distribution, via the Bq (ω)Bk(ω) term in the optimal ψ∗(ω), to minimize the Monte Carlo variance. To form a more concrete intuition for the structure of ψ∗ and its relationship to the isotropic baseline, consider Gaussian queries and keys, where we can characterize ψ∗ in closed form, assuming ψ∗ is normalizable, as follows (see Appendix A for the proof). 
+
+Theorem 3.2. Consider q, k ∼ N (0 , Λ) . Then the optimal sampling density ψ∗ is a centered Gaussian ψ∗ = N (0 , Σ∗)
+
+with Σ∗ = ( Id + 2Λ)( Id − 2Λ) −1 whenever this expression defines a valid covariance. Moreover: 1. Σ∗ ∝ Id if and only if Λ ∝ Id.2. The expected Monte Carlo variance satisfies 
+
+Eq,k ∼D 
+
+Var ω [ˆ κψ∗ (q, k )]  ≤ Eq,k ∼D 
+
+Var ω [ˆ κpI (q, k )] ,
+
+with strict inequality for any non-degenerate covariance Λ̸ = 0 .
+
+Theorem 3.2 implies that the optimal proposal ψ∗ matches the geometry of the inputs. Σ∗ inherits the eigenbasis of Λ, and is isotropic if and only if Λ is isotropic. As soon as the queries and keys have non -trivial covariance, the optimal importance -sampled estimator strictly reduces the expected Monte Carlo variance compared to the isotropic baseline. In other words, drawing projection vectors from N (0 , I d) is never optimal once the input distribution is non-degenerate. However, computing this importance factor depends on the query-key distribution and involves non-trivial matrix operations. This motivates our approach: learning a tractable, data-dependent sampling geometry that can adapt to anisotropic representations. We introduce DARKFormer, a random feature scheme that efficiently realizes an importance - sampled estimator for a data-aligned kernel without explicitly forming per -sample importance weights. 4Data-Aware Random Feature Kernel for Transformers 
+
+# 4 Data-Aware Random Feature Kernel 
+
+Motivated by the discussion in Section 3 on the variance optimality of adapting to input geometry via importance sampling, we introduce a Data-Aware Random-feature Kernel Trans former (DARKFormer ). DARKFormer learns a positive semidefinite matrix Σ (parameterized as Σ = M ⊤M ) that defines a data-aligned kernel and serves as the covariance of its random projections, characterizing the sampling geometry of its PRF 3. This provides a tractable mechanism for adapting random-feature attention to anisotropic query-key distributions, effectively implementing importance sampling, while bypassing explicit computation of per-sample proposal densities. DARKFormer’s data-aware approach enhances performance without extensive retraining or large feature samples. Moreover, we observe that it can also improve training stability. These improvements make the model particularly amenable to resource-constrained settings, especially for finetuning scenarios where query-key distributions are dictated by pretrained weights. 
+
+4.1 Positive Random Features with Covariance Learning 
+
+To achieve low empirical estimation error, our proposed PRF leverages an exponential kernel of the form exp  q⊤Σ k,
+
+where Σ ⪰ 0 is learned to adapt to the input geometry, as is achieved by a Mahalanobis metric in the kernel’s inner product space. When Σ = Id, this reduces to the standard softmax kernel. For anisotropic or correlated representations, however, the Euclidean dot-product, q⊤k can be miscalibrated because it treats all coordinate directions equally and ignores cross-coordinate correlations. This miscalibration can be corrected by measuring similarity in a Mahalanobis geometry induced by Σ. When the inputs have covariance Λ ≻ 0, the whitening can be achieved through Σ = Λ −1.
+
+Mahalanobis Geometry for Attention. Given Σ ≻ 0, let 
+
+∥x∥2Σ := x⊤Σx and ∥x − y∥2Σ := ( x − y)⊤Σ( x − y),
+
+which are the Mahalanobis norm and distance, respectively. Then we can write 
+
+q⊤Σk = 12 (∥q∥2Σ + ∥k∥2Σ − ∥ q − k∥2Σ).
+
+As a result, exp( q⊤Σk) is, up to scaling, a Gaussian kernel in the Mahalanobis distance ∥q − k∥Σ. Equivalently, writing 
+
+Σ = M ⊤M gives q⊤Σk = ( M q )⊤(M k ) and ∥q − k∥Σ = ∥M q − M k ∥. In other words, this is the standard softmax kernel after the linear re-embedding x 7 → M x . In particular, if the input covariance is Λ ≻ 0 then choosing M = Λ −1/2
+
+(so that Σ = Λ −1) whitens the inputs and makes M q and M k isotropic. Thus, the Mahalanobis geometry measures distance in units of standard deviation in the principal directions, correcting the scale and correlation mismatch under anisotropic representations. We provide a detailed discussion and formal derivations for this in Appendix C. 
+
+Random Feature Kernel with a Learned Geometry. Let x ∈ Rd be the kernel input, and suppose Σ ∈ Rd×d is expressed as Σ = M ⊤M, for a learnable matrix M ∈ Rr×d. We then write the random feature map as 4
+
+ϕΣ(x, ˜ω) := h(˜ x)
+
+> √m
+
+h
+
+exp  ˜ω⊤ 
+
+> 1
+
+x, . . . , exp  ˜ω⊤
+
+> m
+
+xi⊤
+
+,
+
+where ˜ω1, . . . , ˜ωm ∼ N (0 , Σ) , h(˜ x) = exp  − 12 ∥˜x∥2, and ˜x := M x. Given a query–key pair q, k ∈ Rd, the resulting PRF yields an unbiased approximation for exp  q⊤Σk as follows. 
+
+exp  q⊤Σk = E˜ω
+
+h
+
+exp  ˜ω⊤q − 12 q⊤Σq
+
+exp  ˜ω⊤k − 12 k⊤Σki
+
+. (3) The derivation of Equation (3) is provided in Appendix B. In other words, the feature map ϕΣ(·, ˜ω) yields an exponential kernel with a learned geometry characterized by Σ. Learning Σ provides a simple and flexible way to make the attention geometry data-aligned while preserving the positive random-feature structure. In Section 4.2 we connect this covariance learning to importance sampling, which further motivates why it can reduce Monte Carlo error, in light of the discussion in Section 3. This leads to closing the performance gap with exact softmax, as our experiments show, and meanwhile, it exhibits improved training stability, as observed in our experiments reported in Section 6.       
+
+> 3For clarity and consistency of notation, we reserve Λfor the covariance of the query–key distribution, as in Section 3.
+> 4Here we write the random feature map ϕΣas a function of ω. This is a change of notation compared to Section 2, and only for ease of notation when the map involves Σ.
+
+5Data-Aware Random Feature Kernel for Transformers 
+
+4.2 Reducing Approximation Error via DARKFormer 
+
+We now show that DARKFormer effectively implements an importance sampling strategy. Section 3 shows that a fixed isotropic sampling, treating every query–key direction as equally important, is sub-optimal when the input distribution is anisotropic. Through learning a covariance Σ for its data-aware kernel, DARKFormer realizes an importance sampling strategy that avoids explicit computation of per-sample importance weights by coupling the sampler with the learned kernel geometry. This in turn explains why DARKFormer can improve performance without requiring large feature samples or extensive retraining. Let pI (ω) = N (0 , I d) denote the isotropic sampling distribution of the projection vectors in the PRF (Equation (1) )and let us denote its data-aware counterpart by pΣ(ω) = N (0 , Σ) . Viewing the change from pI to pΣ through the lens of importance sampling reveals that DARKFormer’s unweighted estimator is in fact equal in expectation to an isotropic estimator whose samples are re-weighted by an importance factor. This analogy opens the door to known results regarding the optimality of importance sampling estimators, and in particular, makes the results from Section 3 applicable, which point to DARKFormer’s capability in implementing a sampling scheme that can reduce estimation error. To see this, let us rewrite the PRF map for ω ∼ pΣ(ω) as 
+
+ϕΣ(x, ω ) := exp  ω⊤x − 12 x⊤Σ x.
+
+Given a query–key pair (q, k ) and a feature budget of m (i.e., sample size is m), we define the w−weighted empirical mean estimator for the feature kernel estimand in Equation (3) as 
+
+ˆκw 
+
+> Σ
+
+(q, k ) := 1
+
+m
+
+> m
+
+X
+
+> j=1
+
+w(ωj ) ϕΣ(q, ω j ) ϕΣ(k, ω j ), (4) where the weight can depend on ωj . Proposition 4.1 shows that sampling ω from pΣ(ω) in the unweighted estimator is equivalent in expectation to sampling ω from the isotropic distribution pI (ω) and applying importance weights (see Appendix B for the proof). 
+
+Proposition 4.1. Let Σ ≻ 0 and wΣ(ω) := pΣ(ω)  
+
+> pI(ω)
+
+. For any map f : Rd → R with a finite mean, 
+
+Eω∼pΣ
+
+f (ω) = Eω∼pI
+
+wΣ(ω) f (ω).
+
+Consequently, for every (q, k ) and m ≥ 1,
+
+Eω1: m∼pΣ
+
+ˆκ1Σ(q, k ) = Eω1: m∼pI
+
+h
+
+ˆκwΣ(ω)Σ (q, k )
+
+i
+
+.
+
+This Proposition shows that drawing from pΣ is equivalent to re-weighted importance sampling from pI . This reveals a key insight: by learning the covariance matrix Σ, DARKFormer implicitly implements importance sampling without needing to compute or store per-sample importance weights. This is especially valuable for finetuning in resource-constrained settings, where query-key distributions are determined by pretrained weights and may require substantial retraining to conform to isotropy assumptions. 
+
+# 5 Related Work 
+
+Random Feature Kernels. Kernel methods have long been valued for their ability to model complex relationships. However, their computational cost has been a significant limitation. Using random basis approximations [Rahimi and Recht, 2008, 2007], Random Fourier Features approximate shift-invariant kernels by mapping inputs into a randomized feature space while achieving linear complexity. Subsequent work has characterized approximation error and improved sample efficiency via structured and orthogonal feature constructions or data-dependent sampling viewpoints such as leverage scores and kernel quadrature [Sutherland and Schneider, 2015, Le et al., 2013, Yu et al., 2016, Choromanski et al., 2017, Alaoui and Mahoney, 2015, Bach, 2017]. These data-dependent views suggest that when the input distribution is anisotropic, Monte Carlo error is often dominated by a subset of directions, motivating sampling schemes that align with the geometry of the inputs rather than treating all directions equally. These developments have enabled large-scale kernel learning in practical domains such as speech recognition [May et al., 2019]. 
+
+Efficient Transformers. The quadratic complexity of the attention mechanism in transformers has been a limiting factor. Extending random feature kernels to attention, Performer [Choromanski et al., 2021] uses positive (orthogonal) random features [Choromanski et al., 2017] to obtain an asymptotically unbiased softmax kernel estimator with linear complexity, while related linear attention variants adopt alternative normalizations [Katharopoulos et al., 2020]. 6Data-Aware Random Feature Kernel for Transformers Other approximation methods achieve efficiency through low-rank decompositions, sketching-based methods, or sparsity [Wang et al., 2020, Xiong et al., 2021, Chen et al., 2021, Lee et al., 2024, Kacham et al., 2024, Kitaev et al., 2020]. Recent work has also studied the approximation gap of random-feature attention and proposed variance-reduction mechanisms such as control variates [Zheng et al., 2023]. Meanwhile, complementary approaches accelerate attention by optimizing memory access and parallelism [Dao et al., 2022, Dao, 2023, Shah et al., 2024, Li et al., 2023]. 
+
+Filling the Gap. Despite this progress, random-feature attention mechanisms typically sample projections from an isotropic distribution, which can exhibit high Monte Carlo variance when query–key representations are anisotropic, a common phenomenon in pretrained Transformers [Ethayarajh, 2019, Godey et al., 2024]. More broadly, data-dependent sampling can substantially reduce Monte Carlo error, but applying it to PRF-based attention is non-trivial because the optimal sampling distribution is input-dependent and costly to compute. DARKFormer fills this gap by learning the sampling geometry through a learned covariance for positive random features, connecting to data-dependent kernel sampling [Alaoui and Mahoney, 2015, Bach, 2017] and enabling importance-sampling behavior without explicit per-sample importance weights [Sernau et al., 2024]. 
+
+# 6 Experiments 
+
+To investigate DARKFormer’s capabilities in empirical settings and validate the improvements we anticipate theoreti-cally, we conduct a series of experiments on training and finetuning a Gemma-based DARKFormer. Replacing the exact softmax in the Gemma model [Gemma Team et al., 2024a] with the PRF-based approximation, we compare a DARKFormer model against its counterpart with isotropic PRF maps, which is a Performer-type model [Choromanski et al., 2021]. While DARKFormer achieves this improvement in pretraining as well, since it is primarily intended for resource-scarce settings, our primary focus is on finetuning. Our results demonstrate that the data-aware sampling strategy of DARKFormer translates the theoretical variance reduction benefits into practical performance improvements. In particular, they confirm that: (1) DARKFormer reduces the performance gap with exact attention compared to isotropic PRF; (2) it achieves this improvement without requiring large feature samples or extensive training; and (3) it is particularly advantageous in finetuning scenarios where query-key distributions are dictated by pretrained weights. 
+
+Experimental Setup. For these experiments we use a 2-B-parameter Gemma model [Gemma Team et al., 2024a], benchmarked on the C4 dataset [Raffel et al., 2020] for the next-token-prediction task. While our primary comparison is between a DARKFormer and a Performer-type model against the exact softmax attention, we also include both learned feature kernels (LFK) and simple baselines. In particular, for the LFK, we replace the randomly drawn projections in the PRF ( ω in Equation (2) ) with a trainable vector. The LFK allows the model to freely learn the projections that yield a kernel which minimizes the task loss. Meanwhile the simple baselines, which include a uniform random and a constant attention, benchmark all other models against a transformer-type architecture that learns around the softmax attention, highlighting how much of the change in performance is in fact due to the ability of the feature kernel used to implement an effective attention mechanism. All comparisons are performed under identical training conditions and hyperparameters, ensuring a fair assessment. 
+
+Figure 2: Next token prediction accuracy during pretraining (top) and finetuning (bottom) of the Gemma-2B model with a DARKFormer (green), a Performer (orange), learned feature kernel (LFK) (blue), a random baseline (yellow), a constant baseline (lime), and an exact softmax attention. The DARKFormer model considerably narrows the gap between the exact softmax and the Performer-type model and also outperforms LFK, especially in finetuning. 
+
+Pretraining and Finetuning Performance. Starting our empirical validation with pretraining experiments, we observe that DARKFormer narrows the performance gap with the exact softmax compared with the Performer-type model. This improvement is present throughout the pretraining as shown in Figure 2. Turning to our main focus— finetuning—Figure 2 shows that the DARKFormer model achieves significantly better next-token-prediction accuracy 7Data-Aware Random Feature Kernel for Transformers than the Performer model as well as all baselines, especially after the initial phase, but without extensive finetuning. This underscores that our proposed data-aware framework improves random-feature attention in practice, as suggested by our discussion in sections 3 and 4, which highlight the benefits of data-aligned sampling geometries under anisotropic query-key distributions. Comparison with the baselines further indicates that (i) the observed performance is not due to the transformer learning around the PRF kernel; and (ii) the improvement is critically due to the random feature kernel used, as a learned feature kernel needs extensive finetuning to reach a performance on par with DARKFormer. 
+
+Figure 3: Next token prediction accuracy for finetuning of the Gemma-2B (blue) model with a DARKFormer (green), a Performer (orange), and an exact softmax attention over a long cycle of 650k finetuning steps. Observe that DARK-Former outperforms Performer throughout training despite approximating a novel whitened kernel that is out of distri-bution for pretrained Gemma. Note that the x-axis is shown on logarithmic scale. 
+
+Efficient Finetuning with DARKFormer. Investigat-ing the model’s capabilities to adapt to each of the PRF kernels, we repeat our main comparison between the DARKFormer and the Performer-type models as well as Gemma with the exact softmax over extended finetuning. Recall that our proposed data-aligned PRF leads to an improvement in the softmax approximation when the in-puts are anisotropic, which is often the case. However, given the capabilities of transformers, they could eventu-ally learn to produce isotropic inputs when the model is trained over a long period with isotropic PRFs. Our ob-servations in Figure 3 confirm this: with sufficiently long finetuning the Performer-based model eventually closes much of the gap to DARKFormer, but only after many more optimization steps, incurring a significantly higher computational cost. This highlights DARKFormer’s ad-vantage in resource-constrained scenarios, reinforcing its practical benefits for efficient finetuning. 
+
+Figure 4: Next token prediction accuracy for finetuning only the q-k-v projection weights and the PRF projection covariance for the case of DARKFormer, in a Gemma-2B model with a DARKFormer (green), a Performer (orange), and an exact softmax (blue) attention over 550k finetuning steps. The DARKFormer-induced improvement is even more pronounced than finetuning the full model, and does not decrease in later finetuning iterations. 
+
+Limited Attention Finetuning. In order to better dis-entangle effects due to the model’s ability to eventually learn to produce isotropic inputs for the PRF, we investi-gate partial finetuning, which is also of particular interest in resource-scarce settings. We freeze all layers of the pretrained transformer except the query, key, and value projections and, for DARKFormer, the trainable PRF covariance. While these projections could in principle adapt toward isotropic q and k, freezing the rest of the network substantially limits their ability to do so. Re-peating the finetuning experiment under this setup further reveals DARKFormer’s ability to improve performance, without the help of other components of the transformer. In particular, Figure 4 shows that its performance gap with Performer is even more pronounced and does not fade over long partial finetuning, unlike the full finetun-ing. This provides further evidence on DARKFormer’s capability to improve performance with limited resources. 
+
+Training Stability Across Learning Rates. We also evaluate training stability during finetuning by sweeping the learning rate and examining the resulting loss dynamics. In Figure 5, we compare DARKFormer against a Performer model under identical hyperparameters as we vary the learning rate. Performer frequently encounters phases of numerical instability, corresponding to sharp increases in the loss value. In contrast, DARKFormer exhibits consistently stable training dynamics across the same range of learning rates, with substantially fewer loss spikes. Intuitively, instability under large learning rates can be triggered when stochastic updates become too noisy and lead to occasional loss-increasing steps. From a complementary perspective, the implicit whitening of the kernel inputs implemented through the Mahalanobis inner product in DARKFormer can temper extreme dot-product magnitudes, keeping the exponential kernel in a numerically well-behaved regime. Therefore, by aligning the random-feature sampling geometry with the input statistics, DARKFormer can not only reduce Monte Carlo variance in the attention approximation, but also make the optimization updates less erratic, which could explain the reduced frequency of loss spikes observed here. Overall, these observations suggest that DARKFormer is more robust to the choice of learning rate, reducing sensitivity to hyperparameter tuning. In practice, this can reduce the overhead cost of learning rate sweeps in development pipelines for training and finetuning, which is particularly valuable in resource-constrained settings. 8Data-Aware Random Feature Kernel for Transformers 
+
+Figure 5: Loss dynamics for finetuning of the Gemma-2B model with DARKFormer (green) and a Performer (orange) with different learning rates. The shaded area marks the variance of loss values across seven different learning rates with the line showing the aver-age. DARKFormer exhibits stable training and loss minimization throughout in all but the largest learning rate where there is a short instability phase, while Performer shows more frequent instability phases and loss spikes during its finetuning with large learning rates. For visualization purposes the horizontal axis is shown on logarithmic scale. 
+
+Takeaways. Collectively, these experiments reinforce the core messages from the theoreti-cal motivations of DARKFormer, and point to its practical advantages: DARKFormer’s ability to reduce the performance gap with exact at-tention without large feature samples, its rapid adaptation during finetuning, and its enhanced effectiveness in resource-constrained scenarios all support our claims regarding the benefits of data-aware PRF kernels. Moreover, the stability results suggest that DARKFormer is less sen-sitive to learning-rate selection, reducing the need for costly extensive hyperparameter tun-ing. This further reinforces DARKFormer as a practical choice for resource-constrained set-tings. These findings highlight DARKFormer’s contribution towards efficient transformers in scenarios where computational resources are constrained and input distributions are inher-ently anisotropic. 
+
+# 7 Discussion 
+
+In this work, we introduced DARKFormer , a data-aware random feature kernel for efficient transformer architectures that narrows the performance gap between exact softmax attention and positive random-feature approximations. By learning the covariance of the random projections, DARKFormer implements a data-aligned kernel and a corresponding importance-sampled estimator, reducing approximation error, reducing Monte Carlo variance, and enhancing training stability, with particularly strong benefits when computational resources are scarce. Our empirical results on a Gemma model offer clear evidence for these benefits and highlight DARKFormer’s practical advantages, especially for efficient finetuning. Looking ahead, combining data-aware random feature attention with complementary efficiency techniques and evaluating it across broader domains such as high-resolution inputs, long-context modeling, or on-device training are promising directions. We view DARKFormer as a step toward principled, data-aware attention mechanisms that make efficient transformers more accurate and more practical. 
+
+# References 
+
+Krzysztof Marcin Choromanski, Valerii Likhosherstov, David Dohan, Xingyou Song, Andreea Gane, Tamas Sarlos, Peter Hawkins, Jared Quincy Davis, Afroz Mohiuddin, Lukasz Kaiser, et al. Rethinking attention with performers. In International Conference on Learning Representations, 2021. Nathan Godey, Éric Clergerie, and Benoît Sagot. Anisotropy is inherent to self-attention in transformers. In European Chapter of the Association for Computational Linguistics, pages 35–48, 2024. Gemma Team, Thomas Mesnard, Cassidy Hardin, Robert Dadashi, Surya Bhupatiraju, Shreya Pathak, Laurent Sifre, Morgane Rivière, Mihir Sanjay Kale, Juliette Love, et al. Gemma: Open models based on gemini research and technology. arXiv preprint arXiv:2403.08295, 2024a. Gemma Team, Morgane Riviere, Shreya Pathak, Pier Giuseppe Sessa, Cassidy Hardin, Surya Bhupatiraju, Léonard Hussenot, Thomas Mesnard, Bobak Shahriari, Alexandre Ramé, et al. Gemma 2: Improving open language models at a practical size. arXiv preprint arXiv:2408.00118, 2024b. Gemma Team, Aishwarya Kamath, Johan Ferret, Shreya Pathak, Nino Vieillard, Ramona Merhej, Sarah Perrin, Tatiana Matejovicova, Alexandre Ramé, Morgane Rivière, et al. Gemma 3 technical report. arXiv preprint arXiv:2503.19786, 2025. Hao Peng, Nikolaos Pappas, Dani Yogatama, Roy Schwartz, Noah Smith, and Lingpeng Kong. Random feature attention. In International Conference on Learning Representations, 2021. Valerii Likhosherstov, Krzysztof Choromanski, Avinava Dubey, Frederick Liu, Tamas Sarlos, and Adrian Weller. Favor#: Sharp attention kernel approximations via new classes of positive random features. arXiv preprint arXiv:2302.00787, 2023. 9Data-Aware Random Feature Kernel for Transformers Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in Neural Information Processing Systems, 30, 2017. Ali Rahimi and Benjamin Recht. Random features for large-scale kernel machines. Advances in Neural Information Processing Systems, 20, 2007. Luke Sernau, Silvano Bonacina, and Rif A Saurous. All random features representations are equivalent. arXiv preprint arXiv:2406.18802, 2024. Ali Rahimi and Benjamin Recht. Uniform approximation of functions with random bases. In Allerton Conference on Communication, Control, and Computing, pages 555–561. IEEE, 2008. Dougal J. Sutherland and Jeff Schneider. On the error of random fourier features. In Uncertainty in Artificial Intelligence, 2015. Quoc V. Le, Tamás Sarlós, and Alex J. Smola. Fastfood: Approximating kernel expansions in loglinear time. In International Conference on Machine Learning, 2013. Felix Xinnan Yu, Ananda Theertha Suresh, Krzysztof Choromanski, Daniel Holtmann-Rice, and Sanjiv Kumar. Orthogonal random features. In Advances in Neural Information Processing Systems, 2016. Krzysztof Choromanski, Mark Rowland, and Adrian Weller. The unreasonable effectiveness of structured random orthogonal embeddings. In Advances in Neural Information Processing Systems, 2017. Ahmed Alaoui and Michael W. Mahoney. Fast randomized kernel ridge regression with statistical guarantees. In Advances in Neural Information Processing Systems, 2015. Francis Bach. On the equivalence between kernel quadrature rules and random feature expansions. Journal of Machine Learning Research, 2017. Avner May, Alireza Bagheri Garakani, Zhiyun Lu, Dong Guo, Kuan Liu, Aurélien Bellet, Linxi Fan, Michael Collins, Daniel Hsu, Brian Kingsbury, et al. Kernel approximation methods for speech recognition. Journal of Machine Learning Research, 20(59):1–36, 2019. Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and François Fleuret. Transformers are RNNs: Fast autore-gressive transformers with linear attention. In International Conference on Machine Learning, 2020. Sinong Wang, Belinda Z. Li, Madian Khabsa, Han Fang, and Hao Ma. Linformer: Self-attention with linear complexity. In Advances in Neural Information Processing Systems, 2020. Yunyang Xiong, Zhanpeng Zeng, Rudrasis Chakraborty, Mingxing Tan, Glenn Fung, Yin Li, and Vikas Singh. Nys-trömformer: A nyström-based algorithm for approximating self-attention. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 35, pages 14138–14148, 2021. Yifan Chen, Qi Zeng, Heng Ji, and Yun Yang. Skyformer: Remodel self-attention with gaussian kernel and nyström method. Advances in Neural Information Processing Systems, 34:2122–2135, 2021. Sangho Lee, Hayun Lee, and Dongkun Shin. Proxyformer: Nyström-based linear transformer with trainable proxy tokens. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 38, pages 13418–13426, 2024. Praneeth Kacham, Vahab Mirrokni, and Peilin Zhong. Polysketchformer: fast transformers via sketching polynomial kernels. In International Conference on Machine Learning, pages 22748–22770, 2024. Nikita Kitaev, Lukasz Kaiser, and Anselm Levskaya. Reformer: The efficient transformer. In International Conference on Learning Representations, 2020. Yu Zheng, Difan Yuan, Sheng Wang, and Lingjie Kong. Efficient attention via control variates. In International Conference on Learning Representations, 2023. Tri Dao, Dan Fu, Stefano Ermon, Atri Rudra, and Christopher Ré. FlashAttention: Fast and memory-efficient exact attention with IO-awareness. Advances in Neural Information Processing Systems, 35:16344–16359, 2022. Tri Dao. FlashAttention-2: Faster attention with better parallelism and work partitioning. arXiv preprint arXiv:2307.08691, 2023. Jay Shah, Ganesh Bikshandi, Ying Zhang, Vijay Thakkar, Pradeep Ramani, and Tri Dao. FlashAttention-3: Fast and accurate attention with asynchrony and low-precision. Advances in Neural Information Processing Systems, 37: 68658–68685, 2024. Dacheng Li, Rulin Shao, Anze Xie, Eric P Xing, Xuezhe Ma, Ion Stoica, Joseph E Gonzalez, and Hao Zhang. DISTFLASHATTN: Distributed memory-efficient attention for long-context llms training. arXiv preprint arXiv:2310.03294, 2023. 10 Data-Aware Random Feature Kernel for Transformers Kawin Ethayarajh. How contextual are contextualized word representations? Comparing the geometry of BERT, ELMo, and GPT-2 embeddings. In Empirical Methods in Natural Language Processing, 2019. Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, and Peter J Liu. Exploring the limits of transfer learning with a unified text-to-text transformer. Journal of Machine Learning Research, 21(140):1–67, 2020. 11 Data-Aware Random Feature Kernel for Transformers 
+
+# Appendix 
+
+# A Optimal Importance Sampling for Random Feature Kernels 
+
+In this appendix, we provide the proofs for Lemma 3.1 and Theorem 3.2 from Section 3, which establish the theoretical foundation for variance reduction through importance sampling in random feature kernels. Recall that Lemma 3.1 characterizes the optimal sampling distribution for minimizing the Monte Carlo variance of the positive random feature kernel estimator. Specifically, it shows that the variance is minimized by an importance factor that depends on the input distribution through the term pBq (ω)Bk(ω), as defined in the statement of the theorem. The subsequent Theorem 3.2 applies this result to the Gaussian case, showing that the optimal sampling distribution is isotropic if and only if the input distribution is isotropic. These results motivate learning anisotropic sampling geometries when the input distribution is anisotropic, which informs DARKFormer’s use of a learned covariance to obtain a tractable data-aware random-feature scheme. 
+
+Proof of Lemma 3.1. Given (q, k ), let Z(q, k, ω ) := exp  ω⊤q − 12 ∥q∥2 exp  ω⊤k − 12 ∥k∥2. By Lemma 2.1, 
+
+κ(q, k ) := EpI [Z] = exp( q⊤k). Since the summands in Equation (2) are iid, we have Var ω [ˆ κψ (q, k )] = 1
+
+m Var ψ
+
+h pI
+
+ψ Z
+
+i
+
+= 1
+
+m
+
+
+
+Eψ [( pI /ψ )2Z2] − κ(q, k )2
+
+. (5) Taking the expectation over q, k ∼ D ⊗ D and discarding the constant terms, subject to R ψ(ω) dω = 1 , we can write the variance reduction objective V (ψ) as 
+
+V (ψ) := 1
+
+m
+
+Z
+
+> Rd
+
+pI (ω)2
+
+ψ(ω) Bq (ω) Bk(ω) dω. (6) where Bx(ω) := Ex
+
+exp  2ω⊤x − ∥ x∥2 . Defining f (ω) := pI (ω)pBq (ω)Bk(ω) ≥ 0, we can rewrite this as 
+
+V (ψ) = 1
+
+> m
+
+R f (ω)2/ψ (ω) dω. For ease of notation, let g1(ω) = f (ω)/pψ(ω) and g2(ω) = pψ(ω), and note that both g1(·) and g2(·) are in L2(Rd), thus, we can apply Cauchy-Schwarz, which yields 
+
+R f (ω) dω 
+
+2
+
+=
+
+R g1(ω) g2(ω) dω 
+
+2
+
+≤  R g21 (ω) dω   R g22 (ω) dω  = R f 2(ω) 
+
+> ψ(ω)
+
+dω, (7) where the last equality is due to R ψ(ω) dω = 1 . Note that equality holds if and only if g1 and g2 are collinear, which requires ψ ∝ f . Now, by definition f (ω)2 = pI (ω)2Bq (ω)Bk(ω), hence R f 2/ψ = m V (ψ). Plugging this in (7) and rearranging gives 
+
+V (ψ) ≥ (R f (ω) dω )2
+
+m ,
+
+where V (ψ) attains its minimum when equality holds, i.e., when ψ ∝ f . Thus, the optimal ψ satisfies ψ∗ ∝
+
+pI (ω)pBq (ω)Bk(ω) ≥ 0 as required, completing the proof of Lemma 3.1. 
+
+Proof of Theorem 3.2. Let D := N (0 , Λ) and write the eigen - decomposition Λ = U diag( λ1, . . . , λ d) U ⊤ with 
+
+λi ≥ 0 and U orthogonal. Since (q, k ) are iid draws from D, the coordinates q′
+
+> i
+
+, k ′ 
+
+> i
+
+of q′ := U ⊤q, k′ := U ⊤k are independent one-dimensional Gaussians N (0 , λ i).We first analyze Bq (ω) in this eigenbasis. Writing ω′ := U ⊤ω and using independence across coordinates we obtain 
+
+Bq (ω) = Eq
+
+exp  2ω⊤q − ∥ q∥2 = Eq′
+
+h
+
+exp  2ω′⊤ q′ − ∥ q′∥2i
+
+=
+
+> d
+
+Y
+
+> i=1
+
+Eq′
+
+> i
+
+h
+
+exp  2ω′
+
+> i
+
+q′ 
+
+> i
+
+− (q′
+
+> i
+
+)2i
+
+=
+
+> d
+
+Y
+
+> i=1
+
+ci exp  βi(ω′
+
+> i
+
+)2,
+
+where ci > 0 does not depend on ω′ 
+
+> i
+
+and βi := 2λi 
+
+> 2λi+1
+
+> 0. Hence 
+
+Bq (ω) ∝ exp 
+
+ dX
+
+> i=1
+
+βi(ω′
+
+> i
+
+)2
+
+,
+
+12 Data-Aware Random Feature Kernel for Transformers or, equivalently, Bq (ω) ∝ exp 
+
+ 12 ω⊤Sω 
+
+
+
+, where S := U diag(2 β1, . . . , 2βd) U ⊤. The same expression holds for 
+
+Bk(ω) since q and k share the same distribution. By Lemma 3.1, the optimal density is ψ∗(ω) ∝ pI (ω)pBq (ω)Bk(ω). Using pI (ω) ∝ exp( − 12 ∥ω∥2) and Bq = Bk
+
+yields 
+
+ψ∗(ω) ∝ exp 
+
+
+
+− 12 ∥ω∥2 +
+
+> d
+
+X
+
+> i=1
+
+βi(ω′
+
+> i
+
+)2
+
+= exp 
+
+
+
+− 12
+
+> d
+
+X
+
+> i=1
+
+(1 − 2βi) ( ω′
+
+> i
+
+)2
+
+,
+
+where we used ∥ω∥2 = ∥ω′∥2. Under the technical assumption that 1 − 2βi > 0 for all i, or equivalently, λi < 12 (so that ψ∗ is integrable), this is the unnormalized density of a centered Gaussian with covariance 
+
+Σ∗ = U diag 
+
+ 11−2β1 , . . . , 11−2βd
+
+
+
+U ⊤,
+
+which proves that ψ∗ = N (0 , Σ∗) and establishes the first part of the theorem. From this expression, we can see that Σ∗ clearly shares the eigenvectors of Λ. Moreover, each diagonal entry 1/(1 −2βi)
+
+is a scalar function of λi, so all eigenvalues of Σ∗ are equal if and only if all λi are equal, i.e., if and only if Λ ∝ Id.This proves item (1). For item (2), recall from Equation (6) that 
+
+V (ψ) := Eq,k ∼D 
+
+Var ω [ˆ κψ (q, k )]  = 1
+
+m
+
+Z
+
+> Rd
+
+f (ω)2
+
+ψ(ω) dω, 
+
+where f (ω) = pI (ω)pBq (ω)Bk(ω). The Cauchy–Schwarz inequality in (7) implies V (ψ) ≥ (R f )2/m with equality if and only if ψ is proportional to f , i.e., ψ = ψ∗ after normalization. In particular, V (ψ∗) ≤ V (pI ), and 
+
+V (ψ∗) = V (pI ) can hold only if pI is proportional to f .In the Gaussian setting above, Bq (ω) is non - constant whenever Λ̸ = 0 , so f (ω) ∝ pI (ω) can occur only in the degenerate case Λ = 0 . Consequently, for any non - degenerate covariance Λ̸ = 0 we have V (ψ∗) < V (pI ), proving item (2). 
+
+# B Data-aware Positive Random Feature Kernel: Derivations 
+
+This appendix provides the derivations of the results on DARKFormer’s PRF kernel, presented in Section 4. We first derive the expression for the exponential kernel with learned covariance given in Equation (3) , which forms the core of our data-aware random feature kernel. We then prove Proposition 4.1, which establishes the equivalence between DARKFormer’s covariance learning and importance sampling—a critical insight that allows our method to implicitly implement importance sampling. 
+
+Derivation of Equation (3) . Here we derive the expression for DARKFormer’s data-aware kernel as presented in Equation (3) , showing how a learned covariance matrix Σ can produce an unbiased approximation of the exponential kernel exp( q⊤Σk) as discussed in Section 4.1. Let Σ ∈ Rd×d be positive–semidefinite and write Σ = M ⊤M with 
+
+M ∈ Rr×d ( r ≤ d ). We aim to show, for any q, k ∈ Rd,
+
+exp  q⊤Σ k = E˜ω∼N (0 ,Σ) 
+
+h
+
+exp  ˜ω⊤q − 12 q⊤Σq exp  ˜ω⊤k − 12 k⊤Σki
+
+. (8) Let ˜q := M q, ˜k := M k ∈ Rr . Applying Lemma 2.1 in Rr with w ∼ N (0 , I r ) gives 
+
+exp(˜ q⊤ ˜k) = Ew∼N (0 ,I r )
+
+
+
+exp 
+
+
+
+w⊤ ˜q − 12 ∥˜q∥2
+
+
+
+exp 
+
+
+
+w⊤ ˜k − 12 ∥˜k∥2
+
+ 
+
+. (9) Replacing w with ˜ω := M⊤w in the expectation, the expectation will be taken with respect to ˜ω ∼ N (0 , Σ) .Moreover w⊤ ˜q = w⊤M q = ( M⊤w)⊤q = ˜ ω⊤q and similarly w⊤ ˜k = ˜ ω⊤k, while ∥˜q∥2 = q⊤Σq and ∥˜k∥2 = k⊤Σk.Substituting these into Equation (9) yields Equation (3). 13 Data-Aware Random Feature Kernel for Transformers 
+
+Proof of Proposition 4.1. Here we prove Proposition 4.1, which establishes that sampling projection vectors from a non-isotropic distribution pΣ(ω) is equivalent to sampling from the isotropic distribution pI (ω) and applying importance weights. For any integrable f ,
+
+Eω∼pΣ [f (ω)] = 
+
+Z
+
+f (ω) pΣ(ω)dω =
+
+Z
+
+f (ω) wΣ(ω) pI (ω)dω = Eω∼pI [wΣ(ω)f (ω)] .
+
+Choosing f (ω) = ϕΣ(q, ω ) ϕΣ(k, ω ) gives 
+
+Eω∼pΣ
+
+ϕΣ(q, ω )ϕΣ(k, ω ) = Eω∼pI
+
+wΣ(ω)ϕΣ(q, ω )ϕΣ(k, ω ),
+
+and hence, for the empirical average with iid sampling we have Eω1: m∼pΣ
+
+ˆκ1Σ(q, k ) = Eω1: m∼pI [ˆ κwΣ 
+
+> Σ
+
+(q, k )] .
+
+# C Attention with Mahalanobis Geometry 
+
+In Section 4 we introduce a data-aware kernel of the form exp( q⊤Σk). This appendix provides additional details on this kernel. In particular, we explain how the Σ-inner product measures similarity through Mahalanobis distance and show how choosing Σ as an inverse covariance whitens the representation space. This formalizes why replacing q⊤k by 
+
+q⊤Σk corrects both scale and correlation mismatch under anisotropic representations. 
+
+Attention with Mahalanobis Geometry. For Σ ≻ 0, define the Mahalanobis norm ∥x∥2Σ := x⊤Σx and the induced distance ∥x − y∥2Σ = ( x − y)⊤Σ( x − y). Note that x⊤Σy = 12
+
+ ∥x∥2Σ + ∥y∥2Σ − ∥ x − y∥2Σ
+
+. Consequently, 
+
+exp( x⊤Σy) = exp 
+
+ 12 ∥x∥2Σ
+
+
+
+exp 
+
+ 12 ∥y∥2Σ
+
+
+
+exp 
+
+
+
+− 12 ∥x − y∥2Σ
+
+
+
+.
+
+Hence, replacing q⊤k by q⊤Σk corresponds to measuring similarity in a Mahalanobis geometry. In particular, 
+
+exp( q⊤Σk) is, up to scaling, a Gaussian kernel in the Mahalanobis distance ∥q − k∥Σ. This directly addresses issues that arise under anisotropic representations, since Σ can downweight high-variance directions and incorporate correlations across coordinates. 
+
+Proposition C.1. Given Σ ≻ 0, let M be the matrix satisfying Σ = M ⊤M and suppose r = d. Then for all q, k ∈ Rd
+
+we have q⊤Σk = ( M q )⊤(M k ) and ∥q − k∥2Σ = ∥M q − M k ∥2. If the representation covariance is Λ = Cov( q) = Cov( k) ≻ 0 and we choose Σ = Λ −1 with M = Λ −1/2, then Cov( M q ) = Id and ∥q − k∥2Λ−1 = Pdi=1 δ2 
+
+> i
+
+/λ i, where 
+
+Λ = U diag( λ1, . . . , λ d)U ⊤ and δ = U ⊤(q − k).
+
+Proof. For any q, k ∈ Rd we have q⊤Σk = q⊤M ⊤M k = ( M q )⊤(M k ). Similarly, 
+
+∥q − k∥2Σ = ( q − k)⊤Σ( q − k) = ( q − k)⊤M ⊤M (q − k) = ∥M (q − k)∥2 = ∥M q − M k ∥2.
+
+Now assume Λ = Cov( q) = Cov( k) ≻ 0 and choose Σ = Λ −1 with M = Λ −1/2. Then 
+
+Cov( M q ) = M Cov( q) M ⊤ = Λ −1/2 Λ Λ −1/2 = Id.
+
+Now write Λ = U diag( λ1, . . . , λ d)U ⊤ with U orthogonal and λi > 0. Then Λ−1 = U diag( λ−11 , . . . , λ −1 
+
+> d
+
+)U ⊤, and with δ := U ⊤(q − k), we obtain 
+
+∥q − k∥2Λ−1 = ( q − k)⊤Λ−1(q − k) = δ⊤diag( λ−11 , . . . , λ −1 
+
+> d
+
+)δ =
+
+> d
+
+X
+
+> i=1
+
+δ2 
+
+> i
+
+/λ i,
+
+as claimed. The identity ∥q − k∥2Λ−1 = P
+
+> i
+
+(δi/√λi)2 shows that the Mahalanobis distance measures displacements in units of principal standard deviations. Thus, directions with large variance are naturally downweighted and correlations are removed by whitening. In the attention kernel, this corresponds to applying the standard dot-product softmax kernel to the re-embedded coordinates ˜q = M q and ˜k = M k . This motivates learning Σ as a tractable way to adapt the attention geometry to anisotropic inputs, rather than relying on the transformer to reshape representations toward isotropy. 14
