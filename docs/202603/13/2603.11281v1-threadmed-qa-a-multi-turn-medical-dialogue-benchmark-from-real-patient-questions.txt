@@ -1,0 +1,354 @@
+Title: ThReadMed-QA: A Multi-Turn Medical Dialogue Benchmark from Real Patient Questions
+
+URL Source: https://arxiv.org/pdf/2603.11281v1
+
+Published Time: Fri, 13 Mar 2026 00:11:40 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# THREAD MED -QA: A M ULTI -T URN MEDICAL DIALOGUE 
+
+# BENCHMARK FROM REAL PATIENT QUESTIONS 
+
+Monica Munnangi* 
+
+Khoury College of Computer Sciences Northeastern University Boston 
+
+Saiph Savage 
+
+Khoury College of Computer Sciences Northeastern University Boston 
+
+# ABSTRACT 
+
+Medical question-answering benchmarks predominantly evaluate single-turn exchanges, failing to capture the iterative, clarification-seeking nature of real patient consultations. We introduce THREAD MED -QA, a benchmark of 2,437 fully-answered patient–physician conversation threads extracted from r/AskDocs, comprising 8,204 question–answer pairs across up to 9 turns. Unlike prior work relying on simulated dialogues, adversarial prompts, or exam-style questions, T HREAD MED -QA captures authentic patient follow-up questions and verified physician responses, reflecting how patients naturally seek medical information online. We evaluate five state-of-the-art LLMs— GPT-5, GPT-4o, Claude Haiku, Gemini 2.5 Flash, and Llama 3.3 70B—on a stratified test split of 238 conversations (948 QA pairs) using a calibrated LLM-as-judge rubric grounded in physician ground truth. Even the strongest model, GPT-5, achieves only 41.2% fully-correct responses. All five models degrade significantly from turn 0 to turn 2 ( p < 0.001 ), with wrong-answer rates roughly tripling by the third turn. We identify a fundamental tension between single-turn capability and multi-turn reliability: models with the strongest initial performance (GPT-5: 75.2; Claude Haiku: 72.3 out of 100) exhibit the steepest declines by turn 2 (dropping 16.2 and 25.0 points respectively), while weaker models plateau or marginally improve. We also introduce metrics to quantify the (1) consistency of the models across turns: Conversational Consistency Scores (CCS) and (2) and the rate at which the error compound Error Propagation Rate (EPR). CCS reveal that nearly one in three Claude Haiku’s conversations swing between a fully correct and a completely wrong response within the same thread. EPR shows that a single wrong turn raises the probability of a subsequent wrong turn by 1.9–6.1 × across all models. We release the code and dataset at 
+
+https://github.com/monicamunnangi/ThReadMed-QA .
+
+# 1 Introduction 
+
+Large language models (LLMs) are increasingly used as interfaces for answering patient health questions, offering unprecedented accessibility to medical information and personalized guidance. Their strong performance on medical knowledge benchmarks and licensing-style examinations has fueled optimism about their potential to support clinical decision-making and patient education [ 1, 2]. However, these evaluations are largely conducted under idealized conditions: single-turn prompts, carefully phrased questions, and the implicit assumption that users articulate medically coherent and accurate queries. As a result, existing benchmarks capture only a narrow slice of what it means for an LLM to behave safely and effectively in real-world patient-facing settings. In practice, real patient queries bear little resemblance to the structured, unambiguous questions of medical licensing examinations. Real patient queries are iterative, emotionally charged, and often shaped by uncertainty, incomplete information, or incorrect causal beliefs. Patients may seek reassurance, embed false assumptions about diagnoses or medications directly into their questions, or introduce critical clinical details only gradually over multiple turns. Prior research has shown that such communication patterns can contribute to unsafe outcomes if not properly addressed [ 3]. At the same time, the use of LLMs for health information is rapidly increasing [ 4]. Yet current evaluation 
+
+> *
+
+CorrecpondingAuthor: munnangi.m@northeastern.edu  
+
+> arXiv:2603.11281v1 [cs.CL] 11 Mar 2026 MedQA, PubMedQA,
+> MedMCQA
+> ThReadMed
+> QA
+> Conversational Dynamics
+> MedRedQA
+> MedQA-Followup
+> Multi-turn conversation
+> Single-turn QA
+> Medication QA,
+> HealthSearch QA
+> MeDiaQA
+> +m ulti-turnfollowups
+> +patient authoredq uestoins
+> followups andopenended
+> answ ers
+
+Figure 1: We compare our dataset with the existing medical QA datasets. MedQA [ 9], PubMedQA [ 10 ], and MedMCQA [11 ] are derived from medical examinations and are multiple-choice questions. MedQA-Followup [ 5] and MeDiaQA [ 12 ] are adversarial follow-up questions with multiple choice options. MedRedQA [ 13 ], MedicationQA [ 14 ] and HealthSearchQA [ 1 ] have patient-authored questions but in single-turn. Our dataset T HREAD MED -QAis the first to have patient-authored questions and followups, along with physician responses. frameworks rarely test whether models can recognize and respond appropriately to these behaviors as they unfold across a conversation. Recent work has begun probing LLM robustness through adversarial prompting and multi-turn stress testing [ 5, 6]. While valuable, these approaches typically rely on synthetic or exam-style prompts designed to elicit failures. They do not ground their evaluation in how patients naturally seek medical information. Consequently, a critical question remains unanswered: How do LLMs perform as patient conversations unfold across multiple turns of realistic, patient-authored dialogue? In an effort to answer this question, we create a dataset of patient-authored medical questions, their follow-ups, and physician responses to test LLMs’ accuracy throughout the conversation. Recent work [ 7, 8] emphasizes the need for realistic multi-turn evaluation benchmarks. Overall, these findings indicate that relying exclusively on single-turn, exam-style multiple-choice evaluations—particularly those with artificial or adversarial tests may exaggerate the effects of prior-chat bias. They underscore the importance of evaluating LLM performance in multi-turn, clinically realistic scenarios instead of depending solely on board-style benchmarks to characterize safety-related risks. More concretely, in this work, we introduce T HREAD MED -QA, a multi-turn evaluation framework designed to assess LLM robustness under real patient communication behaviors. Rather than treating patient questions as isolated inputs, THREAD MED -QA is constructed with patient-authored medical questions and their follow-ups. Figure 1 compares THREAD MED -QAwith the existing medical QA datasets. We evaluate state-of-the-art LLMs and focus on multi-turn metrics to quantify their performance in real-world multi-turn contexts. Evaluating generative medical responses remains an open challenge, particularly given the multiplicity of valid answers [ 15 ]. To address this, we incorporate scalable, rubric-based evaluation aligned with clinician judgment to ensure clinical relevance while maintaining reproducibility. By grounding multi-turn evaluation in real patient information-seeking trajectories rather than synthetic adversarial dialogues, T HREAD MED -QA advances toward ecologically valid assessment of patient-facing LLMs. By shifting the evaluation focus from “Can the model answer correctly?” to “Does the model respond safely and appropriately as patient communication unfolds?” , T HREAD MED -QA reframes how clinical LLMs should be assessed. This shift is essential for understanding whether strong benchmark performance translates into reliable behavior in the real-world settings where these systems are increasingly deployed—and where the consequences of failure are most severe. More concretely, here are our contributions: 1. A multi-turn patient evaluation dataset: We construct a multi-turn benchmark grounded in patient-authored health questions and their follow-ups, reflecting how patients naturally seek medical information online. Our dataset also has physician authored responses for these questions. 22. Metrics to measure performance in a multi-turn setting : We introduce metrics to capture distinct failure modes in multi-turn medical dialogue: (1) Turn-Level Degradation to measure how accuracy changes across conversation turns, Conversational Consistency Score (CCS) to quantify within-conversation reliability, and Error Propagation Rate (EPR) to measure whether a wrong response at one turn elevates the risk of failure at the next. 3. Evaluation of frontier LLMs under realistic patient interaction: We evaluate state-of-the-art deployed LLMs using metrics tailored to multi-turn clinical settings, assessing their ability to maintain consistency, update reasoning, and safely address clinical concerns across turns, evaluated against the physicians response. 
+
+# 2 Related Work 
+
+Evolution of medical benchmarking datasets Early benchmarks for medical question answering primarily emphasize factual recall and exam-style reasoning. Datasets such as MedQA [ 9 ], MedMCQA [ 11 ], and PubMedQA [ 10 ] are constructed from medical licensing examinations or biomedical literature, enabling controlled evaluation of medical knowledge but offering limited insight into real-world patient interaction [ 16 , 8 ]. Subsequent efforts sought to better reflect consumer-facing use cases by incorporating health-related search queries and community-authored questions, including Medication QA [ 14 ], and HealthSearchQA [ 1]. There are several datasets constructed from online health forums, search logs, and tele-health consultations [ 13 , 17 ]. One prior work stands out [ 12 ], in which the authors collect multiple-choice questions (MCQs) from a Chinese telehealth portal, with follow-up questions and multiple-choice answers, does not reflect real-world complexities. These datasets improve coverage of lay language and consumer concerns, yet they continue to evaluate models largely through single-turn responses with static reference answers. 
+
+Multi-turn LLM Interaction in Medicine A growing literature highlights a disconnect between how medical LLMs are evaluated and how they are used in practice [ 8, 7]. Systematic reviews show that the majority of medical LLM evaluations rely on synthetic or exam-style data, with minimal use of real clinical or patient-generated text [ 18 ]. These evaluations often assume complete and coherent input, overlooking the fragmented, uncertain, and iterative nature of real patient communication. Recent work in the general-domain LLM literature demonstrates that model performance can degrade sharply when moving from single-turn to multi-turn interactions [ 6]. In medical settings, this brittleness is especially concerning: models that appear competent on static questions may fail to maintain consistency, challenge incorrect premises, or preserve appropriate safety guidance as a conversation unfolds. Closest to our work are studies that examine multi-turn or misconception-aware evaluation in specific clinical subdomains [ 6, 5]. However, these evaluations typically involve short, decontextualized prompts and do not model real patient information-seeking trajectories. Our work addresses this gap by explicitly evaluating longitudinal patient–LLM interactions grounded in authentic patient behavior (figure 1). 
+
+Evaluation Methodology and LLM-as-a-Judge Evaluating generative medical responses remains challenging due to the diversity of acceptable answers and the difficulty of defining a single ground truth. Traditional overlap-based metrics and learned semantic scorers capture surface similarity but correlate weakly with expert judgments of safety and clinical usefulness [ 15 ]. Recent work increasingly combines multiple metric families with human evaluation and model-based judges to scale assessment [ 19 ]. LLM-as-a-judge frameworks, when carefully designed and validated, have shown promise for capturing nuanced qualities such as factual correctness, reasoning quality, and alignment with domain-specific criteria [ 20 ]. Our evaluation framework follows this line of work, using structured rubrics to compare physician authored responses against LLM generated responses. 
+
+# 3 Dataset 
+
+We introduce T HREAD MED -QA a multi-turn medical question-answering benchmark derived from r/AskDocs, a Reddit community where patients seek medical advice from verified healthcare professionals. Unlike single-turn QA datasets, our benchmark captures extended patient–physician dialogues in which patients ask follow-up questions to clarify, refine, or challenge initial answers. This structure reflects real-world information-seeking behavior and enables evaluation of models on sustained reasoning, context retention, and handling of patient misconceptions. The raw data is sourced from r/AskDocs 1. We restrict to posts from January 2015 through June 2023. The total number of posts was approximately 1.8 million. Posts are required to have at least one comment to ensure engagement. We apply standard preprocessing, following [ 13 ]; removal of moderator-removed or banned-user content, bot submissions, 
+
+> 1https://www.reddit.com/r/AskDocs/
+
+3posts with fewer than five words, images-only posts, and deleted or removed content. URLs are stripped from text. The same cleaning pipeline is applied to comments, which are linked to posts via Reddit’s link_id field. 
+
+Figure 2: Dataset construction and filtering process. We selected posts from r/AskDocs from Jan 2015 to Jun 2023, totaling approximately 1.8 million posts. After preprocessing and keeping the thread with the original poster (OP) and physician, we have the final set of 2,437 conversation threads. 
+
+3.1 Multi-turn Construction 
+
+We extract linear patient–physician conversation threads using the following protocol: 
+
+Participant selection: We retain only threads in which the original poster (OP) interacts exclusively with verified medical professionals. Answer authors must have a verified flair (e.g., Physician, Verified Physician) as designated by r/AskDocs moderators. Follow-up questions are restricted to the OP; we do not include follow-ups from other users or physicians. 
+
+Branch selection: A single post may spawn multiple comment branches. We select the branch most relevant to the original question using a word-overlap heuristic (Jaccard-like overlap between the post text and the first physician’s answer). This favors threads that stay on-topic and avoid tangents. We require at least two follow-up questions per thread to ensure genuine multi-turn structure. Threads with fewer follow-ups are discarded. 
+
+Quality filters: Physician answers are filtered if they: (1) exhibit broken formatting (excessive [removed]/[deleted], garbled text); or (2) occur after the OP has deleted their account or removed their content mid-thread, in which case the entire branch is discarded. 
+
+Orphan Handling: In the raw extraction, some questions receive no physician answer (e.g., the thread ends with an unanswered follow-up, or the answer was filtered). We refer to such question–answer pairs as orphans . The initial dataset contains a substantial fraction of orphan pairs, with many threads ending in an unanswered final question. This dataset contains 9,741 conversation threads with 37,191 questions. Further, for a fully answered dataset, we select the conversation threads with no orphan questions. Threads with fewer than three QA pairs after trimming are dropped. This yields our primary benchmark: 2,437 conversation threads and 8,204 questions with zero orphans, ensuring every conversation ends with a physician response. We split this into an 80-10-10 train/val/test split, summarizing the process in figure 2. We report results on our test split. 
+
+3.2 Dataset Characteristics 
+
+Table 1 presents summary statistics for our multi-turn medical QA benchmark. We report on two dataset variants: a full collection of 9,741 conversation threads (37,191 QA pairs) and a fully answered subset of 2,437 threads (8,204 QA pairs). The full dataset contains orphan questions (follow-ups that lack physician responses), reflecting realistic consultation patterns where physicians may not address every sub-question. The fully answered subset filters to threads 4Metric Full Dataset Fully Answered Dataset                      
+
+> Scale
+> Total conversation threads 9,741 2,437 Total number of questions 37,191 8,204 Total number of answered questions 21,595 (58.1%) 8,204 (100%)
+> Conversational depth
+> Follow-ups per thread (min / max) 2 / 32 2 / 9 Follow-ups per thread (mean / me-dian) 2.82 / 2.0 2.37 / 2.0 Threads with ≥4 turns (%) 3,792 (38.9%) 622 (25.5%) Threads with ≥5 turns (%) 1,723 (17.7%) 185 (7.6%)
+> Length (num. tokens)
+> Question tokens (mean) 128.6 141.7 Answer tokens (mean) 74.6 69.5 Thread tokens (mean) 656.6 711.2
+
+Table 1: Comparison of the full multi-turn patient-physician QA dataset and the fully answered subset. Both datasets are derived from r/AskDocs threads with at least one verified medical professional respondent. The full dataset includes all threads with three or more QA turns (9,741 threads; 37,191 questions, 58.1% answered). The fully answered subset retains only threads where every question has a physician response (2,437 threads; 8,204 questions). Token counts use tiktoken cl 100 k_base (GPT-4/5). in which every question has a physician response, yielding a benchmark suitable for evaluation where ground-truth answers exist for all turns. The data span 2015–2023, with peak activity in 2020–2022 coinciding with increased tele-health adoption during COVID-19. The majority of threads contain exactly three QA pairs (initial question plus two follow-ups): 61.1% in the full dataset and 74.5% in the fully answered subset. The median is 2 follow-ups per thread, with a long tail extending to 32 follow-ups in the full dataset (and up to 9 in the fully answered subset). In the full dataset of 37,191 QA pairs, 21,595 (58.1%) have physician responses. The remaining 41.9% (15,596 pairs) are mid-thread orphans—unanswered follow-ups that occur before later answered questions. In 7,241 threads, the final question has no answer. The fully answered subset of 2,437 threads contains 8,204 QA pairs with 100% physician coverage. 
+
+# 4 Methods 
+
+4.1 Experimental Pipeline 
+
+We construct a stratified test split of 238 conversation threads from the fully-answered subset of T HREAD MED -QA, balanced by conversation length (short: ≤3 QA pairs; medium: 4-5; long: ≥6). Threads are sampled uniformly at random within each stratum, yielding 948 QA pairs across 238 conversations for evaluations. 
+
+4.2 Models 
+
+We evaluate five state-of-the-art LLMs spanning the proprietary frontier and open-source categories: GPT-5 [ 21 ](snapshot: gpt-5-2025-08-07 ), GPT-4o [ 22 ], Claude Haiku 4.5 [ 23 ] (snapshot: claude-haiku-4-5-20251001 ), Gemini 2.5 Flash [ 24 ], and Llama 3.3–70B-Instruct [ 25 ]. All models are evaluated zero-shot with no specific system prompt, no few-shot examples or medical-domain specialization are applied, assessing out-of-the-box capability. Temperature is set to 0 for all models except GPT-5, which does not support deterministic decoding and is run at temperature 1. We only experiment with general-domain state-of-the-art models as numerous studies have shown domain-specific models often underperform [26, 27] and are rarely deployed in patient-facing interfaces. 
+
+4.3 Multi-Turn Inference 
+
+For each thread, questions are presented sequentially with full conversation history, simulating a patient-facing medical assistant:   
+
+> [User]: ⟨turn 0 patient question ⟩
+> [Assistant]: ⟨model response ⟩
+
+5[User]: ⟨turn 1 follow-up ⟩ 
+
+> [Assistant]: ⟨model response ⟩
+> ...
+
+Each model response conditions on all prior model outputs—the model’s own prior answers form part of the context for subsequent turns. 
+
+4.4 Oracle-Physician Baseline 
+
+To isolate whether performance degradation stems from the models’ conditioning on their own flawed prior responses (context poisoning ) or from follow-up questions being intrinsically harder ( question difficulty ), we run a controlled 
+
+oracle-physician condition. For turns 1+, all prior assistant turns are replaced with the verified physician responses rather than the model’s own outputs. Every other aspect of the evaluation is identical. This provides each model with the best possible conversational context and isolates how much degradation persists even with perfect prior turns. We evaluate 710 QA pairs (turns 1-5, 238 conversations) under this condition for all five models. 
+
+4.5 LLM-as-a-Judge Evaluation 
+
+We score model responses against the physician’s ground truth using a calibrated LLM-as-a-judge rubric, with GPT-4o as the judge. Each response is scored on a three-point scale (full prompt is provided in Appendix C): • 1.0 (Correct): Awarded only if all of the following hold: the core medical explanation aligns with the physician’s; recommended next steps match the physician’s intent; any safety information or red flags the physician included are also present; no factually incorrect information is introduced; and the level of urgency matches the physician. • 0.5 (Partially Correct): The response is medically relevant but has exactly one of: a missing safety criterion or a red flag warning; a missing key diagnostic or management recommendation; excessive reassurance contradicting the physician’s caution; or content that is correct but too generic to be actionable. Not awarded if factually incorrect information is present. • 0.0 (Incorrect): Awarded if any of the following hold: the response fails to engage with the actual question; addresses the wrong medical problem; contains a factual error that could harm the patient; is dangerously under-urgent relative to the physician’s recommendation; or is dangerously over-urgent, leading to emergency care. 
+
+4.6 Metrics 
+
+We report three metrics designed to characterize distinct failure modes in multi-turn medical dialogue: 
+
+Turn-Level Degradation. Mean judge score and wrong-answer rate ( s = 0 ) per turn group, with bootstrap 95% confidence intervals (10,000 resamples). Individual turns 0, 1, 2 are reported separately ( n = 238 each); turns 3–5 are pooled into a late group ( n = 210 ) to maintain adequate sample sizes; turns 6+ ( n = 24 ) are reported as indicative. Statistical significance of turn 0 vs. later groups is tested with the one-sided Mann-Whitney U test. 
+
+Conversational Consistency Score (CCS). Turn-level averages measure whether a model performs well on average ,but not whether it is reliably good within a single patient’s consultation. A model that scores perfectly on turn 0 but completely wrong on turn 3 of the same conversation is clinically problematic in a way that mean scores obscure, a patient cannot know which of the model’s responses to trust. CCS captures this within-conversation reliability by measuring how much a model’s score varies across turns of the same thread. A model with CCS = 1 gives the same quality response at every turn of every conversation; a model with CCS = 0 swings between perfect and completely wrong within every thread. Lower CCS indicates a model that is unpredictably inconsistent, regardless of how it performs on average. We define CCS as: 
+
+CCS = 1 − 1
+
+|C| 
+
+X
+
+> c∈C
+
+ max  
+
+> t
+
+sc,t − min  
+
+> t
+
+sc,t 
+
+ (1) where sc,t is the score at turn t of conversation c and C is the set of conversations with ≥ 3 turns ( n = 238 ). CCS = 1 
+
+means a model never varies within a conversation; CCS = 0 means it spans the full score range in every thread. 6Error Propagation Rate (EPR). CCS measures the range of a model’s within-conversation variance but does not reveal whether failures are randomly scattered across turns or whether a wrong response at one turn actively increases the risk of another wrong response at the next. EPR captures this compounding behaviour. Intuitively, if a model misunderstands a patient’s question at turn 2, does it recover at turn 3—or does the earlier failure contaminate subsequent responses? A high EPR means errors are not isolated mistakes but the start of a sustained failure cascade, which is particularly dangerous in a medical setting where a patient asking follow-up questions after a wrong answer is already in a vulnerable position. Formally, we define EPR as the probability that a wrong response at turn t is followed by a wrong response at turn t + 1 :
+
+EP R = P (st+1 = 0 | st = 0) (2) To assess whether this propagation is meaningfully elevated, we compare EPR against the baseline wrong rate following a correct turn, P (st+1 = 0 | st = 1) , and report the ratio of the two as the amplification factor . A large amplification factor indicates that errors compound substantially beyond what would be expected by chance, rather than reflecting a uniformly high wrong rate across all turn transitions. 
+
+# 5 Results 
+
+We evaluate five LLMs on 948 QA pairs across 238 multi-turn patient consultations . Each response is scored 
+
+{0, 0.5, 1.0} by our LLM-as-judge rubric against verified physician answers. We report bootstrap 95% CIs throughout; turns 3–5 are pooled (“late”) due to smaller sample sizes ( n = 40 –109 per turn), and turns 6+ ( n = 24 ) are reported separately as indicative only. 
+
+5.1 Overall Performance Model Mean [95% CI] Correct (%) Wrong (%) Partially correct (%) Avg. Words 
+
+Physician — — — — 62 
+
+GPT-5 65.0 [62.9, 67.0] 41.2 11.3 47.5 386 
+
+Claude Haiku 54.4 [52.3, 56.6] 28.1 19.2 52.7 227 
+
+GPT-4o 53.4 [51.7, 55.2] 18.6 11.7 69.7 264 
+
+Gemini 2.5 Flash 45.7 [43.8, 47.6] 12.9 21.5 65.6 330 
+
+Llama 3.3 70B 42.2 [40.7, 43.9] 6.2 21.7 72.0 323 
+
+Table 2: Overall performance (948 QA pairs, 238 conversations). Bootstrap 95% CIs in brackets. Mean score is on a 0–100 scale (0 = wrong, 50 = partially correct, 100 = correct). All models produce responses 3.7–6.2 × longer than those of physicians. We present the results in table 2. We observe that GPT-5 leads at 65.0 (41.2% correct), yet no model answers the majority of questions correctly against a physician benchmark. The wrong-answer rate is non-monotonic in model capability: GPT-5 and GPT-4o both hold wrong rates near 11–12%, while the three remaining models cluster at 19–22%, indicating a reliability threshold between frontier and second-tier models not captured by the mean score. Response length negatively correlates with quality for GPT-4o ( rs = −0.091 , p = 0 .004 ) and is negligible for GPT-5 and Gemini (|rs| < 0.02 ) suggesting that verbosity is not a quality signal. 
+
+5.2 Turn-Level Degradation Every model degrades significantly from turn 0 to all later turn groups (Table 3). As observed in figure 3, which plots mean score per turn, that all models have degrade in performance from turn 0 to turn 1. This degradation is independent of overall capability, as GPT-5, the strongest model, loses 16.2 points (75.2 → 59.0) while GPT-4o loses only 8.0 points (58.2 → 50.2). Three qualitatively distinct profiles emerge. (1) Peak-and-cliff : Claude Haiku starts highest (72.3) but suffers the steepest fall, 25.0 points by turn 2, a trajectory where strong initial performance provides false assurance of reliability. 
+
+(2) Stable-floor : GPT-4o and Gemini degrade sharply at turn 1 then plateau, suggesting a context floor below which 7Model T0 (n=238) T1 (n=238) T2 (n=238) T3–5 (n=210) T6+† (n=24) 
+
+GPT-5 75.2 [71.4, 79.0] 64.3 [60.1, 68.5] 59.0 [54.6, 63.2] 61.4 [56.9, 66.0] 60.4 [47.9, 70.8] Claude Haiku 72.3 [68.5, 75.8] 51.9 [47.7, 56.1] 47.3 [43.1, 51.5] 46.4 [41.9, 51.2] 43.8 [31.2, 56.2] GPT-4o 58.2 [55.1, 61.3] 51.8 [48.2, 55.3] 50.2 [46.5, 53.9] 52.6 [48.8, 56.3] 50.0 [41.7, 58.3] Gemini 2.5 Flash 51.3 [48.1, 54.6] 44.7 [41.2, 48.5] 42.6 [38.9, 46.4] 43.6 [39.3, 47.9] 47.9 [37.5, 58.3] Llama 3.3 70B 47.1 [44.5, 49.6] 40.5 [37.4, 43.7] 40.1 [36.8, 43.5] 41.0 [37.1, 44.8] 43.8 [35.4, 52.1] Table 3: Mean judge score (0–100 scale) with bootstrap 95% CIs by turn group. †: turns 6+ are indicative only ( n = 24 ). See Appendix A, table 7 for full significance tests. 0 1 2 3 4 5
+
+> Turn
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> Mean judge score (0 100)
+> Claude Haiku
+> Gemini 2.5 Flash
+> GPT-4o
+> GPT-5
+> Llama 3.3 70B
+
+Figure 3: Mean judge score by conversation turn (turns 0-5, n = 238, 238, 238, 109, 61, 40 respectively). Shaded bands show 95% confidence intervals. All models degrade from turn 0 to turn 2; the degradation is statistically significant across all models (p < 0.001, Mann-Whitney U). they do not fall. (3) Monotonic decline : Llama decreases at every turn with no recovery, reaching its minimum at turn 5 (38.8). GPT-5 mirrors the stable-floor profile but shifted approximately 15–17 points higher at every turn; notably, the gap between GPT-5 and GPT-4o narrows from 17.0 points at turn 0 to 8.8 points by turn 2, indicating that multi-turn settings partially close the frontier gap. 
+
+5.3 Conversational Consistency Score Model CCS [95% CI] Floor Ceiling Volatile (%) Degraded (%) 
+
+GPT-5 51.5 [47.7, 55.3] 39.1 87.6 16.8 57.1 Claude Haiku 45.2 [41.0, 49.4] 27.3 82.1 27.7 63.9 
+
+GPT-4o 60.5 [56.7, 64.3] 34.2 73.7 9.7 37.8 Gemini 2.5 Flash 57.1 [53.2, 61.1] 25.0 67.9 13.0 39.9 Llama 3.3 70B 63.9 [60.1, 67.4] 22.9 59.0 8.0 38.7 Table 4: Conversational Consistency Score (0–100 scale) with bootstrap 95% CIs (238 conversations, ≥3 turns). 
+
+Floor /Ceiling : mean per-conversation worst- and best-case scores (0–100 scale). Volatile : conversation contains both a fully correct and a completely wrong response. Degraded : later-turn mean >10 points below turn-0 score. Table 4 reveals a counter-intuitive ordering. Llama achieves the highest CCS (63.9) despite the lowest ceiling (59.0)—it is consistent precisely because it is consistently mediocre . Claude Haiku has the lowest CCS (45.2) and the highest volatile rate (27.7%): nearly one in three conversations swings between a fully correct and a completely wrong response within the same thread. GPT-5 has both the highest ceiling (87.6) and the highest floor (39.1), yet its CCS (51.5) is only third-highest because its within-conversation score range remains wide; a model that can reach 87.6 but also fall to 39.1 in the same conversation offers inconsistent clinical guidance. These patterns establish that a high mean score or high ceiling does not guarantee consistent guidance across a consultation : the model a patient experiences at turn 3 may 8After           
+
+> Wrong
+> After
+> Partial
+> After
+> Correct
+> GPT-5
+> Claude
+> Haiku
+> GPT-4o
+> Gemini
+> 2.5 Flash
+> Llama
+> 3.3 70B
+> 38.6% 14.2% 6.3%
+> 40.7% 23.5% 15.6%
+> 33.3% 12.8% 8.4%
+> 44.1% 21.5% 13.3%
+> 40.9% 21.6% 22.0%
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> Wrong rate on next turn (%)
+
+Figure 4: Cascade failure rates: percentage of wrong responses at turn t + 1 conditioned on the score at turn t. All models show severe cascade effects after a wrong turn, with failure rates up to 6.1× higher than after a correct turn. be substantially worse than the one they encountered at turn 0, with no signal from the conversation itself about which to trust. 
+
+5.4 Error Propagation Rate 
+
+EPR is high across all models (35–44%), and is 1.9–6.1 × higher than the wrong rate following a correct turn (Table 5, Figure 4). Gemini has the highest EPR (44.1%): a single off-track turn is most likely to derail its subsequent responses. Llama has the worst after-correct rate (22.0%): even its sporadic correct answers are unstable and cannot be sustained. For GPT-5, EPR amplification is 6.1 × meaning, once it goes wrong, it cascades as severely as any model despite having the lowest overall wrong rate. Table 5: Error Propagation Rate with bootstrap 95% CIs. After Correct : wrong rate given prior correct turn. Amplifica-tion : EPR / after-correct wrong rate. 
+
+Model EPR [95% CI] After Correct Amplification 
+
+GPT-5 38.6% [27.1, 50.0] 6.3% 6.1 ×
+
+Claude Haiku 40.7% [31.9, 50.4] 15.6% 2.6 ×
+
+GPT-4o 35.1% [24.7, 46.8] 8.3% 4.2 ×
+
+Gemini 2.5 Flash 44.1% [36.0, 52.2] 13.3% 3.3 ×
+
+Llama 3.3 70B 40.9% [32.6, 49.2] 22.0% 1.9 ×
+
+5.5 Decomposing Degradation: Question Difficulty vs. Context Effects 
+
+Is degradation driven by models conditioning on their own flawed prior responses ( context poisoning ), or are follow-up questions intrinsically harder? To isolate these effects, we run an oracle-physician ablation: all prior turns are replaced with verified physician responses, providing the model with perfect conversational context. We evaluate 710 QA pairs (turns 1–5, 238 conversations) under this condition. The oracle results are counter-intuitive: perfect prior context does not recover performance and in fact worsens it for three of five models (GPT-5, GPT-4o, Llama; all p ≤ 0.003 , Table 6). Question difficulty accounts for the dominant share of total degradation across most models (86–164%): follow-up questions are intrinsically harder even with a perfect context, confirming that degradation cannot be attributed primarily to cascading context errors. For GPT-5, GPT-4o, and Llama, the model’s own prior responses appear to serve as helpful scaffolding—removing them hurts. Claude Haiku is the exception: its oracle score improves modestly ( +3.6, p = 0 .024 ), suggesting partial context poisoning consistent with its peak-and-cliff degradation profile. The primary driver of multi-turn degradation in medical dialogue is question difficulty, not context processing failure —a finding that challenges purely architectural explanations of multi-turn unreliability. 
+
+Coverage. An oracle ensemble of all five models still fails on 47.4% of QA pairs (449/948): no model answers correctly on these turns. GPT-5 uniquely solves 132 pairs (13.9%) that no other model handles correctly; Claude Haiku 9Model T0 Baseline T2 Oracle T2 Q-difficulty † Context effect 
+
+GPT-5 75.2 59.0 50.0 156% of drop −9.0 (p < 0.001 )Claude Haiku 72.3 47.3 50.8 86% of drop +3 .6 (p = 0 .024 )GPT-4o 58.2 50.2 45.4 160% of drop −4.8 (p = 0 .003 )Gemini 2.5 Flash 51.3 42.6 45.6 66% of drop +2 .9‡ (p = 0 .36 )Llama 3.3 70B 47.1 40.1 35.7 164% of drop −4.4 (p = 0 .003 )Table 6: Oracle-physician ablation at turn 2. Q-difficulty : share of total degradation explained by question difficulty alone (baseline T0 − oracle T2). Context effect : oracle T2 − baseline T2; negative values mean the oracle condition is 
+
+worse than baseline. p-values test baseline vs. oracle across turns 1–5 (Mann-Whitney U). † Values >100% indicate the oracle condition scores below baseline T2, implying the model’s own prior responses serve as net-positive scaffolding; question difficulty thus more than fully explains the total degradation. ‡ Gemini 2.5 Flash oracle vs. baseline difference is not significant (p = 0 .36 ); no directional claim is made for this model. 
+
+adds 56 (5.9%). The collective failure reveals a structural gap between current LLMs and physician-level multi-turn consultation that is not closed by model diversity. 
+
+# 6 Discussion 
+
+The evaluation gap in medical AI. Benchmark performance on medical licensing examinations has become a de facto proxy for clinical readiness, yet it measures a capability that bears little resemblance to how patients actually seek care. Real consultations are iterative, emotionally inflected, and marked by incomplete disclosure: patients reveal critical details across multiple exchanges, embed false beliefs in their questions, and use social turns—“That makes sense,” “Thank you, but”—not to close the conversation but to signal readiness for the next piece of guidance. Single-turn benchmarks, by construction, evaluate none of this. They reward encyclopedic recall and penalize nothing that emerges only over time: context drift, cascading failures, or the failure to proactively volunteer safety information when a patient moves on. The result is a systematic overestimate of clinical reliability. A model that scores 90% on MedQA [ 21 ] and 41% on the first turn of a real patient consultation, as GPT-5 does here, is not a model with a minor robustness gap; it is a model whose benchmark performance is largely uninformative about its behavior in the settings where it is increasingly deployed. THREAD MED -QAis the first large-scale benchmark of authentic, multi-turn patient–physician dialogue evaluated against verified physician responses as ground truth. By extracting 2,437 fully answered conversation threads from r/AskDocs; where every follow-up has a physician response, and every patient turn was authored under the communica-tive pressures of real information-seeking, we ground evaluation in ecological validity that synthetic and adversarial benchmarks cannot replicate. The rubric-based LLM-as-a-Judge framework, calibrated against explicit criteria for safety, urgency, and proactive information volunteering, makes scores interpretable beyond raw accuracy: a score of 0.5 is not a near-miss but a clinically meaningful failure, and a score of 0.0 on a social turn that a physician used to deliver safety criteria is a patient safety event. The five models we evaluate span the full current capability range, from GPT-5 to Llama 3.3 70B, yet all share a structural failure: performance degrades universally and significantly as conversations progress. The wrong-answer rate roughly triples from turn 0 to turn 2 across all models ( p < 0.001 for each), meaning the population of patients most in need of reliable guidance, those asking follow-ups because the initial answer was unclear or alarming, is also the population most likely to receive a wrong response. That 47.4% of QA pairs receive no fully correct response from any of the five models, including GPT-5, reveals that the bottleneck is not solved by scale alone. Two findings are particularly instructive. First, the single-turn - multi-turn robustness trade-off : the models with the strongest single-turn performance (GPT-5, Claude Haiku) exhibit the steepest multi-turn degradation, losing 11% and 27.5% of their turn-0 performance by turn 2, respectively. This reflects a structural tension between the optimization objectives that produce strong single-turn responses with comprehensiveness, confidence, and verbose elaboration but lack the contextual discipline required to track an evolving patient narrative across turns. A model trained to produce maximally informative single-turn answers will tend to anchor on its own prior response, overfill the context with assumptions, and misread social turns as opportunities for reassurance rather than as clinical handoffs. GPT-4o loses only 8.0 points from turn 0 to turn 2 despite a weaker starting position, suggesting that a lower-verbosity, more conservative response style actually confers a multi-turn advantage, a finding with direct implications for how medical AI systems should be prompted and fine-tuned. 10 Second, the cascade failure pattern: a single wrong turn elevates the probability of a wrong next turn by 1.9–6.1 ×
+
+across all models. For patients with complex or anxiety-driven presentations, precisely the population that generates multi-turn threads, this means that early misreads compound into sustained unreliability. 
+
+Implications for the research community. THREAD MED -QA is designed to support several research directions beyond the baselines reported here. The dataset enables direct study of context retention : does a model appropriately update its clinical reasoning when a patient reveals, at turn 3, that they are pregnant? Does it track prior symptom descriptions without re-asking for them? These are questions about memory and coherence that the benchmark’s multi-turn structure makes measurable. Beyond dataset use, the three metrics we introduce: Turn-Level Degradation, Conversational Consistency Score (CCS), and Error Propagation Rate (EPR), provide a reusable evaluation vocabulary for multi-turn medical dialogue. CCS and EPR in particular surface failure modes that aggregate accuracy scores obscure: a model can perform well on average while being dangerously inconsistent within individual consultations, or while allowing single failures to cascade. We encourage future work to report these metrics alongside standard accuracy measures when evaluating patient-facing LLMs, and to use them as optimization targets for fine-tuning models that must sustain reliability across extended conversations. Our LLM-as-judge rubric, with its explicit criteria for urgency calibration and safety-information volunteering, offers a complementary evaluation scaffold that can be applied to new models, new dialogue settings, or fine-tuned variants without human re-annotation at each iteration. 
+
+# 7 Limitations and Future Work 
+
+The benchmark’s ground truth is physician responses from an online forum, which are not equivalent to formal clinical documentation and may themselves vary in completeness. Future work should validate judge scores against structured physician ratings on a held-out sample, and extend evaluation to non-English conversations and multimodal inputs (e.g., patient-uploaded images) that are common in real consultations. The evaluation also does not yet capture longitudinal 
+
+patient behavior, the same patient returning days later with a new symptom. Nor does it capture the specific failure mode of models that correctly answer but in a register so clinical that patients cannot act on the guidance. Addressing these dimensions will require both richer annotation and evaluation rubrics that incorporate patient comprehension, not only physician alignment. 
+
+# References 
+
+[1] Karan Singhal, Shekoofeh Azizi, Tao Tu, Sara Mahdavi, Jason Wei, Hyung Won Chung, Nathan Scales, Ajay Tanwani, Heather Cole-Lewis, Perry Payne, Stephen Pfohl, Martin Seneviratne, Paul Gamble, Christopher Kelly, Abubakr Abdelrazig Hassan Babiker, Nathanael Schaerli, Aakanksha Chowdhery, Philip Mansfield, Dina Demner-Fushman, Blaise Aguera-Arcas, Dale Webster, Greg Corrado, Yossi Matias, Katherine Chou, Juraj Gottweis, Nenad Tomašev, Yun Liu, Alvin Rajkomar, Joelle Barral, Christopher Semturs, Alan Karthikesalingam, and Vivek Natarajan. Large language models encode clinical knowledge. Nature , 2023. [2] Karan Singhal, Tao Tu, Juraj Gottweis, Rory Sayres, Ellery Wulczyn, Le Hou, Kevin Clark, Stephen Pfohl, Heather Cole-Lewis, Darlene Neal, et al. Towards expert-level medical question answering with large language models. arXiv preprint arXiv:2305.09617 , 2023. [3] Andrew M Bean, Rebecca Payne, Guy Parsons, Hannah Rose Kirk, Juan Ciro, Rafael Mosquera, Sara Hincapié Monsalve, Aruna S Ekanayaka, Lionel Tarassenko, Luc Rocher, et al. Clinical knowledge in llms does not translate to human interactions. arXiv preprint arXiv:2504.18919 , 2025. [4] Lila J. Finney Rutten, Kelly D. Blake, Alexandra J. Greenberg-Worisek, Summer V. Allen, Richard P. Moser, and Bradford William Hesse. Online health information seeking among us adults: Measuring progress toward a healthy people 2020 objective. Public Health Reports , 134:617 – 625, 2019. [5] Blazej Manczak, Eric Lin, Francisco Eiras, James O’ Neill, and Vaikkunth Mugunthan. Shallow robustness, deep vulnerabilities: Multi-turn evaluation of medical llms. arXiv preprint arXiv:2510.12255 , 2025. [6] Philippe Laban, Hiroaki Hayashi, Yingbo Zhou, and Jennifer Neville. Llms get lost in multi-turn conversation. 
+
+arXiv preprint arXiv:2505.06120 , 2025. [7] Chloe Stanwyck, Amin Adibi, Paz Dozie-Nnamah, and Emily Alsentzer. Boards-style benchmarks overestimate prior-chat bias in large language models: a factorial evaluation study. medRxiv , 2026. [8] Manish Agrawal, Irene Y Chen, Freya Gulamali, and Shalmali Joshi. The evaluation illusion of large language models in medicine. NPJ Digital Medicine , 8, 2025. 11 [9] Di Jin, Eileen Pan, Nassim Oufattole, Wei-Hung Weng, Hanyi Fang, and Peter Szolovits. What disease does this patient have? a large-scale open domain question answering dataset from medical exams, 2020. [10] Qiao Jin, Bhuwan Dhingra, Zhengping Liu, William W. Cohen, and Xinghua Lu. Pubmedqa: A dataset for biomedical research question answering, 2019. [11] Ankit Pal, Logesh Kumar Umapathi, and Malaikannan Sankarasubbu. Medmcqa : A large-scale multi-subject multi-choice dataset for medical domain question answering, 2022. [12] Huqun Suri, Qi Zhang, Wenhua Huo, Yan Liu, and Chunsheng Guan. Mediaqa: A question answering dataset on medical dialogues, 2021. [13] Vincent Nguyen, Sarvnaz Karimi, Maciej Rybinski, and Zhenchang Xing. Medredqa for medical consumer question answering: Dataset, tasks, and neural baselines. In Proceedings of the 13th International Joint Conference on Natural Language Processing and the 3rd Conference of the Asia-Pacific Chapter of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 629–648, 2023. [14] Asma Ben Abacha, Yassine Mrabet, Mark Sharp, Travis R Goodwin, Sonya E Shooshan, and Dina Demner-Fushman. Bridging the gap between consumers’ medication questions and trusted answers. In MEDINFO 2019: Health and Wellbeing e-Networks for All , pages 25–29. IOS Press, 2019. [15] Yupeng Chang, Xu Wang, Jindong Wang, Yuan Wu, Linyi Yang, Kaijie Zhu, Hao Chen, Xiaoyuan Yi, Cunxiang Wang, Yidong Wang, et al. A survey on evaluation of large language models. ACM transactions on intelligent systems and technology , 15(3):1–45, 2024. [16] Inioluwa Deborah Raji, Roxana Daneshjou, and Emily Alsentzer. It’s time to bench the medical exam benchmark, 2025. [17] Asma Ben Abacha and Dina Demner-Fushman. On the summarization of consumer health questions. In 
+
+Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics , pages 2228–2234, 2019. [18] Suhana Bedi, Yutong Liu, Lucy Orr-Ewing, Dev Dash, Sanmi Koyejo, Alison Callahan, Jason A. Fries, Michael Wornow, Akshay Swaminathan, Lisa Soleymani Lehmann, Hyo Jung Hong, Mehr Kashyap, Akash R. Chaurasia, Nirav R. Shah, Karandeep Singh, Troy Tazbaz, Arnold Milstein, Michael A. Pfeffer, and Nigam H. Shah. A systematic review of testing and evaluation of healthcare applications of large language models (llms). medRxiv ,2024. [19] Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin, Zhuohan Li, Dacheng Li, Eric P. Xing, Hao Zhang, Joseph E. Gonzalez, and Ion Stoica. Judging llm-as-a-judge with mt-bench and chatbot arena, 2023. [20] Monica Munnangi, Akshay Swaminathan, Jason Alan Fries, Jenelle A Jindal, Sanjana Narayanan, Ivan Lopez, Lucia Tu, Philip Chung, Jesutofunmi Omiye, Mehr Kashyap, and Nigam Shah. FactEHR: A dataset for evaluating factuality in clinical notes using LLMs. In Monica Agrawal, Kaivalya Deshpande, Matthew Engelhard, Shalmali Joshi, Shengpu Tang, and Iñigo Urteaga, editors, Proceedings of the 10th Machine Learning for Healthcare Conference , volume 298 of Proceedings of Machine Learning Research . PMLR, 15–16 Aug 2025. [21] OpenAI. GPT-5 system card, August 2025. Accessed: 2026-01-05. [22] OpenAI. Gpt-4o system card, 2024. [23] Anthropic. Anthropic.claude 4.5 haiku. https://www.anthropic.com/claude/haiku , 2026. Accessed: 2025-10-15. [24] Gheorghe Comanici et al. Gemini 2.5: Pushing the frontier with advanced reasoning, multimodality, long context, and next generation agentic capabilities, 2025. [25] Aaron Grattafiori, Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Alex Vaughan, et al. The llama 3 herd of models. arXiv preprint arXiv:2407.21783 , 2024. [26] Daniel P Jeong, Saurabh Garg, Zachary Chase Lipton, and Michael Oberst. Medical adaptation of large language and vision-language models: Are we making progress? In Yaser Al-Onaizan, Mohit Bansal, and Yun-Nung Chen, editors, Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing , pages 12143–12170, Miami, Florida, USA, November 2024. Association for Computational Linguistics. [27] Alberto Mario Ceballos-Arroyo, Monica Munnangi, Jiuding Sun, Karen Zhang, Jered McInerney, Byron C. Wallace, and Silvio Amir. Open (clinical) LLMs are sensitive to instruction phrasings. In Dina Demner-Fushman, Sophia Ananiadou, Makoto Miwa, Kirk Roberts, and Junichi Tsujii, editors, Proceedings of the 23rd Workshop on Biomedical Natural Language Processing , pages 50–71, Bangkok, Thailand, August 2024. Association for Computational Linguistics. 12 A Additional Results 
+
+A.1 Turn wise degradation 
+
+We show turn-level degradation fro turn 0 to later turns with significance tests. 
+
+Model T0 (n=238) T1 (n=238) T2 (n=238) T3–5 (n=210) T6+† (n=24) GPT-5 75.2 [71.4, 79.0] 64.3 [60.1, 68.5] ∗∗∗ 59.0 [54.8, 63.2] ∗∗∗ 61.4 [56.9, 66.0] ∗∗∗ 60.4 [50.0, 72.9] ∗∗ 
+
+Claude Haiku 72.3 [68.5, 75.8] 51.9 [47.7, 56.1] ∗∗∗ 47.3 [43.3, 51.5] ∗∗∗ 46.4 [41.9, 51.2] ∗∗∗ 43.8 [31.2, 56.2] ∗∗∗ 
+
+GPT-4o 58.2 [55.1, 61.3] 51.8 [48.4, 55.3] ∗∗ 50.2 [46.5, 53.9] ∗∗∗ 52.6 [48.8, 56.3] ∗ 50.0 [41.7, 58.3] ns Gemini 2.5 Flash 51.3 [48.1, 54.6] 44.7 [41.0, 48.3] ∗∗ 42.6 [38.9, 46.4] ∗∗∗ 43.6 [39.5, 47.6] ∗∗ 47.9 [37.5, 58.3] ns Llama 3.3 70B 47.1 [44.5, 49.6] 40.5 [37.4, 43.7] ∗∗∗ 40.1 [36.8, 43.5] ∗∗∗ 41.0 [37.1, 44.5] ∗∗ 43.8 [35.4, 52.1] ns 
+
+Table 7: Mean judge score (0–100 scale) with bootstrap 95% CIs by turn group, with statistical significance of turn 0 vs. each later group (Mann-Whitney U, one-sided: turn 0 > later group). †: turns 6+ are indicative only ( n = 24 ). 
+
+> ∗
+
+p < 0.05 , ∗∗ p < 0.01 , ∗∗∗ p < 0.001 , ns: not significant. 
+
+# B Inference and Evaluation Costs 
+
+We report API costs for generating responses for 244 conversation threads and LLM-as-a-Judge evaluation in tables 8 and 9. Model Input ($) Output ($) Total ($) claude-haiku 0.45 2.43 2.88 gemini-2.5-flash 0.14 1.21 1.35 llama33_70b 0.40 0.43 0.83 gpt-4o 2.26 7.28 9.55 gpt-5 0.57 4.85 5.42 Table 8: Inference cost for 5 models on 238 threads (948 QA pairs). Judge model Cost ($) GPT-4o 30.98 Table 9: LLM-as-judge cost (GPT-4o) for all 5 models’ outputs (4740 judgments). 
+
+# C Prompts 
+
+Evaluation Prompt 
+
+# LLM-as-a-Judge Evaluation Prompt 
+
+To evaluate model responses against physician ground truth answers, we use a rubric-based grading framework. The full system and user prompts are provided below for reproducibility. 
+
+System Prompt 
+
+You are an expert medical evaluator assessing AI-generated responses to patient medical questions. Your task is to compare an AI’s answer to a verified physician’s answer using a 3-point scale. Your evaluation must focus on patient outcomes: would this response lead the patient to the same understanding and actions as the physician’s response? 
+
+13 Scoring Rubric — read carefully before scoring: Score 1.0 — Correct 
+
+Award 1.0 ONLY if ALL of the following are true: • The core medical explanation or diagnosis aligns with the physician’s • Recommended next steps / management match the physician’s intent • Any safety information or red flags the physician included are also present • The response does not introduce factually incorrect medical information • The level of urgency matches the physician (neither over- nor under-alarming) Note: The AI does not need to use identical wording or cover every detail. A concise response can score 1.0 if it covers the essential points. 
+
+Score 0.5 — Partially Correct 
+
+Award 0.5 when the response is medically relevant and partially useful, but has ONE of these problems: • Missing a specific safety criterion or red-flag warning the physician included • Missing a key diagnostic or management recommendation that changes patient action • Over-reassuring the patient in a way that contradicts the physician’s level of caution • The core content is correct but overly generic and provides little actionable guidance Do NOT award 0.5 if the response introduces factually incorrect medical information (score 0.0 instead) or if the omission is a minor detail that would not change patient action. 
+
+Score 0.0 — Incorrect 
+
+Award 0.0 if ANY of the following are true: • The response fails to engage with the actual medical question • The response addresses the wrong medical problem or body system • The response contains a factual medical error that could harm the patient • The response is dangerously under-urgent relative to the physician’s recommendation • The response is dangerously over-urgent in a way that may cause unnecessary emergency care 
+
+IMPORTANT NOTES: 
+
+• Verbosity is not quality. • Generic deferral ("consult your doctor") does not satisfy a safety requirement. • If the physician proactively provides important information not directly requested, the AI is expected to do the same. 
+
+User Prompt Patient Question: {question} 
+
+Physician Answer (Ground Truth): {physician_answer} 
+
+AI Answer: {model_answer} Before scoring, briefly identify: 1. What is the core medical point the physician is making? 2. Does the AI response address this core point? 3. Are there safety/urgency elements in the physician’s answer? Does the AI include them? 
+
+14 Then provide your score. 
+
+Output as JSON: 
+
+{"SCORE": <0.0, 0.5, or 1.0>, "REASON": "<one sentence explaining the specific gap or alignment>"} 
+
+15

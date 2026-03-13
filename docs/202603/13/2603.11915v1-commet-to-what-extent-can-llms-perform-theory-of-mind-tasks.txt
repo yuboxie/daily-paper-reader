@@ -1,0 +1,273 @@
+Title: CoMMET: To What Extent Can LLMs Perform Theory of Mind Tasks?
+
+URL Source: https://arxiv.org/pdf/2603.11915v1
+
+Published Time: Fri, 13 Mar 2026 00:57:00 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+## CoMMET: To What Extent Can LLMs Perform Theory of Mind Tasks? 
+
+Ruirui Chen 1, Weifeng Jiang 3, Chengwei Qin 4, Cheston Tan 1,2
+
+> 1
+
+Institute of High Performance Computing (IHPC) and 2Centre for Frontier AI Research (CFAR), Agency for Science, Technology and Research (A*STAR), Singapore 
+
+> 3
+
+Nanyang Technological University, Singapore 
+
+> 4
+
+Hong Kong University of Science and Technology (Guangzhou), China 
+
+Abstract 
+
+Theory of Mind (ToM)—the ability to reason about the mental states of oneself and oth-ers—is a cornerstone of human social intelli-gence. As Large Language Models (LLMs) become ubiquitous in real-world applications, validating their capacity for this level of so-cial reasoning is essential for effective and natural interactions. However, existing bench-marks for assessing ToM in LLMs are limited; most rely solely on text inputs and focus nar-rowly on belief-related tasks. In this paper, we propose a new multimodal benchmark dataset, CoMMET, a Co mprehensive Mental states and 
+
+Moral Evaluation Task inspired by the The-ory of Mind Booklet Task. CoMMET expands the scope of evaluation by covering a broader range of mental states and introducing multi-turn testing. To the best of our knowledge, this is the first multimodal dataset to evalu-ate ToM in a multi-turn conversational setting. Through a comprehensive assessment of LLMs across different families and sizes, we analyze the strengths and limitations of current models and identify directions for future improvement. Our work offers a deeper understanding of the social cognitive capabilities of modern LLMs. 
+
+1 Introduction 
+
+Theory of Mind (ToM) refers to the ability to at-tribute mental states to oneself and others (Premack and Woodruff, 1978; Baron-Cohen et al., 1985). As Large Language Models (LLMs) have been widely adopted in daily life, validating whether LLMs pos-sess ToM capabilities, and to what extent, has be-come a popular research topic. Understanding how effectively LLMs can interpret human mental states is essential for evaluating their reliability in appli-cations aimed at improving human well-being. Theory of mind is a complex topic that en-compasses multiple mental states (Beaudoin et al., 2020). Numerous benchmarks have been proposed in recent years (Wu et al., 2023; Xu et al., 2024; Chen et al., 2024; Liu et al., 2025; Villa-Cueva et al., 2025) to better understand the ToM capabili-ties of LLMs. However, most existing benchmarks continue to focus primarily on belief-related rea-soning, rely on text-only inputs (Chen et al., 2025), and adopt a single-round question–answering for-mat. To address these limitations, we introduce a multimodal benchmark based on ToM booklet tasks (Richardson et al., 2018; Sotomayor-Enriquez et al., 2024), which covers a broader range of men-tal states and supports multi-round, story-based question answering. ToM booklet tasks are established psychologi-cal assessments that cover a wide range of ToM concepts with varying levels of difficulty, from reasoning about desires and beliefs to reasoning about moral blameworthiness and mistaken refer-ents. They also include items that assess the under-standing of sarcasm and second-order belief–desire reasoning (Figure 1). Building on this framework, our benchmark evaluates a broader spectrum of mental states and supports multi-turn evaluation within a story-based conversational setting. To gain a deeper understanding of LLM per-formance on this task, we evaluate eight LLMs from four model families, including proprietary models (OpenAI, Gemini, and Claude) as well as open-source models from the LLaMA family. The models are tested on both the original ToM book-let task dataset and our newly constructed dataset derived from it. We provide an in-depth analysis of model performance, highlighting their strengths and limitations, which helps identify directions for future improvement. Overall, our contributions are summarized as follows: • To the best of our knowledge, we are the first to introduce StoryTurn, an approach that for-mulates test datasets in a multi-turn format to evaluate LLMs under more realistic, real-world scenarios. 
+
+> arXiv:2603.11915v1 [cs.CL] 12 Mar 2026 Story-Part 1 : Leo and his Mom went to the toy store to buy a present. Leo pointed
+> to a red race car and told his Mom, "I really want that red race car!" Mom nodded
+> and walked to the long checkout line. While she was waiting, Leo saw a cool blue
+> robot and changed his mind. He shouted to her, "Mom, wait! I want the blue robot
+> instead!" But the store was very noisy, and Mom did not hear Leo ask for the
+> robot.
+> Question 1 : What does Mom think Leo wants to buy: the red race car, or the blue
+> robot?
+> Answer to Question 1 : The red race car.
+> Story-Part 2 : Mom gets to the front of the line, but the cashier says the red race
+> cars are all sold out! Mom feels bad, but she sees a pile of blue robots on the
+> counter, so she buys a robot for Leo so he has a gift. When she walks back to Leo,
+> she hands him the bag and says, "I am so sorry, Leo. The store was completely out
+> of the toy you asked for."
+> Question 2 : Why does Mom say that?
+> Answer to Question 2 : Because she didn't hear that Leo wanted the robot, she still
+> thought he wanted the race car and there were no race cars left.
+> Story-Part 3 : Leo feels sad that he won't get the blue robot, but he takes the bag
+> and says, "It's okay, Mom."
+> Question 3 : What toy does Leo want?
+> Answer to Question 3 : The blue robot.
+> Question 4 : What toy did Mom put inside the bag?
+> Answer to Question 4 : The blue robot.
+> Story-Part4 : Leo opens the bag and finds the blue robot inside! He looks at his
+> Mom with a very surprised face.
+> Question 5 : Why is Leo surprised?
+> Answer to Question 5 : Because he told his Mom he wanted the robot, he didn't
+> realize she hadn't heard him. So when she said the store was out of the toy he
+> wanted, he thought she meant the robot. But when he saw the robot in the bag,
+> he was surprised.
+
+Figure 1: An example of second-order belief–desire reasoning . The story is presented across multiple rounds, with questions posed at different stages as the narrative unfolds. Images are provided for each round to enhance illustration and contextual understanding. In addition to the story content, we supply adaptive hints for LLMs. For example, if the model answers the first question correctly, we add the feedback: " That’s right—Mom thinks Leo still wants the red race car. " If the answer is incorrect, we provide a corrective hint: " Remember, Mom didn’t hear Leo say that he changed his mind, so she still believes he wants the first toy he picked. "
+
+• Our proposed benchmark, CoMMET, is a multimodal dataset that covers a broad range of mental states, including desire, belief, emotion, knowledge, intention, perception, and non-literal communication, as defined in ATOMS (Beaudoin et al., 2020). It also incor-porates moral reasoning grounded in true and false beliefs. • Our analysis reveals limitations of current LLMs across different types of mental-state reasoning, providing insights for future re-search. 
+
+2 Related Work 
+
+Theory of mind benchmarks have been broadly cat-egorized into two types—story-based benchmarks and interactive benchmarks (Chen et al., 2025). As this paper primarily focuses on story-based bench-marks (Ma et al., 2023b), we limit our review to benchmarks in this category. In recent years, numerous story-based bench-marks have been proposed to evaluate the theory of mind capabilities of LLMs. Most existing bench-marks rely on text-only stories (Chen et al., 2024), including narrative-style stories (Le et al., 2019; Wu et al., 2023) and dialogue-based stories (Kim et al., 2023; Chan et al., 2024; Liu et al., 2025). These benchmarks typically focus on a narrow range of mental states, mostly focus on belief-related reasoning (Wu et al., 2023) or reasoning about white lies (Liu et al., 2025). A few multi-modal benchmarks have also been proposed, such as MMToM-QA (Jin et al., 2024) and MuMA-ToM (Shi et al., 2025); however, they mainly assess be-Figure 2: A scenario analogous to a reference (hard) task from the ToM booklet task . The child asks for the big apple; however, because the leaves block his view, Grandpa cannot see the largest apple at the top of the tree. As a result, he believes the medium apple is the biggest and therefore picks it for the child. 
+
+liefs and intentions and are largely restricted to household settings. MOMENTS (Villa-Cueva et al., 2025) is a multimodal video question-answering benchmark that covers all seven mental states de-fined in the ATOMS taxonomy. Nevertheless, it uses a multiple-choice QA format and evaluates LLMs in a single-turn setting without interaction. Overall, existing benchmarks primarily rely on text inputs, target only a limited set of mental states, and evaluate models in single-turn, non-interactive settings. To address these limitations, we propose CoMMET, a multimodal benchmark that assesses LLMs’ reasoning across diverse mental states in a multi-turn, interactive setting. 
+
+3 CoMMET: Introduction and Design 
+
+Building upon ToM booklet tasks (Richardson et al., 2018; Sotomayor-Enriquez et al., 2024), we develop a multimodal dataset to further evaluate the theory of mind capabilities of LLMs. In this section, we first provide a brief overview of ToM booklet tasks and then describe how our benchmark is constructed based on this established psycholog-ical framework. 
+
+3.1 ToM Booklet Task 
+
+Unlike the widely used Sally–Anne test (Baron-Cohen et al., 1985) and Smarties task (Perner et al., 1987), which primarily focus on belief reasoning, ToM booklet tasks are more challenging and as-sess a broader range of mental states. Although the ToM booklet task categorizes its test items differ-ently from the ATOMS taxonomy (Beaudoin et al., 2020), they in fact cover all seven mental states defined by ATOMS. The booklet task includes both relatively simple items that test a single mental state and more complex items that require reason-ing over multiple mental states simultaneously. Figure 2 illustrates a scenario similar to a ref-erence (hard) task from the ToM booklet. In this scenario, there are three apples on a tree (small, medium, and big). However, Grandpa can see only two apples (small and medium); from his per-spective, the medium apple is the largest. When the child asks for the big apple, Grandpa will pick the medium apple because he believes it is the biggest one available. This task begins with reasoning about Grandpa’s perceptual access (per-cepts), but answering the question "Which apple will Grandpa pick?" requires an additional step: modeling Grandpa’s internal mental representation and understanding that, from his belief, big refers to the medium apple. In addition to assessing mental state reasoning, the task features advanced components like moral reasoning based on true and false beliefs (e.g., in-tent to harm). Furthermore, its multi-turn, conversa-tional format (Figure 1) makes it more reflective of real-world scenarios. As LLMs continue to evolve, we need more challenging benchmarks to strictly test the extent of their ToM reasoning. Given these strengths, the ToM booklet task provides a solid foundation for building a dataset that both mea-sures and facilitates the further development of these capabilities. 
+
+3.2 CoMMET 
+
+Although the ToM booklet task is well suited for evaluating LLMs, it is limited in scale. To enable a more systematic assessment of LLMs’ theory of mind capabilities, we construct a dataset, CoM-MET, based on the ToM booklet tasks. 
+
+3.2.1 Multi-Turn Testing Format 
+
+While it is natural to assess children using a con-versational format, evaluating LLMs requires a structured representation of stories, feedback con-ditioned on the correctness of previous answers, current questions, images, and responses within a multi-turn framework. To facilitate multi-turn evaluation, we define a StoryTurn format that con-sists of multiple turns, with each turn specifying the following fields. • Story: The narrative text for this turn. • Feedback: The feedback logic (e.g., "If right: ...; If wrong: ..."). Return empty string if not applicable. • Question: The question to ask LLMs. • Image: A unique Id for the illustration (e.g., ’img01’). Return empty string if no image. • Answer: The expected answer. Use semi-colons ’;’ to separate branching answers if needed. Below is an example of a StoryTurn that evaluates reasoning about "diverse desires". It consists of two turns, with the fields in each turn separated by "|". In this test, both answer sequences—(Apple, Chocolate) and (Chocolate, Apple)—are consid-ered acceptable. • "Meet Sam. It is snack time! There are two snacks on the table. There is a shinny red apple, and there is a yummy chocolate bar. | | which snack do you like best, the apple or the chocolate? | 1.png | Apple; Chocolate", • "You do? That is great! But look, Sam likes the other snack better. | |So which snack will Sam pick? The apple or the chocolate? | | Chocolate; Apple" 
+
+3.2.2 Dataset Construction 
+
+To ensure both the diversity and accuracy of the dataset, we leverage a LLM to generate an initial dataset using one-shot learning. In this process, a single example StoryTurn from the ToM book-let task is provided to the LLM as a sample for generating new StoryTurns. After generation, we manually review all generated StoryTurn texts and images to validate their quality and correctness. 
+
+Dataset Generation As mentioned previously, rather than treating each question as a separate test item, we introduce StoryTurn to group related ques-tions and evaluate LLMs in a story-based conversa-tional setting. A total of 39 StoryTurns were con-structed based on the original ToM booklet task. 1
+
+Among them, 31 StoryTurns contain all the infor-mation required to answer the questions using text alone, whereas the remaining 8 require visual in-formation in the form of images. Through initial testing of the ToM booklet tasks on state-of-the-art LLMs, we found that Gemini 3.0 Pro 2 achieved the best overall performance on 
+
+> 1https://osf.io/g5zpv/
+> 2https://console.cloud.google.com/ vertex-ai/publishers/google/model-garden/ gemini-3-pro-preview
+
+both image-dependent and text-only StoryTurns, correctly answering 5 out of 8 image-based Story-Turns and 29 out of 31 text-based ones. In addi-tion, Gemini 3.0 Pro Image 3, which is specifically designed to handle challenging image generation tasks, produces satisfactory images in most cases, as illustrated in Figure 1 and Figure 2. Therefore, our pipeline first generates StoryTurns for each task in the original ToM booklet dataset using one-shot prompting with Gemini 3.0 Pro, and then produces corresponding illustrative images for each Story-Turn based on selected segments of the story. 
+
+Dataset Validation We manually reviewed all generated StoryTurn texts and found that only one StoryTurn was incorrectly categorized, as it be-longed to the sarcasm task rather than the non-sarcasm task. The primary issue in text generation is that the model occasionally produces feedback within the same turn as the answer, instead of de-ferring it to the subsequent turn. Despite this mi-nor issue, the overall performance in text genera-tion—both in terms of content quality and adher-ence to the required format—is nearly perfect. For image generation, we identified several ma-jor issues, summarized as follows: • Incorrect spatial relationships: The model of-ten produces incorrect location information. For example, although the text specifies that the ball is behind the child, the generated im-age depicts it in an incorrect position. • Object and character duplication: The same child may appear multiple times in a single image, or be depicted with extra limbs (e.g., three arms). For instance, when a child moves to a new location, the image may still show the child in the previous location. Similar duplication issues also occur for objects. • Unintended text artifacts: Random or mean-ingless words sometimes appear in the gener-ated images, even when the prompt explicitly specifies that no text should be included. • Narrative inconsistencies: Some images con-flict with the story context. For example, a mother apologizes for not buying the correct toy, yet the toy is clearly visible and uncov-
+
+> 3https://console.cloud.google.com/ vertex-ai/publishers/google/model-garden/ gemini-3-pro-image-preview
+
+CoMMET    
+
+> Total StoryTurns Tasks Mental States
+> 21 Common Desires
+> Desire 21 Diverse Desires
+> 21 2nd Order Belief-Desire Reasoning Belief, Desire
+> 21 Diverse Beliefs
+> Belief
+> 42 False Beliefs - Reality Known
+> 21 False Beliefs - Reality Unknown
+> 21 Action Explanation with True Belief
+> 42 Expectations Belief, Emotion
+> 21 Reference (Easy)
+> Percept 69 Spatial Perspective
+> 21 Emotion Reminder Emotion
+> 62 Reference (Hard) Intention
+> 20 Sarcasm Control
+> Non-Literal Communication, Emotion 22 Sarcasm
+> 43 Interpretation Non-Literal Communication
+> 21 Moral Reasoning with Deception
+> Moral Reasoning, Belief, Knowledge
+> 81 Moral Reasoning based on False Beliefs
+> 21 Moral Reasoning based on True Beliefs
+
+Figure 3: Statistics of CoMMET . To improve interpretability, we group related tasks from the Theory of Mind booklet and map them to the mental states defined in ATOMS. In addition to the ATOMS mental states, the ToM booklet tasks also encompass moral reasoning. 
+
+ered in the image, allowing the child to see it, which contradicts the narrative. • Unnecessary clues: In some cases, the images either explicitly reveal the correct answer or contain misleading elements that may lead to incorrect responses. We manually corrected issues in the StoryTurn texts and made multiple attempts to resolve image-related problems, ultimately selecting the best avail-able versions. StoryTurns associated with com-pletely incorrect images were removed. 
+
+3.2.3 Dataset Statistics 
+
+After filtering process, we obtained 591 StoryTurns, comprising 1,973 questions and 826 images, to evaluate LLMs across a diverse range of mental states. The average StoryTurn in CoMMET com-prises 3.34 conversational turns with questions, with some narratives extending to as many as eight turns. Notably, most StoryTurns probe multiple mental states. For clarity of analysis, each Sto-ryTurn is categorized according to its dominant mental state. As illustrated in Figure 3, CoMMET spans a broad spectrum of tasks, ranging from sim-ple to complex, and covers all mental states defined in ATOMS, in addition to moral reasoning tasks grounded in false beliefs or intent to cause harm. Furthermore, as shown in Figure 3 and Table 1, CoMMET incorporates tasks that probe contra-dictory reasoning (e.g., common versus divergent Datasets Mental States QA Format Moral StoryTurn ToMBench Six ATOMS states Multi-Choice × ×        
+
+> MOMENTS All ATOMS states Multi-Choice ××
+> CoMMET All ATOMS states Open-Ended ✓✓
+
+Table 1: Comparison with two recently published benchmarks that cover nearly all mental states de-fined in ATOMS . Unlike these benchmarks, we adopt an open-ended format, which is more challenging be-cause no answer options are provided. Additionally, our benchmark includes explicit moral reasoning tasks and evaluates LLMs in conversational settings. 
+
+desires), includes explicit "why" questions, and features StoryTurns that simultaneously evaluate multiple mental states, such as second-order be-lief–desire reasoning. Together, these characteris-tics enable a more precise assessment of whether LLMs genuinely comprehend the underlying tasks. 
+
+4 Experiments 
+
+In this section, we describe the experimental setup and evaluation methodology, including the large language models evaluated and the dataset used. We then provide a detailed analysis of the ex-perimental results, examining model performance across different task categories, mental states, and levels of complexity, and discuss the broader impli-cations of these findings. Models Image Overall Belief Emotion Intention Desire Percept NLC Belief_Emotion Belief_Desire NLCE MBK LLaMA-3.2-11B No 47.08% 55.24% 80.95% 19.05% 100.00% 57.14% 58.14% 71.43% 23.81% 45.24% 5.95% Yes 46.00% 63.81% 85.71% 19.05% 97.62% 38.10% 46.51% 57.14% 23.81% 47.62% 7.14% LLaMA-4-Maverick No 55.94% 74.29% 85.71% 14.29% 100.00% 61.90% 48.84% 90.48% 28.57% 76.19% 5.95% Yes 55.51% 69.52% 85.71% 19.05% 100.00% 47.62% 55.81% 90.48% 23.81% 80.95% 5.95% Claude-Sonnet-3.5 No 71.71% 81.90% 100.00% 40.48% 100.00% 76.19% 67.44% 88.10% 38.10% 97.62% 41.67% Yes 74.08% 82.86% 100.00% 42.86% 100.00% 76.19% 72.09% 97.62% 42.86% 97.62% 44.05% Claude-Sonnet-4.5 No 83.59% 94.29% 100.00% 64.29% 100.00% 85.71% 67.44% 95.24% 33.33% 95.24% 76.19% Yes 84.02% 92.38% 100.00% 59.52% 100.00% 76.19% 67.44% 95.24% 61.90% 92.86% 79.76% GPT-4o No 77.75% 92.38% 100.00% 64.29% 100.00% 80.95% 65.12% 90.48% 28.57% 92.86% 53.57% Yes 79.70% 92.38% 100.00% 54.76% 100.00% 76.19% 76.74% 92.86% 38.10% 97.62% 58.33% GPT-5.2-Chat No 89.20% 98.10% 100.00% 69.05% 100.00% 90.48% 69.77% 97.62% 47.62% 92.86% 94.05% Yes 88.12% 94.29% 100.00% 73.81% 100.00% 85.71% 69.77% 92.86 71.43% 92.86% 88.10% Gemini-3.0-Flash No 87.04% 97.14% 100.00% 71.43% 100.00% 90.48% 69.77% 100.00% 33.33% 92.86% 84.52% Yes 87.26% 93.33% 100.00% 78.57% 100.00% 90.48% 95.35% 97.62% 14.29% 83.33% 84.52% Gemini-3.0-Pro No 92.22% 97.14% 100.00% 95.24% 97.62% 95.24% 76.74% 100.00% 66.67% 92.86% 89.29% Yes 92.22% 92.38% 100.00% 95.24% 100.00% 90.48% 95.35% 97.62% 66.67% 90.48% 88.10% 
+
+Table 2: Story-level accuracy of different LLMs on the CoMMET subset containing complete textual information . Two experimental settings are considered: (1) text-only input and (2) text with illustrative images. Results are reported for overall performance as well as performance across different mental-state categories. NLC denotes Non-Literal Communication , NLCE denotes Non-Literal Communication with Emotion , and MBK denotes 
+
+Moral Reasoning, Belief, and Knowledge .
+
+Models Overall Percept Intention MBK LLaMA-3.2-11B 23.44% 30.43% 35.00% 5.13% LLaMA-4-Maverick 50.00% 57.97% 65.00% 28.21% Claude-Sonnet-3.5 72.66% 69.57% 75.00% 76.92% Claude-Sonnet-4.5 62.50% 68.12% 90.00% 38.46% GPT-4o 76.56% 65.22% 85.00% 92.31% GPT-5.2-Chat 85.16% 85.51% 90.00% 82.05% Gemini-3.0-Flash 82.03% 82.60% 95.00% 74.36% Gemini-3.0-Pro 88.28% 88.41% 85.00% 89.74% 
+
+Table 3: Story-level accuracy of different LLMs on the CoMMET subset where visual information is required to answer the questions . We report both overall performance and performance across individual mental-state categories. MBK denotes Moral Reasoning, Belief, and Knowledge .
+
+4.1 Experimental Setup Models Given the challenging nature of some tasks in CoMMET, we focus on state-of-the-art models that support multimodal inputs, covering a diverse range of families, including proprietary and open-source models, as well as thinking mod-els and standard models. Specifically, we evaluate GPT 5.2 Chat 4 and GPT 4o 5 from OpenAI, Gem-ini 3.0 Flash and Gemini 3.0 Pro 6 from Google, Claude Sonnet 3.5 7 and Claude Sonnet 4.5 8 from Anthropic, and LLaMA 4 Maverick 9 from Meta. 
+
+> 4
+
+https://openai.com/index/ introducing-gpt-5-2/ 
+
+> 5
+
+https://openai.com/index/hello-gpt-4o/ 
+
+> 6
+
+https://ai.google.dev/gemini-api/docs/ gemini-3 
+
+> 7
+
+https://www.anthropic.com/news/ claude-3-5-sonnet 
+
+> 8
+
+https://www.anthropic.com/claude/sonnet 
+
+> 9
+
+https://www.llama.com/models/llama-4/ 
+
+Additionally, we test the LLaMA 3.2 11B Vision-Instruct 10 model to assess how smaller models per-form on these tasks. 
+
+Dataset As mentioned previously, CoMMET contains a total of 591 StoryTurns. Among these, 463 StoryTurns provide all the necessary informa-tion in text form, while the remaining 128 require complementary information from images to answer specific questions. Consequently, we conduct ex-periments and perform analyses separately on these two subsets of StoryTurns. 
+
+Evaluation In this paper, we report story accu-racy (Le et al., 2019) at multiple levels of gran-ularity, including overall performance across all tasks and accuracy within each mental state cate-gory. Story accuracy is defined such that a story is considered correctly answered only if all questions associated with that story are answered correctly. Given that our dataset consists of open-ended question–answering tasks and involves large-scale evaluations across diverse task types and LLMs, we adopt LLM-based judges for the initial evaluation. Specifically, we use Gemini 3.0 Flash 11 to compare model outputs with the ground-truth answers and determine their correctness. To mitigate potential judgment errors introduced by the LLM evaluator and to enhance reliability, we manually validate the evaluation results. 
+
+> 10
+
+https://huggingface.co/meta-llama/Llama-3. 2-11B-Vision-Instruct 
+
+> 11
+
+https://docs.cloud.google.com/vertex-ai/ generative-ai/docs/models/gemini/3-flash 4.2 Main Results 
+
+Tables 2 and 3 present the performance of differ-ent LLMs on two CoMMET subsets: the subset in which all information required to answer the questions is contained in the text, and the subset in which visual information is required. From the results, we draw the following observations: • Achieving high story-level accuracy remains challenging, as few LLMs attain 90% story-level accuracy on either subset. • CoMMET tasks are particularly difficult for smaller models (e.g., LLaMA-3.2-11B-Vision-Instruct), indicating that further im-provements are needed to enhance their per-formance on this type of reasoning task. • When all necessary information is already present in the text, adding images for illus-tration does not yield consistent performance improvements. However, in scenarios where the question depends on visual attributes (e.g., shapes), visual input can still enhance perfor-mance even when the textual information is complete, as illustrated by the NLC mental state in Table 2. • Most LLMs perform well on simpler emotion and desire tasks, achieving near-perfect ac-curacy. However, further improvements are needed for more complex tasks involving mul-tiple mental states. 
+
+4.3 LLMs Perform Well on Some Tasks 
+
+As shown in Tables 2 and 3, LLMs perform well on a subset of tasks, particularly those involving relatively simple mental state reasoning. 
+
+4.3.1 Mental State: Emotion 
+
+This task typically involves a two-turn StoryTurn in which a child’s past experiences or memories are described. LLMs are then asked how the child would feel if they encountered the same scenario again, and what they would do in response. This task is relatively easy for LLMs, and most models achieve strong performance. 
+
+4.3.2 Mental State: Desire 
+
+This task also uses a two-turn StoryTurn to evalu-ate common and diverse desires. First, LLMs are asked to select one object from a pair that a child prefers. Next, they are told the preference of an-other child—either the same object or the other one—and asked which object the second child would choose. Almost all LLMs perform perfectly on this task, including the smaller models. 
+
+4.3.3 Moral Reasoning 
+
+As mentioned previously, we evaluate moral reason-ing in CoMMET. Typically, each story is followed by a question such as "Is it mean that the child . . . ? Why?" We include stories in which the child performs the action either intentionally or acciden-tally. Our results show that most large language models can reason about these scenarios correctly and provide appropriate explanations. However, smaller language models still struggle to give accu-rate judgments and justifications. 
+
+4.4 Do LLMs Truly Understand the Tasks? 
+
+While LLMs demonstrate near-perfect perfor-mance on relatively simple tasks, their effec-tiveness declines significantly on more challeng-ing tasks, especially those requiring explanatory ("why") reasoning. 
+
+4.4.1 Mental States: Belief and Desire 
+
+Taking the second-order belief–desire task (Fig-ure 1) as an example, we observe that after vali-dation, most errors occur in the final turn, when the model is asked why a character is surprised or confused. The most common error is answering that he believed his mother did not know he had changed his mind. Notably, even Claude Sonnet 4.5, Gemini 3.0 Flash, Gemini 3.0 Pro and GPT 5.2 Chat exhibit this error pattern, calling into question whether LLMs genuinely possess ToM capabilities. 
+
+4.4.2 Mental States: Intention 
+
+We take the hard reference task—an image-dependent task from the ToM Booklet—as an ex-ample. In this scenario, illustrated in Figure 4, Marie’s mother leaves three cookies of different sizes in the kitchen: a small cookie on the counter, a medium-sized cookie on the table, and a large cookie on a shelf. Marie and her father then en-ter so that her father can pack her a snack for school. Marie tells her father, "I want the big cookie." The question is: "Which cookie will the father pack for Marie?" Most models select the large cookie, including Gemini 3.0 Pro and GPT-5.2-Chat. When we subsequently provide the in-formation "Actually, the father packs the medium cookie" and ask "Why does the father pack this cookie?", these models respond with explanations Figure 4: A scenario from the Reference (Hard) task in the ToM Booklet is illustrated . Although the child asks for the big cookie, the father—due to his viewing position—can see only the small and medium cookies. Consequently, he believes the medium cookie is the largest available and therefore packs it for the child. 
+
+such as "The big one may be too large for a snack, so the medium one is more appropriate." LLaMA-4-Maverick produces the correct answer to the first question; however, its explanation for the second question—"Because Marie’s mom said to take the one in the middle"—is entirely hallucinated, as no such information appears in the story. 
+
+4.4.3 Mental State: Non-Literal Communication and Emotion 
+
+Taking the sarcasm and non-sarcasm tasks as ex-amples, each StoryTurn contains two questions. The first asks why the child says a particular utterance (e.g., "Mmm, my favorite") in either unhappy or happy scenarios. The second ques-tion asks about the child’s emotional state. We find that LLMs—including GPT-5.2-Chat and Claude Sonnet 3.5—answer some sarcasm ques-tions incorrectly. Smaller models perform substan-tially worse; for example, LLaMA-3.2-11B-Vision-Instruct achieves only 4.55% accuracy on the sar-casm task. 
+
+4.4.4 Mental State: Belief 
+
+Unlike the widely studied false-belief task in the Sally–Anne test and Smarties task, the ToM Book-let includes a diverse belief task. In this task, a child searches for an object that may be located in either location A or location B. The first question asks LLMs to predict where the object actually is. Next, the model is told that the child believes the object is not at that location, and the second ques-tion asks where the child will go to look for the object. In the third turn, the child fails to find the object at the location he/she believed it to be, and the model is asked to infer the object’s true loca-tion. Our evaluation shows that LLMs frequently make errors in this third turn. Models sometimes predict a location other than A or B, or respond that the location is unknown. This pattern suggests that LLMs do not robustly distinguish between reality and belief in this task. In conclusion, although LLMs demonstrate strong performance on certain relatively simple tasks, we argue that they do not yet exhibit consis-tent or robust theory of mind capabilities. Their success is often task-specific and does not reliably generalize to more complex scenarios involving diverse beliefs, perspective-taking, or explanatory reasoning. This observation aligns with findings from prior studies (Ullman, 2023; Ma et al., 2023a; Kim et al., 2023; Verma et al., 2024; Zhu et al., 2024; Bortoletto et al., 2024; Shapira et al., 2024; Chen et al., 2024)., which similarly report that ap-parent competence in isolated tasks does not nec-essarily reflect a genuine or stable theory of mind understanding. 
+
+5 Conclusion 
+
+In this paper, we propose CoMMET, a benchmark inspired by the psychological theory of mind book-let tasks. CoMMET is a multimodal dataset that en-compasses all the mental states defined in ATOMS and additionally includes moral reasoning. Un-like traditional approaches that present the com-plete story and ask questions only at the end, CoM-MET evaluates LLMs across multiple conversa-tional turns, providing feedback based on their an-swers to previous questions. This approach offers a more naturalistic evaluation, akin to how children are tested in real-world scenarios. To enhance in-terpretability and reduce ambiguity, we map the diverse tasks in CoMMET to their corresponding ATOMS mental states. We evaluate a broad range of LLMs from multiple model families, including both state-of-the-art and smaller models, to exam-ine how model scale influences performance across these tasks. Through detailed comparisons and analyses, we identify key areas requiring further im-provement. We believe that our benchmark dataset, together with the limitations revealed in this study, offers valuable insights and concrete guidance for future research on advancing robust theory of mind reasoning in LLMs. Limitations 
+
+Some images in CoMMET require further refine-ment to fully address the issues discussed in Sec-tion 3.2.2. In addition, substantial manual effort was required to evaluate model responses, particu-larly for explanatory answers. Developing more ac-curate and automated evaluation methods for such open-ended explanations remains an important di-rection for future work, as it is necessary to improve the scalability of the benchmark. 
+
+References 
+
+Simon Baron-Cohen, Alan M. Leslie, and Uta Frith. 1985. Does the autistic child have a “theory of mind” ? Cognition , 21(1):37–46. Cindy Beaudoin, Élizabel Leblanc, Charlotte Gagner, and Miriam H Beauchamp. 2020. Systematic review and inventory of theory of mind measures for young children. Frontiers in Psychology , 10:2905. Matteo Bortoletto, Constantin Ruhdorfer, Adnen Abdes-saied, Lei Shi, and Andreas Bulling. 2024. Limits of theory of mind modelling in dialogue-based collabo-rative plan acquisition. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 4856– 4871, Bangkok, Thailand. Association for Computa-tional Linguistics. Chunkit Chan, Cheng Jiayang, Yauwai Yim, Zheye Deng, Wei Fan, Haoran Li, Xin Liu, Hongming Zhang, Weiqi Wang, and Yangqiu Song. 2024. Ne-gotiationToM: A benchmark for stress-testing ma-chine theory of mind on negotiation surrounding. In 
+
+Findings of the Association for Computational Lin-guistics: EMNLP 2024 , pages 4211–4241, Miami, Florida, USA. Association for Computational Lin-guistics. Ruirui Chen, Weifeng Jiang, Chengwei Qin, and Che-ston Tan. 2025. Theory of mind in large language models: Assessment and enhancement. In Proceed-ings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Pa-pers) , pages 31539–31558, Vienna, Austria. Associa-tion for Computational Linguistics. Zhuang Chen, Jincenzi Wu, Jinfeng Zhou, Bosi Wen, Guanqun Bi, Gongyao Jiang, Yaru Cao, Mengting Hu, Yunghwei Lai, Zexuan Xiong, and Minlie Huang. 2024. ToMBench: Benchmarking theory of mind in large language models. In Proceedings of the 62nd Annual Meeting of the Association for Compu-tational Linguistics (Volume 1: Long Papers) , pages 15959–15983, Bangkok, Thailand. Association for Computational Linguistics. Chuanyang Jin, Yutong Wu, Jing Cao, Jiannan Xiang, Yen-Ling Kuo, Zhiting Hu, Tomer Ullman, Antonio Torralba, Joshua Tenenbaum, and Tianmin Shu. 2024. MMToM-QA: Multimodal theory of mind question answering. In Proceedings of the 62nd Annual Meet-ing of the Association for Computational Linguis-tics (Volume 1: Long Papers) , pages 16077–16102, Bangkok, Thailand. Association for Computational Linguistics. Hyunwoo Kim, Melanie Sclar, Xuhui Zhou, Ronan Bras, Gunhee Kim, Yejin Choi, and Maarten Sap. 2023. FANToM: A benchmark for stress-testing machine theory of mind in interactions. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 14397–14413, Singa-pore. Association for Computational Linguistics. Matthew Le, Y-Lan Boureau, and Maximilian Nickel. 2019. Revisiting the evaluation of theory of mind through question answering. In Proceedings of the 2019 Conference on Empirical Methods in Natu-ral Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , pages 5872–5877, Hong Kong, China. Association for Computational Linguistics. Yiwei Liu, Emma Jane Pretty, Jiahao Huang, and Saku Sugawara. 2025. TactfulToM: Do LLMs have the theory of mind ability to understand white lies? In 
+
+Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing , pages 25054–25072, Suzhou, China. Association for Com-putational Linguistics. Xiaomeng Ma, Lingyu Gao, and Qihui Xu. 2023a. ToM-Challenges: A principle-guided dataset and diverse evaluation tasks for exploring theory of mind. In Pro-ceedings of the 27th Conference on Computational Natural Language Learning (CoNLL) , pages 15–26, Singapore. Association for Computational Linguis-tics. Ziqiao Ma, Jacob Sansom, Run Peng, and Joyce Chai. 2023b. Towards a holistic landscape of situated the-ory of mind in large language models. In Findings of the Association for Computational Linguistics: EMNLP 2023 , pages 1011–1031, Singapore. Associ-ation for Computational Linguistics. Josef Perner, Susan R Leekam, and Heinz Wimmer. 1987. Three-year-olds’ difficulty with false belief: The case for a conceptual deficit. British Journal of Development Psychology , 5:125–137. David Premack and Guy Woodruff. 1978. Does the chimpanzee have a theory of mind? Behavioral and Brain Sciences , 1(4):515–526. Hilary Richardson, Grace Lisandrelli, Alexa Riobueno-Naylor, and Rebecca Saxe. 2018. Development of the social brain from age three to twelve years. Nature Communications , 9. Natalie Shapira, Mosh Levy, Seyed Hossein Alavi, Xuhui Zhou, Yejin Choi, Yoav Goldberg, Maarten Sap, and Vered Shwartz. 2024. Clever hans or neural theory of mind? stress testing social reasoning in large language models. In Proceedings of the 18th Conference of the European Chapter of the Associa-tion for Computational Linguistics (Volume 1: Long Papers) , pages 2257–2273, St. Julian’s, Malta. Asso-ciation for Computational Linguistics. Haojun Shi, Suyu Ye, Xinyu Fang, Chuanyang Jin, Leyla Isik, Yen-Ling Kuo, and Tianmin Shu. 2025. MuMA-ToM: Multi-modal multi-agent theory of mind. Proceedings of the AAAI Conference on Artifi-cial Intelligence , 39(2):1510–1519. Koraima Sotomayor-Enriquez, Hyowon Gweon, Re-becca Saxe, and Hilary Richardson. 2024. Open dataset of theory of mind reasoning in early to mid-dle childhood. Data in Brief , 52:109905. Tomer Ullman. 2023. Large language models fail on trivial alterations to theory-of-mind tasks. arXiv preprint arXiv:2302.08399 .Mudit Verma, Siddhant Bhambri, and Subbarao Kamb-hampati. 2024. Theory of mind abilities of large language models in human-robot interaction: An illu-sion? In Companion of the 2024 ACM/IEEE Interna-tional Conference on Human-Robot Interaction , HRI ’24, page 36–45, New York, NY, USA. Association for Computing Machinery. Emilio Villa-Cueva, S M Masrur Ahmed, Rendi Chevi, Jan Christian Blaise Cruz, Kareem Elzeky, Fermin Cristobal, Alham Fikri Aji, Skyler Wang, Rada Mi-halcea, and Thamar Solorio. 2025. MoMentS: A comprehensive multimodal benchmark for theory of mind. In Findings of the Association for Compu-tational Linguistics: EMNLP 2025 , pages 22591– 22611, Suzhou, China. Association for Computa-tional Linguistics. Yufan Wu, Yinghui He, Yilin Jia, Rada Mihalcea, Yu-long Chen, and Naihao Deng. 2023. Hi-ToM: A benchmark for evaluating higher-order theory of mind reasoning in large language models. In Find-ings of the Association for Computational Linguis-tics: EMNLP 2023 , pages 10691–10706, Singapore. Association for Computational Linguistics. Hainiu Xu, Runcong Zhao, Lixing Zhu, Jinhua Du, and Yulan He. 2024. OpenToM: A comprehensive bench-mark for evaluating theory-of-mind reasoning capa-bilities of large language models. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) ,pages 8593–8623, Bangkok, Thailand. Association for Computational Linguistics. Wentao Zhu, Zhining Zhang, and Yizhou Wang. 2024. Language models represent beliefs of self and others. In Proceedings of the 41st International Conference on Machine Learning , ICML’24. JMLR.org. A Performance of Different LLMs on the Original ToM Booklet Tasks 
+
+Table 4 and Table 5 show the performance of dif-ferent LLMs on the original ToM booklet tasks. Models Overall Llama-32-11B-instruct 25.00% LLama-4-Maverick 37.50% Claude-Sonnet-3.5 62.50% Claude-Sonnet-4.5 50.00% GPT-4o 62.50% GPT-5.2-Chat 62.50% Gemini-3.0-Flash 37.50% Gemini-3.0-Pro 62.50% 
+
+Table 4: Story-level accuracy of different LLMs on the original ToM booklet task subset where visual infor-maiton is required to answer the question.                   
+
+> Models Overall (With Image) Overall (Without Image) LLaMA-32-11B-Instruct 38.71% 41.94% LLaMA-4-Maverick 64.52% 54.84% Claude-Sonnet-3.5 80.65% 77.42% Claude-Sonnet-4.5 90.32% 80.65% GPT-4o 83.87% 77.42% GPT-5.2-Chat 83.87% 83.87% Gemini-3.0-Flash 93.55% 87.10% Gemini-3.0-Pro 93.55% 93.55%
+
+Table 5: Story-level accuracy of different LLMs on the original ToM booklet task subset containing complete textual information. 
+
+B StoryTurn Samples from CoMMET 
+
+Table 6 presents selected StoryTurn samples from CoMMET, while Figures 5, 6, and 7 provide the corresponding illustrative images for these samples. 
+
+Figure 5: The image for spatial perspective task. ID: story_5_2025-12-27 11_22_07.738437_1 
+
+Figure 6: The image for moral reasoning based on false belief task. ID: story_18_2025-12-14 09_16_30.073127_img1 
+
+Figure 7: The image for moral reasoning with deception task. ID: story_36_2025-12-18 13_23_30.289031_1 Task Sample Spatial Perspective "This is Leo. Leo collects rubber ducks. He wants the special duck wearing cool sunglasses. | | Can you describe its location in the line so I can grab it for him? For example, relative to the left or right, or the middle? | story_5_2025-12-27 11:22:07.738437_1 | The third duck from the left and the third duck from the right, the middle duck." Moral Reasoning based on False Beliefs "It is cleaning day at the house. Dad asks Mia to wipe the dining table. Mia cleans it until it shines. Then, she goes to the kitchen to get a drink of water. While she is gone, her brother Tom runs in with muddy shoes. He climbs on the table, leaves mud everywhere, and runs away. When Mia comes back, Dad walks in too. Dad sees the big muddy footprints and gets mad at Mia for making a mess. | | Is it fair that Dad is mad at Mia for the dirty table? Why or why not? | story_18_2025-12-14 09:16:30.073127_img1 | No. Because it is not her fault that Tom made the table dirty.", " | | Is Dad mad at Tom? Why or why not? | | No. Because he does not know that Tom climbed on the table with muddy shoes.", " | | Is Mia mad at Tom? Why or why not? | | No. Because she did not see Tom do it, so she does not know he made the mess." Moral Reasoning with Deception "Mrs. Green places a shiny gold sticker on her desk. It is a prize for Mia, who won the math game. Mrs. Green leaves the room for a moment. While she is gone, Leo sneaks up, takes the sticker, and hides it in his pocket. When Mrs. Green comes back, she sees the empty desk. She asks Leo, "Do you know where the sticker went?" Leo tells her, "No, maybe the wind blew it out the window." | | Is Leo lying? | story_36_2025-12-18 13:23:30.289031_1 | Yes", " | | Is the sticker really gone out the window? | | No", "Mia comes to the desk to get her prize. She asks Mrs. Green, "Where is my sticker?" Mrs. Green feels bad and says, "I am so sorry Mia, but the wind must have blown it out the window. It is gone." | | Is Mrs. Green lying? Why or why not? | | No. Because she does not know Leo has it; she thinks the wind took it", " | | Is the sticker actually lost outside? | | No", " | | How does Mia feel, Sad or Fine? | | Sad", " | | Even though the sticker is safe in Leo’s pocket, Mia feels sad. Why? | | Because she didn’t know; she thought the sticker was lost forever", "Leo feels guilty, so he puts the sticker back on the desk. Just then, a big gust of wind comes and actually blows the sticker out the open window! Now the sticker is really gone. | | Was Leo lying earlier when he told Mrs. Green the wind blew the sticker away? Why or why not? | | Yes. Because at the time he told Mrs. Green the wind took it, the sticker was actually in his pocket" 
+
+Table 6: StoryTurn Samples from CoMMET
