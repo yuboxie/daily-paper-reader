@@ -1,0 +1,813 @@
+Title: Data-Driven Priors for Uncertainty-Aware Deterioration Risk Prediction with Multimodal Data
+
+URL Source: https://arxiv.org/pdf/2603.08459v1
+
+Published Time: Tue, 10 Mar 2026 02:43:27 GMT
+
+Number of Pages: 24
+
+Markdown Content:
+# Data-Driven Priors for Uncertainty-Aware Deterioration Risk Prediction with Multimodal Data 
+
+L. Julián Lechuga López *1,3 , Tim G. J. Rudner 2, and Farah E. Shamout 1,3 1Tandon School of Engineering, New York University 
+
+> 2
+
+University of Toronto 
+
+> 3
+
+New York University Abu Dhabi 
+
+> *
+
+Corresponding author: ljl5178@nyu.edu 
+
+Abstract 
+
+Safe predictions are a crucial requirement for integrating predictive models into clinical decision support systems. One approach for ensuring trustworthiness is to enable models’ ability to express their uncertainty about individual predictions. However, current machine learning models frequently lack reliable uncertainty estimation, hindering real-world deployment. This is further observed in multimodal settings, where the goal is to enable effective information fusion. In this work, we propose MedCertAIn , a predictive uncertainty framework that leverages multimodal clinical data for in-hospital risk prediction to improve model performance and reliability. We design data-driven priors over neural network parameters using a hybrid strategy that considers cross-modal similarity in self-supervised latent representations and modality-specific data corruptions. We train and evaluate the models with such priors using clinical time-series and chest X-ray images from the publicly-available datasets MIMIC-IV and MIMIC-CXR. Our results show that MedCertAIn 
+
+significantly improves predictive performance and uncertainty quantification compared to state-of-the-art deterministic baselines and alternative Bayesian methods. These findings highlight the promise of data-driven priors in advancing robust, uncertainty-aware AI tools for high-stakes clinical applications. 
+
+# 1 Introduction 
+
+Trustworthy implementation of machine learning models in healthcare requires robust uncertainty measurements [4, 13], considering the safety-critical nature of clinical practice. Uncertainty Quan-tification (UQ) approaches provide an essential layer of reliability in addition to accurate machine learning models for improved and safer decision-making [35]. Uncertainty in machine learning models can be due to model parameters, noise and bias of the calibration data, or deployment of the model in an out-of-distribution scenario [31]. All of these are inherent characteristics of any real-world clinical scenario. Artificial Intelligence (AI) systems that reliably provide uncertainty metrics can enhance the confidence of healthcare professionals when using these systems and, at the same time, improve the effectiveness of the predictions [48] . Nonetheless, the study of UQ within the area of machine learning for healthcare has been limited [24, 27]. A comprehensive understanding of the uncertainty present in healthcare applications and how to address it is still fragmented [14], which may be due to the limited underlying theory on how to best adapt predictive uncertainty for clinical tasks [4]. Other reasons include the complexity of scaling UQ in real-time clinical systems, limited empirical evaluation of different methods due to the lack of well-constructed priors by medical experts [58], and the high prevalence of data shifts in real-world clinical applications. All of these can negatively affect predictive performance [37, 54], further emphasizing the need for better measurements of uncertainty in predictive models. In addition, developing machine learning systems that are suitable for healthcare applications require the use of different data modalities simultaneously, to reflect the multimodal nature of the human 1  
+
+> arXiv:2603.08459v1 [cs.LG] 9 Mar 2026 Figure 1: Uncertainty-Aware Clinical Decision-making. Patient multimodal data is processed by our uncertainty-aware model to produce a prediction and an uncertainty estimate. Clinicians accept confident predictions or defer uncertain cases for further review, improving workflow efficiency and supporting reliable decision-making.
+
+decision-making process [45]. However, existing work on UQ in healthcare has been mainly studied in the unimodal setting, with a particular focus on medical imaging applications [11]. Hence, effective quantification of predictive uncertainty in the context of multimodal clinical problems remains a challenging and unsolved task [52]. To address these gaps, we introduce MedCertAIn , a multimodal uncertainty-aware framework for deterioration risk prediction that explicitly recognizes and defers low-confidence cases for human review, which is considered a key requirement for real-world clinical decision support (Figure 1). Our method combines Bayesian learning with automated, label-free priors to enable selective prediction without manual annotation or domain-specific expert input, making it scalable across diverse clinical settings. We summarize our key contributions as follows: 1. We propose MedCertAIn , a multimodal uncertainty-aware framework that combines Bayesian learning and variational inference to augment existing architectures with principled uncertainty estimates and improved reliability. 2. We design a flexible label-free pipeline for automatically constructing multimodal priors by considering cross-modal similarity in self-supervised latent representations and modality-specific input perturbations, eliminating the need for expert-annotated high-uncertainty context sets. 3. We train and evaluate our framework on publicly available multimodal data comprising clinical time-series and chest X-ray images from MIMIC-IV [21] and MIMIC-CXR [22]. Our findings demonstrate improved predictive performance and reliability. 4. We implement our framework in JAX and make the code publicly available to promote future re-search in uncertainty-aware multimodal clinical modeling: https://anonymous .4open .science/ r/medcertain_tmlr-8154 .The paper is organized as follows: Section 2 provides an overview of related work on multimodal learning and UQ in healthcare, Section 3 presents the proposed MedCertAIn framework and training methodology, Section 4 describes the experimental setting, Section 5 presents the results and empirical findings, and Section 6 discusses the implications, limitations, and future directions. 
+
+# 2 Related Work 
+
+## 2.1 Multimodal Learning in Healthcare 
+
+Multimodal learning approaches seek to leverage complementary information from different data modalities to enhance the models’ predictive capabilities [15]. In healthcare, this paradigm is par-ticularly relevant due to the heterogeneous nature of clinical data, which often includes structured electronic health records, medical imaging, physiological signals, and free-text reports. Many ap-proaches for combining information across modalities exist, with multimodal fusion being the most widely adopted strategy [19, 15]. 2Early work primarily focused on integrating multiple imaging modalities or views for tasks such as segmentation and disease characterization, particularly in neuroimaging [56, 7]. More recent studies have extended multimodal learning to combine fundamentally different data types, such as imaging with time-series or tabular clinical data, demonstrating improved performance in prognostic and risk prediction tasks [32]. This trend is exemplified by multimodal systems developed for patient deterioration and outcome prediction, including COVID-19 prognosis using combined imaging and clinical variables [49, 20]. While multimodal integration enables richer patient representations, it also introduces additional sources of uncertainty arising from heterogeneity across modalities, imperfect alignment in time and semantics, and potential disagreement between modality-specific signals [2]. These challenges are inherent of real-world scenarios motivating the need for modeling approaches that explicitly account for uncertainty in multimodal settings [26]. 
+
+## 2.2 Uncertainty Quantification in Medical Applications 
+
+The safety-critical nature of clinical decision-making has motivated growing interest in UQ for machine learning models in healthcare [11, 48]. Most existing work on UQ in medical applications has focused on unimodal settings, particularly medical imaging, where uncertainty estimates have been used to support tasks such as brain tumor segmentation [23], skin lesion classification [8], and diabetic retinopathy detection [10, 3, 33]. These studies demonstrate the potential of UQ to improve interpretability and model trust by distinguishing confident predictions from ambiguous cases. However, uncertainty in real-world healthcare systems arises from multiple sources, including data noise, dataset shift, model misspecification, and deployment in out-of-distribution clinical environ-ments [27]. Existing UQ approaches rarely account for these factors jointly, nor do they explicitly address the challenges introduced by multimodal clinical data, particularly those designed to support selective prediction and deferral in deployment settings, where uncertainty may stem from modality disagreement or missing and corrupted inputs [28]. 
+
+## 2.3 Stochastic Neural Networks and Variational Inference 
+
+Stochastic neural networks extend deterministic neural networks by treating their parameters as random variables rather than fixed point estimates. This probabilistic formulation enables the model to capture epistemic uncertainty and provides a principled foundation for Bayesian inference over network weights. Hence, for a given neural network f (·), a stochastic version f (· ; Θ) is defined in terms of stochastic parameters Θ. For an observation model pY | X, Θ and a prior distribution over parameters pΘ, Bayesian inference provides a principled framework for modeling predictive uncertainty by inferring the posterior distribution over parameters given the observed data, pΘ | D 
+
+[29, 34]. However, since neural networks are non-linear in their parameters, exact inference over the stochastic network parameters is analytically intractable. Variational inference is an approach that seeks to avoid this intractability by framing posterior inference as finding an approximation qΘ to the posterior pΘ|D via the variational optimization problem: 
+
+min qΘ∈Q Θ DKL (qΘ ∥ pΘ|D ) ⇐⇒ max qΘ∈Q Θ F(qΘ)
+
+where F(qΘ) is the variational objective: 
+
+F(qΘ) ˙ =EqΘ [log p(yD | xD , Θ)] − DKL (qΘ ∥ pΘ),
+
+QΘ is a variational family of distributions [53], DKL is the Kullback-Leibler divergence [25], and 
+
+(xD , y D ) are the training data. One particularly simple type of variational inference is Gaussian mean-field variational inference [5, 12], where the posterior distribution over network parameters is approximated by a Gaussian distribution with a diagonal covariance matrix. This method enables stochastic optimization and can be scaled to large neural networks [18]. However, Gaussian mean-field variational inference has been shown to underperform with deterministic neural networks when uninformative, standard Gaussian priors are used [36, 40]. 3Data pre-processing Multimodal deep neural network MedCertAIn: Predictive Uncertainty Framework Deterministic model 
+
+training Model 
+
+evaluation 
+
+> Prediction
+> LSTM
+> ResNet34
+> Fusion
+
+Incorrect 
+
+Correct 
+
+Fine-tune with 
+
+sample data with 
+
+high uncertainty 
+
+Average AUC metrics 
+
+across all entropy thresholds 
+
+a
+
+bSelective Prediction Metrics   
+
+> Average Selective
+> AUROC & AUPRC
+> 5% 25%
+> 70% 95%
+
+Multimodal data 
+
+Apply corruptions to clinical time-series data Apply corruptions to chest X-ray images 
+
+Training set 
+
+Sample Dataset with 
+
+High Uncertainty 
+
+Multi-modal self-supervised 
+
+pre-training 
+
+Select pairs that are 
+
+most dissimilar 
+
+Compute similarity based on cosine 
+
+distance in the latent space      
+
+> CXR EHR
+> 0-1 -2 -3 -4 -5 12345
+> Standard Deviations from the
+> Mean
+> Cosine Distance Distribution
+> Dropstart
+
+ConVIRT 
+
+Training set  
+
+> Gaussian
+> noise
+> Inversion Random
+> vertical flip
+> Random
+> crop
+> Random
+> horizontal flip
+> Gaussian
+> noise
+> Random
+> solarize
+> Random
+> inversion
+> Color
+> jitter
+
+Test set 
+
+Database 
+
+Construction of Sample Data with High Uncertainty 
+
+Generate model 
+
+predictions 
+
+Rank predictions based 
+
+on uncertainty level Model Rejects Uncertain Predictions    
+
+> 5% 25% 70% 95%
+> Entropy
+
+Percentage of samples sent for expert review Figure 2: MedCertAIn : A Predictive Uncertainty Framework a) We construct paired multimodal samples for training/evaluation and generate high-uncertainty context data. From the training set, we create corrupted pairs via noise and transformations, and additionally pre-train a self-supervised model to select low-similarity pairs in latent space, reflecting high cross-modal uncertainty. We combine these context sets and fine-tune the model using Bayesian learning, evaluating with standard ROC and selective prediction metrics. b) Selective Prediction Metrics: We rank predictions by uncertainty (Shannon entropy) and evaluate performance on retained subsets across coverage thresholds (0–100%). Averaging metrics across thresholds yields selective AUROC/AUPRC, enabling clinicians to choose a deferral point where the model is least reliable. 
+
+# 3 Methods 
+
+MedCertAIn is a multimodal uncertainty-aware learning framework designed to produce calibrated predictions and to explicitly defer low-confidence cases in safety-critical clinical settings. Our contri-bution is an uncertainty-aware training objective that augments standard multimodal prediction with principled uncertainty estimation, while remaining independent of the underlying fusion architecture. Rather than modifying network design, MedCertAIn operates at the level of context priors selection and loss formulation, enabling reliable selective prediction across existing multimodal models. 43.1 Learning Objective 
+
+We consider a supervised fusion task on a dataset with two input modalities which we define by 
+
+D .
+
+= {(xehr n , x cxr n , y n)}Nn=1 = ( Xehr  
+
+> D
+
+, X cxr  
+
+> D
+
+, Y D ), where each sample consists of paired electronic health record time-series and chest X-ray images. As illustrated in Figure 2.a, the two modalities are processed by modality-specific encoders Φehr and Φcxr , respectively. The resulting feature representations are concatenated and passed to a classifier g(·) to produce a fusion prediction ˆy, which is optimized using supervised learning with respect to the ground truth labels y ∈ { 0, 1}.To mitigate the limitations of variational inference under non-informative priors, we use information from our two input modalities to construct data-driven priors that can help find an approximate posterior distribution with desirable properties (e.g., an induced predictive distribution with reliable uncertainty-aware estimation), obtained using variational inference approximation [12]. Specifically, we construct this data-driven prior over some set of model parameters Ψ and condition it on a set of context points Xc with corresponding labels Yc, that is p(ψ|xc). To construct a meaningful prior, we need to specify a distribution over the set of context points, pxc , which we refer to as sample data with high uncertainty. Used in combination with the training set, the context set is used as input during training to help the model learn to separate data points it struggles most to classify. Hence, this sample data with high uncertainty encompasses distributionally shifted points, where we want the model’s uncertainty to be higher, which can then be used to guide further clinical decision-making. For training our stochastic model, we extend the variational objective with an uncertainty regulariza-tion term that makes use of the set of context points: 
+
+F(qΘ) ˙ = EqΘ [log p(yD | xD , Θ; f )] 
+
+| {z }
+
+> Expected log-likelihood
+
+− DKL (qΘ ∥ pΘ)
+
+| {z }
+
+> KL regularization
+
++ EqΘ [EpXc,Yc [log ˜ p(Yc | Xc, Θ; )]] 
+
+| {z }
+
+> Uncertainty regularization
+
+Letting pYc|Xc (yc | xc) = δ(0) to encourage high uncertainty in the predictions on the set of context points, where δ(·) is the Dirac delta function, we obtain the simplified objective: 
+
+F(qΘ) ˙ = EqΘ [log p(yD | xD , Θ; f )] 
+
+| {z }
+
+> Expected log-likelihood
+
+− DKL (qΘ ∥ pΘ)
+
+| {z }
+
+> KL regularization
+
++ EqΘ [EpXc [log ˜ p(0 | Xc, Θ; f )]] 
+
+| {z }
+
+> Uncertainty regularization
+
+In practice, each training step performs a forward pass on the combined training and context sets. We optimize the expected log-likelihood via binary cross-entropy between the prior distribution and the approximate posterior distribution, and compute the KL and uncertainty regularization terms using Monte Carlo estimation. Gradients are obtained via reparameterization of gradients for mean-field variational inference [5]. Additional derivations of the tractable objective under the proposed context-conditioned prior are provided in Appendix C. 
+
+## 3.2 Constructing the Context Set in A Priori High-Uncertainty Regions 
+
+We define a context set (Xc, Y c) drawn from a distribution pXc,Y c , representing samples in a priori high-uncertainty regions (i.e., distributionally shifted or ambiguous points). From the multimodal training set (Xehr  
+
+> D
+
+, X cxr  
+
+> D
+
+), we construct a context set (Xehr  
+
+> C
+
+, X cxr  
+
+> C
+
+) using two label-free strategies which enable data-driven prior construction with minimal human intervention: (1) applying controlled corruptions to both modalities, and (2) selecting samples with low cross-modal similarity in a self-supervised latent space. The latter is motivated by the assumption that modality mismatch corresponds to higher predictive uncertainty. 
+
+3.2.1 Modality-specific Data Perturbations 
+
+We induce a controlled distribution shift by applying data corruptions to the original training set. For EHR time-series, we construct Xehr  
+
+> C
+
+by: (i) dropping an initial segment of the sequence up to 5a threshold, (ii) adding Gaussian noise, and (iii) reversing the time dimension. For chest X-rays, we construct Xcxr  
+
+> C
+
+using seven perturbations: random crop, horizontal/vertical flip, Gaussian blur, solarize, invert, and color jitter. Corruption magnitudes are fixed during training using commonly adopted augmentation settings. 
+
+3.2.2 Cross-Modal Similarity in Multimodal Latent Space 
+
+We also construct a context set by selecting samples whose modality representations are dissimilar in a self-supervised latent space. We obtain per-modality representations (Φ ehr , Φcxr ) using a ConVIRT model trained with the infoCNE loss [57, 15]. We compute cosine distance and select samples falling below a threshold defined as a left-tail cutoff of the distance distribution. 
+
+Inter-modal similarity. We compute the mean cross-modal cosine distance across n training samples and define: 
+
+γ1 = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+cos(Φ ehr  
+
+> i
+
+, Φcxr  
+
+> i
+
+), t = γ1 − v · σ, 
+
+where σ is the standard deviation of distances over the training set and v ∈ [1 , 2] . We include samples satisfying γ1 < t :
+
+Xehr  
+
+> C
+
+= {Xehr  
+
+> c
+
+: xehr · 1γ1<t }, Xcxr  
+
+> C
+
+= {Xcxr  
+
+> c
+
+: xcxr · 1γ1<t }.
+
+Inter- and intra-modal similarity. We additionally incorporate intra-modal distances to the mean latent representation of each modality: 
+
+γ2 = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+cos(Φ ehr  
+
+> i
+
+, Φehr ), γ3 = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+cos(Φ cxr  
+
+> i
+
+, Φcxr ),
+
+and aggregate them with the inter-modal distance: 
+
+γ4 = γ1 + γ2 + γ3
+
+3 , t4 = γ4 − c · σ4,
+
+where σ4 is the standard deviation of γ4 over the training set. We then select samples satisfying 
+
+γ4 < t 4:
+
+Xehr  
+
+> C
+
+= {Xehr  
+
+> c
+
+: xehr · 1γ4<t 4 }, Xehr  
+
+> C
+
+= {Xcxr  
+
+> c
+
+: xcxr · 1γ4<t 4 }.
+
+Finally, for training MedCertAIn , the high-uncertainty sample set is constructed by combining the corrupted training examples and the dissimilar samples identified via self-supervised latent-space selection. 
+
+## 3.3 Uncertainty Measurement 
+
+To quantify predictive uncertainty, we compute uncertainty scores individually for each test sample based on the predictive distribution of the model. For a given input x, the stochastic network induces a predictive distribution p(y | x), obtained via Monte Carlo sampling from the variational posterior. We quantify uncertainty using the Shannon entropy of the predictive distribution: 
+
+H(p(y | x)) = − X
+
+> c∈{ 0,1}
+
+p(y = c | x) log p(y = c | x), (3.1) where higher entropy indicates greater predictive uncertainty. Shannon entropy provides a simple and widely used proxy for predictive uncertainty in Bayesian neural networks [41, 42]. In our setting, entropy scores are computed per data point and used to rank predictions for selective prediction which evaluates the models skill at detecting points that the model would recommend for further review, enabling uncertainty-aware clinical decision support. 64 Experimental Setting 
+
+## 4.1 Dataset              
+
+> Table 1: Dataset Summary : Summary of multimodal data samples used during training for the in-hospital mortality task. Only our proposed method MedCertAIn makes use of the high-uncertainty set (5,347 samples) which is constructed by combining corrupted training examples with 862 additional samples selected via cross-modal similarity in the self-supervised latent space.
+> Data split Model Baseline Models MedCertAIn
+> Training 4,485 4,485 Validation 488 488 Test 1,242 1,242 High Uncertainty Set –5,347
+
+To train and evaluate our framework, we used two publicly available modalities: EHR time-series data from MIMIC-IV [21] and chest X-ray images from MIMIC-CXR [22]. MIMIC-IV contains more than 60,000 ICU stays collected between 2001 and 2019. We only used complete paired samples, such that each example includes both modali-ties with no missing data. We focus on in-hospital mortality prediction, a clinically relevant task for ICU decision support sys-tems [46, 1], to support clinical decision-making and resource allocation by identify-ing patients at higher risk of deterioration, enabling timely intervention [39]. Mortality prediction is a binary classification task that estimates in-hospital mortality after 48 hours in the ICU [15]. We excluded ICU stays shorter than 48 hours, resulting in 6,215 paired patient samples. We used an 80/20 train-test split and performed five-fold cross-validation on the training set with a 70/10 train-validation ratio. All splits are disjoint at the patient level. We follow Hayat et al. [15] to pre-process and align the clinical time-series data and chest X-ray images for this task. Table 1 summarizes the multimodal sample sizes across training, validation, test and context set splits used for MedCertAIn .
+
+## 4.2 Multimodal Backbone Neural Network 
+
+We adopt MedFuse [15] as the backbone neural network architecture, a simple and robust fusion module for multimodal clinical prediction using paired EHR time-series and imaging data. MedFuse follows an early-fusion design, where modality-specific feature extractors encode each input before combining their representations for downstream prediction. Given a paired multimodal sample 
+
+(xehr , x cxr ) ∈ D , Φehr encodes EHR time-series using a two-layer long short-term memory (LSTM) network [17], which captures temporal dependencies in sequential clinical measurements. Chest X-ray images are encoded using a ResNet-34 convolutional neural network Φcxr [16], which extracts high-level spatial and semantic features from medical images. The resulting modality-specific repre-sentations are concatenated and passed to a classifier g(·) with a sigmoid activation to produce the predicted mortality risk ˆy.
+
+## 4.3 Model Baselines 
+
+We compare MedCertAIn against three primary baselines. First, we use MedFuse [15], our deter-ministic multimodal backbone, which serves as the architectural baseline without uncertainty-aware training. Second, we evaluate DrFuse [55], a transformer-based multimodal model that disentangles shared and modality-specific representations and dynamically weights EHR and imaging inputs. We adapt DrFuse from clinical condition classification to the in-hospital mortality prediction task. Finally, we include a stochastic baseline based on Gaussian mean-field variational inference with an uninformative prior [5, 12], isolating the effect of Bayesian learning without informative, data-driven priors. All baselines are evaluated under identical data splits and experimental protocols to ensure fair comparison. 74.4 Evaluation Metrics 
+
+We evaluate test performance using AUROC and AUPRC. To assess predictive uncertainty, we addi-tionally compute selective prediction metrics. Selective prediction introduces a “reject option” ⊥ via a selection function s : X → R that determines whether to output a prediction for an input x ∈ X [9]. Given a rejection threshold τ and using entropy as the selection score, the prediction rule is: 
+
+(p(y | · , θ ; f ), s )( x) = 
+
+(
+
+p(y | x, θ ; f ), if s ≤ τ
+
+⊥, otherwise. We compute AUROC and AUPRC over rejection thresholds τ = 0% , . . . , 99% and report the average across thresholds as selective AUROC and selective AUPRC. Selective prediction metrics quantify predictive performance together with a model’s uncertainty, providing an intuitive measure of reliability. In practice, they offer a simple mechanism to flag uncertain predictions for clinical review, improving interpretability for clinicians while ensuring that only low-confidence cases are deferred, optimizing clinical resources. 
+
+## 4.5 Hyperparameter Tuning and Model Selection 
+
+4.5.1 Deterministic models 
+
+For each task, we run 50 hyperparameter configurations, each evaluated over five runs with different random seeds (250 runs total). For every run, we randomly sample train/validation splits and initialize model weights. We sample the learning rate uniformly from [10 −5, 10 −2], select the regularizer scale from {0, 0.1, 1, 10 , 100 }, and the number of training epochs from {5, 10 , 15 , 20 , 30 }. We use a fixed batch size of 16 and cosine decay with α = 0 . For each run, we save the checkpoint from the final training epoch and select the configuration with the highest average validation AUROC across the five seeds. Using the selected configuration, we retrain on the combined training and validation data and report test performance averaged over five random initializations. We compute standard errors across these five final runs. 
+
+4.5.2 Stochastic models 
+
+We initialize stochastic models from the five best deterministic checkpoints and perform hyperparame-ter tuning using the same protocol (50 configurations × 5 seeds; 250 runs per task). The learning rate is sampled one order of magnitude above and below the best deterministic learning rate, and training epochs are sampled from {5, 10 , 15 , 20 , 25 , 30 }. We use batch size 16, cosine decay with α = 0 , and sample the context batch size from {16 , 32 } due to the additional context data used for Bayesian learning. As stochastic models include mean and variance parameters and require forward passes over sampled context points, fine-tuning is more computationally expensive than the deterministic setting. Table D.3 summarizes the stochastic search space. With the optimal configuration, we train on the full training plus validation data and evaluate five stochastic models with different random initializations (5 runs). This procedure is repeated for each stochastic variant trained with different high-uncertainty context sets. All models are trained with Adam and evaluated on the test set using means and standard errors over five seeds. Experiments were run on NVIDIA A100 and V100 80GB Tensor Core GPUs. 
+
+# 5 Results 
+
+## 5.1 MedCertAIn Achieves State-Of-The-Art Performance and Reliable Selective Prediction 
+
+Table 2 reports in-hospital mortality prediction results for the deterministic baselines DrFuse [55] and MedFuse [15], a Bayesian neural network with a naive Gaussian prior [5, 40], and our proposed 8Figure 3: MedCertAIn Achieves State-Of-The-Art Performance and Reliable Selective Prediction. a) In standard metrics, the differences across baselines are very small for predictive performance. b)       
+
+> Analyzing the selective prediction metrics trends, we observe larger variance for each baseline. In particular, MedCertAIn shows the most stable signal across seeds, showing an enhanced capability of detecting high-uncertainty patients. c) The difference between MedCertAIn and the baseline MedFuse is even more significant in selective prediction metrics, with calibration scores similar across baselines.
+
+method MedCertAIn . Overall, MedCertAIn achieves the strongest standard predictive performance, with AUROC 0.835 ± 0.001 and AUPRC 0.498 ± 0.002 . Relative to MedFuse, this corresponds to a 
+
+1.93% gain in AUROC and a 7.00% gain in AUPRC, indicating improved discrimination and stronger performance under class imbalance, which is critical for reliable mortality prediction. Beyond standard metrics, selective prediction is essential in clinical workflows, enabling models to flag uncertain cases for clinician review and improving safety under deployment. MedCertAIn 
+
+consistently improves selective performance, achieving selective AUROC 0.857 ± 0.005 and selective AUPRC 0.599 ± 0.002 . Compared to MedFuse, this yields a 30 .0% improvement in selective AUROC and a 195% increase in selective AUPRC. Plots in Figure 3 show that our method is the most stable and performing across baselines for selective prediction. MedCertAIn provides both higher predictive performance and more reliable uncertainty estimates, facilitating clinician–AI cooperation by deferring cases that are more likely to be misclassified and supporting more efficient allocation of clinical resources. 9Table 2: MedCertAIn Achieves State-Of-The-Art Performance and Reliable Selective Prediction : Quantitative performance of the deterministic and naive stochastic baselines compared to our proposed method MedCertAIn 
+
+which consistently beats all other models with significant improvement in selective prediction metrics. 
+
+Model Metric AUROC AUPRC Selective AUROC Selective AUPRC 
+
+DrFuse [55] 0.817 ±0.005 0.472 ±0.013 0.785 ±0.007 0.437 ±0.035 
+
+MedFuse [15] 0.819 ±0.000 0.466 ±0.002 0.659 ±0.005 0.203 ±0.006 
+
+Uninformative Prior [40] 0.820 ±0.004 0.485 ±0.006 0.711 ±0.034 0.357 ±0.058 
+
+MedCertAIn (Ours ) 0.835 ±0.001 0.498 ±0.002 0.857 ±0.005 0.599 ±0.002 
+
+Improvement (%) 1.93% 7.00 % 30.0% 195% 
+
+Table 3: Comparison Across Informative Multimodal Data-Driven Priors. Quantitative performance across metrics for all different model ablations of data samples with high uncertainty. 
+
+Ablation AUROC AUPRC Selective AUROC Selective AUPRC 
+
+Uninformative Prior 0.820 ±0.004 0.485 ±0.006 0.711 ±0.034 0.357 ±0.058 
+
+Random Corruptions 0.832 ±0.001 0.494 ±0.002 0.841 ±0.006 0.579 ±0.011 
+
+Inter Similarity 0.821 ±0.001 0.470 ±0.002 0.749 ±0.013 0.423 ±0.032 
+
+Inter-Intra Similarity 0.821 ±0.001 0.470 ±0.002 0.755 ±0.007 0.434 ±0.020 
+
+MedCertAIn I 0.835 ±0.001 0.498 ±0.002 0.857 ±0.005 0.599 ±0.002 
+
+MedCertAIn II 0.834 ±0.001 0.497 ±0.001 0.848 ±0.008 0.590 ±0.006 
+
+## 5.2 Comparison Across Informative Multimodal Data-Driven Priors 
+
+We perform ablations over high-uncertainty sample selection strategies to quantify the impact of our data-driven priors. Table 3 compares a naive Gaussian prior, random corruptions, inter-modal similarity, inter-intra modal similarity, and our proposed priors MedCertAIn I (inter-modal + corruptions) and MedCertAIn II (inter-intra + corruptions). MedCertAIn I corresponds to the main 
+
+MedCertAIn variant reported in this study, as it achieves the strongest overall performance. Gaussian priors achieve AUROC 0.820 ±0.004 and selective AUPRC 0.357 ±0.058, while random corruptions improve both standard and selective performance (AUROC 0.832 ±0.001, selective AUPRC 0.579 ±0.011). Similarity-based selection alone yields comparable standard performance (AUROC 0.821 ±0.001) but lower selective metrics. In contrast, MedCertAIn I and MedCertAIn II outperform all alternatives across metrics, with MedCertAIn I achieving the best results (AUROC 0.835 ±0.001, AUPRC 0.498 ±0.002, selective AUROC 0.857 ±0.005, selective AUPRC 0.599 ±0.002). A comparison of selective prediction trends across ablation is shown in Figure B.1. Overall, these results show that combining self-supervised latent-space divergence with corruptions produces the most informative priors and the strongest selective reliability for clinical prediction. 
+
+## 5.3 Impact of Multimodal Fusion on Selective Prediction 
+
+To quantify the benefit of fusion, Table 4 compares unimodal (CXR-only, EHR-only) and multimodal performance for the deterministic MedFuse baseline and our stochastic MedCertAIn framework. For 
+
+MedCertAIn , unimodal variants use single-modality Random Corruptionncorruption context sets, excluding latent-space sampling for a fair comparison with MedFuse. Across both frameworks, EHR provides the strongest unimodal signal (MedFuse: AUROC 0.760, selective AUROC 0.670; MedCertAIn : AUROC 0.825, selective AUROC 0.807), while CXR-only performance remains lower (MedFuse: AUROC 0.615; MedCertAIn : AUROC 0.632). Combining both modalities yields consistent gains: MedFuse improves to AUROC 0.819 and AUPRC 0.466, 10 Table 4: Impact of Multimodal Fusion on Selective Prediction : Quantitative performance across unimodal and multimodal settings, with consistent best performance across settings obtained with MedCertAIn .
+
+Modality Model AUROC AUPRC Selective AUROC Selective AUPRC 
+
+Unimodal CXR MedFuse 0.615 ±0.007 0.225 ±0.007 0.569 ±0.012 0.167 ±0.015 
+
+MedCertAIn 0.632 ±0.014 0.242 ±0.014 0.567 ±0.015 0.146 ±0.004 
+
+Unimodal EHR MedFuse 0.760 ±0.003 0.393 ±0.008 0.670 ±0.017 0.235 ±0.007 
+
+MedCertAIn 0.825 ±0.004 0.480 ±0.004 0.807 ±0.014 0.499 ±0.023 
+
+Multimodal MedFuse 0.819 ±0.000 0.466 ±0.002 0.659 ±0.005 0.203 ±0.006 
+
+MedCertAIn 0.832 ±0.001 0.494 ±0.002 0.841 ±0.006 0.579 ±0.011 
+
+Table 5: Analysis of MedCertAIn Across Patient Subpopulations. MedCertAIn consistently performs better for each individual subgroup, particularly showing significant improvements in selective AUROC and selective AUPRC, demonstrating it’s potential for deployment in varied clinical scenarios and high-risk populations. 
+
+Patient Subgroup MedFuse MedCertAIn AUROC AUPRC Selective AUROC Selective AUPRC AUROC AUPRC Selective AUROC Selective AUPRC Age 
+
+18-45 years 0.803 ±0.001 0.603 ±0.023 0.559 ±0.002 0.262 ±0.001 0.824 ±0.001 0.600 ±0.002 0.723 ±0.005 0.387 ±0.017 
+
+45-60 years 0.788 ±0.001 0.545 ±0.027 0.554 ±0.003 0.231 ±0.001 0.811 ±0.002 0.485 ±0.002 0.730 ±0.008 0.299 ±0.014 
+
+>60 years 0.814 ±0.000 0.528 ±0.032 0.631 ±0.004 0.207 ±0.002 0.832 ±0.000 0.480 ±0.002 0.863 ±0.004 0.559 ±0.002 
+
+Sex 
+
+Male 0.792 ±0.000 0.401 ±0.001 0.603 ±0.003 0.186 ±0.001 0.810 ±0.001 0.425 ±0.002 0.832 ±0.005 0.494 ±0.005 
+
+Female 0.806 ±0.000 0.420 ±0.001 0.609 ±0.003 0.183 ±0.000 0.827 ±0.001 0.453 ±0.002 0.842 ±0.005 0.484 ±0.005 
+
+while MedCertAIn further increases to AUROC 0.832 and AUPRC 0.494. The largest improvements appear in selective prediction, where multimodal MedCertAIn achieves selective AUROC 0.841 and selective AUPRC 0.579, outperforming both EHR-only (0.807/0.499) and CXR-only (0.567/0.146) variants. Overall, multimodal fusion improves both discrimination and selective reliability, supporting uncertainty-aware deferral decisions across unimodal and multimodal settings. 
+
+## 5.4 Analysis of MedCertAIn Across Patient Subpopulations 
+
+To evaluate robustness, we analyse performance across patient subgroups defined by age and sex. Table 5 shows that MedCertAIn consistently outperforms the deterministic MedFuse baseline across all subgroups, with the largest gains in selective metrics. For age groups, MedCertAIn improves AUROC from 0.803 to 0.824 (18–45), 0.788 to 0.811 (45–60), and 0.814 to 0.832 ( >60), while selective AUROC increases from 0.559 to 0.723, 0.554 to 0.730, and 0.631 to 0.863, respectively. Although standard AUPRC is slightly lower in some age groups, selective AUPRC is consistently higher, improving from 0.262 to 0.387 (18–45), 0.231 to 0.299 (45–60), and 0.207 to 0.559 ( >60). Across sex subgroups, MedCertAIn also improves performance for both male and female patients. For males, AUROC increases from 0.792 to 0.810 and selective AUROC from 0.603 to 0.832, with selective AUPRC improving from 0.186 to 0.494. For females, AUROC increases from 0.806 to 0.827 and selective AUROC from 0.609 to 0.842, with selective AUPRC improving from 0.183 to 0.484. A visual comparison is provided in Figure 4. Overall, these results indicate that MedCertAIn maintains strong standard performance while providing substantially more reliable selective behavior, supporting its use in high-risk populations and clinically realistic deferral settings. 11 Figure 4: Analysis of MedCertAIn Across Patient Subpopulations. Percentage improvement from   
+
+> MedCertAIn over the deterministic baseline, MedFuse. Our stochastic framework significantly improves selective prediction showing its adaptability over different patient subpopulation groups.
+
+# 6 Discussion 
+
+Recent studies show that UQ methods in healthcare largely rely on Bayesian approaches but are often limited to unimodal imaging settings [48, 27]. Our work addresses this gap by applying Bayesian UQ to multimodal clinical data combining medical images and time-series signals. A key strength of MedCertAIn is that context point selection is performed in an unsupervised manner (i.e., without labels), making it scalable across tasks and modalities while reducing design bias. Across experiments and subpopulation analyses, MedCertAIn consistently improves predictive performance and selective prediction metrics over deterministic multimodal baselines, yielding more reliable uncertainty estimates. Despite these promising results, several limitations remain. First, our experiments focus on in-hospital mortality prediction, and generalization to other clinical tasks requires further study. Second, while we integrate imaging and time-series data, incorporating additional modalities could improve applicability and performance [47]. Our corruption strategies for chest X-ray and EHR data were adapted from prior work [44, 41]. While appropriate for establishing a proof of concept, future work should investigate clinically informed perturbations that better reflect real-world data quality issues and operational variability. Finally, reliance on the MIMIC dataset may limit external validity across institutions and patient populations, motivating evaluation in diverse clinical settings [30]. Beyond performance gains, our findings suggest that uncertainty-aware multimodal models may offer practical benefits for clinical decision-making. Improved selective prediction performance indicates the potential to defer uncertain cases, which is particularly important in high-risk ICU settings. Consistent improvements across subpopulations further suggest that Bayesian approaches may contribute to more reliable model behavior across patient groups, though this warrants deeper fairness-focused investigation. Building on these results, future work should explore additional modalities such as radiology reports, extend evaluation to other clinical tasks (e.g., decompensation or length of stay), and investigate alternative fusion strategies including late fusion and missing-modality settings. Strengthening the multimodal backbone architecture and exploring other self-supervised approaches for high-uncertainty samples may further improve robustness and uncertainty estimation. 
+
+# 7 Conclusion 
+
+We introduced MedCertAIn , a Bayesian uncertainty quantification framework for multimodal in-hospital mortality prediction that combines chest X-ray imaging and EHR time-series data. Across experiments, our approach consistently improves predictive performance and uncertainty qual-ity compared to deterministic multimodal baselines, enabling more reliable selective prediction. These results demonstrate the potential of Bayesian multimodal learning to provide calibrated un-certainty estimates in complex clinical settings. Overall, MedCertAIn represents a step toward more trustworthy multimodal AI systems capable of supporting safe clinical decision-making in ICU environments. 12 References 
+
+[1] A. Awad, M. Bader-El-Den, J. McNicholas, and J. Briggs. “Early hospital mortality prediction of intensive care unit patients using an ensemble learning approach”. International journal of medical informatics (2017) (cit. on p. 7). [2] M. Azizmalayeri, A. Abu-Hanna, and G. Cinà. “Unmasking the chameleons: a benchmark for out-of-distribution detection in medical tabular data”. International Journal of Medical Informatics (2025) (cit. on p. 3). [3] N. Band, T. G. J. Rudner, Q. Feng, A. Filos, Z. Nado, M. W. Dusenberry, G. Jerfel, D. Tran, and Y. Gal. “Benchmarking Bayesian deep learning on diabetic retinopathy detection tasks”. In: 2021 (cit. on p. 3). [4] E. Begoli, T. Bhattacharya, and D. Kusnezov. “The need for uncertainty quantification in machine-assisted medical decision making”. Nature Machine Intelligence 1 (2019) (cit. on p. 1). [5] C. Blundell, J. Cornebise, K. Kavukcuoglu, and D. Wierstra. “Weight uncertainty in neural networks”. In: 2015 (cit. on pp. 3, 5, 7, 8). [6] J. Bradbury, R. Frostig, P. Hawkins, M. J. Johnson, C. Leary, D. Maclaurin, G. Necula, A. Paszke, J. VanderPlas, S. Wanderman-Milne, and Q. Zhang. “JAX: composable transformations of Python+NumPy programs”. Version 0.3.13 (2018) (cit. on p. 23). [7] V. D. Calhoun and J. Sui. “Multimodal fusion of brain imaging data: a key to finding the missing link (s) in complex mental illness”. Biological psychiatry: cognitive neuroscience and neuroimaging 3 (2016) (cit. on p. 3). [8] T. DeVries and G. W. Taylor. “Leveraging uncertainty estimates for predicting segmentation quality”. arXiv preprint arXiv:1807.00502 (2018) (cit. on p. 3). [9] R. El-Yaniv et al. “On the foundations of noise-free selective classification.” Journal of Machine Learning Research 5 (2010) (cit. on p. 8). [10] A. Filos, S. Farquhar, A. N. Gomez, T. G. Rudner, Z. Kenton, L. Smith, M. Alizadeh, A. De Kroon, and Y. Gal. “A systematic comparison of Bayesian deep learning robustness in diabetic retinopathy tasks”. arXiv preprint arXiv:1912.10481 (2019) (cit. on p. 3). [11] J. Gawlikowski, C. R. N. Tassi, M. Ali, J. Lee, M. Humt, J. Feng, A. Kruspe, R. Triebel, P. Jung, R. Roscher, et al. “A survey of uncertainty in deep neural networks”. arXiv preprint arXiv:2107.03342 (2021) (cit. on pp. 2, 3). [12] A. Graves. “Practical variational inference for neural networks”. Advances in neural information processing systems (2011) (cit. on pp. 3, 5, 7). [13] C. Gruber, P. O. Schenk, M. Schierholz, F. Kreuter, and G. Kauermann. Sources of uncertainty in machine learning – a statisticians’ view . 2023. arXiv: 2305.16703 [stat.ML] (cit. on p. 1). [14] P. K. Han, W. M. Klein, and N. K. Arora. “Varieties of uncertainty in health care: a conceptual taxonomy”. Medical Decision Making 6 (2011) (cit. on p. 1). [15] N. Hayat, K. J. Geras, and F. E. Shamout. “Medfuse: multi-modal fusion with clinical time-series data and chest x-ray images”. In: Proceedings of the 7th Machine Learning for Healthcare Conference . 2022 (cit. on pp. 2, 6–8, 10, 23). [16] K. He, X. Zhang, S. Ren, and J. Sun. Deep residual learning for image recognition . 2015. arXiv: 
+
+1512.03385 [cs.CV] (cit. on p. 7). [17] S. Hochreiter and J. Schmidhuber. “Long short-term memory”. Neural computation 8 (1997) (cit. on p. 7). [18] M. D. Hoffman, D. M. Blei, C. Wang, and J. Paisley. “Stochastic variational inference”. Journal of Machine Learning Research 1 (2013) (cit. on pp. 3, 22). [19] S. -C. Huang, A. Pareek, S. Seyyedi, I. Banerjee, and M. P. Lungren. “Fusion of medical imaging and electronic health records using deep learning: a systematic review and implementation guidelines”. NPJ digital medicine 1 (2020) (cit. on p. 2). [20] Z. Jiao, J. W. Choi, K. Halsey, T. M. L. Tran, B. Hsieh, D. Wang, F. Eweje, R. Wang, K. Chang, J. Wu, et al. “Prognostication of patients with covid-19 using artificial intelligence based on chest x-rays and clinical data: a retrospective study”. The Lancet Digital Health 5 (2021) (cit. on p. 3). 13 [21] A. Johnson, L. Bulgarelli, T. Pollard, L. A. Celi, R. Mark, and S Horng IV. “Mimic-iv-ed”. 
+
+PhysioNet (2021) (cit. on pp. 2, 7, 23). [22] A. E. Johnson, T. J. Pollard, S. J. Berkowitz, N. R. Greenbaum, M. P. Lungren, C. -y. Deng, R. G. Mark, and S. Horng. “Mimic-cxr, a de-identified publicly available database of chest radiographs with free-text reports”. Scientific data 1 (2019) (cit. on pp. 2, 7, 23). [23] A. Jungo, R. McKinley, R. Meier, U. Knecht, L. Vera, J. Pérez-Beteta, D. Molina-García, V. M. Pérez-García, R. Wiest, and M. Reyes. “Towards uncertainty-assisted brain tumor segmentation and survival prediction”. In: Brainlesion: Glioma, Multiple Sclerosis, Stroke and Traumatic Brain Injuries: Third International Workshop, BrainLes 2017, Held in Conjunction with MICCAI 2017, Quebec City, QC, Canada, September 14, 2017, Revised Selected Papers 3 . Springer. 2018 (cit. on p. 3). [24] B. Kompa, J. Snoek, and A. L. Beam. “Second opinion needed: communicating uncertainty in medical machine learning”. NPJ Digital Medicine 1 (2021) (cit. on p. 1). [25] S. Kullback and R. A. Leibler. “On information and sufficiency”. The annals of mathematical statistics 1 (1951) (cit. on p. 3). [26] A. Kurz, K. Hauser, H. A. Mehrtens, E. Krieghoff-Henning, A. Hekler, J. N. Kather, S. Fröhling, C. von Kalle, T. J. Brinker, et al. “Uncertainty estimation in medical image classification: systematic review”. JMIR Medical Informatics 8 (2022) (cit. on p. 3). [27] L. J. Lechuga, S. Elsharief, D. A. Jorf, F. Darwish, C. Ma, and F. E. Shamout. “Uncertainty quantification for machine learning in healthcare: a survey”. In: Proceedings of the sixth Conference on Health, Inference, and Learning . 2025 (cit. on pp. 1, 3, 12). [28] P. P. Liang, A. Zadeh, and L. -P. Morency. Foundations and trends in multimodal machine learning: principles, challenges, and open questions . 2023. arXiv: 2209.03430 [cs.LG] (cit. on p. 3). [29] D. J. C. MacKay. “A practical Bayesian framework for backpropagation networks”. Neural Comput. 3 (1992) (cit. on p. 3). [30] C. Meng, L. Trinh, N. Xu, J. Enouen, and Y. Liu. “Interpretability and fairness evaluation of deep learning models on mimic-iv dataset”. Scientific Reports 1 (2022) (cit. on p. 12). [31] D. C. Miller, B. Ng, J. Eslick, C. Tong, and Y. Chen. “Advanced computational tools for op-timization and uncertainty quantification of carbon capture processes”. In: Computer Aided Chemical Engineering . 2014 (cit. on p. 1). [32] G. Muhammad, F. Alshehri, F. Karray, A. El Saddik, M. Alsulaiman, and T. H. Falk. “A compre-hensive survey on multimodal medical signals fusion for smart healthcare systems”. Information Fusion (2021) (cit. on p. 3). [33] Z. Nado, N. Band, M. Collier, J. Djolonga, M. W. Dusenberry, S. Farquhar, Q. Feng, A. Filos, M. Havasi, R. Jenatton, G. Jerfel, J. Liu, Z. Mariet, J. Nixon, S. Padhy, J. Ren, T. G. J. Rudner, F. Sbahi, Y. Wen, F. Wenzel, K. Murphy, D. Sculley, B. Lakshminarayanan, J. Snoek, Y. Gal, and D. Tran. Uncertainty baselines: benchmarks for uncertainty & robustness in deep learning .2022. arXiv: 2106.04015 [cs.LG] (cit. on p. 3). [34] R. M. Neal. “Bayesian Learning for Neural Networks” (1996) (cit. on p. 3). [35] V. Nemani, L. Biggio, X. Huan, Z. Hu, O. Fink, A. Tran, Y. Wang, X. Zhang, and C. Hu. “Uncertainty quantification in machine learning for engineering design and health prognostics: a tutorial”. Mechanical Systems and Signal Processing (2023) (cit. on p. 1). [36] Y. Ovadia, E. Fertig, J. Ren, Z. Nado, D. Sculley, S. Nowozin, J. Dillon, B. Lakshminarayanan, and J. Snoek. “Can you trust your model’s uncertainty? Evaluating predictive uncertainty under dataset shift”. In: Advances in Neural Information Processing Systems 32 . 2019 (cit. on p. 3). [37] Y. Ovadia, E. Fertig, J. Ren, Z. Nado, D. Sculley, S. Nowozin, J. Dillon, B. Lakshminarayanan, and J. Snoek. “Can you trust your model’s uncertainty? evaluating predictive uncertainty under dataset shift”. Advances in neural information processing systems (2019) (cit. on p. 1). [38] A. Paszke, S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan, T. Killeen, Z. Lin, N. Gimelshein, L. Antiga, et al. “Pytorch: an imperative style, high-performance deep learning library”. Ad-vances in neural information processing systems (2019) (cit. on p. 23). [39] P. Rajpurkar, E. Chen, O. Banerjee, and E. J. Topol. “Ai in health and medicine”. Nature medicine 
+
+1 (2022) (cit. on p. 7). 14 [40] T. G. J. Rudner, Z. Chen, Y. W. Teh, and Y. Gal. “Tractable function-space variational inference in Bayesian neural networks”. In: Advances in Neural Information Processing Systems 35 . 2022 (cit. on pp. 3, 8, 10). [41] T. G. J. Rudner, S. Kapoor, S. Qiu, and A. G. Wilson. “Function-space regularization in neural networks: a probabilistic perspective”. In: Proceedings of the 40th International Conference on Machine Learning . 2023 (cit. on pp. 6, 12). [42] T. G. J. Rudner, S. Kapoor, S. Qiu, and A. G. Wilson. “Should we learn most likely functions or parameters?” In: Advances in Neural Information Processing Systems 36 . 2023 (cit. on p. 6). [43] T. G. J. Rudner, X. Pan, Y. L. Li, R. Shwartz-Ziv, and A. G. Wilson. “Uncertainty-aware priors for fine-tuning pre-trained vision and language models”. In: ICML Workshop on Structured Probabilistic Inference & Generative Modeling . 2024 (cit. on p. 20). [44] T. G. J. Rudner, F. B. Smith, Q. Feng, Y. W. Teh, and Y. Gal. “Continual learning via sequential function-space variational inference”. In: Proceedings of the 39th International Conference on Machine Learning . 2022 (cit. on p. 12). [45] K. Saab, T. Tu, W. -H. Weng, R. Tanno, D. Stutz, E. Wulczyn, F. Zhang, T. Strother, C. Park, E. Vedadi, et al. “Capabilities of gemini models in medicine”. arXiv preprint arXiv:2404.18416 
+
+(2024) (cit. on p. 2). [46] R. Sadeghi, T. Banerjee, and W. Romine. “Early hospital mortality prediction using vital signals”. 
+
+Smart Health (2018) (cit. on p. 7). [47] M. Salvi, H. W. Loh, S. Seoni, P. D. Barua, S. García, F. Molinari, and U. R. Acharya. “Multi-modality approaches for medical support systems: a systematic review of the last decade”. 
+
+Information Fusion (2023) (cit. on p. 12). [48] S. Seoni, V. Jahmunah, M. Salvi, P. D. Barua, F. Molinari, and U. R. Acharya. “Application of uncertainty quantification to artificial intelligence in healthcare: a review of last decade (2013–2023)”. Computers in Biology and Medicine (2023) (cit. on pp. 1, 3, 12). [49] F. E. Shamout, Y. Shen, N. Wu, A. Kaku, J. Park, T. Makino, S. Jastrzkeski, J. Witowski, D. Wang, B. Zhang, et al. “An artificial intelligence system for predicting the deterioration of covid-19 patients in the emergency department”. NPJ digital medicine 1 (2021) (cit. on p. 3). [50] A. Shrivastava, A. Gupta, and R. Girshick. “Training region-based object detectors with online hard example mining”. In: Proceedings of the IEEE conference on computer vision and pattern recognition . 2016 (cit. on p. 18). [51] A. Shrivastava, A. Gupta, and R. Girshick. “Training region-based object detectors with online hard example mining”. In: Proceedings of the IEEE conference on computer vision and pattern recognition . 2016 (cit. on p. 18). [52] D. Tran, J. Liu, M. W. Dusenberry, D. Phan, M. Collier, J. Ren, K. Han, Z. Wang, Z. Mariet, H. Hu, N. Band, T. G. J. Rudner, K. Singhal, Z. Nado, J. van Amersfoort, A. Kirsch, R. Jenatton, N. Thain, H. Yuan, K. Buchanan, K. Murphy, D. Sculley, Y. Gal, Z. Ghahramani, J. Snoek, and B. Lakshminarayanan. Plex: towards reliability using pretrained large model extensions . 2022 (cit. on p. 2). [53] M. J. Wainwright and M. I. Jordan. Graphical Models, Exponential Families, and Variational Inference . 2008 (cit. on p. 3). [54] T. Xia, J. Han, and C. Mascolo. “Benchmarking uncertainty quantification on biosignal classifi-cation tasks under dataset shift”. In: Multimodal AI in healthcare: A paradigm shift in health intelligence . 2022 (cit. on p. 1). [55] W. Yao, K. Yin, W. K. Cheung, J. Liu, and J. Qin. “Drfuse: learning disentangled representation for clinical multi-modal fusion with missing modality and modal inconsistency”. In: Proceedings of the AAAI conference on artificial intelligence . 2024 (cit. on pp. 7, 8, 10). [56] Y. -D. Zhang, Z. Dong, S. -H. Wang, X. Yu, X. Yao, Q. Zhou, H. Hu, M. Li, C. Jiménez-Mesa, J. Ramirez, et al. “Advances in multimodal data fusion in neuroimaging: overview, challenges, and novel orientation”. Information Fusion (2020) (cit. on p. 3). [57] Y. Zhang, H. Jiang, Y. Miura, C. D. Manning, and C. P. Langlotz. “Contrastive learning of medical visual representations from paired images and text”. In: Machine Learning for Healthcare Conference . PMLR. 2022 (cit. on pp. 6, 23). 15 [58] K. Zou, Z. Chen, X. Yuan, X. Shen, M. Wang, and H. Fu. “A review of uncertainty estimation and its application in medical imaging”. arXiv preprint arXiv:2302.08119 (2023) (cit. on p. 1). 16 Appendix 
+
+# Table of Contents 
+
+A Extended Results 18 
+
+A.1 Comparison with Hard Example Mining . . . . . . . . . . . . . . . . . . . . . . . . . 18 
+
+B Comparison Across Informative Multimodal Data-Driven Priors 19 C Derivation of Variational Objective 20 
+
+C.1 A Family of Data-Driven Priors . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20 C.2 Data-Driven, Uncertainty-Aware Priors for Fine-Tuning Pre-trained Models . . . . . . 20 C.3 Variational Inference with Uncertainty-Aware Priors . . . . . . . . . . . . . . . . . . . 21 
+
+D Experimental Details 23 
+
+D.1 Dataset Training Details . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 D.2 Training details of ConVIRT . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 D.3 Stochastic Hyperparameter Space . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 D.4 Technical Implementation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 17 A Extended Results 
+
+## A.1 Comparison with Hard Example Mining  
+
+> Table A.1: HEM Performance : Performance comparison of deterministic and stochastic models using Hard Example Mining for fine-tuning during training.
+
+## Hard Example Mining (HEM) Model AUROC AUPRC Selective AUROC Selective AUPRC 
+
+## MedFuse (HEM [50]) 0.233 ±0.003 0.094 ±0.001 0.393 ±0.010 0.070 ±0.010 
+
+## MedCertAIn (HEM 20%) 0.821 ±0.002 0.477 ±0.002 0.790 ±0.011 0.502 ±0.023 
+
+## Change (%) 58.75% 38.30% 39.65% 43.26% 
+
+We further consider Hard Example Mining (HEM), including online HEM [51] which prioritizes high-loss examples during training. In contrast, MedCertAIn uses high-loss samples to construct an uncertainty-aware prior rather than as training targets. We show that HEM-based fine-tuning degrades performance, while using HEM samples as context sets improves results but remains inferior to MedCertAIn .The primary aim of HEM is to improve performance by focusing training on difficult samples, whereas our method targets uncertainty estimation and selective prediction, and as such, is not directly comparable to our approach. Nonetheless, to further elucidate the distinctions between MedCertAIn 
+
+and HEM, we conducted controlled comparisons using the top 20% hardest training samples (ranked by loss). Incorporating the HEM subset as a context set within MedCertAIn ’s uncertainty-aware prior, the model demonstrated a substantial performance boost (AUROC: 0.821, AUPRC: 0.477, Selective AUROC: 0.790, Selective AUPRC: 0.502). This represents relative gains of 58.75% AUROC, 38.30% AUPRC, 39.65% Selective AUROC, and 43.26% Selective AUPRC, underscoring the robustness of our selective prediction objective. Unlike HEM, which emphasizes learning directly from difficult samples, MedCertAIn leverages them to inform uncertainty modeling while explicitly avoiding overfitting. This is enabled by our training objective, which incorporates two complementary terms: one that fits the model to the full training set, ensuring broad generalization, and another that shapes the uncertainty-aware prior using difficult examples, encouraging the model to remain calibrated and non-confident on ambiguous inputs. 18 B Comparison Across Informative Multimodal Data-Driven Pri-ors 
+
+Figure B.1: Comparison Across Informative Multimodal Data-Driven Priors. a) Difference across baselines in standard metrics is almost negligible. b) The trends in selective prediction metrics show that MedCertAIn remains the most performing model compared to other ablations, showing that the combination of different context-set priors enhances uncertainty-ware predictions. 
+
+19 C Derivation of Variational Objective 
+
+We adapt the approach in Rudner et al. [43] to the multi-modal settings. We reproduce the derivation from Rudner et al. [43] verbatim below. 
+
+## C.1 A Family of Data-Driven Priors 
+
+Consider a parametric observation model pY |X, Θ(y | x, θ ; f ), and let the mapping f be defined by 
+
+f (· ; θ) ˙ = h(· ; θh)θL, where h(· ; θh) is the post-activation output of the penultimate layer, ΘL is the set of stochastic final-layer parameters, Θh is the set of stochastic non-final-layer parameters, and 
+
+Θ ˙= {Θh, ΘL} is the full set of stochastic parameters. We assume access to pre-trained feature parameters, θ∗
+
+> h
+
+, and context data that encodes useful information about the downstream tasks. We denote a batch of context inputs with corresponding context labels by xc = {x1, ..., x M } and 
+
+yc = {y1, ..., y M }, respectively, and let pXc,Y c be a joint distribution over context batches. To construct a family of data-driven priors, we begin by specifying a context inference problem . We consider a Bernoulli random variable ˇZ denoting whether a given set of neural network parameters induces predictions that exhibit some desired property (e.g., high uncertainty on a set of evaluation points). Furthermore, we define a context observation model ˇp ˇZ | Θ( ˇz | θ; f, p Xc,Y c )—which denotes the likelihood of observing a yet-to-be-specified outcome ˇz under ˇp ˇZ | Θ given θ and pXc,Y c —and specify a base prior over the model parameters, pΘ(θ). For notational simplicity, we will drop the subscripts going forward except when needed for clarity. With this setup, we can now define the context inference problem as finding the conditional distribution over neural network parameters that we would obtain if we conditioned on the desired property being satisfied. This conditional distribution will serve as our data-driven prior, and by Bayes’ Theorem, we can express it as 
+
+p(θ | ˇz; pXc,Y c ) = ˇp(ˇ z | θ; pXc,Y c )p(θ)ˇp(ˇ z; pXc,Y c ) . (C.1) To define a family of data-driven priors that place high probability density on neural network parameter values that induce predictive functions with reliable uncertainty estimates, we specify a Bernoulli context observation model ˇp ˇZ | Θ in which ˇZ = 1 denotes the outcome of ‘achieving reliable uncertainty quantification’ and ˇp( ˇz = 1 | θ; pXc,Y c ) denotes the likelihood of ˇz = 1 given θ and pXc,Y c .More specifically, we define: 
+
+ˇp(ˇ z = 1 | θ; pXc,Y c ) = exp( −EpXc,Yc [c(Xc, Y c, θ )]) ˇp(ˇ z = 0 | θ; pXc,Y c ) = 1 − ˇp(ˇ z = 1 | θ; pXc,Y c ),
+
+(C.2) where c : X × Y × RP → R≥ is a cost function . By specifying the outcome ˇz = 1 along with a distribution, pXc,Y c we obtain a conditional distribution ˇp(θ | ˇz; f, p Xc,Y c )—the distribution over neural network parameters that we would infer if we observed the outcome ˇz = 1 under the base prior and the Bernoulli context observation model defined in (C.2). Naturally, the quality (i.e., the usefulness) of this conditional distribution is determined by the quality of the context observation model ˇp ˇZ | Θ, the data, and the prior. As a result, the primary challenge in designing effective uncertainty-aware priors lies in constructing a context observation model—via a cost function c and a context distribution pXc,Y c —that is as well-specified as possible. The better specified the context observation model, the more useful the data-driven prior. 
+
+## C.2 Data-Driven, Uncertainty-Aware Priors for Fine-Tuning Pre-trained Mod-els 
+
+In this section, we present a specific instantiation of an uncertainty-aware prior for fine-tuning foun-dation models. To define a data-driven prior ˇp(θ | ˇz; pXc,Y c ) that incorporates useful information from the pre-trained parameters θ∗ 
+
+> h
+
+and assigns high probability density to parameter values θ that induce 20 models with reliable uncertainty quantification, we need to specify a suitable context likelihood and suitable layer-specific base priors p(θh) and p(θL). For the base priors, we let p(θh) = N (θh; θ∗
+
+> h
+
+, τ −1 
+
+> h
+
+I),which assigns high probability to parameters θh that are close to the pre-trained parameters θ∗
+
+> h
+
+, and 
+
+p(θL) = N (θL; 0, τ −1 
+
+> L
+
+I).To define a context observation model that induces a data-driven prior with desirable properties, we specify a cost function c of the form 
+
+c(xc, y c, θ ) ˙ = τ
+
+> K
+
+X
+
+> k=1
+
+D2
+
+> M
+
+([ f (xc; θ)] k, m (xc, y c)k, C (xc)) , (C.3) where K is the number of output dimensions, pXc,Y c is a joint distribution over context batches xc
+
+and yc (each of size M ), 
+
+D2
+
+> M
+
+([ f (xc; θ)] k, m (xc, y c)k, C (xc)) ˙ = v⊤ 
+
+> k
+
+C(xc)−1vk (C.4) with vk ˙= [f (xc; θ)] k − m(xc, y c)k is the squared Mahalanobis distance between model predictions 
+
+[f (xc; θ)] k and an input-dependent distribution with mean m(xc, y c)k and M -by-M covariance matrix 
+
+C(xc). To obtain a data-driven prior that assigns high probability density to parameters θ that induce models with reliable uncertainty estimates, we specify a data-dependent mean function, 
+
+m(xc, y c)k ˙= [ yc]k, and a covariance function 
+
+C(·) ˙ = s1h(·; θ∗
+
+> h
+
+)h(·; θ∗
+
+> h
+
+)⊤ + s2I, (C.5) parameterized by pre-trained model parameters θ∗ 
+
+> h
+
+and fixed scaling parameters τ , s1, and s2, that reflects structure in the pre-trained model representations h(·; θ∗
+
+> h
+
+). Finally, we define the context distribution as p(xc, y c) = p(yc | xc)p(xc), where 
+
+p(yc | xc) ˙ = δ({0, ..., 0} − yc)
+
+and p(xc) is an empirical distribution constructed from a larger set of (domain- and task-specific) context inputs. 1
+
+Under this cost function and context distribution, the data-driven prior defined in (C.2), by design, assigns high probability density to parameters θ that induce predictions f (xc; θ) that have high predictive uncertainty on the context inputs. If the distribution over context inputs, pXc , is specified to place high probability density on context batches which contain input points that are meaningfully distinct from the training inputs, then the data-driven prior favours models that exhibit high predictive uncertainty on such meaningfully distinct inputs. 
+
+## C.3 Variational Inference with Uncertainty-Aware Priors 
+
+In this section, we show how to perform variational inference with uncertainty-aware priors. We start by specifying a probabilistic model with an uncertainty-aware prior, 
+
+p(yD , θ | xD , ˇz; pXc,Y c ) = p(yD | xD , θ ; f )
+
+| {z }
+
+> Likelihood
+
+· p(θ | ˇz; pXc,Y c )) 
+
+| {z }
+
+> Uncertainty-aware prior
+
+. (C.6) To perform variational inference in this model and approximate the posterior distribution over the parameters of interest, we begin by defining a variational distribution, 
+
+q(θ) ˙ = q(θh) q(θL), (C.7)                  
+
+> 1Defining p(yc|xc)˙=δ({0, ..., 0} − yc)implies that under pXc,Y c, all context batch samples have yc=0, and therefore, we effectively have m(xc, y c)k˙=0for all context batch samples.
+
+21 where q(θL) = N (θL; μL, ΣL) and q(θh) = N (θh; μh, Σh) with learnable variational parameters μ ˙= {μh, μ L}
+
+and Σ ˙= {Σh, ΣL}, and frame the inference problem of finding the posterior p(θ | xD , y D , ˇz) variation-ally as 
+
+min  
+
+> qΘ∈Q
+
+DKL (qΘ ∥ pΘ | XD ,Y D , ˇZ ), (C.8) where Q is a mean-field Gaussian variational family. This variational problem can equivalently be expressed as maximizing the variational objective 
+
+¯F(qΘ) ˙ = EqΘ [log p(yD | xD , Θ; f )] − DKL (qΘ ∥ pΘ | ˇZ ). (C.9) Unfortunately, this variational objective is intractable since the data-driven prior ˇp(θ | ˇz; pXc,Y c ) defined in (C.1)—which is required to compute DKL (qΘ ∥ pΘ | ˇZ )—is not in general tractable. To overcome this intractability, we take advantage of the properties of the KL divergence and note that we can express DKL (qΘ ∥ pΘ | ˇZ ) as: 
+
+DKL (qΘ ∥ pΘ | ˇZ ) = EqΘh qΘL
+
+
+
+log q(Θ h) q(Θ L)
+
+p(Θ h) p(Θ L)
+
+
+
+− EqΘh qΘL [log ˇ p(ˇ z | Θ; pXc,Y c )] + log ˇ p(ˇ z; pXc,Y c ),
+
+(C.10) where the intractable log-marginal likelihood log ˇ p(ˇ z; pXc,Y c ) was factored out as an additive con-stant independent of any learnable parameters. Using this result, we can obtain a tractable lower bound 
+
+DKL (qΘ ∥ pΘ | ˇZ ) ≥ − EqΘh qΘL [log ˇ p(ˇ z | Θ; pXc,Y c )] + DKL (qΘh ∥ pΘh ) + DKL (qΘL ∥ pΘL ), (C.11) where each KL divergence term can be computed analytically, and we can obtain an unbiased estimator of the negative log-likelihood using simple Monte Carlo estimation. 
+
+Variational Objective. Since qΘh and qΘL are both mean-field Gaussian distributions, we can obtain a doubly lower bounded variational objective 
+
+F(μ, Σ) ˙ = EqΘ [log p(yD | xD , Θ; f )] 
+
+| {z }
+
+> Expected log-likelihood
+
+− DKL (qΘL ∥ pΘL )
+
+| {z }
+
+> Pre-training regularization
+
+− DKL (qΘL ∥ pΘL )
+
+| {z }
+
+> Final-layer regularization
+
+− EqΘ [EpXc,Yc [c(Xc, Y c, Θ)]] 
+
+| {z }
+
+> Uncertainty regularization
+
+,
+
+(C.12) where the cost function and context distribution are as defined above. We can estimate all expectations in the objective using simple Monte Carlo estimation, giving the final variational objective: 
+
+ˆF(μ, Σ) ˙ = 1
+
+J
+
+> J
+
+X
+
+> j=1
+
+log p(yD | xD , θ (j); f ) − DKL (qΘ ∥ pΘ) − 1
+
+JJ ′
+
+XJj=1 
+
+XJ′ 
+
+> j′=1
+
+c(x(j′) 
+
+> c
+
+, y (j′) 
+
+> c
+
+, θ (j)),
+
+(C.13) with θ(j) ∼ qΘ, x(j′) 
+
+> c
+
+∼ pXc , and y(j′) 
+
+> c
+
+∼ pYc|Xc for j = 1 , ..., J and j′ = 1 , ..., J ′. This objective can be maximized with stochastic variational inference [18]. 22 D Experimental Details 
+
+## D.1 Dataset Training Details  
+
+> Table D.2:
+
+Summary of Original Datasets. Number of unimodal and multimodal data points available in MIMIC-IV (EHR) and MIMIC-CXR (CXR) [22, 21] for the in-hospital mortality task. We note that the size of the multimodal dataset for our task decreases since we drop all data samples that do not have both modalities. 
+
+Dataset Training Validation Testing 
+
+Unimodal CXR 124,671 8,813 20,747 Unimodal EHR 42,628 4,802 11,914 Multimodal (CXR + EHR) 4,485 488 1,242 
+
+## D.2 Training details of ConVIRT 
+
+Contrastive VIsual Representation Learning from Text (ConVIRT) [57] is a vision-language self-supervised pretraining framework developed for medical images and radiology reports. ConVIRT is based on a bidirectional contrastive objective between pretraining modalities, maximizing the similarity of the latent space embeddings of an image-text pair. The loss function of our ConVIRT-MedFuse architecture is defined as L = S(xehr , x cxr )+ S(xcxr , x ehr ), where S is the infoNCE loss. We conducted 10 hyperparameter tuning runs via random search by sampling a learning rate from a uniform distribution in the range [10 −1, 10 −2]. We used a batch size of 256 across experiments, setting the maximum number of epochs to 300, with no early stopping. To select the best model, we chose the best checkpoint based on the best AUROC score achieved on the validation set across epochs and models. Using the best model, we made an inference pass using the original training data 
+
+(Xehr , X cxr ) to obtain the latent space representation and compute the cosine similarity between data modalities. 
+
+## D.3 Stochastic Hyperparameter Space   
+
+> Table D.3: Hyperparameter Search Space. Hyperparameters and corresponding value ranges used for the uncertainty regularizer of MedCertAIn .
+
+Hyperparameter Values 
+
+prior variance [0.1, 1, 10, 1000] prior likelihood scale [0.1, 1, 10] prior likelihood f-scale [0, 1, 10] prior likelihood covariance scale [0.1, 0.01, 0.001] prior likelihood covariance diagonal [0.5, 1, 5] 
+
+## D.4 Technical Implementation 
+
+Our data loading and pre-processing pipeline was implemented using PyTorch, [38] following the same structure of the code used by [15]. However, we refactored the original unimodal and multimodal models, training, and evaluation loops using Jax [6]. This framework simplifies the implementation of Bayesian neural networks and stochastic training, which are the basis of the uncertainty quantification methods used in this work. In addition, thanks to this code refactoring, we obtained a significant reduction in total training time for the unimodal and multimodal models compared to the code baseline in PyTorch. We note that due to specific caching procedures of the Jax framework, each xehr instance has to be standardized into the same time-step length for the LSTM encoder to avoid out-of-memory issues. 23 The Jax framework requires that an LSTM encoder defines a static length of the sequences it is going to process, and then it caches this model in order to increase the training speed. If different sequence lengths are used, then Jax caches an instance of the LSTM encoder for each specific length to be used during each training cycle. The problem arises when dealing with a dataset that contains sequences of lengths that present high variance (i.e, many different sequence lengths for every data point in the dataset) In comparison, PyTorch does not use this approach and is able to process sequences of dynamic length with one single instance of the LSTM encoder. However, this comes at the cost of increased training times when comparing both frameworks. This problem was during the experimentation phase of our work, however we note that for the patient in-hospital mortality task the length of all xehr instances is standardized to 48hrs which does not generate this issue. 24

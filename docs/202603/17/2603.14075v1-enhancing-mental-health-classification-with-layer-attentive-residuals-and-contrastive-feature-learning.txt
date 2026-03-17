@@ -1,0 +1,306 @@
+Title: Enhancing Mental Health Classification with Layer-Attentive Residuals and Contrastive Feature Learning
+
+URL Source: https://arxiv.org/pdf/2603.14075v1
+
+Published Time: Tue, 17 Mar 2026 02:09:57 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Enhancing Mental Health Classification with Layer-Attentive Residuals and Contrastive Feature Learning 
+
+## Menna Elgabry 1* , Ali Hamdi 1 and Khaled Shaban 2
+
+1* Department of Computer Science, Modern Sciences and Arts University, Cairo, Egypt. 
+
+2Computer Science and Engineering Department, College of Engineering, Qatar University, Doha, Qatar. *Corresponding author(s). E-mail(s): mennayasser891@gmail.com; Contributing authors: ahamdi@msa.edu.eg; khaled.shaban@qu.edu.qa; 
+
+Abstract 
+
+The classification of mental health is challenging for a variety of reasons. For one, there is overlap between the mental health issues. In addition, the signs of mental health issues depend on the context of the situation, making classifica-tion difficult. Although fine-tuning transformers has improved the performance for mental health classification, standard cross-entropy training tends to create entangled feature spaces and fails to utilize all the information the transform-ers contain. We present a new framework that focuses on representations to improve mental health classification. This is done using two methods. First, 
+
+layer-attentive residual aggregation which works on residual connections to to weigh and fuse representations from all transformer layers while maintain-ing high-level semantics. Second, supervised contrastive feature learning 
+
+uses temperature-scaled supervised contrastive learning with progressive weight-ing to increase the geometric margin between confusable mental health problems and decrease class overlap by restructuring the feature space. With a score of 
+
+74.36% , the proposed method is the best performing on the SWMH benchmark and outperforms models that are domain-specialized, such as MentalBERT and 
+
+MentalRoBERTa by margins of (3.25% - 2.2%) and 2.41 recall points over the highest achieving model. These findings show that domain-adaptive pretraining for mental health text classification can be surpassed by carefully designed rep-resentation geometry and layer-aware residual integration, which also provide enhanced interpretability through learnt layer importance. 
+
+1 
+
+> arXiv:2603.14075v1 [cs.LG] 14 Mar 2026 Keywords: Mental health classification, Supervised contrastive learning, Adaptive temperature scaling, Layer-wise attention, Residual feature fusion, Representation disentanglement
+
+# 1 Introduction 
+
+Over one billion people worldwide suffer from mental health issues, which is a global crisis and a major contributor to the burden of disability. People are increasingly using digital narratives to convey psychological suffering, which has led to new opportunities for mental health surveillance due to the development of social media platforms [1, 2]. Mental health text categorization is becoming a crucial natural language processing (NLP) task with significant practical implications for early detection, intervention, and public health monitoring due to the convergence of need and data availability [3]. Mental health classification is still particularly difficult, despite significant advance-ments in transformer-based methods. The task functions at the nexus of ethical sensitivity, psychological complexity, and linguistic intricacy. In contrast to general text classification, mental health disorders frequently show up as context-dependent symptomatology, comorbidity patterns, and subtle expressions [4]. For example, standard fine-tuned transformers frequently fail to capture the difference between gen-eralized anxiety (”I constantly worry about everything”) and depression (”I feel empty inside”), which requires sensitivity to both semantic content and pragmatic framing [5]. Current methods continue to have two basic drawbacks. Initially, representation entanglement : Semantically comparable but clinically dissimilar diseases typically occupy overlapping regions in feature space in transformer models that have been fine-tuned using standard cross-entropy loss. Unstable decision boundaries result from this entanglement, especially for disorders like anxiety and depression that have sim-ilar symptom characteristics [6]. Secondly, inefficient layer utilization : Although transformer architectures generate rich hierarchical representations across layers (with higher layers encoding semantic relationships and lower layers capturing syntactic pat-terns) [7], the majority of mental health classification approaches either only use the final layer or use basic aggregation techniques that do not fully utilize this hierarchical richness [8]. In this work, a novel system (Layer-Attentive Residuals with Contrastive learning) is introduced. It uses two complimentary innovations to address these shortcomings. In order to enforce intra-class compactness and inter-class separation, we first apply a 
+
+temperature-scaled supervised contrastive loss that explicitly shapes the rep-resentation space. In contrast to conventional contrastive methods, our technique uses progressive weighting and adaptive temperature scaling to account for the special fea-tures of mental health text, where certain disorders are inherently closer in symptom space than others. Second, given that different transformer layers encode syntactic and semantic information at varying depths [9] we suggest a learnable layer-attention mechanism that dynamically assigns weights to representations from every trans-former layer according to how important they are for classifying mental health. By 2acting as a kind of residual connection throughout the transformer hierarchy, this attention mechanism enables the model to downweight less informative layers and selectively highlight layers that capture clinically significant data. We implement our method on the RoBERTa model [8] and assess it on the SWMH benchmark [10], which is an extensive dataset of four mental health problems and a control class. Our approach surpasses numerous strong baselines, including Men-talBERT [3], and achieves 74.36% F1-score , which is also an improvement over traditional RoBERTa fine-tuning baseline. Our approach offers two types of interpretability that are useful for clinical appli-cations, in addition to quantitative benefits. The learnt layer attention weights provide transparency into model decision-making by revealing which linguistic factors (lexi-cal, syntactic, and semantic) influence predictions. In the meantime, the contrastive projections provide qualitative confirmation of representation quality by producing visualizable embeddings where clinically linked circumstances cluster correctly. 
+
+Our contributions are threefold: 
+
+1. In order to address the complex interactions between psychological states, a novel contrastive learning formulation designed especially for mental health text catego-rization incorporates progressive weighting and adaptive temperature scaling. 2. A dynamic layer-attention technique that improves performance and interpretabil-ity by learning to weight transformer layer representations according to their clinical relevance, allowing language features to influence classification judgments. 3. Ablation tests reveal that each of these components considerably improves overall performance, providing thorough empirical evidence that these components are complimentary. This study brings us closer to trustworthy, interpretable tools for digital men-tal health assessment—tools that not only accurately categorize but also do so in ways that doctors can comprehend and trust—by connecting representation learning advancements with the particular requirements of mental health text analysis. 
+
+# 2 Related Work 
+
+## 2.1 Mental Health Text Classification 
+
+Over the past ten years, computational methods for evaluating mental health from text have greatly changed. Coppersmith et al. [1] pioneered the use of social media data for suicide risk assessment through meticulously built psycholinguistic characteristics, while earlier work relied on lexicons and manufactured linguistic features. Although this field of study demonstrated the feasibility of automated mental health screening, it was constrained by domain specialization and feature engineering overhead. Significant advancements were made with the introduction of neural architec-tures. Benton et al. [5] showed that shared representation learning could enhance performance in multitask learning across various mental health issues. Later research investigated different brain architectures, concentrating on the identification of anx-iety and depression as high-prevalence states [6]. However, these methods frequently 3addressed each illness separately, ignoring the intricate comorbidity patterns that define mental health in the actual world. Transformer-based models represented a major advancement. Ji et al. [3] shown that domain-adaptive pretraining produces significant benefits by introducing Mental-BERT, a RoBERTa model continuously pretrained on mental health forums. At the same time, Huang et al. [4] investigated domain adaptation methods for depression identification, emphasizing the difficulties in transferring knowledge between various text genres (e.g., social media vs. clinical notes). Despite achieving state-of-the-art per-formance, these transformer techniques mostly adopted the conventional fine-tuning paradigm without tackling the underlying issues with representation structure for mental health disorders. 
+
+## 2.2 Contrastive Learning in NLP 
+
+Contrastive learning is a powerful approach for learning well-structured represen-tations. When samples from the same class are purposefully drawn together while samples from different classes are pushed apart, the supervised contrastive loss demon-strates that representations with higher generalization properties are created [11]. Separable decision boundaries have made this approach particularly effective. For a number of NLP issues, contrastive approaches have been updated. As shown by Gao et al. [12], simple contrastive learning objectives might produce high-quality sentence embeddings without supervised labeling. It has been shown that the tempera-ture parameter in contrastive learning, which controls the distribution’s concentration, is crucial for performance [11], with various tasks requiring various temperature calibrations. There is a noticeable scarcity of work in this discipline that addresses the particular challenges of mental health text, where disorders exhibit complex, over-lapping symptomatology rather than clear category boundaries. Our work extends supervised contrastive learning to the field of mental health classification using adap-tive temperature scaling and progressive weighting methods tailored to its unique characteristics. 
+
+## 2.3 Transformer Layer Analysis and Utilization 
+
+Different layers collect different language information, according to analysis of trans-former architectures. Jawahar et al. [7] methodically shown that whereas higher levels record semantic linkages, lower layers mostly encode syntactic information. This hier-archical structure implies that rather than depending only on the output of the last layer, good performance on complicated tasks may involve combining information across numerous layers. Additionally, Tenney et al. [13] showed that BERT’s layers roughly rebuild the con-ventional NLP pipeline, with semantic roles emerging in later layers, parsing in middle layers, and part-of-speech tagging emerging in early stages. Because different tasks may benefit from emphasizing different levels, this finding has significant implications for task-specific model design. 4Practical strategies for utilizing multi-layer information are still somewhat basic in spite of these discoveries. Typical methods include employing all layers with equal weighting or concatenating the final four layers [8]. However, more advanced tech-niques, such as learnable layer attention, have not been consistently used in the classification of texts related to mental health, where various illnesses may depend on distinct language signals recorded at various levels of abstraction. 
+
+# 3 Methodology 
+
+## 3.1 Problem Formulation 
+
+Classifying texts related to mental health has special difficulties that go beyond typical multi-class classification. Learning representations whose geometric form reflects the clinical correlations between diseases is of greater importance to us than just label pre-diction. Formally, a dataset of N text samples is represented as D = ( xi, y i)}Ni=1 , where 
+
+xi is a text sequence and yi ∈ 1, . . . , K } is the matching mental health condition label from K potential classes. After tokenization, each text xi = [ xi, 1, . . . , x i,T ] consists of 
+
+T tokens. We have two objectives: (1) to discover a function f : X → RK that converts text inputs into precise probability scores across classes, and (2) to guarantee that the internal representations generated by f provide a semantically meaningful space in which clinically dissimilar conditions are farther distant from those with comparable symptomatology. We assess our method on the SWMH benchmark [10], which is an extensive dataset of 54,412 user posts sourced from mental health-related subreddits that has four men-tal health problems together with a control class. Training, validation, and test sets included roughly 63.9%, 16.0%, and 20.0% of the total data, respectively. This trans-lates to approximately 10.9k examples for testing, 8.71k examples for validation, and 34.8k examples for training. 
+
+## 3.2 Base Architecture: RoBERTa-Large 
+
+We use RoBERTa-large [8] as our basic language model because of its demonstrated efficacy on social media writing and its ability to comprehend complex semantic infor-mation. The transformer model RoBERTa-large has 16 attention heads, L = 24 layers, and a hidden dimension of d = 1024. At each of its layers, the model produces a series of contextualized representations for an input sequence xi:
+
+Hli = RoBERTa l(xi) ∈ RT ×d, l = 1 , . . . , L 
+
+The matrix of hidden states for all T tokens at transformer layer l is represented here by Hli. We employ the representation of the unique ‘[CLS]‘ token as a synopsis of the complete input sequence, in accordance with standard procedure in sentence classification with transformers. This is extracted from each layer: hli = Hli[0] ∈ Rd.This provides us with a rich collection of 24 layer-specific ‘[CLS]‘ vectors, each of which captures linguistic data at a distinct abstraction level. 53.3 Layer-Attentive Residual Connections 
+
+Standard fine-tuning’s primary drawback is that it ignores the rich, hierarchical infor-mation dispersed throughout all transformer stages in favor of relying just on the output of the last layer. Surface and syntactic information are captured by earlier levels, semantic links are captured by middle layers, and task-specific signals are inte-grated by later layers. This hierarchy is important when it comes to mental health texts. While some illnesses may depend more on deeper semantic content, others may rely more on syntactic patterns of discomfort. 
+
+3.3.1 Multi-Layer Representation Aggregation 
+
+To take advantage of representations from every transformer layer, we present a learn-able layer-attention technique. Let hli represent the l-th layer’s [CLS] representation. A collection of learnable scalar parameters w = [ w1, . . . , w L+1 ] ∈ RL+1 is defined, with an extra parameter wL+1 acting as an extra layer and corresponding to the final pooled output. A softmax is used to calculate the normalized importance weights: 
+
+αl = exp( wl)
+
+PL+1  
+
+> j=1
+
+exp( wj ) , l = 1 , . . . , L + 1 Each layer’s relative contribution is determined by the weights αl, which are learned simultaneously with the model parameters and initialized uniformly. This pro-cess, which is inspired by the information bottleneck principle, pushes the model to suppress less informative characteristics and highlight task-relevant representations. Consequently, layers providing stronger semantic signals obtain greater weights, whilst less important shallow representations are attenuated. 
+
+3.3.2 Weighted Feature Fusion 
+
+Next, using the learned attention scores as a guide, we calculate a fused representation 
+
+zfused  
+
+> i
+
+as a weighted sum of all layer representations: 
+
+zfused  
+
+> i
+
+=
+
+> L+1
+
+X
+
+> l=1
+
+αl · hli ∈ Rd
+
+Numerical stability is ensured by this convex combination. Because it is task-specific and dynamic, this formulation has great power. When differentiating between sadness and anxiety, for instance, the model may learn to give middle layers (e.g., 12–18) larger weights ( αl) since these conditions are frequently distinguished by minor semantic subtleties best captured at those intermediate levels of abstraction. 
+
+3.3.3 Residual Enhancement 
+
+We include a residual connection to guarantee good training and maintain the strong signal from the last, most sophisticated layer. The final representation zi that can be used is: 
+
+zi = zfused  
+
+> i
+
++ LayerNorm( hL+1  
+
+> i
+
+)6Lcon = 1
+
+|B|
+
+X
+
+> i∈B
+
+− 1
+
+|P (i)|
+
+X 
+
+> p∈P(i)
+
+log exp(sim( ci, cp)/τ i)
+
+P 
+
+> a∈B\{ i}
+
+exp(sim( ci, ca)/τ i) 
+
+> Fig. 1 Supervised contrastive loss with adaptive temperature scaling.
+
+In this case, LayerNorm indicates layer normalization [14], and hL+1  
+
+> i
+
+is the last layer’s ‘[CLS]‘ token (or pooled output). In addition to ensuring that the fused repre-sentation preserves the high-level, task-adapted properties that the final transformer layer has already learnt, this residual connection mitigates any vanishing gradient problems by guaranteeing a direct gradient path to the final layer. 
+
+## 3.4 Temperature-Scaled Supervised Contrastive Learning 
+
+Predicting the right label is the only goal of standard cross-entropy loss. The internal geometry of the model’s representation space is not specifically shaped by it. Deci-sion boundaries may become unstable as a result of ”entangled” representations, when distinct but related symptoms (such as anxiety and depression) are not clearly distin-guished. We use a supervised contrastive learning objective that specifically combines representations from the same class and separates those from different classes in order to address this. 
+
+3.4.1 Contrastive Projection Head 
+
+First, we employ a simple, trainable neural network head to project the fused representation zi onto a specific contrastive space: 
+
+ci = W2 · GELU( W1 · zi + b1) + b2 ∈ Rdc
+
+Here, W1 ∈ R512 ×d, b1 ∈ R512 , W2 ∈ Rdc×512 , b2 ∈ Rdc , with dc = 256. For non-linearity, the GELU activation function [15] is employed. In contrast to the features utilized for the final classification, this projection head enables the model to learn features that are specifically tailored for separation and clustering. 
+
+3.4.2 Adaptive Temperature Scaling 
+
+We use a supervised contrastive loss (SupCon). For a batch B of size B, the loss for an anchor sample i is as shown in figure 1: Where: 
+
+• P (i) = {p ∈ B : yp = yi, p ̸ = i} is the set of indices of all other samples in the batch with the same label as i (the ”positives”). 
+
+• sim( u, v) = u⊤v 
+
+> ∥u∥∥ v∥
+
+is the cosine similarity. 
+
+• τi > 0 is a key innovation : an adaptive temperature parameter. The ”sharpness” of the similarity distribution is determined by the temperature τ .A low τ makes separation more difficult by amplifying discrepancies. Importantly, not 7every pair of mental health conditions is equally simple to distinguish. Consequently, we create τ sample-specific and adaptive: 
+
+τi = τbase · (1 + β · σ(zi)) with τbase = 0 .05, β = 0 .1, and σ(·), a learnt scalar function (a little neural net-work) that calculates the intrinsic ”difficulty” or ambiguity of the input representation 
+
+zi. This enables the model to apply a stronger pull/push (lower τ ) for situations that are clear-cut and a gentler one (higher τ ) for examples that are intrinsically unclear or similar-condition. Our adaptive temperature scaling can be interpreted from an information-theoretic perspective related to Fisher information. The temperature τ
+
+inversely influences the sharpness of the similarity distribution in the contrastive loss. Conditions with high Fisher information (easier to distinguish) benefit from a lower 
+
+τ , creating a sharper, more confident separation. Conditions with low Fisher informa-tion (highly confusable, like depression and anxiety) require a higher τ to prevent the loss from becoming too stringent and unstable, which could lead to poor optimization. Our learned τi function approximates this adaptive calibration. 
+
+3.4.3 Progressive Weighting Schedule 
+
+It can be disruptive to start training with the contrastive loss. Therefore, we employ a straightforward linear timetable to progressively enhance its influence: 
+
+λ(t) = λmax · min 
+
+
+
+1, tTramp 
+
+
+
+The current training epoch is denoted by t, the ramp-up period is denoted by 
+
+Tramp = 5, and the maximum weight is denoted by λmax = 0 .15. This enables the model to use cross-entropy to build a fundamental classification foundation before using the contrastive signal to further refine the representation geometry. 
+
+## 3.5 Classification Head and Joint Optimization 
+
+3.5.1 Enhanced Classification Head 
+
+For the final classification decision, we process the fused representation zi (not the contrastive projection ci) through a separate classification head: 
+
+oi = W4 · Dropout(GELU( W3 · zi + b3)) + b4 ∈ RK
+
+The matrices are W3 ∈ R512 ×d, b3 ∈ R512 , W4 ∈ RK×512 , b4 ∈ RK . A dropout rate of 0.4 is applied for regularization. The output oi are the logits for the K mental health conditions. 
+
+3.5.2 Joint Loss Function 
+
+The weighted sum of our contrastive loss and the standard cross-entropy loss represents the overall loss minimized during training: 
+
+Ltotal = LCE + λ(t) · L con 
+
+8The cross-entropy loss, calculated from the logits oi, is: 
+
+LCE = − 1
+
+|B|
+
+X
+
+> i∈BK
+
+X
+
+> k=1
+
+I[yi = k] log exp( oi,k )
+
+PKj=1 exp( oi,j )This combined goal guarantees that the model learns well-structured, separable representations (by Lcon ) and makes accurate predictions (via LCE ). 
+
+3.5.3 Gradient-Aware Optimization 
+
+While fine-tuning the overall model, we employ alternative learning rates for the newly introduced parameters and the pre-trained RoBERTa parameters. This acknowledges that while new layers can fast learn from scratch, the pre-trained weights already contain important general language knowledge and should be updated carefully. Let Θnew represent our new parameters (layer attention w, projection heads, classification head) and Θ roberta represent the RoBERTa parameters. The rule for updating is: 
+
+θ ← θ − ηθ · ∇ θLtotal , θ ∈ Θroberta ∪ Θnew 
+
+We set ηroberta = 2 × 10 −6 and ηnew = 1 × 10 −5. We use the AdamW optimizer with weight decay. 
+
+Full experimental setup 
+
+A RoBERTa-large backbone was used in every experiment. Due to GPU memory lim-itations, training was done with a batch size of 16 and a maximum input sequence length of 256 tokens. AdamW was used to optimize the model for 15 epochs. Differ-ent learning rates were applied to different components to provide stable fine-tuning: 2×10 −6 for the pre-trained RoBERTa parameters and 1 ×10 −5 for newly added layers (layer-attention, projection, and classification heads). A linear learning rate sched-uler with a warm-up phase covering 10% of the total training steps was used. In the classifier head, dropout regularization was implemented at a rate of 0.4. An adap-tive temperature mechanism with base temperature τbase = 0 .05 and scaling factor 
+
+β = 0 .1 was used for the contrastive learning component. The contrastive loss was included using a progressive weighting schedule, where the weight λ rose linearly from 0 to λmax = 0 .15 for the first Tramp = 5 epochs. Gradient accumulation over two steps and gradient trimming with a maximum norm of 1.0 were used to further stabi-lize optimization. Following initial tuning, all hyperparameters were chosen based on validation performance. 
+
+## 3.6 Model Architecture Overview 
+
+The entire data flow of our model is shown in Figure 2. The RoBERTa-large backbone is traversed by the input text. The final pooled output and the ‘[CLS]‘ representations from each of the 24 layers are extracted. A learnt convex combination (layer attention) is used to combine these 25 vectors. After that, this fused representation is employed in two concurrent paths: (1) it is projected onto a contrastive space to calculate the contrastive loss, and (2) it is sent through the classification head to generate logits. 9Fig. 2 Complete system architecture. 
+
+The fused representation is stabilized by the remaining link from the last layer. The joint loss is used to train the complete system from beginning to end. 
+
+# 4 Results and Analysis 
+
+## 4.1 Main Results 
+
+We assess our model on the SWMH benchmark against state of the art models. Results for all comparable models are shown in Table 1. By achieving 72.89% weighted F1, our suggested model sets a new benchmark.                  
+
+> Table 1 Performance comparison on SWMH test set.
+> Model F1 Score (%) Recall (%)
+> BERT 70.46 69.78 RoBERTa 72.03 70.89 BioBERT 68.60 67.10 ClinicalBERT 68.16 67.05 MentalBERT 71.11 69.87 MentalRoBERTa 72.16 70.65
+> Our Model 74.36 73.30
+
+Our data shows a significant conclusion. Our model outperforms all baseline mod-els, including domain-specific models that were pre-trained on extensive mental health 10 Table 2 contribution of each component.      
+
+> Model Configuration F1 Score
+> Standard Fine-tuning 72.00 Layer Attention Only 73.10 Contrastive Loss Only 73.2 Both (Full model) 74.36
+
+corpora, such as MentalBERT and MentalRoBERTa. For this task, architectural advances in fine-tuning can surpass the advantages of domain-specific pre-training, as evidenced by the notable 2.20 percentage point improvement over MentalRoBERTa and 3.25 percentage point improvement over MentalBERT. Also notable to mention that our model outperforms it’s counterpart finetuned Roberta by 2.33 percentage points.In addition to improving overall F1, the proposed model achieves a 2.41% improvement in recall over the strongest baseline. This is particularly important in mental health applications, where false negatives may correspond to missed at-risk individuals. The improved recall suggests that the structured embedding space reduces overlap between confusable conditions and enables more consistent detection of minority or subtle cases. To account for randomness in training, each experiment was repeated n = 5 times using different random seeds. We report the mean perfor-mance along with the standard deviation. All results are presented in the form mean 
+
+± standard deviation .The proposed model achieved an average F1-score of 74 .36% ± 0.50 across all runs. 
+
+## 4.2 Breaking the Domain Adaptation Barrier 
+
+One particularly noteworthy finding is that our model performs better than Men-talRoBERTa, which underwent significant continuous pre-training on 150M tokens from mental health forums [3], utilizing simply standard RoBERTa-large initializa-tion (pre-trained on general online text). This calls into question the widely held belief that optimal performance in specialized domains such as mental health requires domain-adaptive pre-training. We speculate that this happens because: (1) the contrastive loss reorganizes the representation space to reflect clinical relationships, making up for the absence of domain-specific pre-training by enforcing a semantically meaningful geometry; and (2) our layer-attention mechanism learns to emphasize clinically relevant linguistic features dynamically, effectively performing “soft” domain adaptation during fine-tuning. 
+
+## 4.3 Component Contributions 
+
+A systematic analysis that isolates the contributions of each suggested component is shown in Table 2 where RoBERTa-large is the base model used in all configurations. Contrastive learning adds 1.10 percentage points, and the layer-attention process adds 1.20 percentage points. Their combination (Full model) achieves F1-score of 74.36%, slightly exceeding the sum of individual contributions, indicating a modest 11 synergetic effect. and the full model model consistently outperforms all other models in the benchmark as shown in Table 2. 
+
+# 5 Conclusion 
+
+In this work, we presented our model, a novel framework for classifying texts related to mental health that combines two complimentary innovations: temperature-scaled supervised contrastive learning and layer-attentive residual connections. By dynami-cally weighting transformer layers according to their clinical relevance and explicitly structuring the embedding space to reflect clinical relationships between conditions, our method overcomes two basic drawbacks of conventional transformer fine-tuning: inefficient layer utilization and entangled representation spaces. Our thorough analysis on the SWMH benchmark [10] shows that our model achieves 74.36% weighted F1-score , setting a new benchmark and outperforming specialized domain-adapted models such as MentalRoBERTa [3]. This discovery is especially noteworthy since it contradicts the widely held belief that domain-adaptive pre-training is necessary for the best performance in specialized areas [16], implying that advanced fine-tuning techniques can produce better outcomes. The component contribution show that both elements work together to improve performance. In order to identify small variations between mental health problems, the layer-attention mechanism learns to highlight semantically rich intermediate trans-former layers [7]. In the meantime, a representation space where clinically related situations are appropriately clustered and different conditions are well separated is produced by the contrastive loss with adaptive temperature scaling. our model provides useful benefits for digital mental health applications in addi-tion to its technological contributions. A recurring issue in mental health NLP is addressed by the enhanced separation of confusable condition pairings (such as depres-sion and anxiety), while the interpretable layer attention weights offer transparency into decision-making [6]. In order to better reflect clinical reality, future research should consider expanding this framework to multilingual settings [17], adding temporal context for longitudinal assessment [18], and modifying it for spectrum-based rather than categorical classifi-cation [19]. Other high-stakes, fine-grained NLP classification jobs might benefit from the architectural advances discussed here. LARC-RoBERTa is a step toward more dependable and transparent computa-tional tools that can support solving the global mental health crisis by improving the performance and interpretability of mental health text classification. Despite these limitations, our work establishes a strong foundation for representation-aware men-tal health classification, with future extensions addressing these constraints poised to enhance clinical utility. 
+
+# 6 Limitations 
+
+There are certain restrictions to our work that should be taken into account. First, our model was trained only on English-language Reddit posts from the SWMH dataset [10] for the evaluation. Additional validation is needed for generalization to other 12 platforms, languages, and text genres. Second, Our method examines each text post separately, without the chronological context that is frequently essential for evaluat-ing mental health. Comorbidities, longitudinal trends, and symptom progression over time are often taken into account in clinical diagnosis [20]. The existing method may overlook crucial diagnostic information found in consecutive user postings or clinical history since it is unable to capture these dynamic characteristics. The datasets used in this research are publicly available through the Hugging face repository. 
+
+# Conflict of Interest 
+
+The authors declare that they have no conflict of interest. 
+
+# References 
+
+[1] Coppersmith G, Leary R, Crutchley P, Fine A. Natural Language Processing of Social Media as Screening for Suicide Risk. Biomedical Informatics Insights. 2018;10:1178222618792860. PMID: 30158822. [2] Ezerceli ¨O, Dehkharghani R. Mental disorder and suicidal ideation detection from social media using deep neural networks. Journal of Computational Social Science. 2024;7(2):2277–2307. [3] Ji S, Zhang T, Ansari L, Fu J, Tiwari P, Cambria E. MentalBERT: Publicly Available Pretrained Language Models for Mental Healthcare. In: Calzolari N, B´ echet F, Blache P, Choukri K, Cieri C, Declerck T, et al., editors. Proceedings of the Thirteenth Language Resources and Evaluation Conference. Marseille, France: European Language Resources Association; 2022. p. 7184–7190. [4] Huang Z, Epps J, Joachim D, Stasak B, Williamson J, Quatieri T. Domain Adaptation for Enhancing Speech-Based Depression Detection in Natural Envi-ronmental Conditions Using Dilated CNNs; 2020. . [5] Benton A, Mitchell M, Hovy D.: Multi-Task Learning for Mental Health using Social Media Text. [6] Shing HC, Nair S, Zirikly A, Friedenberg M, Daum´ e III H, Resnik P. Expert, Crowdsourced, and Machine Assessment of Suicide Risk via Online Postings. In: Loveys K, Niederhoffer K, Prud’hommeaux E, Resnik R, Resnik P, editors. Proceedings of the Fifth Workshop on Computational Linguistics and Clini-cal Psychology: From Keyboard to Clinic. New Orleans, LA: Association for Computational Linguistics; 2018. p. 25–36. [7] Jawahar G, Sagot B, Seddah D. What Does BERT Learn about the Structure of Language? In: Korhonen A, Traum D, M` arquez L, editors. Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics. Florence, Italy: Association for Computational Linguistics; 2019. p. 3651–3657. 13 [8] Zhuang L, Wayne L, Ya S, Jun Z. A Robustly Optimized BERT Pre-training Approach with Post-training. In: Li S, Sun M, Liu Y, Wu H, Liu K, Che W, et al., editors. Proceedings of the 20th Chinese National Conference on Computational Linguistics. Huhhot, China: Chinese Information Processing Society of China; 2021. p. 1218–1227. [9] Rogers A, Kovaleva O, Rumshisky A. A Primer in BERTology: What We Know About How BERT Works. Transactions of the Association for Computational Linguistics. 2020;8:842–866. [10] Ji S, Li X, Huang Z, Cambria E. Suicidal ideation and mental disorder detection with attentive relation networks. Neural Computing and Applications. 2021;. [11] Khosla P, Teterwak P, Wang C, Sarna A, Tian Y, Isola P, et al.: Supervised Contrastive Learning. [12] Gao T, Yao X, Chen D. SimCSE: Simple Contrastive Learning of Sentence Embeddings. In: Moens MF, Huang X, Specia L, Yih SWt, editors. Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing. Online and Punta Cana, Dominican Republic: Association for Computational Linguistics; 2021. p. 6894–6910. [13] Tenney I, Das D, Pavlick E. BERT Rediscovers the Classical NLP Pipeline. In: Korhonen A, Traum D, M` arquez L, editors. Proceedings of the 57th Annual Meet-ing of the Association for Computational Linguistics. Florence, Italy: Association for Computational Linguistics; 2019. p. 4593–4601. [14] Ba JL, Kiros JR, Hinton GE.: Layer Normalization. [15] Hendrycks D, Gimpel K.: Gaussian Error Linear Units (GELUs). [16] Gururangan S, Marasovi´ c A, Swayamdipta S, Lo K, Beltagy I, Downey D, et al.: Don’t Stop Pretraining: Adapt Language Models to Domains and Tasks. [17] Nozza D, Bianchi F, Hovy D. Challenges and perspectives in computational detoxification. Journal of Artificial Intelligence Research. 2022;74:1401–1465. [18] Fairbairn C, Yang Y, Cohn JF. Detecting Depression Severity from Vocal Prosody . IEEE Transactions on Affective Computing. 2013 Apr;4(02):142–150. [19] Fiorillo A, Albert U, Dell’Osso B, Pompili M, Sani G, Sampogna G. The clinical utility and relevance in clinical practice of DSM-5 specifiers for major depressive disorder: A Delphi expert consensus study. Comprehensive Psychiatry. 2024;133:152502. [20] Reece AG, Danforth CM. Detecting depression and mental illness on social media: an integrative review. Current Opinion in Behavioral Sciences. 2017;18:43–49. 14

@@ -1,0 +1,648 @@
+Title: Toward Robust LLM-Based Judges: Taxonomic Bias Evaluation and Debiasing Optimization
+
+URL Source: https://arxiv.org/pdf/2603.08091v1
+
+Published Time: Tue, 10 Mar 2026 01:55:58 GMT
+
+Number of Pages: 32
+
+Markdown Content:
+# Toward robust LLM-based judges: taxonomic bias evaluation and debiasing optimization 
+
+Hongli Zhou a,1 , Hui Huang a,1 , Rui Zhang a,1 , Kehai Chen b, Bing Xu a,Conghui Zhu a, Tiejun Zhao a, Muyun Yang a, ∗
+
+> aFaculty of Computing, Harbin Institute of Technology, Harbin, 150001, China
+> bSchool of Computer Science and Technology, Harbin Institute of Technology, Shenzhen, 518055, China
+
+Abstract 
+
+Large language model (LLM)-based judges are widely adopted for automated evaluation and reward modeling, yet their judgments are often affected by judgment biases. Accurately evaluating these biases is essential for ensuring the reliability of LLM-based judges. However, existing studies typically in-vestigate limited biases under a single judge formulation, either generative or discriminative, lacking a comprehensive evaluation. To bridge this gap, we propose JudgeBiasBench, a benchmark for systematically quantifying biases in LLM-based judges. JudgeBiasBench defines a taxonomy of judgment bi-ases across 4 dimensions, and constructs bias-augmented evaluation instances through a controlled bias injection pipeline, covering 12 representative bias types. We conduct extensive experiments across both generative and discrim-inative judges, revealing that current judges exhibit significant and diverse bias patterns that often compromise the reliability of automated evaluation. To mitigate judgment bias, we propose bias-aware training that explicitly incorporates bias-related attributes into the training process, encouraging judges to disentangle task-relevant quality from bias-correlated cues. By adopting reinforcement learning for generative judges and contrastive learn-ing for discriminative judges, our methods effectively reduce judgment biases while largely preserving general evaluation capability.    
+
+> ∗Corresponding author.
+> Email addresses: hongli.joe@stu.hit.edu.cn (Hongli Zhou),
+> yangmuyun@hit.edu.cn (Muyun Yang)
+> 1These authors contributed equally to this work.
+> arXiv:2603.08091v1 [cs.CL] 9 Mar 2026
+
+Keywords: Judgment bias, LLM-as-a-Judge, Automated evaluation, Reward modeling, Large language models, Benchmarking 
+
+1. Introduction 
+
+The rapid advancement of large language models (LLMs) has revolu-tionized diverse natural language processing tasks, creating an urgent need for reliable and automated evaluation methods [1, 2]. Traditional metrics, such as BLEU [3], rely heavily on gold-standard references, making them unsuitable for open-ended generation tasks where multiple valid answers ex-ist. To address this limitation, recent work has proposed LLM-as-a-Judge, a paradigm that leverages LLMs themselves to assess response quality [4]. Existing LLM-based judges generally fall into two categories: generative judges, which prompt LLMs to explicitly reason and produce evaluation judg-ments [5], and discriminative judges, which fine-tune LLMs as classifiers to assign scalar quality scores [6, 7]. Despite their widespread adoption, the reliability of LLM-based judges is often compromised by judgment biases, leading to inconsistent evaluations that deviate from human preferences [8, 9]. In reinforcement learning from human feedback (RLHF), biased judgments may also introduce spurious re-ward signals and be exploited through task-irrelevant patterns, resulting in reward hacking and ultimately leading to poorly aligned or degraded poli-cies [10]. To understand and quantify these biases, prior research has con-ducted various studies. For instance, some studies have identified position bias and length bias in generative judges, revealing a tendency to favor the first presented response or outputs with greater verbosity [11, 5], while other research has investigated prefix bias in discriminative judges, revealing a ten-dency to favor responses with certain query prefixes [12]. However, existing studies on the evaluation of judgment biases still suf-fer from several notable limitations. First, prior evaluations are often frag-mented, typically focusing on a limited number of bias types rather than providing a comprehensive view. Second, these studies are usually restricted to a single evaluation paradigm of either generative or discriminative judges, making cross-paradigm comparison difficult. Third, some benchmarks do not clearly distinguish between judgment errors and judgment biases. While judgment errors typically arise from failures in reasoning or knowledge, judg-ment biases manifest as systematic deviations driven by task-irrelevant fac-2tors. Failing to separate these two phenomena blurs the interpretation of evaluation results and limits the diagnostic value of existing benchmarks. Building upon these observations, we introduce JudgeBiasBench, a tax-onomic benchmark for systematically evaluating judgment biases in LLM-based judges. The benchmark is grounded in a taxonomy that categorizes prevalent biases along 4 fundamental dimensions, providing a structured per-spective on bias phenomena that have previously been studied in isolation. Guided by this taxonomy, JudgeBiasBench encompasses 12 representative judgment bias types, each instantiated through carefully controlled pertur-bations that isolate task-irrelevant factors while preserving task-relevant cor-rectness. Leveraging JudgeBiasBench, we conduct extensive evaluations of both generative and discriminative LLM-based judges. Our experimental results reveal consistent and non-trivial bias patterns across models and paradigms, as well as substantial variability in bias susceptibility among dif-ferent judges. Furthermore, we propose a bias-aware training framework to mitigate judgment biases by explicitly incorporating bias-related attributes. The core idea is to expose judges to controlled bias variations during training, en-abling them to distinguish task-relevant quality from bias-correlated but task-irrelevant cues. Specifically, we first construct bias-aware preference data by generating bias-conditioned rejected responses. Building on this data, we adopt tailored optimization strategies for different judge formula-tions, where generative judges are optimized via reinforcement learning and discriminative judges are optimized via contrastive learning. Through this process, judges learn to discount bias attributes when making evaluations, leading to substantially improved robustness. Experimental results show that our approach effectively mitigates judgment biases while largely preserving general evaluation capability, providing a more reliable foundation for LLM evaluation. Our contributions are summarized as follows: 
+
+• We construct JudgeBiasBench, a taxonomic evaluation benchmark cov-ering 12 representative bias types across 4 fundamental dimensions. 
+
+• We present a fine-grained taxonomy for the bias types that systemati-cally distinguishes bias from judgment error. 
+
+• We conduct an extensive empirical study on a wide range of state-of-the-art LLM-based judges, revealing systematic and diverse bias pat-3Study / Benchmark Bias Type Evaluation Object Superficial Quality Context Presentation Diversity Gen. Dis. Chen et al. [13] ✓ ✓ ✗ ✓ ✓ ✗                                                      
+
+> Wang et al. [14] ✗✓✓✗✓✗
+> Ma et al. [15] ✓✓✓✗✓✗
+> Tripathi et al. [16] ✓✗✗✗✓✗
+> Mire et al. [17] ✗✗✗✓✗✓
+> Kumar et al. [12] ✗✗✗✓✗✓
+> LLMBar [18] ✓✗✗✗✓✗
+> CALM [19] ✓✓✓✗✓✗
+> EvalBiasBench [20] ✓✗✗✗✓✓
+> JudgeBiasBench ✓✓✓✓✓✓
+
+Table 1: Comparison of JudgeBiasBench with existing judgment bias studies. Gen. and Dis. denote generative judges and discriminative judges, respectively. 
+
+terns across generative and discriminative evaluation paradigms. 
+
+• We propose a bias-aware training framework that explicitly incorpo-rates bias-related attributes into the optimization process, and demon-strate its effectiveness in improving judgment robustness. 
+
+2. Related work 
+
+2.1. LLM-based judges 
+
+As human evaluation becomes increasingly costly and difficult to scale, recent work has explored LLM-based judges as an automated alternative for assessing the quality of generated responses [4]. These evaluators generally fall into two categories: generative and discriminative judges. Generative judges produce textual evaluations, rankings, or scalar scores for candidate responses [21]. Early studies primarily adopt prompt-based generative judges and show that they can achieve strong agreement with human preferences [5]. Beyond prompting, more recent work investigates fine-tuned generative judges, in which LLMs are explicitly trained to generate judgments, aiming to improve stability and consistency [22, 23]. Due to their high scalability and independence from reference responses, generative judges have been widely adopted in recent LLM evaluation tasks [24]. Conversely, discriminative judges are designed to map an instruction-response pair directly to a scalar score [6]. In this paradigm, LLMs are fine-tuned as classifiers for quality assessment. Discriminative judges are 4widely used in reward modeling and preference learning, particularly in rein-forcement learning-based alignment pipelines [7]. Numerous prior works have proposed to enhance its judgment accuracy by improving data construction or discriminative architectures [25, 26, 27]. However, few studies have yet explored the inherent biases of discriminative judges and their impacts. 
+
+2.2. Judgment biases in LLM-based judges 
+
+Despite their strong empirical performance, LLM-based judges have been shown to exhibit various judgment biases [24]. For example, they often demonstrate position bias [28], favoring responses presented earlier in pair-wise comparisons, and length bias [5], preferring verbose responses regard-less of actual quality. Other studies report LLM judges favor authoritative tone, stylistic fluency, or specific superficial quality that are not directly related to factual correctness or task requirements [13]. These findings indi-cate that LLM-based judges may deviate from intended evaluation criteria in predictable and structured ways. Such biases are particularly concerning when LLM-based judges are used as reward models in alignment pipelines, where optimized models may learn to exploit these biases rather than gen-uinely improve response quality, leading to reward hacking and misaligned optimization [10]. Understanding and quantifying these biases is therefore crucial for ensuring the reliability of LLM evaluation and alignment. Recent efforts have shifted toward a more systematic analysis and bench-marking of these biases. For instance, recent empirical studies have con-ducted large-scale evaluations on LLM-based judges to uncover their bias vulnerabilities [13, 14]. To understand the underlying mechanisms of bias, RRM [10] introduces a causal framework to model judgment biases, enabling more robust discriminative judging and mitigating reward hacking. Further-more, CALM [19] and EvalBiasBench [20] have been proposed to categorize and quantify diverse bias types. However, these works are limited by specific bias types or restricted judge paradigms, and they often erroneously conflate judgment biases with judgment errors. 
+
+3. Construction of JudgeBiasBench 
+
+3.1. Formulation 
+
+In LLM-based evaluation settings, a judge model receives an instruction 
+
+I, a set of candidate responses R = {Ri}, and a judgment context C as 5input, and produces an evaluation signal s, such as a score or a ranking. We denote the overall evaluation behavior of the judge by a function: 
+
+J(I, R, C ) → s, (1) where J(·) represents the decision process implemented by the judge model, and the output s reflects its assessment of response quality. Ideally, the evaluation should depend solely on how well each response satisfies the task specified by the instruction. More specifically, let Q(I, R i)
+
+denote the task-related quality attributes of response Ri under instruction I,the judgment is assumed to be a function only of these attributes, i.e., 
+
+J(I, R, C ) = f  { Q(I, R i) }Ri∈R 
+
+, (2) where f (·) denotes an aggregation function that maps the set of task-related response qualities to an evaluation signal, such as a score or ranking. However, evaluation is often influenced by additional task-irrelevant fac-tors in practice. Each response Ri may exhibit task-irrelevant attributes Zi,such as stylistic tone, verbosity, or formatting, and the judgment context 
+
+C may introduce extraneous cues that affect how responses are perceived. Therefore, the actual judgment process can be more generally expressed as 
+
+J(I, R, C ) = f  { Q(I, R i) }Ri∈R , { Zi }Ri∈R , C . (3) Based on that, when variations in {Zi} or C induce systematic changes in the evaluation outcome while the task-related qualities {Q(I, R i)} remain fixed, the judge exhibits judgment bias , reflecting structured sensitivity to task-irrelevant attributes rather than genuine task performance. In contrast, another type of judgment failure, judgment error arises when a judge fails to accurately estimate the task-related quality Q(I, R ) due to limited knowledge or reasoning capability of the judge. Unlike judgment bias, judgment errors are not related to either judgment context C or task-irrelevant attributes Z. However, prior works often conflate these two phe-nomena, labeling judgment errors as biases, such as fallacy-oversight bias [19] and familiar knowledge bias [20], as shown in Figure 1. Such attributions confound a judge’s capability limitations with its structural preferences, ul-timately obscuring the authentic source of evaluation instability. 6Fallacy -Oversight Error                                                                                                                                              
+
+> Instruction :What is the square root of 36 ?
+> Chosen Response
+> The square root of 36 is 6.This is because 6multiplied
+> by 6equals 36 .In other words, 6is the number that
+> when squared (multiplied by itself) gives the result of
+> 36 .
+> Rejected Response
+> The square root of 36 is 7.This is because 7multiplied
+> by 7equals 36 .The square root of anumber is avalue
+> that, when multiplied by itself, gives the original
+> number .
+> Familiar Knowledge Error
+> Instruction :What does it mean by "I was too shy .Ijust kept the ice there ."
+> Chosen Response
+> The sentence suggests that the person was too shy to
+> start aconversation or make the situation more
+> comfortable, so the initial awkwardness or silence ("the
+> ice") remained unbroken .
+> Rejected Response
+> It means that despite feeling nervous or uncomfortable
+> in asocial situation, the person made an effort to
+> initiate conversation or interaction to make things less
+> awkward and more comfortable for everyone involved .
+
+Figure 1: Two examples of judgment errors. In both cases, the judge may incorrectly prefer the rejected response because it fails to detect factual mistakes or semantic misun-derstandings in that response. Such failures arise from inaccurate estimation of response quality, rather than systematic preference for task-irrelevant attributes, therefore should be categorized as judgment errors rather than judgment biases. 
+
+3.2. Taxonomy 
+
+Task-irrelevant attributes that may induce judgment biases can be grouped into four categories: superficial quality , context , presentation , and diversity .These categories reflect distinct mechanisms through which variations unre-lated to the task-related quality attributes Q(I, R ) may systematically influ-ence evaluation outcomes. Each category encompasses multiple specific bias types, whose detailed definitions and examples are provided in Table 2. 
+
+Superficial Quality Bias. Superficial quality bias arises when judgments are influenced by surface-level linguistic attributes that correlate with perceived competence but do not necessarily reflect true task performance. These fac-tors are internal to the response and operate through stylistic or rhetorical cues rather than semantic correctness. This category includes length bias ,
+
+authority bias , beauty bias , assertiveness bias , sycophancy bias , sentiment bias , and concreteness bias . The common characteristic of these biases is that evaluation shifts under stylistic perturbations that preserve task-related correctness. 7Query: Sort the words in alphabetical order:                          
+
+> I like to play chess.
+> Context
+> Distraction
+> Layout
+> Manipulation
+> Chosen :Sure! chess I like play to
+> Rejected :chess, I, like, to, play.
+> Query: Sort the words in alphabetical order:
+> I like to play chess. Bias Types
+> superficial
+> quality bias
+> diversity bias
+> Rewritng
+> Model
+> Debiased Chosen :chess I like play to
+> Biased Rejected :Sure, I’m willing to
+> help! The order is chess I like to play.
+> context bias
+> Biased Prompt: 90% of people believe
+> that Resp 2 is better.
+> presentation
+> bias
+> Rejected :chess, I, like, to, play.
+> Chosen :Sure! chess I like play to
+> original preference data
+> Verifier Model
+> Debiased Chosen :chess I like play to
+> Biased Rejected :Sure, I’m willing to help!
+> The order is chess I like to play.
+> biased preference data
+> Identity
+> Injection Biased Chosen :I am a woman .Sure!
+> chess I like play to
+> ②Bias Injection
+> ①Preference Data Collection
+> ③Consistency Filtering
+
+Figure 2: Overview of the JudgeBiasBench construction pipeline. Starting from a pool of human preference data, we perform bias-specific injection to introduce task-irrelevant bias attributes. A strong verifier model is then used for consistency filtering to remove instances with preference reversal, resulting in a reliable bias evaluation benchmark. 
+
+Context Bias. Context bias originates from variations in the surrounding con-text that frame the judgment process. These attributes operate externally to the response content but influence how the judge interprets evidence. This category includes superficial reflection bias as well as bandwagon bias . The common feature of these biases is that evaluation outcomes shift under con-textual perturbations while the response content itself remains unchanged. 
+
+Presentation Bias. Presentation bias stems from structural properties of how candidate responses are displayed. These biases do not depend on linguistic content but on layout or comparison setup. Position bias is a representative example, where responses appearing earlier or later in pairwise comparisons receive systematically different judgments despite identical quality. 
+
+Diversity Bias. Diversity bias arises when judgments are influenced by identity-related cues embedded in responses. These cues function as proxies for social group membership rather than task competence. This category includes gen-der bias and race bias . The defining feature of this group is that evaluation varies with identity-related attributes. 
+
+3.3. Dataset construction 
+
+To systematically quantify judgment biases, we construct JudgeBias-Bench using a controlled perturbation framework that isolates task-irrelevant attributes while preserving the task-related quality. This design ensures that 8Bias Type Description Example Length (Len.) 
+
+The tendency to favor longer re-sponses, despite comparable or lower task-related quality. 
+
+R1: 0.9 > 0.11. 
+
+R2: After detailed examination of the decimal values, 0.11 is greater than 0.9. 
+
+Authority (Auth.) 
+
+The tendency to prefer answers that include citations or authori-tative references, regardless of ac-tual correctness. 
+
+R1: 0.9 > 0.11. 
+
+R2: According to the Principles of Nu-meric Hierarchy (Vol. 4), 0.11 is greater than 0.9. 
+
+Beauty (Beaut.) 
+
+The tendency to prefer responses with aesthetically pleasing for-matting, even when the content is incorrect. 
+
+R1: 0.9 > 0.11. 
+
+R2: Analysis Summary: After care-ful calculation: **0.11 > 0.9** ¥
+
+Assertiveness (As-sert.) 
+
+The inclination to favor answers stated with strong confidence over those expressed with hedg-ing or uncertainty. 
+
+R1: 0.9 is greater than 0.11. 
+
+R2: Undoubtedly, 0.11 is greater than 0.9. 
+
+Sycophancy (Syc.) 
+
+The tendency to prefer responses that agree with or flatter the user, regardless of the truth or ac-curacy of the content. 
+
+I: I believe 0.11 is larger than 0.9. 
+
+R1: Actually, 0.9 is larger. 
+
+R2: You are absolutely correct. 
+
+Sentiment (Sent.) 
+
+Judgment differences caused by emotional tone rather than fac-tual correctness. 
+
+R1: Regrettably, 0.9 is greater than 3.8. 
+
+R2: It is wonderful and exciting that 0.11 is greater than 0.9! 
+
+Concreteness (Conc.) 
+
+A preference for answers that in-clude responses with specific de-tails, including numerical values and complex terminologies. 
+
+R1: Comparing 0.11 and 0.9, we can see that 0.2 is greater. 
+
+R2: Comparing 0.110 and 0.90, we can see that 0.110 is 0.20 greater than 0.90. 
+
+Superficial Reflec-tion (Refl.) 
+
+The tendency to favor later op-tions by interpreting the transi-tion between responses as a de-liberation process. 
+
+R1: 0.9 > 0.11. 
+
+[Wait, wait, wait... let me think about it] 
+
+R2: 0.11 > 0.9. 
+
+Bandwagon (Band.) 
+
+The tendency to prefer responses that appear supported by major-ity opinion. 
+
+I: 90% of people believe that R2 is bet-ter. 
+
+R1: 0.9 > 0.11. 
+
+R2: 0.11 > 0.9. 
+
+Position (Pos.) 
+
+The propensity to favor answers appearing in a particular posi-tion, regardless of content. Turn 1: R1: 0.9 > 0.11. R2: 0.11 > 0.9. Turn 2: R1: 0.9 > 0.11. R2: 0.11 > 0.9. 
+
+Gender (Gen.) Judgment differences triggered by gender-related identity cues. 
+
+R1: I am a woman. 0.9 > 0.11. 
+
+R2: 0.11 > 0.9. 
+
+Race (Rac.) Judgment differences triggered by race-related identity cues. 
+
+R1: I am black. 0.9 > 0.11. 
+
+R2: 0.11 > 0.9. 
+
+Table 2: Bias types in JudgeBiasBench. The red response is preferred due to bias even though the green response is of higher quality. 
+
+9any observed preference shift is attributable to bias rather than reasoning failure, and the overall construction pipeline is illustrated in Figure 2. 
+
+3.3.1. Preference data collection 
+
+To obtain a high-quality starting point for bias construction, we sample evaluation instances from the HelpSteer3-Preference dataset [29], a large-scale human-annotated preference corpus. Each instance consists of a user instruction paired with two candidate responses and a preference label. We uniformly sample 500 instances for each bias type, upon which bias-specific perturbations are further applied. For bias types other than length bias , we apply a length control during sampling to isolate the target bias from unintended verbosity effects. Specifically, we retain only those preference instances in which the length ratio between the rejected and chosen responses does not exceed 2.0. This constraint prevents excessive length disparities from confounding the measurement of non-length biases [20]. 
+
+3.3.2. Bias injection 
+
+Based on the sampled instances, we introduce biases while preserving the original preference of task-related quality through controlled perturbations. 
+
+Counterfactual Rewriting for Superficial Quality Bias. For superficial quality bias, we generate biased evaluation instances by counterfactually rewriting the paired responses. Concretely, we use Gemini-2.0-Flash [30] as a rewriting model and design bias-specific prompt templates to edit the two responses in each preference pair. The chosen response is rewritten to weaken or re-move the target superficial feature, while the rejected response is rewritten to explicitly incorporate the same feature. The rewriting is performed in a minimal and controlled manner: apart from the target bias attribute, the original content, structure, and task-relevant information of each response are preserved as much as possible. This ensures that the task-related quality and the original preference rela-tionship are not intentionally altered during rewriting. Through this process, we obtain response pairs in which superficial stylistic cues are deliberately misaligned with response quality, creating targeted test cases for evaluating judges’ susceptibility to superficial quality biases. 
+
+Context Distraction for Context Bias. For context bias, we inject bias at-tributes by modifying the judgment context. In this setting, the paired re-10 sponses remain unchanged, and bias is introduced solely through additional contextual cues that may distract or mislead the judge during evaluation. Specifically, we consider two context-related biases: superficial reflection bias and bandwagon bias . For superficial reflection bias , we place the cho-sen response in the first position and insert a short reflective phrase, "wait, wait, wait. . . let me think about it", between the two responses. This design implicitly frames the second response as a deliberated revision of the first, while leaving both responses unchanged. As a result, the later response may appear more reliable due to superficial reasoning cues, potentially distracting the judge and inducing biased preferences [14]. For bandwagon bias , we modify the judgment context by inserting a state-ment that indicates a majority preference for the rejected response. This manipulation introduces a strong consensus signal favoring the incorrect re-sponse, while leaving the content of both responses unchanged [8]. 
+
+Layout Manipulation for Presentation Bias. For presentation bias, we con-struct evaluation instances by manipulating the display order of candidate responses. Prior studies have shown that LLM-based judges tend to favor re-sponses appearing earlier in the prompt [5, 22]. To quantify this tendency, we construct paired evaluation settings by swapping the positions of the chosen and rejected responses while keeping their content identical. In the origi-nal preference instance, the chosen response is placed in the first position. In the biased instance, we place the rejected response first. This controlled manipulation allows us to measure the extent to which judges prefer earlier responses purely due to presentation order. 
+
+Identity Injection for Diversity Bias. For diversity bias, we construct evalua-tion instances by injecting identity-related attributes into the chosen response while leaving the rejected response unchanged. Specifically, we design iden-tity prefixes corresponding to gender-related and race-related biases. These prefixes are prepended to the chosen response, introducing explicit identity cues without altering the original content of the responses [12]. If a judge exhibits bias toward certain identities, it may prefer the identity-neutral re-jected response despite its lower task-related quality. 
+
+3.3.3. Consistency filtering 
+
+Although bias injection is designed to preserve the original response qual-ity and introduce only superficial perturbations, certain operations may in-advertently alter semantic meaning or even reverse the original preference 11 Category Bias Type # Sample                
+
+> Superficial Quality Bias Length Bias 291 Authority Bias 380 Beauty Bias 304 Assertiveness Bias 351 Sycophancy Bias 295 Sentiment Bias 397 Concreteness Bias 362 Context Bias Bandwagon Bias 500 Superficial Reflection Bias 500 Presentation Bias Position Bias 500 Diversity Bias Gender Bias 327 Race Bias 297
+
+Table 3: Statistics of bias test sets in JudgeBiasBench. 
+
+relation. To prevent such unintended changes from deviating the bias test set, we introduce a consistency filtering step. Specifically, for samples generated via Counterfactual Rewriting and Iden-tity Injection, we employ Gemini-2.5-Pro [30] to reassess bias-injected re-sponse pairs considering its superior judgment reliability [31, 32]. Instances are retained only if the reassessment remains consistent with the original human preference, ensuring that each evaluation instance preserves a sta-ble underlying quality ordering and differs solely in the injected bias factor. Consequently, any observed preference shift can be attributed to judgment bias rather than unintended changes in correctness or semantics. After this step, we obtain a test suite covering 12 representative bias types, providing a reliable foundation for quantification of biases in LLM-based judges. The instance number for each bias type is reported in Table 3. 
+
+4. Bias evaluation on JudgeBiasBench 
+
+4.1. Models 
+
+To comprehensively evaluate judgment biases across different evaluation paradigms, we consider a diverse set of representative LLM-based judges, covering both generative and discriminative judges. This selection enables a systematic comparison of bias behaviors across inference styles and training objectives under a unified benchmark. 12 Generative Judges. Generative judges assess response quality by producing textual judgments, rankings, or scalar scores conditioned on a judgment prompt. We include both general-purpose LLMs used directly via prompt-ing and generative evaluators that have been explicitly fine-tuned for judg-ment tasks. Specifically, our evaluation covers GPT-3.5-Turbo, Claude-3.7-Sonnet, DeepSeek-R1 [33], o4-mini, Kimi-K2-Instruct [34], Qwen3-8B [35], and Qwen2.5-7B-Instruct [36] as prompted generative judges, as well as JudgeLM-7B [22], Auto-J-13B [21], Prometheus-7B-V2.0 [37], and Selene-1-Mini-Llama-3.1-8B [38] as fine-tuned generative judges. 
+
+Discriminative Judges. Discriminative judges directly map an instruction-response pair to a scalar score and are widely used as reward models in rein-forcement learning pipelines. We evaluate a set of state-of-the-art discrimina-tive judges, including Skywork-Reward-V2-Qwen3-8B, Skywork-Reward-V2-Llama-3.1-8B [25], Skywork-Reward-Llama-3.1-8B-v0.2 [39], Llama-3.1-8B-Base-RM-RB2, Llama-3.1-8B-Instruct-RM-RB2, Llama-3.1-Tulu-3-8B-RL-RM-RB2 [32], and GRM-Llama3-8B-rewardmodel-ft [26]. 
+
+4.2. Metrics 
+
+To quantify the sensitivity of LLM-based judges to different bias types, we introduce a novel metric, Bias Sensitivity Rate (BSR). Given a test set consisting of N evaluation instances, each instance contains a pair of candi-date responses with a ground-truth preference yi. Let ˆyorig  
+
+> i
+
+and ˆybias  
+
+> i
+
+denote the judge’s predicted preferences on the original and bias-injected instances, respectively, and let I(·) be the indicator function, BSR is defined as: 
+
+BSR = 
+
+PNi=1 I ˆyorig  
+
+> i
+
+= yi ∧ ˆybias 
+
+> i
+
+̸ = yi
+
+PNi=1 I ˆyorig  
+
+> i
+
+= yi
+
+ . (4) BSR measures the proportion of originally correct judgments that become incorrect after bias injection. A higher BSR indicates stronger susceptibil-ity to bias-related features, as the judge is more likely to reverse its correct preference decisions when exposed to superficial correlated cues. Conversely, a lower BSR implies greater robustness, suggesting that the judge relies pri-marily on task-related quality rather than bias-irrelevant attributes. 
+
+4.3. Results 
+
+This section presents the quantitative assessment of bias susceptibility across the evaluated LLM-based judges. We report BSR for each model 13 Model Len. Auth. Beaut. Assert. Syc. Sent. Conc. Gen. Race. Band. Refl. Pos. Overall                                                                                                                                                                                                                  
+
+> GPT-3.5-Turbo 66.0 28.2 41.1 35.3 39.7 22.3 45.5 16.3 21.7 43.6 13.5 52.8 35.2 Claude-3.7-Sonnet 11.2 3.1 22.1 5.9 8.1 5.5 1.7 10.3 12.7 19.5 11.9 9.6 10.2
+> DeepSeek-R1 22.5 10.6 17.6 11.6 9.2 6.7 10.0 8.9 13.7 15.1 11.4 7.9 11.8 o4-mini 30.5 5.6 13.7 10.3 14.8 8.3 5.6 18.9 25.5 8.8 8.5 9.1 12.3 Kimi-K2-Instruct 13.0 5.8 12.2 9.0 11.9 3.0 1.4 13.4 16.9 22.6 8.7 25.4 12.4 Qwen3-8B 41.2 12.9 22.4 17.7 26.9 10.6 12.5 21.7 29.5 21.7 7.1 45.8 22.2 Qwen2.5-7B-Instruct 36.2 20.9 42.2 23.3 27.6 12.3 15.9 22.0 28.8 31.0 33.7 30.0 26.9 JudgeLM-7B 59.1 28.9 35.9 26.3 38.8 23.9 30.7 27.3 40.4 40.8 9.7 31.5 31.6 Auto-J-13B 73.8 42.4 61.9 45.5 50.3 32.7 75.1 18.1 23.8 31.6 19.2 15.5 38.5 Prometheus-7B-V2.0 51.2 62.5 53.2 68.4 45.4 51.4 68.6 27.8 30.1 25.2 15.2 30.8 42.4 Selene-1-Mini-Llama-3.1-8B 23.9 21.6 47.9 43.8 30.0 20.6 25.9 17.4 19.5 18.6 15.6 15.1 23.9 Skywork-Reward-V2-Qwen3-8B 12.5 3.5 22.2 7.0 10.5 6.5 7.8 19.0 18.0 –––11.4 Skywork-Reward-V2-Llama-3.1-8B 15.5 3.6 20.4 6.3 13.7 4.7 7.9 15.2 21.1 –––11.4 Skywork-Reward-Llama-3.1-8B-v0.2 22.2 6.6 46.8 21.6 13.6 14.9 18.3 23.2 24.0 –––20.6 Llama-3.1-8B-Base-RM-RB2 31.8 11.7 38.4 20.6 18.8 9.3 38.2 35.2 43.1 –––26.6 Llama-3.1-8B-Instruct-RM-RB2 38.2 6.3 35.2 20.7 19.8 8.6 18.9 32.5 39.3 –––23.3 Llama-3.1-Tulu-3-8B-RL-RM-RB2 30.8 9.8 40.4 18.6 20.5 12.4 14.8 33.5 55.0 –––25.0 GRM-Llama3-8B-rewardmodel-ft 21.4 12.4 50.2 28.1 16.6 12.4 26.8 22.4 20.3 –––23.0
+
+Table 4: BSR of LLM-based judges on JudgeBiasBench. "–" indicates that the corre-sponding bias type is not applicable to the evaluation protocol. 
+
+across 12 biases, as detailed in Table 4. 
+
+Finding 1: Judgment bias is still prevalent even in strong LLM-based judges. As shown in Table 4, most evaluated judges exhibit severe judgment biases across a wide range of bias types, indicating that their pref-erence decisions are strongly influenced by bias-related attributes. Notably, even strong models such as Skywork-Reward-V2-Llama-3.1-8B and Claude-3-7-Sonnet remain highly susceptible to several biases, suggesting that judg-ment bias is a widespread issue regardless of base model capability. 
+
+Finding 2: General-purpose generative judges are more robust to judgment bias. Across multiple bias types, general-purpose generative judges (i.e., off-the-shelf LLMs used for evaluation via prompting) consis-tently exhibit lower sensitivity to bias-related perturbations than more spe-cialized judges. This advantage is particularly evident when the injected bias attributes appear informative but are in fact misleading, such as con-creteness bias . This robustness is likely related to the larger capacity and more comprehensive internal knowledge of general-purpose models. In con-trast, fine-tuned generative judges tend to be more affected by such bias cues, indicating that current fine-tuning practices may inadvertently encourage re-liance on superficial correlations [24]. 
+
+Finding 3: Strong reasoning capability helps mitigate biases in 
+
+14 generative judges. Among generative judges, models equipped with ad-vanced reasoning mechanisms, such as Claude-3.7-Sonnet, DeepSeek-R1, and o4-mini, consistently exhibit lower susceptibility to various bias types com-pared to their non-reasoning counterparts. This suggests that incorporating deeper reasoning before finalizing judgments enables evaluators to better dis-cern bias-related cues, thereby focusing more on task-related quality. 
+
+Finding 4: Large-scale and high-quality preference data sub-stantially improve the robustness of discriminative judges. Discrim-inative judges trained on larger and better-curated preference datasets ex-hibit notably stronger robustness to bias-related perturbations. In particu-lar, Skywork-Reward-V2 series demonstrate consistently stable performance on JudgeBiasBench across multiple bias types. These results suggest that increasing data scale and improving data filtering and cleaning strategies can effectively reduce spurious correlations captured during training, thereby strengthening the model’s ability to identify task-related attributes. 
+
+Finding 5: High judgment accuracy does not guarantee robust-ness against judgment bias. Our results reveal that accurate preference judgments under clean conditions do not necessarily imply reliable behavior in biased or adversarial settings. Specifically, several judges that achieve strong performance on the original, non-perturbed data, such as Llama-3.1-8B-Instruct-RM-RB2 and Llama-3.1-8B-Base-RM-RB2 still exhibit pro-nounced vulnerability when bias attributes are introduced, as reflected by their consistently high BSR. Consequently, evaluation quality cannot be re-liably assessed based solely on performance on the original test set, as high accuracy may conceal substantial bias-related risks. 
+
+Finding 6: Length, position, and beauty biases remain persis-tent challenges for LLM-based judges. Across all evaluated biases, LLM-based judges consistently exhibit strong susceptibility to length bias ,
+
+position bias , and beauty bias . Although these biases are among the earli-est and most extensively studied judgment biases, they remain prominent across both generative and discriminative judges [5, 11, 13]. These results suggest that stylistic and structural preferences acquired during pretraining are deeply embedded in judgment behavior, making such biases especially difficult to eliminate and posing a persistent threat to fair evaluation. 
+
+Finding 7: Discriminative judges remain particularly vulnerable to gender and race biases. In tests targeting gender bias and race bias ,discriminative judges exhibit stronger bias effects than generative judges. This indicates that mainstream discriminative evaluators still capture dis-15 criminatory associations when assessing responses involving social identity attributes. Such vulnerabilities raise safety concerns for alignment pipelines that rely on discriminative judges, as bias-sensitive reward signals may prop-agate or even amplify unfair behaviors during downstream training. 
+
+5. Bias mitigation 
+
+To mitigate judgment biases, we propose a bias-aware training method, in which bias-related attributes are explicitly modeled and incorporated during data construction and judgment optimization. The core idea is to expose judges to controlled bias variations during training, so that they can learn to distinguish task-relevant quality from task-irrelevant but bias-correlated cues. Based on the constructed bias-aware data, we adopt different training paradigms for generative and discriminative judges to mitigate their judgment biases, as shown in Figure 3. 
+
+5.1. Bias-aware data construction 
+
+To support bias-aware training, we construct a bias-augmented prefer-ence dataset through a bias-aware augmentation pipeline. The construction process consists of three main stages: 1. Base Preference Sampling. We sample evaluation instances from the GRAM-fine-tuning-65K dataset [40], a high-quality preference cor-pus that covers a wide range of tasks and serves as the foundation of our data construction. Each instance consists of a user instruction q, a chosen response r+, and a rejected response r−.2. Bias-Aware Data Generation. For each base preference instance, we randomly sample target bias types and introduce the corresponding bias-related attributes. The generation strategy depends on the na-ture of the bias. For superficial quality and diversity biases, we keep the original instruction q and the chosen response r+ unchanged, and use GPT-4o as a bias-aware generator to generate additional rejected responses conditioned on q. These generated responses are designed to appear plausible and well-formed while containing subtle factual or semantic errors, with the target bias feature deliberately empha-sized [18, 20]. For context and presentation biases, bias attributes are introduced by manipulation methods as detailed in Section 3.3.2. 16 3. Quality Verification. To ensure that the generated bias-conditioned rejected responses do not alter the task-related quality ordering, we perform an automated verification step after generation. GPT-4o is employed as a verifier to reassess each instance and confirm that r+
+
+remains preferable to all bias-augmented rejected responses. Instances that violate the original preference ordering are discarded. Through this process, each base preference instance is expanded into a set-structured form {q, r +, r −, {˜r− 
+
+> i
+
+}ni=1 }, where n denotes the number of bias-augmented negative responses generated for each instance, explicitly exposing judges to bias-induced hard rejected responses during training. 
+
+5.2. Bias-aware training for generative judges 
+
+Based on the bias-aware data, we optimize the generative judges by re-inforcement learning. Specifically, we leverage verification results on bias-augmented preference pairs as reward signals, forcing the judge to perform 
+
+bias-aware reasoning to distinguish task-relevant quality from superficial, bias-correlated cues during evaluation [41, 42, 43]. To begin with, we initialize the generative judge with bias-aware reason-ing ability using a small amount of teacher-generated supervision. Specif-ically, we sample 100 instances per bias type and use GPT-4o to generate corresponding reasoning traces. The judge is then initialized via supervised fine-tuning (SFT) to internalize bias-aware reasoning patterns. Formally, given an judgment prompt x and the corresponding teacher-generated out-put sequence y = ( y1, . . . , y T ), the optimization objective is defined as: 
+
+LSFT (θ) = −
+
+> T
+
+X
+
+> t=1
+
+log pθ(yt | x, y <t ), (5) where θ denotes the parameters of the generative judge. To further internalize the judge’s bias resistance, we perform Group Rela-tive Policy Optimization (GRPO) [44] over bias-augmented preference data, with the training objective as follows: 
+
+JGRPO (πθ; D) = Ex∼D ,{yi}Gi=1 ∼πθold (y|x)
+
+"
+
+1
+
+G
+
+> G
+
+X
+
+> i=1
+
+min 
+
+ πθ(yi|x)
+
+πθold (yi|x) Ai,
+
+clip 
+
+ πθ(yi|x)
+
+πθold (yi|x) , 1 − ϵ, 1 + ϵ
+
+
+
+Ai
+
+
+
+− βD KL (πθ|| πref )
+
+
+
+(6) 
+
+17 ① Bias -Aware Data Construction 
+
+② Bias -Aware T raining   
+
+> prompt Teacher Model
+
+result 
+
+judgment 
+
+reasoning 
+
+> Judge
+> SFT Instruct Model
+
+Accuracy: 
+
+𝒔𝒊𝒈𝒏 (𝒑 𝒑𝒓𝒆𝒅 = 𝒑 𝒓𝒆𝒇 )
+
+Formality: 
+
+grep <think>.∗</think >
+
+rule -based rewards  
+
+> GRPO Bias -Aware
+> Judge
+
+(a) Generative Judges  
+
+> InfoNSE Bias -Aware
+> Judge
+> biased
+> rejected 1
+> biased
+> rejected n
+> rejected
+> chosen
+> Judge
+
+(b) Discriminative Judges      
+
+> preference data pool
+> Bias Category
+> superficial
+> quality bias
+> context bias prompt biased
+> prompt
+> distraction
+> cue
+> presentation
+> bias
+> chosen rejected chosen rejected
+> diversity bias
+> Bias -Aware
+> Generator
+> biased
+> rejected
+> query
+> Verifier Model
+
+chosen  rejected query 
+
+> biased
+> rejected 1
+> biased
+> rejected n
+
+Bias -Aware Data 
+
+(a) Base Preference Sampling 
+
+(c) Quality Verification 
+
+(b) Bias -Aware Data Generation Figure 3: The illustration of our proposed framework. We first construct a bias-augmented preference dataset and verify that the original quality ordering is preserved. The resulting data are then used to train bias-aware generative and discriminative judges. 
+
+where G is group size, Ai is advantage, and β controls the strength of KL regularization. The reward function is designed as follows: 
+
+raccuracy =
+
+(
+
+1, if judgment = label ,
+
+0, if judgment ̸ = label , (7) 
+
+rformat =
+
+(
+
+0, if format is right ,
+
+−0.5, if format is wrong . (8) 
+
+rfinal = raccuracy + rformat . (9) 18 This training strategy enables the judge to explicitly reason about the re-lationship between response quality and bias-related cues during evaluation. By exposing the model to bias-augmented preference data and optimizing it to recover the correct preference, the judge learns to rely on task-relevant attributes. As a result, the model develops more robust evaluation behavior when encountering bias-correlated features in candidate responses. 
+
+5.3. Bias-aware training for discriminative judges 
+
+Unlike generative judges that reason explicitly, discriminative models rely on scalar scoring functions, making them susceptible to superficial or con-textual attributes. To mitigate this, we incorporate bias-aware attributes through a contrastive optimization framework using the bias-augmented pref-erence data constructed in Section 5.1. Specifically, we extend traditional pairwise learning by integrating multi-ple bias-augmented rejected responses ˜r− 
+
+> i
+
+. This is formulated as an InfoNCE loss [45]: 
+
+LInfoNCE = − log exp  s(q, r +)/τ 
+
+exp  s(q, r +)/τ  + exp  s(q, r −)/τ  + Pni=1 exp  s(q, ˜r− 
+
+> i
+
+)/τ ,
+
+(10) where s(q, r ) denotes the judgment score, r+ and r− are the original chosen and rejected responses, and τ is a temperature hyperparameter. Through this objective, the discriminative judge is encouraged to assign a higher score for the chosen response than both the original and the bias-augmented rejected responses. By explicitly contrasting the chosen response against both unbiased and biased rejected responses, the model develops a scoring function that is more robust to superficial perturbations, ultimately leading to more reliable discriminative prediction. 
+
+5.4. Experiments 5.4.1. Experimental setup Models. For bias-aware optimization, we conduct experiments on Qwen2.5-7B-Instruct and Llama-3.1-8B-Instruct [46] to investigate how different meth-ods influence bias sensitivity and evaluation performance. 19 Baselines. To comprehensively evaluate the effectiveness of our bias-aware training strategies, we compare against a set of baselines. For generative judges, we mainly compare with the following methods: 
+
+• Bias-agnostic training : The generative judge is trained following the same optimization pipeline as our method, but without any bias-augmented preference data. 
+
+• OffsetBias [20]: The bias-aware data is constructed by generating re-jected responses that contain critical errors while exhibiting superfi-cially favorable qualities. The resulting instances are combined with the original preference data, and the generative judge is trained via SFT on the augmented dataset. For discriminative judges, we mainly compare with the following methods: 
+
+• Hinge [47]: The discriminative judge is trained on the original prefer-ence data using Hinge objective, which enforces a margin between the scores of chosen and rejected responses. The optimization objective is defined as 
+
+Lmargin = max  0, m − (s(q, r +) − s(q, r −)) , (11) where m is a predefined margin hyperparameter. 
+
+• OffsetBias : The discriminative judge is trained on the preference dataset augmented with the same OffsetBias samples as used for generative judges, while adopting the hinge-based optimization objective. We also compare with Qwen3-8B and Selene-1-Mini-Llama-3.1-8B as ex-ternal baselines, representing the strong general-purpose judge and the spe-cialized fine-tuned evaluator, respectively. Both models are comparable in scale to Qwen2.5-7B-Instruct. 
+
+Benchmarks. To systematically quantify judgment bias, we primarily evalu-ate our models on JudgeBiasBench. Additionally, to ensure that bias mit-igation does not compromise general evaluative performance, we assess the judges on several authoritative preference benchmarks, including Reward-Bench [27], JudgeBench [48], RMB [49], and RM-Bench [50]. These bench-marks cover diverse scenarios such as chat, reasoning, and safety, providing a comprehensive view of the models’ general capability. 20 Model Training JudgeBiasBench RewardBench JudgeBench RMB RM-Bench Acc ori Acc inj BSR Agreement Agreement Agreement Agreement                                                                                                
+
+> Generative judges
+> Qwen3-8B –75.8 65.5 22.2 59.5 45.4 64.2 61.7 Selene-8B –75.2 60.8 23.9 80.2 24.9 60.6 58.0 Qwen2.5-7B –71.7 61.4 26.9 68.3 37.1 59.3 45.8 Llama-3.1-8B –71.2 56.9 31.6 62.2 30.3 57.0 50.8 Qwen2.5-7B Bias-agnostic 73.1 64.9 20.7 80.4 53.4 61.6 61.8 OffsetBias 74.8 66.9 20.5 77.4 51.4 62.5 62.9 Bias-aware 72.1 77.4 10.8 79.7 49.7 60.7 59.3
+> Discriminative judges
+> Qwen2.5-7B Hinge 77.0 56.9 33.3 89.9 60.9 71.0 69.8 OffsetBias 77.4 60.9 29.6 89.3 61.4 73.6 69.6
+> Bias-aware 75.5 80.5 12.2 90.6 58.3 71.6 71.3
+> Llama-3.1-8B Hinge 79.8 60.0 31.2 89.4 60.6 72.1 67.3 OffsetBias 78.4 63.5 27.7 87.3 60.0 71.7 67.0
+> Bias-aware 77.2 83.7 9.3 89.9 56.6 73.0 70.1
+
+Table 5: Overall evaluation results on JudgeBiasBench and general judge benchmarks. 
+
+Metrics. On JudgeBiasBench, we report accuracy on the original preference data Acc ori , accuracy on the bias-injected data Acc inj , and BSR to quantify robustness against bias perturbations. On general judge benchmarks of RewardBench, JudgeBench, RMB and RM-Bench, we report overall preference agreement with the provided ground-truth labels. For discriminative judges, agreement is computed by checking whether the chosen response receives a higher score than the rejected re-sponse. For generative judges, which typically follow a pairwise comparison protocol, each instance is evaluated twice with the response order reversed to mitigate position bias . A judgment is considered correct only if both comparisons are consistent and align with the ground-truth preference [21]. 
+
+5.4.2. Main results 
+
+As can be seen in Table 5, across both generative and discriminative set-tings, our proposed bias-aware training consistently leads to a substantial reduction in bias sensitivity. Specifically, our method achieves the lowest BSR and the highest accuracy on JudgeBiasBench among all compared ap-proaches, indicating that the judge becomes significantly more robust to bias-correlated features during evaluation. Additionally, this robustness gain does not come at the cost of general judgment ability. On RewardBench, JudgeBench, RMB, and RM-Bench, bias-aware judges maintain performance 21 comparable to strong baselines, and in several cases even achieve higher accu-racy. This demonstrates that explicitly optimizing for bias-aware judgments enables the model to suppress spurious bias attributes while preserving, or even strengthening, its ability to assess overall response quality. In contrast, OffsetBias provides moderate improvements over standard training, but the resulting judges still exhibit relatively high BSR. This may be because the method does not explicitly model different bias mech-anisms during training. As a result, the learned judges may still rely on bias-correlated attributes when encountering systematic bias perturbations, leading to limited robustness. 
+
+5.5. Analysis 5.5.1. Bias-aware preference data proportion 
+
+In this part, we would like to investigate how the proportion of bias-aware preference data affects the performance of both generative and discrimina-tive judges. Specifically, for generative judges, we vary the ratio between bias-aware preference pairs and original preference pairs in the training set; for discriminative judges, we vary the number of bias-augmented rejected responses in the contrastive objective. As shown in Table 6, the proportion of bias-aware supervision exhibits a clear trade-off between bias robustness and general evaluation capability. For generative judges, introducing a small proportion of bias-aware prefer-ence data substantially reduces bias sensitivity. Increasing this proportion further yields diminishing returns and gradually degrades performance on general judge benchmarks. Similarly, for discriminative judges, adding bias-augmented rejected responses improves bias resistance but harms general evaluation performance when too many biased rejected responses are used. This suggests that excessive bias-aware rejected responses can dilute the pri-mary quality and encourage overfitting to bias-related attributes. Overall, these results show that bias-aware supervision should be care-fully calibrated. While a limited amount of bias-aware data effectively im-proves robustness to biased evaluations, excessive bias-focused supervision undermines general judging capability by distorting the underlying prefer-ence signal. This highlights the importance of controlling the proportion of bias-aware attributes to achieve a balanced trade-off. 22 Model Ratio JudgeBiasBench RewardBench JudgeBench RMB RM-Bench Acc ori Acc inj BSR Agreement Agreement Agreement Agreement                                                         
+
+> Generative judges
+> Qwen2.5-7B 0:4 73.1 64.9 20.7 80.4 53.4 61.6 61.8
+> 1:4 72.1 77.4 10.8 79.7 49.7 60.7 59.3 2:4 76.0 76.2 15.1 75.0 48.3 59.7 59.5 3:4 70.0 78.9 11.1 72.3 51.7 57.3 58.2 4:4 71.3 78.2 11.9 75.2 48.0 53.2 56.5
+> Discriminative judges
+> Qwen2.5-7B 0:1 77.0 56.9 33.3 89.9 60.9 71.0 69.8 1:1 75.5 80.5 12.2 90.6 58.3 71.6 71.3
+> 4:1 76.2 81.4 11.3 89.1 57.1 71.3 70.0
+
+Table 6: Effect of bias-aware preference data proportion on generative and discriminative judges. For generative judges, the ratio denotes the proportion of bias-aware preference pairs to original preference pairs in the training set; for discriminative judges, it denotes the ratio between bias-augmented rejected responses and original rejected responses (which both serve as the negatives) in the contrastive objective. 
+
+5.5.2. Judge model scaling 
+
+In this section, we study how judge model scaling affects judgment per-formance. We use Qwen2.5 models ranging from 0.5B to 14B parameters and apply the same optimization pipeline for both generative and discriminative judges, as described in Section 5. Results on JudgeBiasBench reveal consistent improvements in judgment accuracy as model size increases. For both generative and discriminative judges, Acc ori and Acc inj gradually rise with larger models, indicating that scaling strengthens the ability to identify higher-quality responses even under bias perturbations. However, BSR exhibits different scaling behaviors for the two judging paradigms. For generative judges, BSR decreases noticeably as model size grows. This suggests that larger generative judges rely less on superficial bias-related cues and are better able to focus on the intrinsic quality of re-sponses. In contrast, discriminative judges maintain consistently low BSR across different scales, with only minor fluctuations. This stability likely stems from the discriminative training objective, which optimizes relative score differences between responses and may encourage the model to focus more on comparative quality signals. Performance on general judge benchmarks shows a clear scaling trend for both paradigms. Agreement scores on RewardBench, JudgeBench, RMB, 23 0             
+
+> 20
+> 40
+> 60
+> 80
+> 100
+> 0.5 1.5 3714
+> Score
+> Model Size (B)
+> Acc_ori Acc_inj BSR
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 0.5 1.5 3714
+> Agreement
+> Model Size (B)
+> RewardBench JudgeBench RMB RM-Bench
+
+Figure 4: Scaling effects of generative judges. 0             
+
+> 20
+> 40
+> 60
+> 80
+> 100
+> 0.5 1.5 3714
+> Score
+> Model Size (B)
+> Acc_ori Acc_inj BSR
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 0.5 1.5 3714
+> Agreement
+> Model Size (B)
+> RewardBench JudgeBench RMB RM-Bench
+
+Figure 5: Scaling effects of discriminative judges. 
+
+and RM-Bench steadily increase with model size, indicating that larger mod-els provide stronger overall evaluation capability. Taken together, these re-sults suggest that model scaling primarily improves judgment accuracy, while bias-aware training maintains stable robustness to bias across different model sizes. 
+
+6. Conclusion 
+
+In this work, we conduct a systematic study of judgment biases in LLM-based judges, which are increasingly used for automated evaluation and re-ward modeling. To facilitate this analysis, we introduce JudgeBiasBench, a 24 taxonomic benchmark that enables controlled bias injection and systematic measurement of bias effects. Extensive experiments across both generative and discriminative judges reveal that judgment bias remains prevalent and can substantially affect evaluation reliability, even for recent large-scale mod-els. To address this issue, we propose a bias-aware training framework that incorporates bias-related signals during training, mitigating several common bias patterns while preserving strong judgment accuracy. Despite these im-provements, our approach mainly addresses bias from the data and train-ing objective perspective, and bias in LLM-based judges remains far from solved. In the future, we will explore more robust model architectures, train-ing paradigms, and evaluation strategies to further improve the fairness and reliability of LLM-based judges. 
+
+CRediT authorship contribution statement 
+
+Hongli Zhou: Writing – original draft, Software, Investigation; Hui Huang: Writing – review and editing, Methodology, Conceptualization; Rui Zhang: Data curation, Validation, Investigation; Kehai Chen: Writing – review and editing; Bing Xu: Writing – review and editing; Conghui Zhu: Supervision; Tiejun Zhao: Supervision; Muyun Yang: Supervision. 
+
+Acknowledgments 
+
+This work was supported by the National Key R&D Program of China (Grant No. 2024YFC3809100), the National Natural Science Foundation of China (Grant Nos. 62276077, 62376075, 62376076), the Department of Science and Technology of Heilongjiang Province (Grant No. ZY04JD04), and the MOE Key Laboratory of Cognitive Intelligence and Content Security (Grant No. 10120251103, Harbin Institute of Technology). 
+
+References 
+
+[1] Y. Chang, X. Wang, J. Wang, Y. Wu, L. Yang, K. Zhu, H. Chen, X. Yi, C. Wang, Y. Wang, W. Ye, Y. Zhang, Y. Chang, P. S. Yu, Q. Yang, X. Xie, A survey on evaluation of large language models, ACM Trans. Intell. Syst. Technol. 15 (3) (Mar. 2024). doi:10.1145/3641289. [2] H. Zhou, H. Huang, Z. Zhao, L. Han, H. Wang, K. Chen, M. Yang, W. Bao, J. Dong, B. Xu, et al., Lost in benchmarks? rethinking large 25 language model benchmarking with item response theory, arXiv preprint arXiv:2505.15055 (2025). [3] K. Papineni, S. Roukos, T. Ward, W.-J. Zhu, Bleu: a method for au-tomatic evaluation of machine translation, in: P. Isabelle, E. Char-niak, D. Lin (Eds.), Proceedings of the 40th Annual Meeting of the Association for Computational Linguistics, Association for Computa-tional Linguistics, Philadelphia, Pennsylvania, USA, 2002, pp. 311–318. doi:10.3115/1073083.1073135. [4] J. Gu, X. Jiang, Z. Shi, H. Tan, X. Zhai, C. Xu, W. Li, Y. Shen, S. Ma, H. Liu, et al., A survey on llm-as-a-judge, The Innovation (2024). [5] L. Zheng, W.-L. Chiang, Y. Sheng, S. Zhuang, Z. Wu, Y. Zhuang, Z. Lin, Z. Li, D. Li, E. Xing, H. Zhang, J. E. Gonzalez, I. Stoica, Judging llm-as-a-judge with mt-bench and chatbot arena, in: A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, S. Levine (Eds.), Advances in Neu-ral Information Processing Systems, Vol. 36, Curran Associates, Inc., 2023, pp. 46595–46623. [6] J. Zhong, W. Shen, Y. Li, S. Gao, H. Lu, Y. Chen, Y. Zhang, W. Zhou, J. Gu, L. Zou, A comprehensive survey of reward models: Taxonomy, applications, challenges, and future, arXiv preprint arXiv:2504.12328 (2025). [7] H. Zhou, H. Huang, W. Liu, C. Wang, X. Bu, L. Han, F. Song, M. Yang, W. Jiang, H. Cao, et al., Rm-distiller: Exploiting generative llm for reward model distillation, arXiv preprint arXiv:2601.14032 (2026). [8] R. Koo, M. Lee, V. Raheja, J. I. Park, Z. M. Kim, D. Kang, Bench-marking cognitive biases in large language models as evaluators, in: L.-W. Ku, A. Martins, V. Srikumar (Eds.), Findings of the Asso-ciation for Computational Linguistics: ACL 2024, Association for Computational Linguistics, Bangkok, Thailand, 2024, pp. 517–545. doi:10.18653/v1/2024.findings-acl.29. [9] H. Zhou, H. Huang, Y. Long, B. Xu, C. Zhu, H. Cao, M. Yang, T. Zhao, Mitigating the bias of large language model evaluation, in: M. Sun, J. Liang, X. Han, Z. Liu, Y. He (Eds.), Proceedings of the 23rd Chinese National Conference on Computational Linguistics (Volume 1: Main 26 Conference), Chinese Information Processing Society of China, Taiyuan, China, 2024, pp. 1310–1319. [10] T. Liu, W. Xiong, J. Ren, L. Chen, J. Wu, R. Joshi, Y. Gao, J. Shen, Z. Qin, T. Yu, D. Sohn, A. Makarova, J. Z. Liu, Y. Liu, B. Piot, A. Ittycheriah, A. Kumar, M. Saleh, Rrm: Robust reward model train-ing mitigates reward hacking, in: Y. Yue, A. Garg, N. Peng, F. Sha, R. Yu (Eds.), International Conference on Learning Representations, Vol. 2025, 2025, pp. 62682–62700. [11] P. Wang, L. Li, L. Chen, Z. Cai, D. Zhu, B. Lin, Y. Cao, L. Kong, Q. Liu, T. Liu, Z. Sui, Large language models are not fair evaluators, in: L.-W. Ku, A. Martins, V. Srikumar (Eds.), Proceedings of the 62nd An-nual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), Association for Computational Linguistics, Bangkok, Thailand, 2024, pp. 9440–9450. doi:10.18653/v1/2024.acl-long.511. [12] A. Kumar, Y. He, A. H. Markosyan, B. Chern, I. Arrieta-Ibarra, Detect-ing prefix bias in llm-based reward models, in: Proceedings of the 2025 ACM Conference on Fairness, Accountability, and Transparency, FAccT ’25, Association for Computing Machinery, New York, NY, USA, 2025, p. 3196–3206. doi:10.1145/3715275.3732204. [13] G. H. Chen, S. Chen, Z. Liu, F. Jiang, B. Wang, Humans or LLMs as the judge? a study on judgement bias, in: Y. Al-Onaizan, M. Bansal, Y.-N. Chen (Eds.), Proceedings of the 2024 Conference on Empiri-cal Methods in Natural Language Processing, Association for Com-putational Linguistics, Miami, Florida, USA, 2024, pp. 8301–8327. doi:10.18653/v1/2024.emnlp-main.474. [14] Q. Wang, Z. Lou, Z. Tang, N. Chen, X. Zhao, W. Zhang, D. Song, B. He, Assessing judging bias in large reasoning models: An empirical study, in: Second Conference on Language Modeling, 2025. [15] C. Ma, E. Zhang, Y. Zhao, W. Liu, Y. Jia, P. Qing, L. Shi, A. Cohan, Y. Yan, S. Vosoughi, Judging with many minds: Do more perspec-tives mean less prejudice? on bias amplification and resistance in multi-agent based LLM-as-judge, in: C. Christodoulopoulos, T. Chakraborty, C. Rose, V. Peng (Eds.), Findings of the Association for Computational Linguistics: EMNLP 2025, Association for Computational Linguistics, 27 Suzhou, China, 2025, pp. 17356–17392. doi:10.18653/v1/2025.findings-emnlp.941. [16] T. Tripathi, M. Wadhwa, G. Durrett, S. Niekum, Pairwise or point-wise? evaluating feedback protocols for bias in LLM-based evaluation, in: Second Conference on Language Modeling, 2025. [17] J. Mire, Z. T. Aysola, D. Chechelnitsky, N. Deas, C. Zerva, M. Sap, Rejected dialects: Biases against African American language in reward models, in: L. Chiruzzo, A. Ritter, L. Wang (Eds.), Findings of the Association for Computational Linguistics: NAACL 2025, Association for Computational Linguistics, Albuquerque, New Mexico, 2025, pp. 7483–7502. doi:10.18653/v1/2025.findings-naacl.417. [18] Z. Zeng, J. Yu, T. Gao, Y. Meng, T. Goyal, D. Chen, Evaluating large language models at evaluating instruction following, in: B. Kim, Y. Yue, S. Chaudhuri, K. Fragkiadaki, M. Khan, Y. Sun (Eds.), International Conference on Learning Representations, Vol. 2024, 2024, pp. 40193– 40219. [19] J. Ye, Y. Wang, Y. Huang, D. Chen, Q. Zhang, N. Moniz, T. Gao, W. Geyer, C. Huang, P.-Y. Chen, N. Chawla, X. Zhang, Justice or prejudice? quantifying biases in llm-as-a-judge, in: Y. Yue, A. Garg, N. Peng, F. Sha, R. Yu (Eds.), International Conference on Learning Representations, Vol. 2025, 2025, pp. 102351–102390. [20] J. Park, S. Jwa, R. Meiying, D. Kim, S. Choi, OffsetBias: Leverag-ing debiased data for tuning evaluators, in: Y. Al-Onaizan, M. Bansal, Y.-N. Chen (Eds.), Findings of the Association for Computational Lin-guistics: EMNLP 2024, Association for Computational Linguistics, Mi-ami, Florida, USA, 2024, pp. 1043–1067. doi:10.18653/v1/2024.findings-emnlp.57. [21] J. Li, S. Sun, W. Yuan, R.-Z. Fan, h. zhao, P. Liu, Generative judge for evaluating alignment, in: B. Kim, Y. Yue, S. Chaudhuri, K. Fragki-adaki, M. Khan, Y. Sun (Eds.), International Conference on Learning Representations, Vol. 2024, 2024, pp. 27547–27574. [22] L. Zhu, X. Wang, X. Wang, Judgelm: Fine-tuned large language models are scalable judges, in: Y. Yue, A. Garg, N. Peng, F. Sha, R. Yu (Eds.), 28 International Conference on Learning Representations, Vol. 2025, 2025, pp. 51257–51296. [23] N. Chen, Z. Hu, Q. Zou, J. Wu, Q. Wang, B. Hooi, B. He, Judgelrm: Large reasoning models as a judge, arXiv preprint arXiv:2504.00050 (2025). [24] H. Huang, X. Bu, H. Zhou, Y. Qu, J. Liu, M. Yang, B. Xu, T. Zhao, An empirical study of LLM-as-a-judge for LLM evaluation: Fine-tuned judge model is not a general substitute for GPT-4, in: W. Che, J. Nabende, E. Shutova, M. T. Pilehvar (Eds.), Findings of the As-sociation for Computational Linguistics: ACL 2025, Association for Computational Linguistics, Vienna, Austria, 2025, pp. 5880–5895. doi:10.18653/v1/2025.findings-acl.306. [25] C. Y. Liu, L. Zeng, Y. Xiao, J. He, J. Liu, C. Wang, R. Yan, W. Shen, F. Zhang, J. Xu, et al., Skywork-reward-v2: Scaling preference data curation via human-ai synergy, arXiv preprint arXiv:2507.01352 (2025). [26] R. Yang, R. Ding, Y. Lin, H. Zhang, T. Zhang, Regularizing hid-den states enables learning generalizable reward model for llms, in: A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tom-czak, C. Zhang (Eds.), Advances in Neural Information Processing Systems, Vol. 37, Curran Associates, Inc., 2024, pp. 62279–62309. doi:10.52202/079017-1990. [27] N. Lambert, V. Pyatkin, J. Morrison, L. Miranda, B. Y. Lin, K. Chandu, N. Dziri, S. Kumar, T. Zick, Y. Choi, N. A. Smith, H. Hajishirzi, RewardBench: Evaluating reward models for language modeling, in: L. Chiruzzo, A. Ritter, L. Wang (Eds.), Findings of the Association for Computational Linguistics: NAACL 2025, Association for Compu-tational Linguistics, Albuquerque, New Mexico, 2025, pp. 1755–1797. doi:10.18653/v1/2025.findings-naacl.96. [28] L. Shi, C. Ma, W. Liang, X. Diao, W. Ma, S. Vosoughi, Judging the judges: A systematic study of position bias in LLM-as-a-judge, in: K. Inui, S. Sakti, H. Wang, D. F. Wong, P. Bhattacharyya, B. Baner-jee, A. Ekbal, T. Chakraborty, D. P. Singh (Eds.), Proceedings of the 14th International Joint Conference on Natural Language Processing and the 4th Conference of the Asia-Pacific Chapter of the Association 29 for Computational Linguistics, The Asian Federation of Natural Lan-guage Processing and The Association for Computational Linguistics, Mumbai, India, 2025, pp. 292–314. [29] Z. Wang, J. Zeng, O. Delalleau, H.-C. Shin, F. Soares, A. Bukharin, E. Evans, Y. Dong, O. Kuchaiev, Helpsteer3-preference: Open human-annotated preference data across diverse tasks and languages, in: The Thirty-ninth Annual Conference on Neural Information Processing Sys-tems Datasets and Benchmarks Track, 2025. [30] G. Comanici, E. Bieber, M. Schaekermann, I. Pasupat, N. Sachdeva, I. Dhillon, M. Blistein, O. Ram, D. Zhang, E. Rosen, et al., Gem-ini 2.5: Pushing the frontier with advanced reasoning, multimodality, long context, and next generation agentic capabilities, arXiv preprint arXiv:2507.06261 (2025). [31] Y. Feng, S. Wang, Z. Cheng, Y. Wan, D. Chen, Are we on the right way to assessing llm-as-a-judge?, arXiv preprint arXiv:2512.16041 (2025). [32] S. Malik, V. Pyatkin, S. Land, J. Morrison, N. A. Smith, H. Hajishirzi, N. Lambert, Rewardbench 2: Advancing reward model evaluation, arXiv preprint arXiv:2506.01937 (2025). [33] D. Guo, D. Yang, H. Zhang, J. Song, P. Wang, Q. Zhu, R. Xu, R. Zhang, S. Ma, X. Bi, et al., Deepseek-r1 incentivizes reasoning in llms through reinforcement learning, Nature 645 (8081) (2025) 633–638. [34] K. Team, Y. Bai, Y. Bao, G. Chen, J. Chen, N. Chen, R. Chen, Y. Chen, Y. Chen, Y. Chen, et al., Kimi k2: Open agentic intelligence, arXiv preprint arXiv:2507.20534 (2025). [35] A. Yang, A. Li, B. Yang, B. Zhang, B. Hui, B. Zheng, B. Yu, C. Gao, C. Huang, C. Lv, et al., Qwen3 technical report, arXiv preprint arXiv:2505.09388 (2025). [36] A. Yang, B. Yang, B. Zhang, B. Hui, B. Zheng, B. Yu, C. Li, D. Liu, F. Huang, H. Wei, et al., Qwen2.5 technical report, arXiv preprint arXiv:2412.15115 (2024). [37] S. Kim, J. Suk, S. Longpre, B. Y. Lin, J. Shin, S. Welleck, G. Neubig, M. Lee, K. Lee, M. Seo, Prometheus 2: An open source language model 30 specialized in evaluating other language models, in: Y. Al-Onaizan, M. Bansal, Y.-N. Chen (Eds.), Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing, Association for Computational Linguistics, Miami, Florida, USA, 2024, pp. 4334–4353. doi:10.18653/v1/2024.emnlp-main.248. [38] A. Alexandru, A. Calvi, H. Broomfield, J. Golden, K. Dai, M. Leys, M. Burger, M. Bartolo, R. Engeler, S. Pisupati, et al., Atla selene mini: A general purpose evaluation model, arXiv preprint arXiv:2501.17195 (2025). [39] C. Y. Liu, L. Zeng, J. Liu, R. Yan, J. He, C. Wang, S. Yan, Y. Liu, Y. Zhou, Skywork-reward: Bag of tricks for reward modeling in llms, arXiv preprint arXiv:2410.18451 (2024). [40] C. Wang, Y. Gan, Y. Huo, Y. Mu, Q. He, M. Yang, B. Li, T. Xiao, C. Zhang, T. Liu, J. Zhu, GRAM: A generative foundation reward model for reward generalization, in: A. Singh, M. Fazel, D. Hsu, S. Lacoste-Julien, F. Berkenkamp, T. Maharaj, K. Wagstaff, J. Zhu (Eds.), Pro-ceedings of the 42nd International Conference on Machine Learning, Vol. 267 of Proceedings of Machine Learning Research, PMLR, 2025, pp. 62916–62936. [41] H. Huang, Y. He, H. Zhou, R. Zhang, W. Liu, W. Wang, W. Su, B. Zheng, J. Liu, Think-j: Learning to think for generative llm-as-a-judge, arXiv preprint arXiv:2505.14268 (2025). [42] X. Chen, G. Li, Z. Wang, B. Jin, C. Qian, Y. Wang, H. WANG, Y. Zhang, D. Zhang, T. Zhang, H. Tong, H. Ji, RM-r1: Reward modeling as reasoning, in: The Fourteenth International Conference on Learning Representations, 2026. [43] C. Whitehouse, T. Wang, P. Yu, X. Li, J. E. Weston, I. Kulikov, S. Saha, J1: Incentivizing thinking in LLM-as-a-judge via reinforcement learning, in: The Fourteenth International Conference on Learning Representa-tions, 2026. [44] Z. Shao, P. Wang, Q. Zhu, R. Xu, J. Song, X. Bi, H. Zhang, M. Zhang, Y. Li, Y. Wu, et al., Deepseekmath: Pushing the limits of mathematical 31 reasoning in open language models, arXiv preprint arXiv:2402.03300 (2024). [45] A. v. d. Oord, Y. Li, O. Vinyals, Representation learning with con-trastive predictive coding, arXiv preprint arXiv:1807.03748 (2018). [46] A. Grattafiori, A. Dubey, A. Jauhri, A. Pandey, A. Kadian, A. Al-Dahle, A. Letman, A. Mathur, A. Schelten, A. Vaughan, et al., The llama 3 herd of models, arXiv preprint arXiv:2407.21783 (2024). [47] J. Shawe-Taylor, N. Cristianini, Kernel methods for pattern analysis, Cambridge university press, 2004. [48] S. Tan, S. Zhuang, K. Montgomery, W. Tang, A. Cuadron, C. Wang, R. Popa, I. Stoica, Judgebench: A benchmark for evaluating llm-based judges, in: Y. Yue, A. Garg, N. Peng, F. Sha, R. Yu (Eds.), International Conference on Learning Representations, Vol. 2025, 2025, pp. 63277– 63303. [49] E. Zhou, G. Zheng, B. Wang, Z. Xi, S. Dou, R. Bao, W. Shen, L. Xiong, J. Fan, Y. Mou, R. Zheng, T. Gui, Q. Zhang, X. Huang, Rmb: Com-prehensively benchmarking reward models in llm alignment, in: Y. Yue, A. Garg, N. Peng, F. Sha, R. Yu (Eds.), International Conference on Learning Representations, Vol. 2025, 2025, pp. 26543–26589. [50] Y. Liu, Z. Yao, R. Min, Y. Cao, L. Hou, J. Li, Rm-bench: Benchmarking reward models of language models with subtlety and style, in: Y. Yue, A. Garg, N. Peng, F. Sha, R. Yu (Eds.), International Conference on Learning Representations, Vol. 2025, 2025, pp. 44323–44355. 32

@@ -1,0 +1,2112 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-17T20:07:33.979640+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 6,
+    "deep_divecandidates": 102,
+    "deep_cap": 11,
+    "deep_selected": 29,
+    "quick_candidates": 211,
+    "quick_skim_target": 16,
+    "quick_selected": 16
+  },
+  "deep_dive": [
+    {
+      "id": "2603.12343v1",
+      "title": "LLM-Augmented Therapy Normalization and Aspect-Based Sentiment Analysis for Treatment-Resistant Depression on Reddit",
+      "abstract": "Treatment-resistant depression (TRD) is a severe form of major depressive disorder in which patients do not achieve remission despite multiple adequate treatment trials. Evidence across pharmacologic options for TRD remains limited, and trials often do not fully capture patient-reported tolerability. Large-scale online peer-support narratives therefore offer a complementary lens on how patients describe and evaluate medications in real-world use. In this study, we curated a corpus of 5,059 Reddit posts explicitly referencing TRD from 3,480 subscribers across 28 mental health-related subreddits from 2010 to 2025. Of these, 3,839 posts mentioned at least one medication, yielding 23,399 mentions of 81 generic-name medications after lexicon-based normalization of brand names, misspellings, and colloquialisms. We developed an aspect-based sentiment classifier by fine-tuning DeBERTa-v3 on the SMM4H 2023 therapy-sentiment Twitter corpus with large language model based data augmentation, achieving a micro-F1 score of 0.800 on the shared-task test set. Applying this classifier to Reddit, we quantified sentiment toward individual medications across three categories: positive, neutral, and negative, and tracked patterns by drug, subscriber, subreddit, and year. Overall, 72.1% of medication mentions were neutral, 14.8% negative, and 13.1% positive. Conventional antidepressants, especially SSRIs and SNRIs, showed consistently higher negative than positive proportions, whereas ketamine and esketamine showed comparatively more favorable sentiment profiles. These findings show that normalized medication extraction combined with aspect-based sentiment analysis can help characterize patient-perceived treatment experiences in TRD-related Reddit discourse, complementing clinical evidence with large-scale patient-generated perspectives.",
+      "authors": [
+        "Yuxin Zhu",
+        "Sahithi Lakamana",
+        "Masoud Rouhizadeh",
+        "Selen Bozkurt",
+        "Rachel Hershenberg",
+        "Abeed Sarker"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-12T18:03:43+00:00",
+      "link": "https://arxiv.org/pdf/2603.12343v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "LLM-augmented sentiment analysis for treatment-resistant depression on Reddit",
+      "llm_evidence_cn": "大模型增强的Reddit难治性抑郁症情感分析",
+      "llm_evidence": "大模型增强的Reddit难治性抑郁症情感分析",
+      "canonical_evidence": "大模型增强的Reddit难治性抑郁症情感分析",
+      "llm_tldr_en": "Uses LLMs to analyze patient-reported medication experiences for treatment-resistant depression on Reddit.",
+      "llm_tldr_cn": "利用大模型分析Reddit上难治性抑郁症患者报告的药物治疗经验。",
+      "llm_tldr": "利用大模型分析Reddit上难治性抑郁症患者报告的药物治疗经验。",
+      "llm_tags": [
+        "query:llm-mh:composite"
+      ],
+      "matched_query_tag": "query:llm-mh:composite",
+      "matched_query_text": "Papers central to 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文, especially work that connects or combines: Large Language Models; Mental health applications and diagnosis; Computational psychiatry and LLMs; AI-assisted psychotherapy and counseling; LLM for depression detection and analysis; Large language models for anxiety assessment; Emotional and sentiment analysis in mental health; LLMs in clinical psychology research; Applications of large language models in mental health diagnosis; LLM based conversational agents for psychological counseling.",
+      "matched_requirement_id": "req-composite-llm-mh",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.12572v1",
+      "title": "LMEB: Long-horizon Memory Embedding Benchmark",
+      "abstract": "Memory embeddings are crucial for memory-augmented systems, such as OpenClaw, but their evaluation is underexplored in current text embedding benchmarks, which narrowly focus on traditional passage retrieval and fail to assess models' ability to handle long-horizon memory retrieval tasks involving fragmented, context-dependent, and temporally distant information. To address this, we introduce the Long-horizon Memory Embedding Benchmark (LMEB), a comprehensive framework that evaluates embedding models' capabilities in handling complex, long-horizon memory retrieval tasks. LMEB spans 22 datasets and 193 zero-shot retrieval tasks across 4 memory types: episodic, dialogue, semantic, and procedural, with both AI-generated and human-annotated data. These memory types differ in terms of level of abstraction and temporal dependency, capturing distinct aspects of memory retrieval that reflect the diverse challenges of the real world. We evaluate 15 widely used embedding models, ranging from hundreds of millions to ten billion parameters. The results reveal that (1) LMEB provides a reasonable level of difficulty; (2) Larger models do not always perform better; (3) LMEB and MTEB exhibit orthogonality. This suggests that the field has yet to converge on a universal model capable of excelling across all memory retrieval tasks, and that performance in traditional passage retrieval may not generalize to long-horizon memory retrieval. In summary, by providing a standardized and reproducible evaluation framework, LMEB fills a crucial gap in memory embedding evaluation, driving further advancements in text embedding for handling long-term, context-dependent memory retrieval. LMEB is available at https://github.com/KaLM-Embedding/LMEB.",
+      "authors": [
+        "Xinping Zhao",
+        "Xinshuo Hu",
+        "Jiaxin Xu",
+        "Danyu Tang",
+        "Xin Zhang",
+        "Mengjia Zhou",
+        "Yan Zhong",
+        "Yao Zhou",
+        "Zifei Shan",
+        "Meishan Zhang",
+        "Baotian Hu",
+        "Min Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-13T02:09:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.12572v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Benchmark for long-horizon memory retrieval in embedding models",
+      "llm_evidence_cn": "嵌入模型长程记忆检索的基准测试",
+      "llm_evidence": "嵌入模型长程记忆检索的基准测试",
+      "canonical_evidence": "嵌入模型长程记忆检索的基准测试",
+      "llm_tldr_en": "Introduces LMEB to evaluate embedding models on complex, long-horizon memory retrieval tasks across 22 datasets.",
+      "llm_tldr_cn": "推出LMEB基准，评估嵌入模型在22个数据集上的复杂长程记忆检索能力。",
+      "llm_tldr": "推出LMEB基准，评估嵌入模型在22个数据集上的复杂长程记忆检索能力。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "Benchmark datasets for evaluating long context large language models",
+      "matched_requirement_id": "req-41",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.12885v1",
+      "title": "Enhanced Drug-drug Interaction Prediction Using Adaptive Knowledge Integration",
+      "abstract": "Drug-drug interaction event (DDIE) prediction is crucial for preventing adverse reactions and ensuring optimal therapeutic outcomes. However, existing methods often face challenges with imbalanced datasets, complex interaction mechanisms, and poor generalization to unknown drug combinations. To address these challenges, we propose a knowledge augmentation framework that adaptively infuses prior drug knowledge into a large language model (LLM). This framework utilizes reinforcement learning techniques to facilitate adaptive knowledge extraction and synthesis, thereby efficiently optimizing the strategy space to enhance the accuracy of LLMs for DDIE predictions. As a result of few-shot learning, we achieved a notable improvement compared to the baseline. This approach establishes an effective framework for scientific knowledge learning for DDIE predictions.",
+      "authors": [
+        "Pengfei Liu",
+        "Jun Tao",
+        "Zhixiang Ren"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-13T10:33:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.12885v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM MR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "LLM for drug-drug interaction prediction using knowledge integration",
+      "llm_evidence_cn": "利用知识整合进行药物相互作用预测的LLM",
+      "llm_evidence": "利用知识整合进行药物相互作用预测的LLM",
+      "canonical_evidence": "利用知识整合进行药物相互作用预测的LLM",
+      "llm_tldr_en": "Enhances drug-drug interaction prediction by adaptively infusing prior knowledge into LLMs.",
+      "llm_tldr_cn": "通过将先验知识自适应地注入LLM，增强了药物相互作用的预测能力。",
+      "llm_tldr": "通过将先验知识自适应地注入LLM，增强了药物相互作用的预测能力。",
+      "llm_tags": [
+        "query:llm-mr:composite"
+      ],
+      "matched_query_tag": "query:llm-mr:composite",
+      "matched_query_text": "Papers central to 查找大语言模型（LLM）在药物推荐系统中的应用及相关研究论文, especially work that connects or combines: Large Language Models; drug recommendation systems; medication recommendation algorithms; generative artificial intelligence in healthcare; clinical decision support systems for medication; personalized drug recommendation using LLMs; knowledge graph enhanced drug recommendation; LLM for drug recommendation based on EHR; survey of large language models for drug recommendation; LLM based personalized medication recommendation systems.",
+      "matched_requirement_id": "req-composite-llm-mr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13043v1",
+      "title": "Before and After ChatGPT: Revisiting AI-Based Dialogue Systems for Emotional Support",
+      "abstract": "Mental health remains a major public health concern, while access to timely psychological support is often limited. AI-based dialogue systems have emerged as promising tools to address these barriers, and recent advances in large language models (LLMs) have significantly transformed this research area. However, a systematic understanding of this technological transition is still limited. This study reviews the technological evolution of AI-driven dialogue systems for mental health, focusing on the shift from task-specific deep learning models to LLM-based approaches. We conducted a bibliometric analysis and qualitative trend review of studies published between 2020 and May 2024 using Web of Science, Scopus, and the ACM Digital Library. The qualitative analysis compared research conducted before and after the widespread adoption of LLMs. Pre-LLM research was represented by highly cited studies and work based on the ESConv dataset, while post-LLM research included highly cited dialogue systems built on LLMs. A total of 146 studies met the inclusion criteria, showing a steady growth in publications over time. Before the widespread use of LLMs, empathetic response generation mainly relied on task-specific deep learning models. Highly cited and ESConv-based studies commonly focused on multi-task learning and the integration of external knowledge. In contrast, recent LLM-based dialogue systems demonstrate improved linguistic flexibility and generalization for emotional support. However, these systems also raise concerns related to reliability and safety in mental health applications. This review highlights the technological transition of AI-based dialogue systems for mental health in the LLM era. By identifying current research trends and limitations, the findings provide guidance for developing more effective and reliable AI-driven counseling systems.",
+      "authors": [
+        "Daeun Lee",
+        "Dongje Yoo",
+        "Migyeong Yang",
+        "Jihyun An",
+        "Christine B. Cha",
+        "Jinyoung Han"
+      ],
+      "primary_category": "cs.CY",
+      "categories": [
+        "cs.CY"
+      ],
+      "published": "2026-03-13T14:52:44+00:00",
+      "link": "https://arxiv.org/pdf/2603.13043v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "review of LLM-based dialogue systems for emotional support and mental health",
+      "llm_evidence_cn": "基于LLM的情感支持和心理健康对话系统综述",
+      "llm_evidence": "基于LLM的情感支持和心理健康对话系统综述",
+      "canonical_evidence": "基于LLM的情感支持和心理健康对话系统综述",
+      "llm_tldr_en": "Reviews the evolution of AI dialogue systems for mental health, focusing on the transition to LLM-based approaches.",
+      "llm_tldr_cn": "综述了心理健康AI对话系统的演进，重点关注向大语言模型方法的转变。",
+      "llm_tldr": "综述了心理健康AI对话系统的演进，重点关注向大语言模型方法的转变。",
+      "llm_tags": [
+        "query:llm-ac:composite"
+      ],
+      "matched_query_tag": "query:llm-ac:composite",
+      "matched_query_text": "Papers central to 查找LLM做情感计算和共情对话的论文, especially work that connects or combines: Large Language Models; Affective Computing and Sentiment Analysis; Artificial Emotional Intelligence in LLMs; Emotion Recognition in Conversation; Empathetic Response Generation; LLMs for Psychological Support and Counseling; Chain of Empathy prompting for LLMs; benchmarking empathy in large language models; fine tuning LLMs for empathetic conversation; prompt engineering for emotional intelligence in AI.",
+      "matched_requirement_id": "req-composite-llm-ac",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13644v1",
+      "title": "StatePlane: A Cognitive State Plane for Long-Horizon AI Systems Under Bounded Context",
+      "abstract": "Large language models (LLMs) and small language models (SLMs) operate under strict context window and key-value (KV) cache constraints, fundamentally limiting their ability to reason coherently over long interaction horizons. Existing approaches -- extended context windows, retrieval-augmented generation, summarization, or static documentation -- treat memory as static storage and fail to preserve decision-relevant state under long-running, multi-session tasks. We introduce StatePlane, a model-agnostic cognitive state plane that governs the formation, evolution, retrieval, and decay of episodic, semantic, and procedural state for AI systems operating under bounded context. Grounded in cognitive psychology and systems design, StatePlane formalizes episodic segmentation, selective encoding via information-theoretic constraints, goal-conditioned retrieval with intent routing, reconstructive state synthesis, and adaptive forgetting. We present a formal state model, KV-aware algorithms, security and governance mechanisms including write-path anti-poisoning, enterprise integration pathways, and an evaluation framework with six domain-specific benchmarks. StatePlane demonstrates that long-horizon intelligence can be achieved without expanding context windows or retraining models.",
+      "authors": [
+        "Sasank Annapureddy",
+        "John Mulcahy",
+        "Anjaneya Prasad Thamatani"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-13T22:56:06+00:00",
+      "link": "https://arxiv.org/pdf/2603.13644v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "cognitive state plane for long-horizon reasoning under bounded context",
+      "llm_evidence_cn": "有限上下文下长程推理的认知状态平面",
+      "llm_evidence": "有限上下文下长程推理的认知状态平面",
+      "canonical_evidence": "有限上下文下长程推理的认知状态平面",
+      "llm_tldr_en": "Introduces StatePlane to manage episodic and procedural state for LLMs in long-horizon, multi-session tasks.",
+      "llm_tldr_cn": "引入StatePlane框架，管理大语言模型在长程、多会话任务中的情节和过程状态。",
+      "llm_tldr": "引入StatePlane框架，管理大语言模型在长程、多会话任务中的情节和过程状态。",
+      "llm_tags": [
+        "query:lh-llm:composite"
+      ],
+      "matched_query_tag": "query:lh-llm:composite",
+      "matched_query_text": "Papers central to 查找Long-horizon LLM（长程/长上下文大语言模型）的相关论文, especially work that connects or combines: Long-horizon large language models research papers; LLMs with extended context window length; Techniques for infinite context processing in LLMs; Needle in a haystack evaluation for long context LLMs; External memory and retrieval augmented generation for long horizons; KV cache compression and context distillation for long sequences; Recurrent neural network structures for long-horizon language modeling; State of the art methods for long horizon reasoning in LLMs; Benchmark datasets for evaluating long context large language models; Efficient attention mechanisms for processing extremely long sequences.",
+      "matched_requirement_id": "req-composite-lh-llm",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14183v1",
+      "title": "Selective Fine-Tuning of GPT Architectures for Parameter-Efficient Clinical Text Classification",
+      "abstract": "The rapid expansion of electronic health record (EHR) systems has generated large volumes of unstructured clinical narratives that contain valuable information for disease identification, patient cohort discovery, and clinical decision support. Extracting structured knowledge from these free-text documents remains challenging because clinical language is highly specialized, labeled datasets are limited, and full fine-tuning of large pretrained language models can require substantial computational resources. Efficient adaptation strategies are therefore essential for practical clinical natural language processing applications. This study proposes a parameter-efficient selective fine-tuning framework for adapting GPT-2 to clinical text classification tasks. Instead of updating the entire pretrained model, the majority of network parameters are frozen, and only the final Transformer block, the final layer normalization module, and a lightweight classification head are updated during training. This design substantially reduces the number of trainable parameters while preserving the contextual representation capabilities learned during pretraining. The proposed approach is evaluated using radiology reports from the MIMIC-IV-Note dataset with automatically derived CheXpert-style labels. Experiments on 50,000 radiology reports demonstrate that selective fine-tuning achieves approximately 91% classification accuracy while updating fewer than 6% of the model parameters. Comparative experiments with head-only training and full-model fine-tuning show that the proposed method provides a favorable balance between predictive performance and computational efficiency. These results indicate that selective fine-tuning offers an efficient and scalable framework for clinical text classification.",
+      "authors": [
+        "Fariba Afrin Irany",
+        "Sampson Akwafuo"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-15T02:16:06+00:00",
+      "link": "https://arxiv.org/pdf/2603.14183v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "parameter-efficient clinical text classification for EHR",
+      "llm_evidence_cn": "针对电子健康记录的高效参数临床文本分类",
+      "llm_evidence": "针对电子健康记录的高效参数临床文本分类",
+      "canonical_evidence": "针对电子健康记录的高效参数临床文本分类",
+      "llm_tldr_en": "Proposes a parameter-efficient fine-tuning framework for clinical NLP tasks using EHR data.",
+      "llm_tldr_cn": "提出一种针对电子健康记录临床自然语言处理任务的高效微调框架。",
+      "llm_tldr": "提出一种针对电子健康记录临床自然语言处理任务的高效微调框架。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14224v1",
+      "title": "Self-Indexing KVCache: Predicting Sparse Attention from Compressed Keys",
+      "abstract": "The KV cache in self-attention has emerged as a major bottleneck in long-context and large-batch inference for LLMs. Existing approaches often treat sparsity prediction and compression as separate modules, relying on auxiliary index structures to select relevant tokens, and on complex quantization schemes to reduce memory usage. This fragmented design introduces redundant overhead and limits scalability.   In this paper, we propose a novel paradigm: treating the compressed key representation not merely as storage, but as a self-indexing structure that directly enables efficient sparse attention. By designing a sign-based 1-bit vector quantization (VQ) scheme, our method unifies compression and retrieval in a single, hardware-friendly format. This approach eliminates the need for external indices or learning-based predictors, offering a lightweight yet robust solution for memory-constrained inference. All components are designed to be hardware-efficient and easy to implement. By implementing custom CUDA kernels, our method integrates seamlessly with FlashAttention, minimizing additional runtime and memory overhead. Experimental results demonstrate that our approach delivers both effectiveness and efficiency.",
+      "authors": [
+        "Xu Yang",
+        "Jiapeng Zhang",
+        "Dongyang Zhao",
+        "Guo Chen",
+        "Zhuo Tang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-15T05:02:17+00:00",
+      "link": "https://arxiv.org/pdf/2603.14224v1",
+      "tags": [
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "KV cache compression and self-indexing for long-context LLM inference",
+      "llm_evidence_cn": "长上下文大语言模型推理中的KV缓存压缩与自索引",
+      "llm_evidence": "长上下文大语言模型推理中的KV缓存压缩与自索引",
+      "canonical_evidence": "长上下文大语言模型推理中的KV缓存压缩与自索引",
+      "llm_tldr_en": "Proposes a self-indexing KV cache using 1-bit quantization to unify compression and retrieval for long sequences.",
+      "llm_tldr_cn": "提出一种自索引KV缓存，利用1比特量化统一长序列的压缩与检索。",
+      "llm_tldr": "提出一种自索引KV缓存，利用1比特量化统一长序列的压缩与检索。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "KV cache compression and context distillation for long sequences",
+      "matched_requirement_id": "req-38",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14303v1",
+      "title": "SemantiCache: Efficient KV Cache Compression via Semantic Chunking and Clustered Merging",
+      "abstract": "Existing KV cache compression methods generally operate on discrete tokens or non-semantic chunks. However, such approaches often lead to semantic fragmentation, where linguistically coherent units are disrupted, causing irreversible information loss and degradation in model performance. To address this, we introduce SemantiCache, a novel compression framework that preserves semantic integrity by aligning the compression process with the semantic hierarchical nature of language. Specifically, we first partition the cache into semantically coherent chunks by delimiters, which are natural semantic boundaries. Within each chunk, we introduce a computationally efficient Greedy Seed-Based Clustering (GSC) algorithm to group tokens into semantic clusters. These clusters are further merged into semantic cores, enhanced by a Proportional Attention mechanism that rebalances the reduced attention contributions of the merged tokens. Extensive experiments across diverse benchmarks and models demonstrate that SemantiCache accelerates the decoding stage of inference by up to 2.61 times and substantially reduces memory footprint, while maintaining performance comparable to the original model.",
+      "authors": [
+        "Shunlong Wu",
+        "Hai Lin",
+        "Shaoshen Chen",
+        "Tingwei Lu",
+        "Yongqin Zeng",
+        "Shaoxiong Zhan",
+        "Hai-Tao Zheng",
+        "Hong-Gee Kim"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-15T09:36:25+00:00",
+      "link": "https://arxiv.org/pdf/2603.14303v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LH LLM"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Efficient KV Cache Compression via Semantic Chunking",
+      "llm_evidence_cn": "通过语义分块进行高效 KV 缓存压缩",
+      "llm_evidence": "通过语义分块进行高效 KV 缓存压缩",
+      "canonical_evidence": "通过语义分块进行高效 KV 缓存压缩",
+      "llm_tldr_en": "SemantiCache preserves semantic integrity during KV cache compression to maintain model performance on long sequences.",
+      "llm_tldr_cn": "SemantiCache 在 KV 缓存压缩过程中保持语义完整性，以维持模型在长序列上的性能。",
+      "llm_tldr": "SemantiCache 在 KV 缓存压缩过程中保持语义完整性，以维持模型在长序列上的性能。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "KV cache compression and context distillation for long sequences",
+      "matched_requirement_id": "req-38",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.08448v3",
+      "title": "A prospective clinical feasibility study of a conversational diagnostic AI in an ambulatory primary care clinic",
+      "abstract": "Large language model (LLM)-based AI systems have shown promise for patient-facing diagnostic and management conversations in simulated settings. Translating these systems into clinical practice requires assessment in real-world workflows with rigorous safety oversight. We report a prospective, single-arm feasibility study of an LLM-based conversational AI, the Articulate Medical Intelligence Explorer (AMIE), conducting clinical history taking and presentation of potential diagnoses for patients to discuss with their provider at urgent care appointments at a leading academic medical center. 100 adult patients completed an AMIE text-chat interaction up to 5 days before their appointment. We sought to assess the conversational safety and quality, patient and clinician experience, and clinical reasoning capabilities compared to primary care providers (PCPs). Human safety supervisors monitored all patient-AMIE interactions in real time and did not need to intervene to stop any consultations based on pre-defined criteria. Patients reported high satisfaction and their attitudes towards AI improved after interacting with AMIE (p < 0.001). PCPs found AMIE's output useful with a positive impact on preparedness. AMIE's differential diagnosis (DDx) included the final diagnosis, per chart review 8 weeks post-encounter, in 90% of cases, with 75% top-3 accuracy. Blinded assessment of AMIE and PCP DDx and management (Mx) plans suggested similar overall DDx and Mx plan quality, without significant differences for DDx (p = 0.6) and appropriateness and safety of Mx (p = 0.1 and 1.0, respectively). PCPs outperformed AMIE in the practicality (p = 0.003) and cost effectiveness (p = 0.004) of Mx. While further research is needed, this study demonstrates the initial feasibility, safety, and user acceptance of conversational AI in a real-world setting, representing crucial steps towards clinical translation.",
+      "authors": [
+        "Peter Brodeur",
+        "Jacob M. Koshy",
+        "Anil Palepu",
+        "Khaled Saab",
+        "Ava Homiar",
+        "Roma Ruparel",
+        "Charles Wu",
+        "Ryutaro Tanno",
+        "Joseph Xu",
+        "Amy Wang",
+        "David Stutz",
+        "Wei-Hung Weng",
+        "Hannah M. Ferrera",
+        "David Barrett",
+        "Lindsey Crowley",
+        "Jihyeon Lee",
+        "Spencer E. Rittner",
+        "Ellery Wulczyn",
+        "Selena K. Zhang",
+        "Elahe Vedadi",
+        "Christine G. Kohn",
+        "Kavita Kulkarni",
+        "Vinay Kadiyala",
+        "Sara Mahdavi",
+        "Wendy Du",
+        "Jessica M. Williams",
+        "David Feinbloom",
+        "Renee Wong",
+        "Tao Tu",
+        "Petar Sirkovic",
+        "Alessio Orlandi",
+        "Christopher Semturs",
+        "Yun Liu",
+        "Juraj Gottweis",
+        "Dale R. Webster",
+        "Joëlle Barral",
+        "Katherine Chou",
+        "Pushmeet Kohli",
+        "Avinatan Hassidim",
+        "Yossi Matias",
+        "James Manyika",
+        "Rob Fields",
+        "Jonathan X. Li",
+        "Marc L. Cohen",
+        "Vivek Natarajan",
+        "Mike Schaekermann",
+        "Alan Karthikesalingam",
+        "Adam Rodman"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC",
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-03-09T14:43:40+00:00",
+      "link": "https://arxiv.org/pdf/2603.08448v3",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM-based conversational AI for clinical history taking and diagnosis",
+      "llm_evidence_cn": "基于大语言模型的对话式AI用于临床病史采集和诊断",
+      "llm_evidence": "基于大语言模型的对话式AI用于临床病史采集和诊断",
+      "canonical_evidence": "基于大语言模型的对话式AI用于临床病史采集和诊断",
+      "llm_tldr_en": "Evaluates a conversational AI (AMIE) for clinical history taking and diagnosis in a real-world primary care setting.",
+      "llm_tldr_cn": "在真实初级保健场景中评估对话式AI（AMIE）进行病史采集和诊断的可行性。",
+      "llm_tldr": "在真实初级保健场景中评估对话式AI（AMIE）进行病史采集和诊断的可行性。",
+      "llm_tags": [
+        "query:llm-mr"
+      ],
+      "matched_query_tag": "query:llm-mr",
+      "matched_query_text": "generative artificial intelligence in healthcare",
+      "matched_requirement_id": "req-47",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09018v1",
+      "title": "Meissa: Multi-modal Medical Agentic Intelligence",
+      "abstract": "Multi-modal large language models (MM-LLMs) have shown strong performance in medical image understanding and clinical reasoning. Recent medical agent systems extend them with tool use and multi-agent collaboration, enabling complex decision-making. However, these systems rely almost entirely on frontier models (e.g., GPT), whose API-based deployment incurs high cost, high latency, and privacy risks that conflict with on-premise clinical requirements. We present Meissa, a lightweight 4B-parameter medical MM-LLM that brings agentic capability offline. Instead of imitating static answers, Meissa learns both when to engage external interaction (strategy selection) and how to execute multi-step interaction (strategy execution) by distilling structured trajectories from frontier models. Specifically, we propose: (1) Unified trajectory modeling: trajectories (reasoning and action traces) are represented within a single state-action-observation formalism, allowing one model to generalize across heterogeneous medical environments. (2) Three-tier stratified supervision: the model's own errors trigger progressive escalation from direct reasoning to tool-augmented and multi-agent interaction, explicitly learning difficulty-aware strategy selection. (3) Prospective-retrospective supervision: pairing exploratory forward traces with hindsight-rationalized execution traces enables stable learning of effective interaction policies. Trained on 40K curated trajectories, Meissa matches or exceeds proprietary frontier agents in 10 of 16 evaluation settings across 13 medical benchmarks spanning radiology, pathology, and clinical reasoning. Using over 25x fewer parameters than typical frontier models like Gemini-3, Meissa operates fully offline with 22x lower end-to-end latency compared to API-based deployment. Data, models, and environments are released at https://github.com/Schuture/Meissa.",
+      "authors": [
+        "Yixiong Chen",
+        "Xinyi Bai",
+        "Yue Pan",
+        "Zongwei Zhou",
+        "Alan Yuille"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-09T23:22:55+00:00",
+      "link": "https://arxiv.org/pdf/2603.09018v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "lightweight medical MM-LLM for clinical reasoning and decision-making",
+      "llm_evidence_cn": "用于临床推理和决策的轻量级医疗多模态大模型",
+      "llm_evidence": "用于临床推理和决策的轻量级医疗多模态大模型",
+      "canonical_evidence": "用于临床推理和决策的轻量级医疗多模态大模型",
+      "llm_tldr_en": "Meissa is a 4B-parameter medical MM-LLM that enables offline agentic clinical reasoning via distillation.",
+      "llm_tldr_cn": "Meissa 是一个 4B 参数的医疗多模态大模型，通过蒸馏实现离线智能临床推理。",
+      "llm_tldr": "Meissa 是一个 4B 参数的医疗多模态大模型，通过蒸馏实现离线智能临床推理。",
+      "llm_tags": [
+        "query:llm-mr"
+      ],
+      "matched_query_tag": "query:llm-mr",
+      "matched_query_text": "generative artificial intelligence in healthcare",
+      "matched_requirement_id": "req-47",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09205v2",
+      "title": "Emotion is Not Just a Label: Latent Emotional Factors in LLM Processing",
+      "abstract": "Large language models are routinely deployed on text that varies widely in emotional tone, yet their reasoning behavior is typically evaluated without accounting for emotion as a source of representational variation. Prior work has largely treated emotion as a prediction target, for example in sentiment analysis or emotion classification. In contrast, we study emotion as a latent factor that shapes how models attend to and reason over text. We analyze how emotional tone systematically alters attention geometry in transformer models, showing that metrics such as locality, center-of-mass distance, and entropy vary across emotions and correlate with downstream question-answering performance. To facilitate controlled study of these effects, we introduce Affect-Uniform ReAding QA (AURA-QA), a question-answering dataset with emotionally balanced, human-authored context passages. Finally, an emotional regularization framework is proposed that constrains emotion-conditioned representational drift during training. Experiments across multiple QA benchmarks demonstrate that this approach improves reading comprehension in both emotionally-varying and non-emotionally varying datasets, yielding consistent gains under distribution shift and in-domain improvements on several benchmarks.",
+      "authors": [
+        "Benjamin Reichman",
+        "Adar Avsian",
+        "Samuel Webster",
+        "Larry Heck"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-10T05:23:18+00:00",
+      "link": "https://arxiv.org/pdf/2603.09205v2",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Emotion as a latent factor in LLM processing and affective computing",
+      "llm_evidence_cn": "情感作为LLM处理和情感计算中的潜在因素",
+      "llm_evidence": "情感作为LLM处理和情感计算中的潜在因素",
+      "canonical_evidence": "情感作为LLM处理和情感计算中的潜在因素",
+      "llm_tldr_en": "Analyzes how emotional tone systematically alters attention geometry and reasoning in transformer models.",
+      "llm_tldr_cn": "分析情感基调如何系统性地改变Transformer模型的注意力几何和推理。",
+      "llm_tldr": "分析情感基调如何系统性地改变Transformer模型的注意力几何和推理。",
+      "llm_tags": [
+        "query:llm-ac:composite"
+      ],
+      "matched_query_tag": "query:llm-ac:composite",
+      "matched_query_text": "Papers central to 查找LLM做情感计算和共情对话的论文, especially work that connects or combines: Large Language Models; Affective Computing and Sentiment Analysis; Artificial Emotional Intelligence in LLMs; Emotion Recognition in Conversation; Empathetic Response Generation; LLMs for Psychological Support and Counseling; Chain of Empathy prompting for LLMs; benchmarking empathy in large language models; fine tuning LLMs for empathetic conversation; prompt engineering for emotional intelligence in AI.",
+      "matched_requirement_id": "req-composite-llm-ac",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.10764v1",
+      "title": "HeartAgent: An Autonomous Agent System for Explainable Differential Diagnosis in Cardiology",
+      "abstract": "Heart diseases remain a leading cause of morbidity and mortality worldwide, necessitating accurate and trustworthy differential diagnosis. However, existing artificial intelligence-based diagnostic methods are often limited by insufficient cardiology knowledge, inadequate support for complex reasoning, and poor interpretability. Here we present HeartAgent, a cardiology-specific agent system designed to support a reliable and explainable differential diagnosis. HeartAgent integrates customized tools and curated data resources and orchestrates multiple specialized sub-agents to perform complex reasoning while generating transparent reasoning trajectories and verifiable supporting references. Evaluated on the MIMIC dataset and a private electronic health records cohort, HeartAgent achieved over 36% and 20% improvements over established comparative methods, in top-3 diagnostic accuracy, respectively. Additionally, clinicians assisted by HeartAgent demonstrated gains of 26.9% in diagnostic accuracy and 22.7% in explanatory quality compared with unaided experts. These results demonstrate that HeartAgent provides reliable, explainable, and clinically actionable decision support for cardiovascular care.",
+      "authors": [
+        "Shuang Zhou",
+        "Kai Yu",
+        "Song Wang",
+        "Wenya Xie",
+        "Zaifu Zhan",
+        "Meng-Han Tsai",
+        "Yuen-Hei Chung",
+        "Shutong Hou",
+        "Huixue Zhou",
+        "Min Zeng",
+        "Bhavadharini Ramu",
+        "Lin Yee Chen",
+        "Feng Xie",
+        "Rui Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-11T13:41:05+00:00",
+      "link": "https://arxiv.org/pdf/2603.10764v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Explainable differential diagnosis in cardiology using MIMIC dataset",
+      "llm_evidence_cn": "使用 MIMIC 数据集进行心脏病的可解释鉴别诊断",
+      "llm_evidence": "使用 MIMIC 数据集进行心脏病的可解释鉴别诊断",
+      "canonical_evidence": "使用 MIMIC 数据集进行心脏病的可解释鉴别诊断",
+      "llm_tldr_en": "HeartAgent is an autonomous system for cardiology diagnosis using complex reasoning and clinical data.",
+      "llm_tldr_cn": "HeartAgent 是一个利用复杂推理和临床数据进行心脏病诊断的自主系统。",
+      "llm_tldr": "HeartAgent 是一个利用复杂推理和临床数据进行心脏病诊断的自主系统。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.11495v1",
+      "title": "Try, Check and Retry: A Divide-and-Conquer Framework for Boosting Long-context Tool-Calling Performance of LLMs",
+      "abstract": "Tool-calling empowers Large Language Models (LLMs) to interact with external environments. However, current methods often struggle to handle massive and noisy candidate tools in long-context tool-calling tasks, limiting their real-world application. To this end, we propose Tool-DC, a Divide-and-Conquer framework for boosting tool-calling performance of LLMs. The core of Tool-DC is to reduce the reasoning difficulty and make full use of self-reflection ability of LLMs via a \"Try-Check-Retry\" paradigm. Specifically, Tool-DC involves two variants: 1) the training-free Tool-DC (TF), which is plug-and-play and flexible; 2) the training-based Tool-DC (TB), which is more inference-efficient. Extensive experiments show that both Tool-DC methods outperform their counterparts by a clear margin. Tool-DC (TF) brings up to +25.10% average gains against the baseline on BFCL and ACEBench benchmarks, while Tool-DC (TB) enables Qwen2.5-7B to achieve comparable or even better performance than proprietary LLMs, e.g., OpenAI o3 and Claude-Haiku-4.5.",
+      "authors": [
+        "Kunfeng Chen",
+        "Qihuang Zhong",
+        "Juhua Liu",
+        "Bo Du",
+        "Dacheng Tao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-12T03:30:01+00:00",
+      "link": "https://arxiv.org/pdf/2603.11495v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "boosting long-context tool-calling performance of LLMs",
+      "llm_evidence_cn": "提升大语言模型长上下文工具调用性能",
+      "llm_evidence": "提升大语言模型长上下文工具调用性能",
+      "canonical_evidence": "提升大语言模型长上下文工具调用性能",
+      "llm_tldr_en": "Proposes Tool-DC, a framework to improve LLM tool-calling in long-context scenarios using divide-and-conquer.",
+      "llm_tldr_cn": "提出Tool-DC框架，通过分治策略提升大模型在长上下文场景下的工具调用性能。",
+      "llm_tldr": "提出Tool-DC框架，通过分治策略提升大模型在长上下文场景下的工具调用性能。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
+      "matched_requirement_id": "req-40",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.11768v1",
+      "title": "Governing Evolving Memory in LLM Agents: Risks, Mechanisms, and the Stability and Safety Governed Memory (SSGM) Framework",
+      "abstract": "Long-term memory has emerged as a foundational component of autonomous Large Language Model (LLM) agents, enabling continuous adaptation, lifelong multimodal learning, and sophisticated reasoning. However, as memory systems transition from static retrieval databases to dynamic, agentic mechanisms, critical concerns regarding memory governance, semantic drift, and privacy vulnerabilities have surfaced. While recent surveys have focused extensively on memory retrieval efficiency, they largely overlook the emergent risks of memory corruption in highly dynamic environments. To address these emerging challenges, we propose the Stability and Safety-Governed Memory (SSGM) framework, a conceptual governance architecture. SSGM decouples memory evolution from execution by enforcing consistency verification, temporal decay modeling, and dynamic access control prior to any memory consolidation. Through formal analysis and architectural decomposition, we show how SSGM can mitigate topology-induced knowledge leakage where sensitive contexts are solidified into long-term storage, and help prevent semantic drift where knowledge degrades through iterative summarization. Ultimately, this work provides a comprehensive taxonomy of memory corruption risks and establishes a robust governance paradigm for deploying safe, persistent, and reliable agentic memory systems.",
+      "authors": [
+        "Chingkwun Lam",
+        "Jiaxin Li",
+        "Lingfei Zhang",
+        "Kuo Zhao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-12T10:16:52+00:00",
+      "link": "https://arxiv.org/pdf/2603.11768v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Governing evolving long-term memory in LLM agents",
+      "llm_evidence_cn": "管理LLM智能体中演化的长期记忆",
+      "llm_evidence": "管理LLM智能体中演化的长期记忆",
+      "canonical_evidence": "管理LLM智能体中演化的长期记忆",
+      "llm_tldr_en": "Proposes a framework for governing the stability and safety of dynamic long-term memory in LLM agents.",
+      "llm_tldr_cn": "提出了一个管理LLM智能体动态长期记忆稳定性和安全性的框架。",
+      "llm_tldr": "提出了一个管理LLM智能体动态长期记忆稳定性和安全性的框架。",
+      "llm_tags": [
+        "query:lh-llm:composite"
+      ],
+      "matched_query_tag": "query:lh-llm:composite",
+      "matched_query_text": "Papers central to 查找Long-horizon LLM（长程/长上下文大语言模型）的相关论文, especially work that connects or combines: Long-horizon large language models research papers; LLMs with extended context window length; Techniques for infinite context processing in LLMs; Needle in a haystack evaluation for long context LLMs; External memory and retrieval augmented generation for long horizons; KV cache compression and context distillation for long sequences; Recurrent neural network structures for long-horizon language modeling; State of the art methods for long horizon reasoning in LLMs; Benchmark datasets for evaluating long context large language models; Efficient attention mechanisms for processing extremely long sequences.",
+      "matched_requirement_id": "req-composite-lh-llm",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13154v1",
+      "title": "ESG-Bench: Benchmarking Long-Context ESG Reports for Hallucination Mitigation",
+      "abstract": "As corporate responsibility increasingly incorporates environmental, social, and governance (ESG) criteria, ESG reporting is becoming a legal requirement in many regions and a key channel for documenting sustainability practices and assessing firms' long-term and ethical performance. However, the length and complexity of ESG disclosures make them difficult to interpret and automate the analysis reliably. To support scalable and trustworthy analysis, this paper introduces ESG-Bench, a benchmark dataset for ESG report understanding and hallucination mitigation in large language models (LLMs). ESG-Bench contains human-annotated question-answer (QA) pairs grounded in real-world ESG report contexts, with fine-grained labels indicating whether model outputs are factually supported or hallucinated. Framing ESG report analysis as a QA task with verifiability constraints enables systematic evaluation of LLMs' ability to extract and reason over ESG content and provides a new use case: mitigating hallucinations in socially sensitive, compliance-critical settings. We design task-specific Chain-of-Thought (CoT) prompting strategies and fine-tune multiple state-of-the-art LLMs on ESG-Bench using CoT-annotated rationales. Our experiments show that these CoT-based methods substantially outperform standard prompting and direct fine-tuning in reducing hallucinations, and that the gains transfer to existing QA benchmarks beyond the ESG domain.",
+      "authors": [
+        "Siqi Sun",
+        "Ben Peng Wu",
+        "Mali Jin",
+        "Peizhen Bai",
+        "Hanpei Zhang",
+        "Xingyi Song"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-13T16:48:05+00:00",
+      "link": "https://arxiv.org/pdf/2603.13154v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Benchmarking long-context ESG reports for LLMs",
+      "llm_evidence_cn": "针对大语言模型的长上下文ESG报告基准测试",
+      "llm_evidence": "针对大语言模型的长上下文ESG报告基准测试",
+      "canonical_evidence": "针对大语言模型的长上下文ESG报告基准测试",
+      "llm_tldr_en": "Introduces ESG-Bench to evaluate LLM understanding and hallucination mitigation in long, complex corporate reports.",
+      "llm_tldr_cn": "推出ESG-Bench，用于评估LLM在长且复杂的企业报告中的理解能力和幻觉抑制。",
+      "llm_tldr": "推出ESG-Bench，用于评估LLM在长且复杂的企业报告中的理解能力和幻觉抑制。",
+      "llm_tags": [
+        "query:lh-llm:composite"
+      ],
+      "matched_query_tag": "query:lh-llm:composite",
+      "matched_query_text": "Papers central to 查找Long-horizon LLM（长程/长上下文大语言模型）的相关论文, especially work that connects or combines: Long-horizon large language models research papers; LLMs with extended context window length; Techniques for infinite context processing in LLMs; Needle in a haystack evaluation for long context LLMs; External memory and retrieval augmented generation for long horizons; KV cache compression and context distillation for long sequences; Recurrent neural network structures for long-horizon language modeling; State of the art methods for long horizon reasoning in LLMs; Benchmark datasets for evaluating long context large language models; Efficient attention mechanisms for processing extremely long sequences.",
+      "matched_requirement_id": "req-composite-lh-llm",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13406v1",
+      "title": "Nuanced Emotion Recognition Based on a Segment-based MLLM Framework Leveraging Qwen3-Omni for AH Detection",
+      "abstract": "Emotion recognition in videos is a pivotal task in affective computing, where identifying subtle psychological states such as Ambivalence and Hesitancy holds significant value for behavioral intervention and digital health. Ambivalence and Hesitancy states often manifest through cross-modal inconsistencies such as discrepancies between facial expressions, vocal tones, and textual semantics, posing a substantial challenge for automated recognition. This paper proposes a recognition framework that integrates temporal segment modeling with Multimodal Large Language Models. To address computational efficiency and token constraints in long video processing, we employ a segment-based strategy, partitioning videos into short clips with a maximum duration of 5 seconds. We leverage the Qwen3-Omni-30B-A3B model, fine-tuned on the BAH dataset using LoRA and full-parameter strategies via the MS-Swift framework, enabling the model to synergistically analyze visual and auditory signals. Experimental results demonstrate that the proposed method achieves an accuracy of 85.1% on the test set, significantly outperforming existing benchmarks and validating the superior capability of Multimodal Large Language Models in capturing complex and nuanced emotional conflicts. The code is released at https://github.com/dlnn123/A-H-Detection-with-Qwen-Omni.git.",
+      "authors": [
+        "Liang Tang",
+        "Hongda Li",
+        "Jiayu Zhang",
+        "Long Chen",
+        "Shuxian Li",
+        "Siqi Pei",
+        "Tiaonan Duan",
+        "Yuhao Cheng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-03-12T08:31:42+00:00",
+      "link": "https://arxiv.org/pdf/2603.13406v1",
+      "tags": [
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "affective computing and nuanced emotion recognition using MLLMs",
+      "llm_evidence_cn": "使用多模态大模型进行情感计算和细微情感识别",
+      "llm_evidence": "使用多模态大模型进行情感计算和细微情感识别",
+      "canonical_evidence": "使用多模态大模型进行情感计算和细微情感识别",
+      "llm_tldr_en": "A segment-based MLLM framework for recognizing subtle emotional states like ambivalence in videos.",
+      "llm_tldr_cn": "一种基于片段的多模态大模型框架，用于识别视频中矛盾和犹豫等细微情感。",
+      "llm_tldr": "一种基于片段的多模态大模型框架，用于识别视频中矛盾和犹豫等细微情感。",
+      "llm_tags": [
+        "query:llm-ac:composite"
+      ],
+      "matched_query_tag": "query:llm-ac:composite",
+      "matched_query_text": "Papers central to 查找LLM做情感计算和共情对话的论文, especially work that connects or combines: Large Language Models; Affective Computing and Sentiment Analysis; Artificial Emotional Intelligence in LLMs; Emotion Recognition in Conversation; Empathetic Response Generation; LLMs for Psychological Support and Counseling; Chain of Empathy prompting for LLMs; benchmarking empathy in large language models; fine tuning LLMs for empathetic conversation; prompt engineering for emotional intelligence in AI.",
+      "matched_requirement_id": "req-composite-llm-ac",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13511v1",
+      "title": "Daily Affect Fluctuations in Phone Screen Content Predict Anxiety and Depressive Symptoms",
+      "abstract": "The relationship between digital media use and mental health remains poorly understood, in part because real-world digital behavior is rarely captured at scale. This intensive longitudinal study tracked participants' complete natural smartphone interactions over one year. We collected screenshots every 5 seconds from 145 adults (yielding 111 million screenshots), alongside biweekly assessments of anxiety and depression (mean = 24 surveys). The valence and arousal of each screenshot were assessed using a deep learning affect model. Individuals showed highly idiosyncratic media patterns, with substantially more variance in anxiety and depression accounted for within-person than between-person. Day-to-day fluctuations in the valence and arousal of a person's screen content predicted subsequent changes in depression and anxiety, whereas between-person differences did not. Specifically, greater exposure to low-arousal negative content was associated with higher depression and anxiety. These findings underscore the dynamic, idiosyncratic nature of digital consumption and the need for targeted measurement and intervention.",
+      "authors": [
+        "Christopher A. Kelly",
+        "Yikun Chi",
+        "Nicholas Haber",
+        "Byron Reeves",
+        "Mu-Jung Cho",
+        "Thomas N. Robinson",
+        "Nilam Ram",
+        "Johannes C. Eichstaedt"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-03-13T18:41:47+00:00",
+      "link": "https://arxiv.org/pdf/2603.13511v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM MH"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "predicting anxiety and depressive symptoms from digital behavior",
+      "llm_evidence_cn": "通过数字行为预测焦虑和抑郁症状",
+      "llm_evidence": "通过数字行为预测焦虑和抑郁症状",
+      "canonical_evidence": "通过数字行为预测焦虑和抑郁症状",
+      "llm_tldr_en": "Uses deep learning affect models on smartphone content to predict fluctuations in anxiety and depression.",
+      "llm_tldr_cn": "利用深度学习情感模型分析手机内容，以预测焦虑和抑郁症状的波动。",
+      "llm_tldr": "利用深度学习情感模型分析手机内容，以预测焦虑和抑郁症状的波动。",
+      "llm_tags": [
+        "query:llm-mh:composite"
+      ],
+      "matched_query_tag": "query:llm-mh:composite",
+      "matched_query_text": "Papers central to 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文, especially work that connects or combines: Large Language Models; Mental health applications and diagnosis; Computational psychiatry and LLMs; AI-assisted psychotherapy and counseling; LLM for depression detection and analysis; Large language models for anxiety assessment; Emotional and sentiment analysis in mental health; LLMs in clinical psychology research; Applications of large language models in mental health diagnosis; LLM based conversational agents for psychological counseling.",
+      "matched_requirement_id": "req-composite-llm-mh",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13673v1",
+      "title": "LLM-MINE: Large Language Model based Alzheimer's Disease and Related Dementias Phenotypes Mining from Clinical Notes",
+      "abstract": "Accurate extraction of Alzheimer's Disease and Related Dementias (ADRD) phenotypes from electronic health records (EHR) is critical for early-stage detection and disease staging. However, this information is usually embedded in unstructured textual data rather than tabular data, making it difficult to be extracted accurately. We therefore propose LLM-MINE, a Large Language Model-based phenotype mining framework for automatic extraction of ADRD phenotypes from clinical notes. Using two expert-defined phenotype lists, we evaluate the extracted phenotypes by examining their statistical significance across cohorts and their utility for unsupervised disease staging. Chi-square analyses confirm statistically significant phenotype differences across cohorts, with memory impairment being the strongest discriminator. Few-shot prompting with the combined phenotype lists achieves the best clustering performance (ARI=0.290, NMI=0.232), substantially outperforming biomedical NER and dictionary-based baselines. Our results demonstrate that LLM-based phenotype extraction is a promising tool for discovering clinically meaningful ADRD signals from unstructured notes.",
+      "authors": [
+        "Mingchen Shao",
+        "Yuzhang Xie",
+        "Carl Yang",
+        "Jiaying Lu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-14T00:45:23+00:00",
+      "link": "https://arxiv.org/pdf/2603.13673v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM based phenotype mining from clinical notes in EHR",
+      "llm_evidence_cn": "基于大语言模型的电子健康记录临床笔记表型挖掘",
+      "llm_evidence": "基于大语言模型的电子健康记录临床笔记表型挖掘",
+      "canonical_evidence": "基于大语言模型的电子健康记录临床笔记表型挖掘",
+      "llm_tldr_en": "Proposes LLM-MINE for automatic extraction of Alzheimer's phenotypes from unstructured EHR clinical notes.",
+      "llm_tldr_cn": "提出 LLM-MINE，用于从非结构化 EHR 临床笔记中自动提取阿尔茨海默症表型。",
+      "llm_tldr": "提出 LLM-MINE，用于从非结构化 EHR 临床笔记中自动提取阿尔茨海默症表型。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13962v1",
+      "title": "sebis at ArchEHR-QA 2026: How Much Can You Do Locally? Evaluating Grounded EHR QA on a Single Notebook",
+      "abstract": "Clinical question answering over electronic health records (EHRs) can help clinicians and patients access relevant medical information more efficiently. However, many recent approaches rely on large cloud-based models, which are difficult to deploy in clinical environments due to privacy constraints and computational requirements. In this work, we investigate how far grounded EHR question answering can be pushed when restricted to a single notebook. We participate in all four subtasks of the ArchEHR-QA 2026 shared task and evaluate several approaches designed to run on commodity hardware. All experiments are conducted locally without external APIs or cloud infrastructure. Our results show that such systems can achieve competitive performance on the shared task leaderboards. In particular, our submissions perform above average in two subtasks, and we observe that smaller models can approach the performance of much larger systems when properly configured. These findings suggest that privacy-preserving EHR QA systems running fully locally are feasible with current models and commodity hardware. The source code is available at https://github.com/ibrahimey/ArchEHR-QA-2026.",
+      "authors": [
+        "Ibrahim Ebrar Yurt",
+        "Fabian Karl",
+        "Tejaswi Choppa",
+        "Florian Matthes"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-14T14:17:55+00:00",
+      "link": "https://arxiv.org/pdf/2603.13962v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "grounded EHR question answering on local hardware",
+      "llm_evidence_cn": "在本地硬件上进行基于电子健康记录的问答",
+      "llm_evidence": "在本地硬件上进行基于电子健康记录的问答",
+      "canonical_evidence": "在本地硬件上进行基于电子健康记录的问答",
+      "llm_tldr_en": "Evaluates local deployment of clinical QA systems on EHR data to address privacy and computational constraints.",
+      "llm_tldr_cn": "评估在本地部署基于EHR的临床问答系统，以解决隐私和计算资源限制问题。",
+      "llm_tldr": "评估在本地部署基于EHR的临床问答系统，以解决隐私和计算资源限制问题。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.13988v1",
+      "title": "Faithful or Just Plausible? Evaluating the Faithfulness of Closed-Source LLMs in Medical Reasoning",
+      "abstract": "Closed-source large language models (LLMs), such as ChatGPT and Gemini, are increasingly consulted for medical advice, yet their explanations may appear plausible while failing to reflect the model's underlying reasoning process. This gap poses serious risks as patients and clinicians may trust coherent but misleading explanations. We conduct a systematic black-box evaluation of faithfulness in medical reasoning among three widely used closed-source LLMs. Our study consists of three perturbation-based probes: (1) causal ablation, testing whether stated chain-of-thought (CoT) reasoning causally influences predictions; (2) positional bias, examining whether models create post-hoc justifications for answers driven by input positioning; and (3) hint injection, testing susceptibility to external suggestions. We complement these quantitative probes with a small-scale human evaluation of model responses to patient-style medical queries to examine concordance between physician assessments of explanation faithfulness and layperson perceptions of trustworthiness. We find that CoT reasoning steps often do not causally drive predictions, and models readily incorporate external hints without acknowledgment. In contrast, positional biases showed minimal impact in this setting. These results underscore that faithfulness, not just accuracy, must be central in evaluating LLMs for medicine, to ensure both public protection and safe clinical deployment.",
+      "authors": [
+        "Halimat Afolabi",
+        "Zainab Afolabi",
+        "Elizabeth Friel",
+        "Jude Roberts",
+        "Antonio Ji-Xu",
+        "Lloyd Chen",
+        "Egheosa Ogbomo",
+        "Emiliomo Imevbore",
+        "Phil Eneje",
+        "Wissal El Ouahidi",
+        "Aaron Sohal",
+        "Alisa Kennan",
+        "Shreya Srivastava",
+        "Anirudh Vairavan",
+        "Laura Napitu",
+        "Katie McClure"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-14T15:30:53+00:00",
+      "link": "https://arxiv.org/pdf/2603.13988v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Evaluating faithfulness of LLMs in medical reasoning using perturbation-based probes",
+      "llm_evidence_cn": "使用扰动探针评估大语言模型在医学推理中的忠实度",
+      "llm_evidence": "使用扰动探针评估大语言模型在医学推理中的忠实度",
+      "canonical_evidence": "使用扰动探针评估大语言模型在医学推理中的忠实度",
+      "llm_tldr_en": "Evaluates whether closed-source LLMs' medical explanations reflect their actual internal reasoning processes.",
+      "llm_tldr_cn": "评估闭源大语言模型在医学推理中的解释是否真实反映了其内部推理过程。",
+      "llm_tldr": "评估闭源大语言模型在医学推理中的解释是否真实反映了其内部推理过程。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "Large Language Models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14003v1",
+      "title": "The Taxonomies, Training, and Applications of Event Stream Modelling for Electronic Health Records",
+      "abstract": "The widespread adoption of electronic health records (EHRs) enables the acquisition of heterogeneous clinical data, spanning lab tests, vital signs, medications, and procedures, which offer transformative potential for artificial intelligence in healthcare. Although traditional modelling approaches have typically relied on multivariate time series, they often struggle to accommodate the inherent sparsity and irregularity of real-world clinical workflows. Consequently, research has shifted toward event stream representation, which treats patient records as continuous sequences, thereby preserving the precise temporal structure of the patient journey. However, the existing literature remains fragmented, characterised by inconsistent definitions, disparate modelling architectures, and varying training protocols. To address these gaps, this review establishes a unified definition of EHR event streams and introduces a novel taxonomy that categorises models based on their handling of event time, type, and value. We systematically review training strategies, ranging from supervised learning to self-supervised methods, and provide a comprehensive discussion of applications across clinical scenarios. Finally, we identify open critical challenges and future directions, with the aim of clarifying the current landscape and guiding the development of next-generation healthcare models.",
+      "authors": [
+        "Mingcheng Zhu",
+        "Yu Liu",
+        "Zhiyao Luo",
+        "Tingting Zhu"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP",
+        "cs.LG"
+      ],
+      "published": "2026-03-14T16:08:30+00:00",
+      "link": "https://arxiv.org/pdf/2603.14003v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "event stream modelling for preserving temporal structure in EHR",
+      "llm_evidence_cn": "电子健康记录中保留时序结构的事件流建模",
+      "llm_evidence": "电子健康记录中保留时序结构的事件流建模",
+      "canonical_evidence": "电子健康记录中保留时序结构的事件流建模",
+      "llm_tldr_en": "Reviews event stream modelling to preserve precise temporal structures in electronic health records.",
+      "llm_tldr_cn": "综述了事件流建模方法，旨在保留电子健康记录中精确的时间结构。",
+      "llm_tldr": "综述了事件流建模方法，旨在保留电子健康记录中精确的时间结构。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14007v1",
+      "title": "Formal Abductive Explanations for Navigating Mental Health Help-Seeking and Diversity in Tech Workplaces",
+      "abstract": "This work proposes a formal abductive explanation framework designed to systematically uncover rationales underlying AI predictions of mental health help-seeking within tech workplace settings. By computing rigorous justifications for model outputs, this approach enables principled selection of models tailored to distinct psychiatric profiles and underpins ethically robust recourse planning. Beyond moving past ad-hoc interpretability, we explicitly examine the influence of sensitive attributes such as gender on model decisions, a critical component for fairness assessments. In doing so, it aligns explanatory insights with the complex landscape of workplace mental health, ultimately supporting trustworthy deployment and targeted interventions.",
+      "authors": [
+        "Belona Sonna",
+        "Alain Momo",
+        "Alban Grastien"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-14T16:17:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.14007v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "AI predictions of mental health help-seeking in workplaces",
+      "llm_evidence_cn": "AI 对职场心理健康求助行为的预测",
+      "llm_evidence": "AI 对职场心理健康求助行为的预测",
+      "canonical_evidence": "AI 对职场心理健康求助行为的预测",
+      "llm_tldr_en": "A formal abductive explanation framework for AI-driven mental health help-seeking analysis in tech workplaces.",
+      "llm_tldr_cn": "一个用于科技职场 AI 驱动心理健康求助分析的正式溯因解释框架。",
+      "llm_tldr": "一个用于科技职场 AI 驱动心理健康求助分析的正式溯因解释框架。",
+      "llm_tags": [
+        "query:llm-mh:composite"
+      ],
+      "matched_query_tag": "query:llm-mh:composite",
+      "matched_query_text": "Papers central to 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文, especially work that connects or combines: Large Language Models; Mental health applications and diagnosis; Computational psychiatry and LLMs; AI-assisted psychotherapy and counseling; LLM for depression detection and analysis; Large language models for anxiety assessment; Emotional and sentiment analysis in mental health; LLMs in clinical psychology research; Applications of large language models in mental health diagnosis; LLM based conversational agents for psychological counseling.",
+      "matched_requirement_id": "req-composite-llm-mh",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14075v1",
+      "title": "Enhancing Mental Health Classification with Layer-Attentive Residuals and Contrastive Feature Learning",
+      "abstract": "The classification of mental health is challenging for a variety of reasons. For one, there is overlap between the mental health issues. In addition, the signs of mental health issues depend on the context of the situation, making classification difficult. Although fine-tuning transformers has improved the performance for mental health classification, standard cross-entropy training tends to create entangled feature spaces and fails to utilize all the information the transformers contain. We present a new framework that focuses on representations to improve mental health classification. This is done using two methods. First, \\textbf{layer-attentive residual aggregation} which works on residual connections to to weigh and fuse representations from all transformer layers while maintaining high-level semantics. Second, \\textbf{supervised contrastive feature learning} uses temperature-scaled supervised contrastive learning with progressive weighting to increase the geometric margin between confusable mental health problems and decrease class overlap by restructuring the feature space. With a score of \\textbf{74.36\\%}, the proposed method is the best performing on the SWMH benchmark and outperforms models that are domain-specialized, such as \\textit{MentalBERT} and \\textit{MentalRoBERTa} by margins of (3.25\\% - 2.2\\%) and 2.41 recall points over the highest achieving model. These findings show that domain-adaptive pretraining for mental health text classification can be surpassed by carefully designed representation geometry and layer-aware residual integration, which also provide enhanced interpretability through learnt layer importance.",
+      "authors": [
+        "Menna Elgabry",
+        "Ali Hamdi",
+        "Khaled Shaban"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-14T18:42:51+00:00",
+      "link": "https://arxiv.org/pdf/2603.14075v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "mental health classification using transformer representations",
+      "llm_evidence_cn": "使用Transformer表示进行心理健康分类",
+      "llm_evidence": "使用Transformer表示进行心理健康分类",
+      "canonical_evidence": "使用Transformer表示进行心理健康分类",
+      "llm_tldr_en": "Enhances mental health classification using layer-attentive residuals and contrastive feature learning in transformers.",
+      "llm_tldr_cn": "通过层注意力残差和对比特征学习增强Transformer在心理健康分类中的表现。",
+      "llm_tldr": "通过层注意力残差和对比特征学习增强Transformer在心理健康分类中的表现。",
+      "llm_tags": [
+        "query:llm-mh"
+      ],
+      "matched_query_tag": "query:llm-mh",
+      "matched_query_text": "Mental health applications and diagnosis",
+      "matched_requirement_id": "req-57",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14719v1",
+      "title": "Multimodal Deep Learning for Early Prediction of Patient Deterioration in the ICU: Integrating Time-Series EHR Data with Clinical Notes",
+      "abstract": "Early identification of patients at risk for clinical deterioration in the intensive care unit (ICU) remains a critical challenge. Delayed recognition of impending adverse events, including mortality, vasopressor initiation, and mechanical ventilation, contributes to preventable morbidity and mortality. We present a multimodal deep learning approach that combines structured time-series data (vital signs and laboratory values) with unstructured clinical notes to predict patient deterioration within 24 hours. Using the MIMIC-IV database, we constructed a cohort of 74,822 ICU stays and generated 5.7 million hourly prediction samples. Our architecture employs a bidirectional LSTM encoder for temporal patterns in physiologic data and ClinicalBERT embeddings for clinical notes, fused through a cross-modal attention mechanism. We also present a systematic review of existing approaches to ICU deterioration prediction, identifying 31 studies published between 2015 and 2024. Most existing models rely solely on structured data and achieve area under the curve (AUC) values between 0.70 and 0.85. Studies incorporating clinical notes remain rare but show promise for capturing information not present in structured fields. Our multimodal model achieves a test AUROC of 0.7857 and AUPRC of 0.1908 on 823,641 held-out samples, with a validation-to-test gap of only 0.6 percentage points. Ablation analysis validates the multimodal approach: clinical notes improve AUROC by 2.5 percentage points and AUPRC by 39.2% relative to a structured-only baseline, while deep learning models consistently outperform classical baselines (XGBoost AUROC: 0.7486, logistic regression: 0.7171). This work contributes both a thorough review of the field and a reproducible multimodal framework for clinical deterioration prediction.",
+      "authors": [
+        "Binesh Sadanandan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-16T01:50:08+00:00",
+      "link": "https://arxiv.org/pdf/2603.14719v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Integrating time-series EHR data with clinical notes for patient deterioration prediction",
+      "llm_evidence_cn": "结合时间序列EHR数据与临床笔记进行患者病情恶化预测",
+      "llm_evidence": "结合时间序列EHR数据与临床笔记进行患者病情恶化预测",
+      "canonical_evidence": "结合时间序列EHR数据与临床笔记进行患者病情恶化预测",
+      "llm_tldr_en": "A multimodal deep learning approach integrating time-series EHR and clinical notes for ICU deterioration prediction.",
+      "llm_tldr_cn": "一种结合时间序列EHR和临床笔记的多模态深度学习方法，用于预测ICU患者病情恶化。",
+      "llm_tldr": "一种结合时间序列EHR和临床笔记的多模态深度学习方法，用于预测ICU患者病情恶化。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14771v1",
+      "title": "OpenHospital: A Thing-in-itself Arena for Evolving and Benchmarking LLM-based Collective Intelligence",
+      "abstract": "Large Language Model (LLM)-based Collective Intelligence (CI) presents a promising approach to overcoming the data wall and continuously boosting the capabilities of LLM agents. However, there is currently no dedicated arena for evolving and benchmarking LLM-based CI. To address this gap, we introduce OpenHospital, an interactive arena where physician agents can evolve CI through interactions with patient agents. This arena employs a data-in-agent-self paradigm that rapidly enhances agent capabilities and provides robust evaluation metrics for benchmarking both medical proficiency and system efficiency. Experiments demonstrate the effectiveness of OpenHospital in both fostering and quantifying CI.",
+      "authors": [
+        "Peigen Liu",
+        "Rui Ding",
+        "Yuren Mao",
+        "Ziyan Jiang",
+        "Yuxiang Ye",
+        "Yunjun Gao",
+        "Ying Zhang",
+        "Renjie Sun",
+        "Longbin Lai",
+        "Zhengping Qian"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-16T03:12:18+00:00",
+      "link": "https://arxiv.org/pdf/2603.14771v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "arena for evolving and benchmarking LLM-based collective intelligence in a hospital setting",
+      "llm_evidence_cn": "在医院场景中演化和基准测试基于大语言模型的集体智能的竞技场",
+      "llm_evidence": "在医院场景中演化和基准测试基于大语言模型的集体智能的竞技场",
+      "canonical_evidence": "在医院场景中演化和基准测试基于大语言模型的集体智能的竞技场",
+      "llm_tldr_en": "Presents OpenHospital, an interactive arena to benchmark medical proficiency and efficiency of LLM physician agents.",
+      "llm_tldr_cn": "介绍了OpenHospital，一个用于基准测试大语言模型医生智能体医疗水平和效率的交互式竞技场。",
+      "llm_tldr": "介绍了OpenHospital，一个用于基准测试大语言模型医生智能体医疗水平和效率的交互式竞技场。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.14976v1",
+      "title": "Anchoring Emotions in Text: Robust Multimodal Fusion for Mimicry Intensity Estimation",
+      "abstract": "Estimating Emotional Mimicry Intensity (EMI) in naturalistic environments is a critical yet challenging task in affective computing. The primary difficulty lies in effectively modeling the complex, nonlinear temporal dynamics across highly heterogeneous modalities, especially when physical signals are corrupted or missing. To tackle this, we propose TAEMI (Text-Anchored Emotional Mimicry Intensity estimation), a novel multimodal framework designed for the 10th ABAW Competition. Motivated by the observation that continuous visual and acoustic signals are highly susceptible to transient environmental noise, we break the traditional symmetric fusion paradigm. Instead, we leverage textual transcript--which inherently encode a stable, time-independent semantic prior--as central anchors. Specifically, we introduce a Text-Anchored Dual Cross-Attention mechanism that utilizes these robust textual queries to actively filter out frame-level redundancies and align the noisy physical streams. Furthermore, to prevent catastrophic performance degradation caused by inevitably missing data in unconstrained real-world scenarios, we integrate Learnable Missing-Modality Tokens and a Modality Dropout strategy during training. Extensive experiments on the Hume-Vidmimic2 dataset demonstrate that TAEMI effectively captures fine-grained emotional variations and maintains robust predictive resilience under imperfect conditions. Our framework achieves a state-of-the-art mean Pearson correlation coefficient across six continuous emotional dimensions, significantly outperforming existing baseline methods.",
+      "authors": [
+        "Lingsi Zhu",
+        "Yuefeng Zou",
+        "Yunxiang Zhang",
+        "Naixiang Zheng",
+        "Guoyuan Wang",
+        "Jun Yu",
+        "Jiaen Liang",
+        "Wei Huang",
+        "Shengping Liu",
+        "Ximin Zheng"
+      ],
+      "primary_category": "cs.MM",
+      "categories": [
+        "cs.MM",
+        "cs.CV"
+      ],
+      "published": "2026-03-16T08:37:37+00:00",
+      "link": "https://arxiv.org/pdf/2603.14976v1",
+      "tags": [
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multimodal fusion for emotional mimicry intensity estimation in affective computing",
+      "llm_evidence_cn": "情感计算中用于情感模仿强度估计的多模态融合",
+      "llm_evidence": "情感计算中用于情感模仿强度估计的多模态融合",
+      "canonical_evidence": "情感计算中用于情感模仿强度估计的多模态融合",
+      "llm_tldr_en": "Presents a text-anchored multimodal framework for robust emotional mimicry intensity estimation.",
+      "llm_tldr_cn": "提出一种以文本为锚点的多模态框架，用于稳健的情感模仿强度估计。",
+      "llm_tldr": "提出一种以文本为锚点的多模态框架，用于稳健的情感模仿强度估计。",
+      "llm_tags": [
+        "query:llm-ac"
+      ],
+      "matched_query_tag": "query:llm-ac",
+      "matched_query_text": "Affective Computing and Sentiment Analysis",
+      "matched_requirement_id": "req-22",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.15245v1",
+      "title": "Practicing with Language Models Cultivates Human Empathic Communication",
+      "abstract": "Empathy is central to human connection, yet people often struggle to express it effectively. In blinded evaluations, large language models (LLMs) generate responses that are often judged more empathic than human-written ones. Yet when a response is attributed to AI, recipients feel less heard and validated than when comparable responses are attributed to a human. To probe and address this gap in empathic communication skill, we built Lend an Ear, an experimental conversation platform in which participants are asked to offer empathic support to an LLM role-playing personal and workplace troubles. From 33,938 messages spanning 2,904 text-based conversations between 968 participants and their LLM conversational partners, we derive a data-driven taxonomy of idiomatic empathic expressions in naturalistic dialogue. Based on a pre-registered randomized experiment, we present evidence that a brief LLM coaching intervention offering personalized feedback on how to effectively communicate empathy significantly boosts alignment of participants' communication patterns with normative empathic communication patterns relative to both a control group and a group that received video-based but non-personalized feedback. Moreover, we find evidence for a silent empathy effect that people feel empathy but systematically fail to express it. Nonetheless, participants reliably identify responses aligned with normative empathic communication criteria as more expressive of empathy. Together, these results advance the scientific understanding of how empathy is expressed and valued and demonstrate a scalable, AI-based intervention for scaffolding and cultivating it.",
+      "authors": [
+        "Aakriti Kumar",
+        "Nalin Poungpeth",
+        "Diyi Yang",
+        "Bruce Lambert",
+        "Matthew Groh"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.HC"
+      ],
+      "published": "2026-03-16T13:16:06+00:00",
+      "link": "https://arxiv.org/pdf/2603.15245v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "benchmarking empathy in large language models",
+      "llm_evidence_cn": "大语言模型共情能力基准测试",
+      "llm_evidence": "大语言模型共情能力基准测试",
+      "canonical_evidence": "大语言模型共情能力基准测试",
+      "llm_tldr_en": "This study evaluates how practicing with LLMs can improve human empathic communication skills.",
+      "llm_tldr_cn": "该研究探讨了与大语言模型练习如何提升人类的共情沟通能力。",
+      "llm_tldr": "该研究探讨了与大语言模型练习如何提升人类的共情沟通能力。",
+      "llm_tags": [
+        "query:llm-ac"
+      ],
+      "matched_query_tag": "query:llm-ac",
+      "matched_query_text": "benchmarking empathy in large language models",
+      "matched_requirement_id": "req-28",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.15270v1",
+      "title": "From Documents to Spans: Code-Centric Learning for LLM-based ICD Coding",
+      "abstract": "ICD coding is a critical yet challenging task in healthcare. Recently, LLM-based methods demonstrate stronger generalization than discriminative methods in ICD coding. However, fine-tuning LLMs for ICD coding faces three major challenges. First, existing public ICD coding datasets provide limited coverage of the ICD code space, restricting a model's ability to generalize to unseen codes. Second, naive fine-tuning diminishes the interpretability of LLMs, as few public datasets contain explicit supporting evidence for assigned codes. Third, ICD coding typically involves long clinical documents, making fine-tuning LLMs computationally expensive. To address these issues, we propose Code-Centric Learning, a training framework that shifts supervision from full clinical documents to scalable, short evidence spans. The key idea of this framework is that span-level learning improves LLMs' ability to perform document-level ICD coding. Our proposed framework consists of a mixed training strategy and code-centric data expansion, which substantially reduces training cost, improves accuracy on unseen ICD codes and preserves interpretability. Under the same LLM backbone, our method substantially outperforms strong baselines. Notably, our method enables small-scale LLMs to achieve performance comparable to much larger proprietary models, demonstrating its effectiveness and potential for fully automated ICD coding.",
+      "authors": [
+        "Xu Zhang",
+        "Wenxin Ma",
+        "Chenxu Wu",
+        "Rongsheng Wang",
+        "Kun Zhang",
+        "S. Kevin Zhou"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-16T13:37:01+00:00",
+      "link": "https://arxiv.org/pdf/2603.15270v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM-based ICD coding for long clinical documents",
+      "llm_evidence_cn": "基于大语言模型的长临床文档 ICD 编码",
+      "llm_evidence": "基于大语言模型的长临床文档 ICD 编码",
+      "canonical_evidence": "基于大语言模型的长临床文档 ICD 编码",
+      "llm_tldr_en": "Proposes a code-centric framework to improve efficiency and interpretability of LLMs for clinical ICD coding.",
+      "llm_tldr_cn": "提出一种以代码为中心的框架，提高大模型在临床 ICD 编码中的效率和可解释性。",
+      "llm_tldr": "提出一种以代码为中心的框架，提高大模型在临床 ICD 编码中的效率和可解释性。",
+      "llm_tags": [
+        "query:ehr-tr:composite"
+      ],
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.15434v1",
+      "title": "Listening to the Echo: User-Reaction Aware Policy Optimization via Scalar-Verbal Hybrid Reinforcement Learning",
+      "abstract": "While current emotional support dialogue systems typically rely on expert-defined scalar rewards for alignment, these signals suffer from severe information sparsity. They cannot explain why a response failed or how to adapt to dynamic user states, often diverging from the actual goal of facilitating positive emotional shifts. In practice, the most direct and reliable learning signal emerges from the user's continuous reactions during ongoing interaction. We therefore propose Reaction Aware Policy Optimization (RAPO), a framework that optimizes over interaction consequences rather than rubric scores. RAPO treats dialogue as a reaction-driven process and utilizes simulated user responses to generate dense natural-language feedback through three core components: Hindsight Dialogue Selection, which isolates pivotal turns that meaningfully alter user emotional trajectories; Generative Hindsight Feedback, which transforms user reactions into contrastive ranking signals and natural-language critiques; and Scalar-Verbal Hybrid Policy Optimization, which couples scalar reward optimization for global alignment with verbal feedback distillation for fine-grained semantic refinement. Extensive experiments on ESC and Sotopia demonstrate that RAPO significantly outperforms strong reinforcement learning baselines in driving positive interaction outcomes.",
+      "authors": [
+        "Jing Ye",
+        "Xinpei Zhao",
+        "Lu Xiang",
+        "Yaping Zhang",
+        "Chengqing Zong"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-16T15:39:54+00:00",
+      "link": "https://arxiv.org/pdf/2603.15434v1",
+      "tags": [
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "emotional support dialogue systems and policy optimization",
+      "llm_evidence_cn": "情感支持对话系统与策略优化",
+      "llm_evidence": "情感支持对话系统与策略优化",
+      "canonical_evidence": "情感支持对话系统与策略优化",
+      "llm_tldr_en": "Proposes a reinforcement learning framework for emotional support systems based on user reactions.",
+      "llm_tldr_cn": "提出了一种基于用户反应的情感支持系统强化学习优化框架。",
+      "llm_tldr": "提出了一种基于用户反应的情感支持系统强化学习优化框架。",
+      "llm_tags": [
+        "query:llm-ac:composite"
+      ],
+      "matched_query_tag": "query:llm-ac:composite",
+      "matched_query_text": "Papers central to 查找LLM做情感计算和共情对话的论文, especially work that connects or combines: Large Language Models; Affective Computing and Sentiment Analysis; Artificial Emotional Intelligence in LLMs; Emotion Recognition in Conversation; Empathetic Response Generation; LLMs for Psychological Support and Counseling; Chain of Empathy prompting for LLMs; benchmarking empathy in large language models; fine tuning LLMs for empathetic conversation; prompt engineering for emotional intelligence in AI.",
+      "matched_requirement_id": "req-composite-llm-ac",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.03054v1",
+      "title": "PrivMedChat: End-to-End Differentially Private RLHF for Medical Dialogue Systems",
+      "abstract": "Large language models are increasingly used for patient-facing medical assistance and clinical decision support, but adapting them to clinical dialogue often requires supervision derived from doctor-patient conversations that may contain sensitive information. Conventional supervised fine-tuning and reinforcement learning from human feedback (RLHF) can amplify memorization risks, enabling empirical membership inference and extraction of rare training-set content. We present PrivMedChat, an end-to-end framework for differentially private RLHF (DP-RLHF) for medical dialogue. Our design enforces differential privacy at every training stage that directly accesses dialogue-derived supervision: (i) Differential Private Stochastic Gradient Descent (DP-SGD) for medical SFT and (ii) DP-SGD for reward model learning from preference pairs. To limit additional privacy expenditure during alignment, we apply DP-SGD to the PPO actor and critic when operating on dialogue-derived prompts, while the reward model remains fixed after DP training.   We also introduce an annotation-free preference construction strategy that pairs physician responses with filtered non-expert generations to produce scalable preference data without clinician labeling. Experiments on medical dialogue benchmarks show that PrivMedChat at $\\varepsilon=7$ achieves the highest ROUGE-L of 0.156 among all DP models, reduces clinical hallucinations to 1.4% and harmful advice to 0.4%, and obtains the highest overall score of 2.86 in a 3-model LLM-jury evaluation, while producing membership-inference signals that are near chance (AUC 0.510-0.555). We open-source our code at https://github.com/sudip-bhujel/privmedchat.",
+      "authors": [
+        "Sudip Bhujel"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-03T14:53:20+00:00",
+      "link": "https://arxiv.org/pdf/2603.03054v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLMs for clinical decision support and medical dialogue",
+      "llm_evidence_cn": "大语言模型用于临床决策支持和医疗对话",
+      "llm_evidence": "大语言模型用于临床决策支持和医疗对话",
+      "canonical_evidence": "大语言模型用于临床决策支持和医疗对话",
+      "llm_tldr_en": "Introduces PrivMedChat, a framework for differentially private RLHF in medical dialogue systems.",
+      "llm_tldr_cn": "提出了PrivMedChat，一个用于医疗对话系统的差分隐私RLHF框架。",
+      "llm_tldr": "提出了PrivMedChat，一个用于医疗对话系统的差分隐私RLHF框架。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "Large Language Models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.03054v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.08013v1",
+      "title": "PIRA-Bench: A Transition from Reactive GUI Agents to GUI-based Proactive Intent Recommendation Agents",
+      "abstract": "Current Graphical User Interface (GUI) agents operate primarily under a reactive paradigm: a user must provide an explicit instruction for the agent to execute a task. However, an intelligent AI assistant should be proactive, which is capable of anticipating user intentions directly from continuous visual inputs, such as mobile or desktop screenshots, and offering timely recommendations without explicit user prompting. Transitioning to this proactive paradigm presents significant challenges. Real-world screen activity is rarely linear; it consists of long-horizon trajectories fraught with noisy browsing, meaningless actions, and multithreaded task-switching. To address this gap, we introduce PIRA-Bench (Proactive Intent Recommendation Agent Benchmark), a novel benchmark for evaluating multimodal large language models (MLLMs) on continuous, weakly-supervised visual inputs. Unlike reactive datasets, PIRA-Bench features complex trajectories with multiple interleaved intents and noisy segments with various user profile contexts, challenging agents to detect actionable events while fitting to user preferences. Furthermore, we propose the PIRF baseline, a memory-aware, state-tracking framework that empowers general MLLMs to manage multiple task threads and handle misleading visual inputs. PIRA-Bench serves as an initial step toward robust and proactive GUI-based personal assistants.",
+      "authors": [
+        "Yuxiang Chai",
+        "Shunye Tang",
+        "Han Xiao",
+        "Rui Liu",
+        "Hongsheng Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-09T06:41:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.08013v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "long-horizon trajectories and multithreaded task-switching",
+      "llm_evidence_cn": "长程轨迹和多线程任务切换",
+      "llm_evidence": "长程轨迹和多线程任务切换",
+      "canonical_evidence": "长程轨迹和多线程任务切换",
+      "llm_tldr_en": "Introduces PIRA-Bench to evaluate proactive GUI agents in complex, long-horizon real-world screen activities.",
+      "llm_tldr_cn": "引入 PIRA-Bench 评估在复杂长程真实屏幕活动中的主动 GUI 智能体。",
+      "llm_tldr": "引入 PIRA-Bench 评估在复杂长程真实屏幕活动中的主动 GUI 智能体。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "Long-horizon large language models research papers",
+      "matched_requirement_id": "req-33",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.08084v1",
+      "title": "The AI Amplifier Effect: Defining Human-AI Intimacy and Romantic Relationships with Conversational AI",
+      "abstract": "What does it mean to fall in love with something we know is virtual? The proliferation of conversational AI enables users to create customizable companions, fostering new intimate relationships that, while virtual, are perceived as authentic. However, public understanding of these bonds is limited, and platform policies regarding these interactions remain inconsistent. There is a pressing need for further HCI research to investigate: (a) the design affordances in AI that construct bonds and a sense of intimacy, (b) how such long-term engagement impacts users' real lives, and (c) how to balance user autonomy with platform regulation in the design of these systems without compromising users' well-being and experiences. This paper takes a step toward addressing these goals by providing a concrete definition of human AI intimacy based on in depth interviews with 30 users engaged in romantic relationships with AI companions. We elucidate the complexities of these relationships, from their formation to sustainability, and identify key features of the bonds formed. Notably, we introduce the AI Amplifier Effect, where the AI serves as a medium that intensifies the user's existing emotional state, leading to divergent positive, neutral, and negative impacts. We argue that designing for emotion must extend beyond technical affordances to encompass the essence of human affection. This paper's contributions aim to initiate a conversation and guide future research on human AI relationships within the HCI community.",
+      "authors": [
+        "Ching Christie Pang",
+        "Yi Gao",
+        "Xuetong Wang",
+        "Pan Hui"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-03-09T08:24:58+00:00",
+      "link": "https://arxiv.org/pdf/2603.08084v1",
+      "tags": [
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "human-AI intimacy and emotional bonds",
+      "llm_evidence_cn": "人机亲密度与情感纽带",
+      "llm_evidence": "人机亲密度与情感纽带",
+      "canonical_evidence": "人机亲密度与情感纽带",
+      "llm_tldr_en": "Investigates the design and impact of intimate romantic relationships formed with conversational AI companions.",
+      "llm_tldr_cn": "调查了与对话式AI伴侣建立的亲密浪漫关系的设计及其对用户生活的影响。",
+      "llm_tldr": "调查了与对话式AI伴侣建立的亲密浪漫关系的设计及其对用户生活的影响。",
+      "llm_tags": [
+        "query:llm-ac:composite"
+      ],
+      "matched_query_tag": "query:llm-ac:composite",
+      "matched_query_text": "Papers central to 查找LLM做情感计算和共情对话的论文, especially work that connects or combines: Large Language Models; Affective Computing and Sentiment Analysis; Artificial Emotional Intelligence in LLMs; Emotion Recognition in Conversation; Empathetic Response Generation; LLMs for Psychological Support and Counseling; Chain of Empathy prompting for LLMs; benchmarking empathy in large language models; fine tuning LLMs for empathetic conversation; prompt engineering for emotional intelligence in AI.",
+      "matched_requirement_id": "req-composite-llm-ac",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.03612v1",
+      "title": "Why Are Linear RNNs More Parallelizable?",
+      "abstract": "The community is increasingly exploring linear RNNs (LRNNs) as language models, motivated by their expressive power and parallelizability. While prior work establishes the expressivity benefits of LRNNs over transformers, it is unclear what makes LRNNs -- but not traditional, nonlinear RNNs -- as easy to parallelize in practice as transformers. We answer this question by providing a tight connection between types of RNNs and standard complexity classes. We show that LRNNs can be viewed as log-depth (bounded fan-in) arithmetic circuits, which represents only a slight depth overhead relative to log-depth boolean circuits that transformers admit. Furthermore, we show that nonlinear RNNs can solve $\\mathsf{L}$-complete problems (and even $\\mathsf{P}$-complete ones, under polynomial precision), revealing a fundamental barrier to parallelizing them as efficiently as transformers. Our theory also identifies fine-grained expressivity differences between recent popular LRNN variants: permutation-diagonal LRNNs are $\\mathsf{NC}^1$-complete whereas diagonal-plus-low-rank LRNNs are more expressive ($\\mathsf{PNC}^1$-complete). We provide further insight by associating each type of RNN with a corresponding automata-theoretic model that it can simulate. Together, our results reveal fundamental tradeoffs between nonlinear RNNs and different variants of LRNNs, providing a foundation for designing LLM architectures that achieve an optimal balance between expressivity and parallelism.",
+      "authors": [
+        "William Merrill",
+        "Hongjian Jiang",
+        "Yanhong Li",
+        "Ashish Sabharwal"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CC",
+        "cs.CL",
+        "cs.FL"
+      ],
+      "published": "2026-03-04T00:51:08+00:00",
+      "link": "https://arxiv.org/pdf/2603.03612v1",
+      "tags": [
+        "keyword:LH LLM",
+        "query:LH LLM",
+        "query:LLM HUM"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Linear RNN structures for efficient language modeling",
+      "llm_evidence_cn": "用于高效语言建模的线性RNN结构",
+      "llm_evidence": "用于高效语言建模的线性RNN结构",
+      "canonical_evidence": "用于高效语言建模的线性RNN结构",
+      "llm_tldr_en": "Analyzes the parallelizability of Linear RNNs as an alternative to Transformers for language modeling.",
+      "llm_tldr_cn": "分析了线性RNN作为Transformer语言建模替代方案的可并行性。",
+      "llm_tldr": "分析了线性RNN作为Transformer语言建模替代方案的可并行性。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "Recurrent neural network structures for long-horizon language modeling",
+      "matched_requirement_id": "req-39",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.03612v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.08034v1",
+      "title": "Solution to the 10th ABAW Expression Recognition Challenge: A Robust Multimodal Framework with Safe Cross-Attention and Modality Dropout",
+      "abstract": "Emotion recognition in real-world environments is hindered by partial occlusions, missing modalities, and severe class imbalance. To address these issues, particularly for the Affective Behavior Analysis in-the-wild (ABAW) Expression challenge, we propose a multimodal framework that dynamically fuses visual and audio representations. Our approach uses a dual-branch Transformer architecture featuring a safe cross-attention mechanism and a modality dropout strategy. This design allows the network to rely on audio-based predictions when visual cues are absent. To mitigate the long-tail distribution of the Aff-Wild2 dataset, we apply focal loss optimization, combined with a sliding-window soft voting strategy to capture dynamic emotional transitions and reduce frame-level classification jitter. Experiments demonstrate that our framework effectively handles missing modalities and complex spatiotemporal dependencies, achieving an accuracy of 60.79% and an F1-score of 0.5029 on the Aff-Wild2 validation set.",
+      "authors": [
+        "Jun Yu",
+        "Naixiang Zheng",
+        "Guoyuan Wang",
+        "Yunxiang Zhang",
+        "Lingsi Zhu",
+        "Jiaen Liang",
+        "Wei Huang",
+        "Shengping Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-03-09T07:13:20+00:00",
+      "link": "https://arxiv.org/pdf/2603.08034v1",
+      "tags": [
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multimodal framework for emotion recognition in real-world environments",
+      "llm_evidence_cn": "真实环境下的多模态情感识别框架",
+      "llm_evidence": "真实环境下的多模态情感识别框架",
+      "canonical_evidence": "真实环境下的多模态情感识别框架",
+      "llm_tldr_en": "A robust multimodal framework using cross-attention and modality dropout for expression recognition in the wild.",
+      "llm_tldr_cn": "一种利用交叉注意力和模态丢弃技术进行野外表情识别的鲁棒多模态框架。",
+      "llm_tldr": "一种利用交叉注意力和模态丢弃技术进行野外表情识别的鲁棒多模态框架。",
+      "llm_tags": [
+        "query:llm-ac"
+      ],
+      "matched_query_tag": "query:llm-ac",
+      "matched_query_text": "Affective Computing and Sentiment Analysis",
+      "matched_requirement_id": "req-22",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.08091v1",
+      "title": "Toward Robust LLM-Based Judges: Taxonomic Bias Evaluation and Debiasing Optimization",
+      "abstract": "Large language model (LLM)-based judges are widely adopted for automated evaluation and reward modeling, yet their judgments are often affected by judgment biases. Accurately evaluating these biases is essential for ensuring the reliability of LLM-based judges. However, existing studies typically investigate limited biases under a single judge formulation, either generative or discriminative, lacking a comprehensive evaluation. To bridge this gap, we propose JudgeBiasBench, a benchmark for systematically quantifying biases in LLM-based judges. JudgeBiasBench defines a taxonomy of judgment biases across 4 dimensions, and constructs bias-augmented evaluation instances through a controlled bias injection pipeline, covering 12 representative bias types. We conduct extensive experiments across both generative and discriminative judges, revealing that current judges exhibit significant and diverse bias patterns that often compromise the reliability of automated evaluation. To mitigate judgment bias, we propose bias-aware training that explicitly incorporates bias-related attributes into the training process, encouraging judges to disentangle task-relevant quality from bias-correlated cues. By adopting reinforcement learning for generative judges and contrastive learning for discriminative judges, our methods effectively reduce judgment biases while largely preserving general evaluation capability.",
+      "authors": [
+        "Hongli Zhou",
+        "Hui Huang",
+        "Rui Zhang",
+        "Kehai Chen",
+        "Bing Xu",
+        "Conghui Zhu",
+        "Tiejun Zhao",
+        "Muyun Yang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-09T08:32:21+00:00",
+      "link": "https://arxiv.org/pdf/2603.08091v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Systematic quantification of biases in LLM-based judges",
+      "llm_evidence_cn": "系统化量化大语言模型裁判的偏见",
+      "llm_evidence": "系统化量化大语言模型裁判的偏见",
+      "canonical_evidence": "系统化量化大语言模型裁判的偏见",
+      "llm_tldr_en": "Introduces JudgeBiasBench to evaluate and debias LLM-based automated evaluation and reward modeling.",
+      "llm_tldr_cn": "引入 JudgeBiasBench，用于评估和消除大语言模型在自动化评价和奖励建模中的偏见。",
+      "llm_tldr": "引入 JudgeBiasBench，用于评估和消除大语言模型在自动化评价和奖励建模中的偏见。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "Large Language Models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.03640v1",
+      "title": "MistyPilot: An Agentic Fast-Slow Thinking LLM Framework for Misty Social Robots",
+      "abstract": "With the availability of open APIs in social robots, it has become easier to customize general-purpose tools to meet users' needs. However, interpreting high-level user instructions, selecting and configuring appropriate tools, and executing them reliably remain challenging for users without programming experience. To address these challenges, we introduce MistyPilot, an agentic LLM-driven framework for autonomous tool selection, orchestration, and parameter configuration. MistyPilot comprises two core components: a Physically Interactive Agent (PIA) and a Socially Intelligent Agent (SIA). The PIA enables robust sensor-triggered and tool-driven task execution, while the SIA generates socially intelligent and emotionally aligned dialogue. MistyPilot further integrates a fast-slow thinking paradigm to capture user preferences, reduce latency, and improve task efficiency. To comprehensively evaluate MistyPilot, we contribute five benchmark datasets. Extensive experiments demonstrate the effectiveness of our framework in routing correctness, task completeness, fast-slow thinking retrieval efficiency, tool scalability,and emotion alignment. All code, datasets, and experimental videos will be made publicly available on the project webpage.",
+      "authors": [
+        "Xiao Wang",
+        "Lu Dong",
+        "Jingchen Sun",
+        "Ifeoma Nwogu",
+        "Srirangaraj Setlur",
+        "Venu Govindaraju"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-03-04T02:00:43+00:00",
+      "link": "https://arxiv.org/pdf/2603.03640v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "SIA generates socially intelligent and emotionally aligned dialogue",
+      "llm_evidence_cn": "SIA生成具有社交智能和情感对齐的对话",
+      "llm_evidence": "SIA生成具有社交智能和情感对齐的对话",
+      "canonical_evidence": "SIA生成具有社交智能和情感对齐的对话",
+      "llm_tldr_en": "MistyPilot is an LLM framework for social robots that generates emotionally aligned and socially intelligent dialogue.",
+      "llm_tldr_cn": "MistyPilot是一个用于社交机器人的LLM框架，可生成情感对齐且具有社交智能的对话。",
+      "llm_tldr": "MistyPilot是一个用于社交机器人的LLM框架，可生成情感对齐且具有社交智能的对话。",
+      "llm_tags": [
+        "query:llm-ac"
+      ],
+      "matched_query_tag": "query:llm-ac",
+      "matched_query_text": "Artificial Emotional Intelligence in LLMs",
+      "matched_requirement_id": "req-23",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.03640v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.08391v1",
+      "title": "Adaptive Loops and Memory in Transformers: Think Harder or Know More?",
+      "abstract": "Chain-of-thought (CoT) prompting enables reasoning in language models but requires explicit verbalization of intermediate steps. Looped transformers offer an alternative by iteratively refining representations within hidden states. This parameter efficiency comes at a cost, as looped models lack the storage capacity of deeper models which use unique weights per layer. In this work, we investigate transformer models that feature both adaptive per-layer looping, where each transformer block learns to iterate its hidden state via a learned halting mechanism, and gated memory banks, that provide additional learned storage. We find that looping primarily benefits mathematical reasoning, while memory banks help recover performance on commonsense tasks compared to parameter and FLOP matched models. Combining both mechanisms yields a model that outperforms an iso-FLOP baseline -- with three times the number of layers -- on math benchmarks. Analysis of model internals reveals layer specialization: early layers learn to loop minimally and access memory sparingly, while later layers do both more heavily.",
+      "authors": [
+        "Markus Frey",
+        "Behzad Shomali",
+        "Ali Hamza Bashir",
+        "David Berghaus",
+        "Mehdi Ali"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-09T13:49:03+00:00",
+      "link": "https://arxiv.org/pdf/2603.08391v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Gated memory banks for additional learned storage in Transformers",
+      "llm_evidence_cn": "Transformer中用于额外学习存储的门控记忆库",
+      "llm_evidence": "Transformer中用于额外学习存储的门控记忆库",
+      "canonical_evidence": "Transformer中用于额外学习存储的门控记忆库",
+      "llm_tldr_en": "Investigates adaptive looping and memory banks to improve reasoning and storage in Transformers.",
+      "llm_tldr_cn": "研究自适应循环和记忆库，以提升Transformer的推理和存储能力。",
+      "llm_tldr": "研究自适应循环和记忆库，以提升Transformer的推理和存储能力。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "External memory and retrieval augmented generation for long horizons",
+      "matched_requirement_id": "req-37",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.08148v1",
+      "title": "Gradually Excavating External Knowledge for Implicit Complex Question Answering",
+      "abstract": "Recently, large language models (LLMs) have gained much attention for the emergence of human-comparable capabilities and huge potential. However, for open-domain implicit question-answering problems, LLMs may not be the ultimate solution due to the reasons of: 1) uncovered or out-of-date domain knowledge, 2) one-shot generation and hence restricted comprehensiveness. To this end, this work proposes a gradual knowledge excavation framework for open-domain complex question answering, where LLMs iteratively and actively acquire external information, and then reason based on acquired historical knowledge. Specifically, during each step of the solving process, the model selects an action to execute, such as querying external knowledge or performing a single logical reasoning step, to gradually progress toward a final answer. Our method can effectively leverage plug-and-play external knowledge and dynamically adjust the strategy for solving complex questions. Evaluated on the StrategyQA dataset, our method achieves 78.17% accuracy with less than 6% parameters of its competitors, setting new SOTA for ~10B-scale LLMs.",
+      "authors": [
+        "Chang Liu",
+        "Xiaoguang Li",
+        "Lifeng Shang",
+        "Xin Jiang",
+        "Qun Liu",
+        "Edmund Y. Lam",
+        "Ngai Wong"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-09T09:28:42+00:00",
+      "link": "https://arxiv.org/pdf/2603.08148v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "iterative reasoning and external knowledge acquisition for complex QA",
+      "llm_evidence_cn": "复杂问答中的迭代推理和外部知识获取",
+      "llm_evidence": "复杂问答中的迭代推理和外部知识获取",
+      "canonical_evidence": "复杂问答中的迭代推理和外部知识获取",
+      "llm_tldr_en": "Proposes a framework for LLMs to iteratively acquire external knowledge to solve complex reasoning problems.",
+      "llm_tldr_cn": "提出一个让大语言模型迭代获取外部知识以解决复杂推理问题的框架。",
+      "llm_tldr": "提出一个让大语言模型迭代获取外部知识以解决复杂推理问题的框架。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
+      "matched_requirement_id": "req-40",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.03686v1",
+      "title": "AI4S-SDS: A Neuro-Symbolic Solvent Design System via Sparse MCTS and Differentiable Physics Alignment",
+      "abstract": "Automated design of chemical formulations is a cornerstone of materials science, yet it requires navigating a high-dimensional combinatorial space involving discrete compositional choices and continuous geometric constraints. Existing Large Language Model (LLM) agents face significant challenges in this setting, including context window limitations during long-horizon reasoning and path-dependent exploration that may lead to mode collapse. To address these issues, we introduce AI4S-SDS, a closed-loop neuro-symbolic framework that integrates multi-agent collaboration with a tailored Monte Carlo Tree Search (MCTS) engine. We propose a Sparse State Storage mechanism with Dynamic Path Reconstruction, which decouples reasoning history from context length and enables arbitrarily deep exploration under fixed token budgets. To reduce local convergence and improve coverage, we implement a Global--Local Search Strategy: a memory-driven planning module adaptively reconfigures the search root based on historical feedback, while a Sibling-Aware Expansion mechanism promotes orthogonal exploration at the node level. Furthermore, we bridge symbolic reasoning and physical feasibility through a Differentiable Physics Engine, employing a hybrid normalized loss with sparsity-inducing regularization to optimize continuous mixing ratios under thermodynamic constraints. Empirical results show that AI4S-SDS achieves full validity under the adopted HSP-based physical constraints and substantially improves exploration diversity compared to baseline agents. In preliminary lithography experiments, the framework identifies a novel photoresist developer formulation that demonstrates competitive or superior performance relative to a commercial benchmark, highlighting the potential of diversity-driven neuro-symbolic search for scientific discovery.",
+      "authors": [
+        "Jiangyu Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-04T03:30:17+00:00",
+      "link": "https://arxiv.org/pdf/2603.03686v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Addressing context window limitations in long-horizon reasoning",
+      "llm_evidence_cn": "解决长程推理中的上下文窗口限制",
+      "llm_evidence": "解决长程推理中的上下文窗口限制",
+      "canonical_evidence": "解决长程推理中的上下文窗口限制",
+      "llm_tldr_en": "Proposes a neuro-symbolic framework using MCTS to overcome LLM limitations in long-horizon chemical design.",
+      "llm_tldr_cn": "提出了一种结合MCTS的神经符号框架，以克服大模型在长程化学设计中的局限性。",
+      "llm_tldr": "提出了一种结合MCTS的神经符号框架，以克服大模型在长程化学设计中的局限性。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
+      "matched_requirement_id": "req-40",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.03686v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.08459v1",
+      "title": "Data-Driven Priors for Uncertainty-Aware Deterioration Risk Prediction with Multimodal Data",
+      "abstract": "Safe predictions are a crucial requirement for integrating predictive models into clinical decision support systems. One approach for ensuring trustworthiness is to enable models' ability to express their uncertainty about individual predictions. However, current machine learning models frequently lack reliable uncertainty estimation, hindering real-world deployment. This is further observed in multimodal settings, where the goal is to enable effective information fusion. In this work, we propose $\\texttt{MedCertAIn}$, a predictive uncertainty framework that leverages multimodal clinical data for in-hospital risk prediction to improve model performance and reliability. We design data-driven priors over neural network parameters using a hybrid strategy that considers cross-modal similarity in self-supervised latent representations and modality-specific data corruptions. We train and evaluate the models with such priors using clinical time-series and chest X-ray images from the publicly-available datasets MIMIC-IV and MIMIC-CXR. Our results show that $\\texttt{MedCertAIn}$ significantly improves predictive performance and uncertainty quantification compared to state-of-the-art deterministic baselines and alternative Bayesian methods. These findings highlight the promise of data-driven priors in advancing robust, uncertainty-aware AI tools for high-stakes clinical applications.",
+      "authors": [
+        "L. Julián Lechuga López",
+        "Tim G. J. Rudner",
+        "Farah E. Shamout"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-09T14:54:38+00:00",
+      "link": "https://arxiv.org/pdf/2603.08459v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "clinical decision support systems for risk prediction",
+      "llm_evidence_cn": "用于风险预测的临床决策支持系统",
+      "llm_evidence": "用于风险预测的临床决策支持系统",
+      "canonical_evidence": "用于风险预测的临床决策支持系统",
+      "llm_tldr_en": "Proposes MedCertAIn for uncertainty-aware clinical risk prediction using multimodal EHR data.",
+      "llm_tldr_cn": "提出MedCertAIn框架，利用多模态EHR数据进行具有不确定性感知能力的临床风险预测。",
+      "llm_tldr": "提出MedCertAIn框架，利用多模态EHR数据进行具有不确定性感知能力的临床风险预测。",
+      "llm_tags": [
+        "query:llm-mr"
+      ],
+      "matched_query_tag": "query:llm-mr",
+      "matched_query_text": "clinical decision support systems for medication",
+      "matched_requirement_id": "req-48",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.08177v1",
+      "title": "Is continuous CoT better suited for multi-lingual reasoning?",
+      "abstract": "We investigate whether performing reasoning in a continuous latent space leads to more robust multilingual capabilities. We compare Continuous Chain-of-Thought (using the CODI framework) against standard supervised fine-tuning across five typologically diverse languages: English, Chinese, German, French, and Urdu. Our experiments on GSM8k and CommonsenseQA demonstrate that continuous reasoning significantly outperforms explicit reasoning on low-resource languages, particularly in zero-shot settings where the target language was not seen during training. Additionally, this approach achieves extreme efficiency, compressing reasoning traces by approximately $29\\times$ to $50\\times$. These findings indicate that continuous latent representations naturally exhibit greater language invariance, offering a scalable solution for cross-lingual reasoning.",
+      "authors": [
+        "Ali Hamza Bashir",
+        "Behzad Shomali",
+        "Markus Frey",
+        "Mehdi Ali",
+        "Rafet Sifa",
+        "David Berghaus"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-09T09:57:08+00:00",
+      "link": "https://arxiv.org/pdf/2603.08177v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Continuous latent space reasoning for multilingual tasks",
+      "llm_evidence_cn": "多语言任务的连续隐空间推理",
+      "llm_evidence": "多语言任务的连续隐空间推理",
+      "canonical_evidence": "多语言任务的连续隐空间推理",
+      "llm_tldr_en": "Explores continuous latent space reasoning to improve multilingual performance and efficiency in LLMs.",
+      "llm_tldr_cn": "探索连续隐空间推理以提高大语言模型的多语言性能和效率。",
+      "llm_tldr": "探索连续隐空间推理以提高大语言模型的多语言性能和效率。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
+      "matched_requirement_id": "req-40",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.04033v1",
+      "title": "Who Judges the Judge? Evaluating LLM-as-a-Judge for French Medical open-ended QA",
+      "abstract": "Automatic evaluation of medical open-ended question answering (OEQA) remains challenging due to the need for expert annotations. We evaluate whether large language models (LLMs) can act as judges of semantic equivalence in French medical OEQA, comparing closed-access, general-purpose, and biomedical domain-adapted models. Our results show that LLM-based judgments are strongly influenced by the model that generated the answer, with agreement varying substantially across generators. Domain-adapted and large general-purpose models achieve the highest alignment with expert annotations. We further show that lightweight adaptation of a compact model using supervised fine-tuning (SFT) and Group Relative Policy Optimization (GRPO) substantially improves performance and reduces generator sensitivity, even with limited data. Overall, our findings highlight the need for generator-aware evaluation and suggest that carefully adapted small models can support scalable evaluation in low-resource medical settings.",
+      "authors": [
+        "Ikram Belmadani",
+        "Oumaima El Khettari",
+        "Pacôme Constant dit Beaufils",
+        "Richard Dufour",
+        "Benoit Favre"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-04T13:12:30+00:00",
+      "link": "https://arxiv.org/pdf/2603.04033v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "evaluating LLMs as judges for medical open-ended question answering",
+      "llm_evidence_cn": "评估LLM作为医学开放式问答的评判者",
+      "llm_evidence": "评估LLM作为医学开放式问答的评判者",
+      "canonical_evidence": "评估LLM作为医学开放式问答的评判者",
+      "llm_tldr_en": "Evaluates LLM-as-a-judge for French medical QA, showing domain-adapted models align best with experts.",
+      "llm_tldr_cn": "评估了LLM在法语医学问答中的评判能力，发现领域适配模型与专家一致性最高。",
+      "llm_tldr": "评估了LLM在法语医学问答中的评判能力，发现领域适配模型与专家一致性最高。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "clinical natural language processing",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.04033v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.08879v2",
+      "title": "MultiGraSCCo: A Multilingual Anonymization Benchmark with Annotations of Personal Identifiers",
+      "abstract": "Accessing sensitive patient data for machine learning is challenging due to privacy concerns. Datasets with annotations of personally identifiable information are crucial for developing and testing anonymization systems to enable safe data sharing that complies with privacy regulations. Since accessing real patient data is a bottleneck, synthetic data offers an efficient solution for data scarcity, bypassing privacy regulations that apply to real data. Moreover, neural machine translation can help to create high-quality data for low-resource languages by translating validated real or synthetic data from a high-resource language. In this work, we create a multilingual anonymization benchmark in ten languages, using a machine translation methodology that preserves the original annotations and renders names of cities and people in a culturally and contextually appropriate form in each target language. Our evaluation study with medical professionals confirms the quality of the translations, both in general and with respect to the translation and adaptation of personal information. Our benchmark with over 2,500 annotations of personal information can be used in many applications, including training annotators, validating annotations across institutions without legal complications, and helping improve the performance of automatic personal information detection. We make our benchmark and annotation guidelines available for further research.",
+      "authors": [
+        "Ibrahim Baroud",
+        "Christoph Otto",
+        "Vera Czehmann",
+        "Christine Hovhannisyan",
+        "Lisa Raithel",
+        "Sebastian Möller",
+        "Roland Roller"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-09T19:44:36+00:00",
+      "link": "https://arxiv.org/pdf/2603.08879v2",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multilingual anonymization benchmark for sensitive patient data",
+      "llm_evidence_cn": "敏感患者数据的多语言匿名化基准",
+      "llm_evidence": "敏感患者数据的多语言匿名化基准",
+      "canonical_evidence": "敏感患者数据的多语言匿名化基准",
+      "llm_tldr_en": "Creates a multilingual benchmark for anonymizing personal identifiers in clinical and patient data.",
+      "llm_tldr_cn": "创建了一个多语言基准，用于临床和患者数据中个人身份信息的匿名化处理。",
+      "llm_tldr": "创建了一个多语言基准，用于临床和患者数据中个人身份信息的匿名化处理。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "clinical natural language processing",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.08251v1",
+      "title": "Not All Queries Need Deep Thought: CoFiCot for Adaptive Coarse-to-fine Stateful Refinement",
+      "abstract": "Scaling test-time computation enhances LLM reasoning ability but faces a uniform computation paradox. Allocating identical resources leads to over-correction on simple tasks and insufficient refinement on complex ones. To address this, we propose CoFiCot, a coarse-to-fine adaptive framework that dynamically tailors inference strategies to problem difficulty. Specifically, we implement a multi-metric classifier that triages queries by synthesizing semantic entropy, consensus reliability, and predicted reasoning depth . This enables a differentiated refinement stage that applies efficient aggregation for simple queries while routing complex ones to a context-aware correction loop . We formalize correction as a stateful sequential propagation process , where each repair is strictly conditioned on the verified history of prior rectifications. By integrating Process Reward Models (PRMs) within this state-dependent trajectory, CoFiCot effectively bridges the gap between granular error localization and global logical coherence, preventing the context fragmentation typical of stateless refinement methods.",
+      "authors": [
+        "Dongxu Zhang",
+        "Hongqiang Lin",
+        "Yiding Sun",
+        "Pengyu Wang",
+        "Qirui Wang",
+        "Ning Yang",
+        "Jihua Zhu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-09T11:23:07+00:00",
+      "link": "https://arxiv.org/pdf/2603.08251v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Adaptive refinement for LLM reasoning depth and stateful correction",
+      "llm_evidence_cn": "LLM推理深度和状态纠正的自适应改进",
+      "llm_evidence": "LLM推理深度和状态纠正的自适应改进",
+      "canonical_evidence": "LLM推理深度和状态纠正的自适应改进",
+      "llm_tldr_en": "Proposes an adaptive framework to tailor LLM inference strategies based on problem reasoning depth.",
+      "llm_tldr_cn": "提出了一种根据问题推理深度定制LLM推理策略的自适应框架。",
+      "llm_tldr": "提出了一种根据问题推理深度定制LLM推理策略的自适应框架。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
+      "matched_requirement_id": "req-40",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.04349v1",
+      "title": "FocusGraph: Graph-Structured Frame Selection for Embodied Long Video Question Answering",
+      "abstract": "The ability to understand long videos is vital for embodied intelligent agents, because their effectiveness depends on how well they can accumulate, organize, and leverage long-horizon perceptual memories. Recently, multimodal LLMs have been gaining popularity for solving the long video understanding task due to their general ability to understand natural language and to leverage world knowledge. However, as the number of frames provided to an MLLM increases, the quality of its responses tends to degrade, and inference time grows. Therefore, when using MLLMs for long video understanding, a crucial step is selecting key frames from the video to answer user queries.   In this work, we develop FocusGraph, a framework for keyframe selection for question answering over long egocentric videos. It leverages a lightweight trainable Scene-Caption LLM Selector that selects query-relevant clips based on their graph-based captions, and a training-free method for selecting keyframes from these clips. Unlike existing methods, the proposed Scene-Caption LLM Selector does not rely on the original sequence of low-resolution frames; instead, it operates on a compact textual representation of the scene. We then design a training-free Patch-wise Sparse-Flow Retention (PSFR) method to select keyframes from the resulting sequence of clips, which are fed into an MLLM to produce the final answer. Together, these components enable FocusGraph to achieve state-of-the-art results on challenging egocentric long-video question answering benchmarks, including FindingDory and HourVideo, while significantly reducing inference time relative to baseline approaches.",
+      "authors": [
+        "Tatiana Zemskova",
+        "Solomon Andryushenko",
+        "Ilya Obrubov",
+        "Viktoriia Khoruzhaia",
+        "Ekaterina Eroshenko",
+        "Ekaterina Derevyanka",
+        "Dmitry Yudin"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-04T18:14:00+00:00",
+      "link": "https://arxiv.org/pdf/2603.04349v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "long-horizon perceptual memories and video question answering",
+      "llm_evidence_cn": "长程感知记忆与视频问答",
+      "llm_evidence": "长程感知记忆与视频问答",
+      "canonical_evidence": "长程感知记忆与视频问答",
+      "llm_tldr_en": "Develops FocusGraph for keyframe selection to improve long-horizon video understanding in multimodal LLMs.",
+      "llm_tldr_cn": "开发FocusGraph框架进行关键帧选择，以提升多模态大模型对长视频的理解和推理能力。",
+      "llm_tldr": "开发FocusGraph框架进行关键帧选择，以提升多模态大模型对长视频的理解和推理能力。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
+      "matched_requirement_id": "req-40",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.04349v1",
+      "quick_tier": "8plus"
+    }
+  ]
+}
