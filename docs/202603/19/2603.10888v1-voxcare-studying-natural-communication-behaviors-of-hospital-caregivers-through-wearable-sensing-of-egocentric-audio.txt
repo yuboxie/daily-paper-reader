@@ -1,0 +1,373 @@
+Title: VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing of Egocentric Audio
+
+URL Source: https://arxiv.org/pdf/2603.10888v1
+
+Published Time: Thu, 12 Mar 2026 01:24:41 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+> Preprint 1–14, 2026 Under Review
+
+# VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing of Egocentric Audio 
+
+Tiantian Feng tiantiaf@usc.edu 
+
+Kleanthis Avramidis avramidi@usc.edu 
+
+Anfeng Xu anfengxu@usc.edu 
+
+Deqi Wang deqiwang@usc.edu 
+
+University of Southern California, USA 
+
+Brandon M Booth Brandon.M.Booth@memphis.edu 
+
+The University of Memphis, USA 
+
+Shrikanth Narayanan shri@usc.edu 
+
+University of Southern California, USA 
+
+## Abstract 
+
+Healthcare professionals work in complex, high-stakes environments where effective communi-cation is critical for care delivery, team co-ordination, and individual well-being. How-ever, communication activity in everyday clin-ical settings remains challenging to measure and largely unexplored in human behavioral re-search. We present VoxCare , a scalable egocen-tric wearable audio sensing and computing sys-tem that captures natural communication be-haviors of hospital professionals in real-world settings without storing raw audio. VoxCare 
+
+performs real-time, on-device acoustic feature extraction and applies a speech foundation model–guided teacher–student framework to identify foreground speech activity. From these features, VoxCare derives interpretable behav-ioral measures of communication frequency, du-ration, and vocal arousal. Our analyses re-veal how, when, and how often clinicians com-municate across different shifts and working units, and suggest that communication activ-ity reflects underlying workload and stress. By enabling continuous assessment of communica-tion patterns in everyday contexts, this study provides data-driven approaches to understand the behaviors of healthcare providers and ulti-mately improve healthcare delivery. 
+
+Data and Code Availability The data produced and processed during the current study are accessi-ble upon request through our dataset website and the code for this work can be found in our GitHub repos-itory. Both links will be provided after peer review. 
+
+Institutional Review Board (IRB) All study procedures were conducted in accordance with USC’s Health Sciences Campus Institutional Review Board (IRB) approval (study ID HS-17-00876), and all pro-cedures adhered to IRB guidelines and the ethical principles set in the Declaration of Helsinki. 
+
+## 1. Introduction 
+
+Major global health crises such as the COVID-19 pandemic have underscored the importance of inves-tigating ways to support the well-being of workers, especially in high-stakes domains such as in health-care. For example, nursing, which lies at the core of the modern healthcare system, is facing unprece-dented challenges and significant increases in work demand. Nurses are required to work long shifts, typ-ically 12 hours in duration (Richardson et al., 2007, 2003). Increasingly, they must handle an intense workload while providing patient care that requires constant vigilance and meticulousness. In addition to the physical demands, nursing is also emotion-ally demanding, requiring the delivery of humane, empathetic, and culturally sensitive care over ex-tended periods (Cricco-Lizza, 2014). Consequently, healthcare professionals are particularly susceptible to stress, anxiety, and related negative psychological effects that can lead to burnout and job dissatisfac-tion (Iacovides et al., 2003; Glass et al., 1993), high-lighting the need to investigate occupational behavior that contributes to these negative outcomes. Notably, interpersonal communication is funda-mental to healthcare delivery across domains, in- 
+
+> ©2026 T. Feng, K. Avramidis, A. Xu, D. Wang, B.M. Booth & S. Narayanan.
+> arXiv:2603.10888v1 [cs.SD] 11 Mar 2026 VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing
+
+cluding prevention, diagnosis, treatment, therapy, re-habilitation, and education (Fakhr-Movahedi et al., 2011). Moreover, substantial scientific evidence has shown that effective interpersonal communication is strongly associated with high-quality care (Leonard et al., 2004). Interpersonal communication in health-care typically includes spoken language, gestures, and digital modalities such as email and text messag-ing. Among these, speech remains a primary way for healthcare professionals to communicate with others and express themselves during work. Speech signal, in particular, contains objectively measurable acous-tic properties that reflect not only linguistic con-tent, but also prosody, tone, and indicators of men-tal and physical status. As a result, understanding the speech activity in healthcare delivery can provide meaningful insights into the dynamic states, behav-iors, and well-being of healthcare professionals, as well as the nature and quality of their interactions within complex clinical environments. Two fundamental dimensions of speaking patterns are the frequency and duration of conversational in-teractions. Prior research has shown that frequent communication is critical for developing group cohe-siveness, coordinating work activities, and increas-ing interpersonal trust within teams (Walther and Bunz, 2005). Increased interpersonal communica-tion in healthcare settings has also been associated with improved task accuracy (Gordon et al., 2011). Moreover, emotional cues such as arousal phenom-ena, also referred to as activation and excitation by Berlyne (1960), from speech signals are another valuable marker to assess speaking patterns (Bone et al., 2014). The arousal phenomenon is supported by the fact that affective arousal changes involve physiological reactions, which in turn modify the pro-cess by which speech is produced (Scherer, 1986). In general, prosodic features of speech, such as pitch and intensity, can reflect the speaker’s arousal (Bone et al., 2012; Scherer, 1986). Like other affective con-structs, arousal is critical to motivation, personality, and work productivity (Wilson, 1990; Barsade and Gibson, 2007; Johnsonand et al., 1979). In this work, we introduce VoxCare , a scalable ego-centric wearable audio sensing and computing sys-tem designed to capture natural interpersonal com-munication behaviors in occupational environments. Specifically, we deploy VoxCare in hospital settings to study everyday communication patterns among healthcare professionals, including nurses, labora-tory staff, and physicians. The system integrates a 
+
+Figure 1: Overview of the VoxCare . VoxCare con-sists of a scalable wearable audio sen-sor that decodes speech signals to acous-tic features in real time, an offline fore-ground/background speaker diarization, and a behavioral feature extractor. lightweight wearable audio sensor that performs real-time, on-device processing to transform raw audio signals into low-level acoustic properties. To study communication from the wearer’s perspective, we de-velop a speaker detection model guided by a speech foundation model that identifies speaking regions cor-responding to individuals wearing the sensor. Based on the retained acoustic features, VoxCare derives interpretable behavioral measures, such as speaking frequency and speech arousal, that characterize com-munication activity. Based on a 10-week longitudi-nal deployment, we provide quantitative analyses of everyday communication patterns among healthcare professionals and show their associations with self-reported work behavior, anxiety, and affect. 
+
+## 2. VoxCare 
+
+Our proposed system, as shown in Figure 1, inte-grates a wearable audio sensing solution for real-time acoustic feature processing, an offline foreground speaker detection module to identify regions of in-terest, and a pipeline for extracting communicative behavioral features, including speaking frequency, speaking duration, and speaking arousal. 
+
+> 2VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing
+
+2.1. Wearable Audio Sensor 
+
+VoxCare uses an unobtrusive wearable audio sensing system (Feng et al., 2018) that extracts descriptive features from raw speech in naturalistic settings. The system operates on a small, lightweight, and cost-effective Android device called the Jelly Pro smart-phone (Jel), as presented in Fig 1. The audio sens-ing application running on this device integrates the openSMILE feature extraction toolkit (Eyben et al., 2010), which enables the decoding of a broad set of low-level acoustic features directly from raw au-dio. These features, including F0 (fundamental fre-quency), loudness, and a small set of filterbank fea-tures (MFCC 1-12), have been widely used to char-acterize speech patterns and speaking states. The sensing application runs at one-minute intervals and activates a 20-second feature extraction window to process and save acoustic features on the device. This choice is to achieve a balance between minimizing battery consumption and maximizing data collection. Compared to previous wearable audio sensing solu-tions, such as EARS (Mehl et al., 2001) and Sound-Sense (Lu et al., 2009), our system offers improved privacy by transforming raw speech signals into com-pact acoustic features, which enables the interpre-tation of communication patterns without exposing sensitive language content. This is particularly crit-ical for scaling deployment in naturalistic settings, where privacy concerns are universally present. The complete wearable system is highly cost-effective, at roughly 100 USD per device. VoxCare is designed as a compact wearable for real-world deployment, capa-ble of scaling and adapting to researchers’ needs by leveraging off-the-shelf Android hardware. 
+
+2.2. Foreground Speaker Diarization 
+
+2.2.1. Problem Formulation 
+
+Given that the primary goal of VoxCare is to track and characterize communication activity in egocen-tric settings, it is critical to extract acoustic features that only originate from the speaker of interest. Sim-ilar to previous work presented by Nadarajan et al. (2019) and Liang et al. (2023), we define foreground 
+
+speech activity as the vocal behavior produced by the speaker of interest (here, the sensor wearer), and 
+
+background speakers as all other speakers present in the environment. To facilitate the analysis of com-munication behaviors among healthcare profession-als, we design an offline deep learning model to retain audio feature samples that belong to the foreground speech activity. Similar to speaker diarization that predicts the speaker in each audio frame, the deep learning model predicts each frame of audio features as foreground speech (FG), background speech (BG), or silence and environmental noise (S). 
+
+2.2.2. Training Data Selection 
+
+Acquiring raw audio waveforms from hospital envi-ronments to curate an annotated training corpus was infeasible due to privacy and institutional constraints. Hence, we trained the proposed FG/BG speaker di-arization model using publicly available corpora that contain egocentric speech collected in a similar form factor. In particular, we used four publicly available datasets in our experiments, namely MMCSG (Zmo-likova et al., 2024), the ICSI-Meeting Corpus (Janin et al., 2003), the EasyCom Corpus (Donley et al., 2021), and an Internal Meeting Corpus collected with the same Jelly Pro smartphone. 
+
+2.2.3. Teacher-student Distillation 
+
+One key constraint of the proposed audio sensing system is the need to operate with a highly com-pact feature representation, which is driven by con-siderations of data sensitivity, on-device computa-tion, and limited storage capacity. As a result, only a small set of acoustic features, such as filter-banks (MFCC 1-12), is available for modeling and inferring foreground speech regions. Within this constrained feature space, we propose a lightweight foreground/background (FG/BG) speaker diariza-tion module that is trained via knowledge distillation from a teacher foreground speaker diarization model built upon a speech foundation model. 
+
+Teacher Model We first built a FG/BG speaker di-arization benchmark using speech foundation models to create the teacher model. The considered founda-tion models include Whisper family models. Particu-larly, all models were trained using low-rank adapta-tion (LoRA, by Hu et al. (2022)) and used a unified architecture consisting of a weighted average layer that combined all hidden layers and a 1D convolu-tional neural network that mapped the weighted out-put to frame-wise FG/BG speaker prediction. 
+
+Student Model In parallel, we created a lightweight baseline model that operates directly on filterbank features to perform FG/BG speaker diarization as the student model. Specifically, we used the ResNet mod-els in our experiments to create the student model and predict frame-wise FG/BG speaker labels. 
+
+> 3
+
+VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing Egocentric Speech   
+
+> Speech
+> Foundation Model
+> 1D point-wise Convolution
+> Weighted Average LORA Student Model
+> Foreground
+> OpenSMILE Feature Extractor
+> Foreground
+> Student
+> Egocentric Speech
+> Teacher
+> Distillation
+> Filterbanks
+> Background Background
+
+Figure 2: Overview of the foreground speaker diarization process. VoxCare uses a teacher–student learning framework for foreground speaker diarization. Specifically, a teacher network based on a speech foundation model is first trained to perform foreground speaker diarization. The teacher network is then transferred to a lightweight student network through knowledge distillation. 0 1 2 3 4        
+
+> Session 1 Session 2 Inter-session
+> t (min)
+> Active FG Speech Idle
+> ...
+> 01234
+> Session 1 Session 2 Inter-session
+> t (min)
+> Audio Feature Sample (20 sec) Idle
+> ...
+> Inactive FG Speech
+
+Figure 3: Example of the FG speech sessions. The x-axis represents the time in minutes. The 1st and the 2nd sessions contain the FG speech at t = 0 , 1 and t = 4, respectively. 
+
+Teach-student Distillation Based on empirical performance, we then selected the best-performing teacher–student pair to initialize the second stage of knowledge distillation training. In the distillation process, the weights of the teacher model were frozen while we continued fine-tuning the student model. The training objective combined a frame-wise cross-entropy loss for classification with a KL-divergence loss that encourages the student’s outputs to align with those of the teacher, as shown below. 
+
+Ltotal = LCE (ps) + αLKLD (pt, p s) (1) This approach enables the development of an effec-tive FG/BG speaker diarization model that operates entirely on low-dimensional acoustic features. 
+
+2.3. Communication Behavior Extraction 
+
+Here, we describe how communication features are computed. Since the wearable audio sensors per-form real-time speech processing for 20 seconds ev-ery minute, we therefore define a speech session as a sequence of discrete recordings with an offset of one minute between each consecutive recording (the recording also must have at least 200 foreground speech frames). Figure 3 shows an example speech session, where a set of recordings are at time t =
+
+{0, 1, 4}, and we can group these recordings into two sessions at a time t1 = {0, 1} and at time t2 = {4}.
+
+2.3.1. Speaking Frequency and Duration 
+
+Based on the definition of speech sessions, we com-puted the following features to quantify the speak-ing frequency and duration. First, we computed the speaking sessions per hour. We do not consider total speaking sessions, given that different positions work varying duration which can introduce systematic dif-ferences. This feature describes how frequently a par-ticipant interacts with others. Moreover, we com-puted the average session duration to characterize the average speaking duration. For each participant, fea-tures were averaged across all recorded shifts. 
+
+2.3.2. Speaking Arousal 
+
+In addition to speaking frequency and duration, we applied a rule-based arousal estimation frame-work (Bone et al., 2014) to estimate how health-
+
+4VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing 
+
+care professionals communicate during work. This method has been validated to achieve a strong cor-relation between estimated vocal arousal scores and ground-truth arousal ratings in different contexts. Particularly, this approach is generalizable and favor-able when collecting raw training samples is not feasi-ble. This method only requires small sets of acoustic features, without the need for emotion labels. 
+
+Arousal Estimation from a Single Feature The feature sets used in this study were log-pitch, inten-sity, and the ratio of high-frequency to low-frequency energy. First, this framework builds an empirical distribution Ni for each feature type i ∈ { 1, 2, 3}.As Bone et al. (2014) suggested, we create person-alized empirical models to account for differences in speaker characteristics. Then, the arousal intensity score pi,j is computed as the median value of feature type i in the j-th 20-second recording with the cor-responding empirical model, Ni, by: 
+
+pi,j = 2 × E[xi,j > N i] − 1 (2) 
+
+Arousal Score Fusion To gain a more robust arousal estimation, a fusion technique is applied to combine the scores from individual arousal rat-ings. The weights for fusion are computed as the Spearman’s rank-correlation coefficient ri between each score vector pi and the score mean vector pμ,where the vectors are composed of scores for all of a speaker’s utterances. We define the correlation vector as r = ( r1, r 2, r 3), and the weights are then normal-ized to have unit combined magnitude: wi = ri 
+
+> || r||
+
+.
+
+Arousal Score Intepretation Bone et al. (2014) suggest that, if annotated neutral affect baselines are established, the obtained arousal scores may be inter-preted such that positive scores indicate more aroused (or active) states, with the magnitude being associ-ated with confidence. In the absence of an annotated neutral baseline, we instead interpret positive arousal scores as more active states relative to each partici-pant’s overall baseline. We derive the 90th percentile of the arousal score to describe the speaking arousal patterns in the 1st-half and 2nd-half of the work shift. Similar to speaking frequency and duration features, for each participant, we computed the average of each feature by averaging across all recorded shifts. 
+
+## 3. Study Data Collection 
+
+3.1. Study Introduction 
+
+Our wearable audio sensor was deployed as part of the TILES study Mundnich et al. (2020); Yau et al. (2022), a longitudinal experiment designed to exam-ine how physiological and behavioral factors influence job performance and employee well-being. Over a period of ten weeks, the study collected multimodal data from hospital professionals employed at a ter-tiary/quaternary academic medical center in Los An-geles, CA, who had volunteered to participate in this study. In addition to natural communication sam-pling, data collection included monitoring of continu-ous physiological signals (such as with Fitbit Charge 2 wristbands) and self-reported assessments. All par-ticipants provided informed consent before the study. The study protocol was approved by the Institutional Review Board, and all procedures adhered to the eth-ical principles. To the best of our knowledge, this de-ployment represents one of the first large-scale evalu-ations of a wearable audio sensing system conducted in a real-world clinical environment. The complete study involved over 300 hospital professionals across different roles, including nurses, laboratory staff, and clinical administrative personnel, while this analysis focuses on a subset of 255 participants who complied with wearing audio sensors. 
+
+3.2. Self-report Outcomes 
+
+To assess both work-related behaviors and mental health of hospital professionals, we selected a set of self-reported surveys that were collected at the be-ginning of the study, including the State-Trait Anx-iety Inventory (STAI) (Spielberger et al., 1971) and the In-role behavior (IRB) (Williams and Anderson, 1991). We aimed to explore the associations be-tween communication patterns at work and these self-reported surveys. Details regarding these two surveys were described in Appendix B 
+
+3.3. Participants and Data Statistics 
+
+In total, 356 participants were enrolled in the study, of whom n=255 met the compliance criteria for in-clusion in the current analysis by wearing the audio sensor. Minimum compliance was defined as hav-ing at least five recorded work shifts by the audio sensor per participant. Figure 4 visualizes the pri-mary working unit within the current wearable audio dataset. Of the study participants, n=75 (29 .4%) worked in the non-ICU, n=55 (21 .6%) worked in the ICU, and n=39 (15 .3%) worked in the float pool. No-tably, n=39 subjects (15 .3%) in the current cohort worked in office settings, including as administrators, doctors, or in research roles. Moreover, among 255 compliant participants, 182 (71 .4%) primarily worked 
+
+> 5
+
+VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing 
+
+day shifts, while the remaining 73 (28 .6%) worked night shifts. The majority of participants are female (n = 180, 70 .6%) and the ages range from 25 – 65, with n=130 (51 .0%) subjects 20-39 years old, n=76 (29 .8%) subjects 40-49 years old, and the remaining n=49 (19 .2%) subjects being over 50 years old. 75 55 39 32 39 15 Other/Unknown 5.9% Office 15.3% Lab 12.5% Float 15.3% Non-ICU 29.4% ICU 21.6% 
+
+> Dataset Sample (N=255)
+
+Figure 4: Demographics of the primary working unit in the current dataset. 
+
+## 4. FG Diarization Experiments 
+
+4.1. Datasets 
+
+In these experiments, we used four egocentric audio datasets that were collected with a similar form fac-tor. Specifically, both MMCSG (Zmolikova et al., 2024) and the EasyCom corpus (Donley et al., 2021) were collected using smart glasses. The MMCSG corpus involves dyadic interactions recorded through smart Aria glasses worn by one of the subjects. The complete dataset includes 530 unique 3-minute recordings from 138 participants. Similarly, Easy-Com includes recordings of 3–5 participants seated around a table for conversations of approximately 30 minutes. In total, there are 12 sessions with about 5 hours of audio recordings in the EasyCom dataset. On the other hand, the ICSI meeting corpus (Janin et al., 2003) consists of natural multi-party conversa-tions recorded with multiple microphones placed in the environment, enabling both close-talk and far-field recording. Moreover, we collected an internal meeting corpus in which colleagues wore the proposed wearable audio sensors during internal meetings. In total, there are 6 meetings (around 5 hours total) recorded from 12 participants. Manual annotations of speaker boundaries were available for each dataset to derive precise FG, BG, and silence regions.                            
+
+> Nurse Non-Nurse Total Sex
+> Male 49 (19 .2%) 26 (10 .2%) 75(29 .4%) Female 120 (47 .1%) 60 (23 .5%) 180 (70 .6%)
+> Primary Shift
+> Day Shift 105 (41 .2%) 77 (31 .2%) 182 (72 .2%) Night Shift 64 (25 .1%) 9 (3 .7%) 73 (28 .8%)
+> Age
+> <40 Yr 98 (38 .4%) 32 (12 .6%) 130 (51 .0%) 40 −49 Yr 51 (20 .0%) 25 (9 .8%) 76 (29 .8%)
+> ≥50 Yr 20 (7 .8%) 29 (11 .4%) 49 (19 .2%)
+
+Table 1: Demographics of the primary work shift, sex and age in the current analysis. 
+
+4.2. Experimental Details 
+
+All training experiments were conducted on a high-performance computing (HPC) cluster. We trained each model using a collective training set that com-bines four datasets. Specifically, we used the de-fault train/validation/test split for MMCSG. For the remaining datasets, we split recording sessions into 60%, 20%, and 20% for training, validation, and test-ing, respectively. For each run, we used a learning rate of 5 ×10 −5 and trained for 15 epochs. α in Equa-tion 1 was empirically tested at {1, 5, 10 }, while we reported the best overall performance with α = 5. Our teacher-model experiments included Whisper-Tiny, Whisper-Small, and Whisper-Large. Our stu-dent model was a ResNet (He et al., 2016) that takes MFCC 1–12 as input. Both models predict frame-wise FG/BG speaker labels in a 10-second window. We first trained the teacher and student models inde-pendently, and then initialized the distillation stage from these pre-trained weights and continued train-ing for 15 epochs. We selected the best teacher model in the distillation training. During distillation, the teacher model weights were frozen. We repeated each setup three times with different random seeds and re-port the average performance across runs. We report missed detection, false alarm, speaker confusion, and diarization error rate (DER), where lower values in-dicate better performance. Specifically, Missed De-tection refers to the duration of actual speech (FG or BG) in a recording that the system fails to de-tect, while a false alarm occurs when the system in-correctly identifies non-speech audio, such as back-ground noise or silence, as speech (FG or BG). We describe the error types (miss detection, false alarm, and speaker confusion) in Appendix A, while DER reflects the combined error rates. 
+
+6VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing 
+
+Table 2: Comparison of foreground speaker diarization results in VoxCare .                                                                                                            
+
+> Model MMCSG ICSI-Meeting Corpus Miss False Speaker DER Miss False Speaker DER Detection Alarm Confusion Detection Alarm Confusion Teacher Model
+> Whisper-Tiny 9.8 ±0.3 3.6 ±0.2 3.3 ±0.3 16.8 ±0.3 10.5 ±0.4 5.7 ±0.3 1.4 ±0.1 17.6 ±0.1
+> Whisper-Small 3.6 ±0.1 3.4 ±0.1 0.8 ±0.1 7.7 ±0.2 6.0 ±0.6 3.9 ±0.5 0.2 ±0.0 10.1 ±0.1
+> Whisper-Large 3.5 ±0.2 3.5 ±0.6 0.8 ±0.1 7.8 ±0.5 4.3 ±1.1 4.5 ±0.5 0.2 ±0.1 9.0 ±0.6
+> Student Model
+> ResNet 6.3 ±0.2 5.1 ±0.8 4.4 ±0.2 15.8 ±1.0 13.1 ±0.6 9.3 ±1.2 1.1 ±0.1 23.4 ±0.8
+> VoxCare -ResNet (Ours) 5.6 ±0.1 4.7 ±0.1 3.2 ±0.5 13.5 ±0.6 12.9 ±1.7 7.9 ±1.5 0.9 ±0.2 21.7 ±0.6
+> Model EasyCom Internal Meeting Corpus Miss False Speaker DER Miss False Speaker DER Detection Alarm Confusion Detection Alarm Confusion Teacher Model
+> Whisper-Tiny 19.1 ±0.3 9.4 ±0.4 2.1 ±0.1 30.6 ±0.3 13.4 ±0.4 5.8 ±0.6 6.8 ±1.2 26.0 ±1.3
+> Whisper-Small 17.7 ±0.3 4.6 ±1.1 1.0 ±0.1 23.3 ±0.8 9.8 ±1.4 4.8 ±0.6 1.1 ±0.2 15.6 ±0.9
+> Whisper-Large 18.2 ±0.2 4.5 ±1.1 1.3 ±1.0 24.0 ±2.2 7.3 ±2.1 6.5 ±1.4 2.0 ±0.6 15.8 ±0.3
+> Student Model
+> ResNet 24.5 ±2.2 3.5 ±1.2 2.5 ±0.2 30.5 ±1.1 15.9 ±1.9 7.2 ±3.9 7.6 ±0.7 30.7 ±1.8
+> VoxCare -ResNet (Ours) 22.8 ±0.3 3.6 ±0.3 1.9 ±2.1 28.4 ±0.1 14.6 ±2.3 6.5 ±2.7 7.7 ±0.8 28.8 ±0.6
+
+4.3. Teacher Model Performance 
+
+Table 2 summarizes the teacher-model, student-model, and disllation model performance for FG/BG diarization. Overall, the Whisper family model yields strong performance in FG/BG diarization. Across MMCSG, ICSI, EasyCom, and an Internal Meet-ing corpus, Whisper-Small and Whisper-Large con-sistently outperform Whisper-Tiny, yielding substan-tially lower miss and false-alarm rates, leading to overall lower diarization error rate (DER). In par-ticular, Whisper-Small achieves the best DER on MMCSG (7 .7%), EasyCom (23 .3%), and the internal meeting dataset (15.6), while Whisper-Large provides the lowest DER on ICSI (9 .0%). Based on these re-sults, we selected the Whisper-Small model as the teacher model for distillation training. 
+
+4.4. Student Model Performance 
+
+In contrast, models that run directly on low-dimensional acoustic features (MFCC 1–12) show higher error rates, but they remain viable for on-device deployment after distillation. Specifically, the ResNet student baseline shows higher DER across all four corpora, whereas our distilled VoxCare -ResNet improves over ResNet consistently (e.g., MMCSG: 15 .8% → 13 .5%, ICSI: 23 .4% → 21 .7%, EasyCom: 30 .5% → 28 .4%, Internal Meeting Data: 30 .7% →
+
+28 .8%). In particular, we observe that these gains are mainly driven by decreased speaker-confusion errors. Overall, these results suggest that distillation from a foundation-model teacher can improve FG/BG di-arization when only a lightweight model can be de-ployed. Finally, we apply VoxCare -ResNet to infer FG/BG regions on real acoustic feature recordings collected from hospital professionals. 
+
+## 5. Communication Patterns of Hospital Professionals 
+
+In this section, we analyzed communication pat-terns of hospital professionals across different working units and shifts within the [anonymized] study, using foreground speech regions inferred by the VoxCare -ResNet FG/BG diarization model shown in Table 2. 
+
+5.1. Speaking Frequency and Duration 
+
+We first compared the speaking session frequency and duration among different work shifts and work units. We applied three-way ANOVA in all statistical tests by adding sex and age as confounding factors. 
+
+5.1.1. Primary Work Shift 
+
+We compared the speaking session frequency per hour and average session duration between day shift and night shift in Figure 5. Overall, the violin plots in-dicated clear shift-level differences in communication patterns. For speaking frequency (sessions per hour), day-shift staff show a higher mean session frequency 
+
+7VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing 
+
+Figure 5: Violin plots comparing speaking session frequency (sessions per hour, left) and av-erage session duration (right) for day-shift and night-shift staff. (Day shift: Mean 3.98, 95% CI [3.87-4.09], Night shift: Mean 3.63, 95% CI [3.47-3.79]), with a sig-nificant effect of shift (three-way ANOVA, F=12.36, 
+
+p < 0.001). We observed a similar pattern for speak-ing duration, where day-shift speaking sessions are longer on average than night-shift speaking sessions (Day shift: Mean 5.71, 95% CI [5.43-5.97], Night shift: Mean 4.94, 95% CI [4.58-5.30]), with a sig-nificant effect of shift (three-way ANOVA, F=8.43, 
+
+p < 0.001). Together, these results indicate that day-shift staff engaged in more frequent and longer speak-ing sessions than night-shift staff. This pattern may reflect structural differences between day and night shifts, such as higher patient turnover, increased fam-ily interactions, and greater care coordination tasks (e.g., rounds) during the day. 
+
+5.1.2. Primary Work Unit 
+
+We further compared communication patterns across work units. Because relatively few subjects worked night shifts in labs and offices, we restricted this comparison to day-shift staff. Figure 6 presents the speaking session frequency per hour and the average speaking session duration across different work units. We observed that staff working in labs engaged in more frequent speaking activity on average, although this difference was not statistically significant. On the other hand, staff working in labs had substantially shorter speaking session durations compared to other work units (Lab: Mean 5.03, 95% CI [4.48-5.57], ICU: Mean 6.12, 95% CI [5.51-6.72], Non-ICU: Mean 5.93, 95% CI [5.32-6.54], Float: Mean 6.25, 95% CI [5.30-7.20], Office: Mean 5.26, 95% CI [4.79-5.73]), with a significant effect of work units (three-way ANOVA, 
+
+Figure 6: Violin plots comparing speaking session frequency (sessions per hour, top) and av-erage session duration (bottom) across dif-ferent hospital work units. F=2.46, p = 0 .047). One explanation is that labora-tory work is characterized by frequent task coordina-tion and rapid exchanges (e.g., brief clarifications), which naturally lead to more frequent but shorter speaking sessions. In contrast, nursing units may in-volve longer, continuous interactions, such as patient communication or care planning, resulting in fewer but longer speaking sessions. 
+
+5.2. Speaking Arousal 
+
+We further presented the analysis of the speaking arousal among different work shifts and unit types. We compared the 90th percentile of speaking arousal in the 1st-half and 2nd-half of the work shift. These features describe how active hospital professionals communicate at work. Similar to the previous anal-ysis, we selected only day shift staff when comparing speaking arousal among different working units. We applied a three-way ANOVA in all statistical tests, by adding sex and age as confounding factors. 
+
+5.2.1. Primary Work Shift 
+
+Table 3 highlights systematic differences in speaking arousal between day and night shifts. In the first half of the shift, night-shift staff show higher upper-tail 
+
+> 8
+
+VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing                             
+
+> 90th Arousal 90th Arousal in 1st-half Shift in 2nd-half Shift Primary Work Shift
+> Day Shift 0.40 [0.38, 0.41] 0.41 [0.39, 0.42] Night Shift 0.44 [0.41, 0.47] 0.35 [0.32, 0.38] p-value (Work Shift) 0.001 <0.001 F (Work Shift) 10.34 13.78
+> Primary Work Unit
+> ICU 0.46 [0.41, 0.51] 0.48 [0.42, 0.53] Non-ICU 0.40 [0.38, 0.41] 0.40 [0.39, 0.42] Float 0.36 [0.31, 0.40] 0.40 [0.36, 0.44] Lab 0.42 [0.38, 0.46] 0.40 [0.35, 0.44] Office 0.37 [0.34, 0.40] 0.38 [0.35, 0.41] p-value (Work Unit) <0.001 0.002 F (Work Unit) 5.09 4.40
+
+Table 3: Comparisons of speaking arousal patterns among different work units and shifts. Mean and 95% CI were reported along with the p-value and F in the three-way ANOVA test. (90th-percentile) arousal than day-shift staff (Day shift: Mean 0.40, 95% CI [0.38-0.41], Night shift: Mean 0.44, 95% CI [0.41-0.47]); three-way ANOVA, F=10.34, p = 0 .001). In the second half, this pat-tern was reversed, where 90th arousal remained rel-atively stable in day-shift, whereas it decreased in night-shift (Day shift: Mean 0.41, 95% CI [0.39-0.42], Night shift: Mean 0.35, 95% CI [0.32-0.38]); three-way ANOVA, F=13.78, p < 0.001). Given this dif-ference, we further plotted changes in 90th Arousal across the shift between day shift and night shift staff working in nursing units in Appendix C. As shown, day-shift nurses maintained relatively consistent 90th arousal levels throughout the shift, whereas night-shift nurses showed decreased arousal over time. Overall, these results suggest that speaking arousal remains relatively stable across the day shift but it de-clines over the course of the night shift. This pattern may reflect circadian misalignment and accumulating fatigue during night work, which can reduce physi-ological and cognitive activation and, consequently, decrease speaking arousal (McHill et al., 2014). 
+
+5.2.2. Primary Work Unit 
+
+Table 3 also reveals systematic differences in speak-ing arousal across work units. In particular, ICU staff showed higher arousal levels than staff in other units, suggesting more activated communication. This sug-gests that even though ICU staff have similar speak-ing frequency and duration compared to other staff, their communication pattern may be characterized more by how they speak (i.e., with greater prosodic activation), potentially reflecting the higher acuity 
+
+Figure 7: Correlations between speaking frequency and IRB scores among day-shift staff work-ing in labs (left) and Non-ICU units (right). and time-critical nature of ICU workflows. In con-trast, office staff shows comparatively lower speaking arousal across working hours, aligning with the less interaction-intensive nature of office-based workflows. 
+
+## 6. Communication Patterns and Self-Reported Outcomes 
+
+6.1. Communication Patterns and Work-Related Outcomes 
+
+Figure 5 shows a strong negative correlation be-tween speaking session frequency and in-role behav-ior among day-shift lab staff ( r = −0.617, p = 0 .002), where more frequent speaking is associated with lower self-reported IRB. One interpretation is that higher communication frequency may reflect greater inter-ruption rates or task switching in lab workflows, po-tentially reducing the perceived ability to complete core duties. In contrast, among day-shift non-ICU staff, speaking session frequency is uncorrelated with IRB ( r = −0.049, p = 0 .739), consistent with the in-tuition that communication may be an expected and integral component of nursing workflows. We further observe that this behavior is consistent for ICU staff and for night-shift staff (see Appendix D). 
+
+6.2. Communication Patterns and Mental Health Outcomes 
+
+We further explored whether speaking frequency was associated with mental health outcomes measured using STAI. In particular, Fig 8 suggests a shift-dependent relationship between speaking session fre-quency and STAI among non-ICU staff. During the day shift, speaking sessions per hour were uncorre-lated with trait anxiety ( r = −0.049, p = 0 .740), 
+
+9VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing 
+
+Figure 8: Correlations between speaking session fre-quency and STAI scores among day-shift (left) and night-shift (right) staff working in Non-ICU units. whereas during the night shift, higher speaking fre-quency was associated with higher trait anxiety ( r =0.400, p = 0 .050). This may suggest that night-shift nurses used communication to cope with lone-liness (Lim and Kim, 2025), which could contribute to higher STAI scores. However, we did not find any correlations between arousal-based measures and self-reported outcomes, as shown in the Appendix E. 
+
+## 7. Limitations 
+
+Lack of In-domain FG/BG Speaker Diariza-tion Data Due to privacy and regulatory constraints, researchers generally were unable to collect and anno-tate large-scale in-domain foreground speech data di-rectly from hospital environments. Although we col-lected a limited in-domain internal meeting dataset using the same recording device, the FG/BG speaker diarization model was primarily trained on publicly available egocentric and meeting corpora with simi-lar form factors. Consequently, these training data may not fully capture the acoustic complexity and background noise present in real hospital settings. 
+
+Lack of Detailed Work Behavioral Data Al-though our outcome measures relied on the vali-dated and widely-used surveys, they failed to pro-vide detailed or task-level measures of job behaviors. Therefore, subject to Institutional Review Board ap-proval, future studies may consider integrating ex-ternal operational metrics to more precisely validate communication–work behaviors relationships. 
+
+Lack of Semantic Information VoxCare intention-ally excludes the collection of semantic content, but focuses on acoustic features. As a result, the system cannot capture what was said, limiting the interpre-tation of communicative intent or task context. 
+
+## 8. Conclusion 
+
+In this work, we introduced VoxCare , a scalable ego-centric wearable audio sensing and computing sys-tem for capturing natural communication behaviors in real-world occupational settings. By combin-ing on-device acoustic feature extraction, a speech foundation model-guided teacher-student framework for offline FG/BG diarization, and interpretable be-havioral feature extraction, VoxCare enabled large-scale analysis of communication patterns in everyday contexts. Particularly, the teacher–student frame-work provides an effective approach to develop high-performance FG/BG diarization models using only a limited set of acoustic features. Through a 10-week longitudinal deployment in-volving 255 hospital professionals, we demonstrated the feasibility of deploying wearable audio sensing in complex, high-stakes clinical settings and revealed systematic differences in communication frequency, duration, and speech arousal across work shifts and unit types. Moreover, our analyses uncovered mean-ingful associations between communication patterns and self-reported work-related and mental health out-comes. For example, in laboratory settings, higher speaking frequency was negatively associated with in-role behavior, suggesting that fragmented communi-cation may interfere with task completion and per-ceived effectiveness. These results highlight the po-tential of speech-derived behavioral measures in nat-uralistic settings as objective indicators of workplace dynamics among hospital professionals, which can in-form improvements in healthcare practice. 
+
+## 9. Acknowledgment 
+
+The research is based upon work supported by the Office of the Director of National Intelligence (ODNI), Intelligence Advanced Research Projects Activity (IARPA), via IARPA Contract No 2017 -17042800005. The views and conclusions contained herein are those of the authors and should not be interpreted as necessarily representing official poli-cies or endorsements, either expressed or implied, of ODNI, IARPA, or the U.S. Government. The U.S. Government is authorized to reproduce and dis-tribute reprints for Governmental purposes, notwith-standing any copyright annotation thereon. 
+
+> 10 VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing
+
+## Appendix A. Diarization Errors FG 
+
+> FG
+> Groudtruth
+> Inference
+> False Alarm
+> FG
+> FG
+> Groudtruth
+> Inference
+> Miss Detection
+> FG
+> BG
+> Groudtruth
+> Inference
+> Speaker Confusion
+
+Figure 9: Illustration of different types of diarization errors used in model evaluation. We show different types of diarization errors used in model evaluation. Missed Detection refers to the duration of actual speech (FG or BG) in a recording that the system fails to detect, while a false alarm occurs when the system incorrectly identifies non-speech audio, such as background noise or silence, as speech (FG or BG). Speaker confusion occurs when the FG or BG speaker is recognized incorrectly as its counterpart. 
+
+## Appendix B. Survey Descriptions 
+
+STAI included 40 self-report items on a 4-point Lik-ert scale regarding state and trait anxiety. The final score was obtained by summing all responses, with higher scores indicating greater anxiety. 
+
+IRB describes the extent to which employees report fulfilling the tasks, duties, and responsibilities for-mally expected as part of their job role. The survey consists of 7 items, each rated on a 7-point Likert scale ranging from 1 (strongly disagree) to 7 (strongly agree). A total score is obtained by summing all item responses, resulting in a score between 7 and 49. 
+
+## Appendix C. Dynamics of 90th Arousal between Shift 
+
+Here, we present changes in 90th arousal across the shift between day shift and night shift staff working in nursing units in Figure 11. 
+
+## Appendix D. Speaking Frequency and In-role Behavior 
+
+We show the correlations between speaking frequency and IRB scores among night-shift staff working in Non-ICU and ICU units. The plots indicate no sig-nificant correlations between speaking frequency fea-tures and IRB scores. 
+
+## Appendix E. Speaking Arousal and Mental Health Outcomes 
+
+We show the correlations between 90th percentile speaking arousal and STAI scores among day-shift and night-shift staff working in Non-ICU and ICU units in Figure 10. The plots indicate no significant correlations between speaking arousal features and STAI scores. 
+
+> 11 VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing
+
+Figure 10: Correlations between 90th percentile speaking arousal and STAI scores among day-shift and night-shift staff working in Non-ICU and ICU units. 
+
+Figure 11: Changes in 90th Arousal across the shift between day shift and night shift staff working in nursing units. 
+
+## References 
+
+Jelly. URL www.unihertz.com/jelly.html .S. G. Barsade and D. E. Gibson. Why does affect matter in organizations? Academy of Management Perspectives , 21(1):36–59, 2007. doi: 10.5465/amp. 2007.24286163. D. E. Berlyne. Conflict, arousal, and curiosity .McGraw-Hill Book Company, 1960. doi: 10.1037/ 11164-000. 
+
+Figure 12: Correlations between speaking frequency and IRB scores among night-shift staff working in ICU (left) and Non-ICU units (right). D. Bone, C. Lee, and S. S. Narayanan. A robust un-supervised arousal rating framework using prosody with cross-corpora evaluation. In Thirteenth An-nual Conference of the International Speech Com-munication Association , 2012. D. Bone, C. Lee, and S. Narayanan. Robust un-supervised arousal rating: A rule-based frame-work withknowledge-inspired vocal features. IEEE transactions on affective computing , 5(2):201–213, 2014. 
+
+> 12 VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing
+
+R. Cricco-Lizza. The need to nurse the nurse: emo-tional labor in neonatal intensive care. Qualitative Health Research , 24(5):615–628, 2014. Jacob Donley, Vladimir Tourbabin, Jung-Suk Lee, Mark Broyles, Hao Jiang, Jie Shen, Maja Pantic, Vamsi Krishna Ithapu, and Ravish Mehra. Easy-com: An augmented reality dataset to support al-gorithms for easy communication in noisy environ-ments. arXiv preprint arXiv:2107.04174 , 2021. Florian Eyben, Martin W¨ ollmer, and Bj¨ orn Schuller. Opensmile: the munich versatile and fast open-source audio feature extractor. In Proceedings of the 18th ACM international conference on Multi-media , pages 1459–1462, 2010. A. Fakhr-Movahedi, M. Salsali, R. Negarandeh, and Z. Rahnavard. Exploring contextual factors of the nurse-patient relationship: A qualitative study. 
+
+Koomesh , pages 23–34, 2011. T. Feng, A. Nadarajan, C. Vaz, B. Booth, and S. Narayanan. Tiles audio recorder: An unobtru-sive wearable solution to track audio activity. In 
+
+Proceedings of the 4th ACM Workshop on Wear-able Systems and Applications , pages 33–38. ACM, 2018. D. C. Glass, J. D. McKnight, and H. Valdimarsdottir. Depression, burnout, and perceptions of control in hospital nurses. Journal of consulting and clinical Psychology , 61(1):147, 1993. Mary Beth Gordon, Patrice Melvin, Dionne Gra-ham, Emily Fifer, Vincent W Chiang, Theodore C Sectish, and Christopher P Landrigan. Unit-based care teams and the frequency and quality of physician-nurse communications. Archives of pediatrics & adolescent medicine , 165(5):424–428, 2011. Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In Proceedings of the IEEE conference on com-puter vision and pattern recognition , pages 770– 778, 2016. Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, Weizhu Chen, et al. Lora: Low-rank adaptation of large language models. ICLR , 1(2):3, 2022. A. Iacovides, K. N. Fountoulakis, S. Kaprinis, and G. Kaprinis. The relationship between job stress, burnout and clinical depression. Journal of affec-tive disorders , 75(3):209–221, 2003. Adam Janin, Don Baron, Jane Edwards, Dan Ellis, David Gelbart, Nelson Morgan, Barbara Peskin, Thilo Pfau, Elizabeth Shriberg, Andreas Stolcke, et al. The icsi meeting corpus. In 2003 IEEE Inter-national Conference on Acoustics, Speech, and Sig-nal Processing, 2003. Proceedings.(ICASSP’03). ,volume 1, pages I–I. IEEE, 2003. J. H. Johnsonand, I. G. Sarason, and J. M. Siegel. Arousal seeking as a moderator of life stress. Per-ceptual and Motor Skills , 49(2):665–666, 1979. Michael Leonard, Suzanne Graham, and Doug Bonacum. The human factor: the critical impor-tance of effective teamwork and communication in providing safe care. BMJ Quality & Safety , 13 (suppl 1):i85–i90, 2004. Dawei Liang, Zifan Xu, Yinuo Chen, Rebecca Adaimi, David Harwath, and Edison Thomaz. A dataset for foreground speech analysis with smartwatches in everyday home environments. In 
+
+2023 IEEE International Conference on Acoustics, Speech, and Signal Processing Workshops (ICAS-SPW) , pages 1–5. IEEE, 2023. Hyeonbin Lim and Su Hyun Kim. Navigating night shifts: a qualitative study of exploring sleep expe-riences and coping strategies among nurses. BMC nursing , 24(1):385, 2025. Hong Lu, Wei Pan, Nicholas D Lane, Tanzeem Choudhury, and Andrew T Campbell. Soundsense: scalable sound sensing for people-centric applica-tions on mobile phones. In Proceedings of the 7th international conference on Mobile systems, appli-cations, and services , pages 165–178, 2009. Andrew W McHill, Edward L Melanson, Janine Hig-gins, Elizabeth Connick, Thomas M Moehlman, Ellen R Stothard, and Kenneth P Wright Jr. Impact of circadian misalignment on energy metabolism during simulated nightshift work. Pro-ceedings of the National Academy of Sciences , 111 (48):17302–17307, 2014. Matthias R Mehl, James W Pennebaker, D Michael Crow, James Dabbs, and John H Price. The elec-tronically activated recorder (ear): A device for 
+
+> 13 VoxCare: Studying Natural Communication Behaviors of Hospital Caregivers through Wearable Sensing
+
+sampling naturalistic daily activities and conversa-tions. Behavior research methods, instruments, & computers , 33(4):517–523, 2001. Karel Mundnich, Brandon M Booth, Michelle l’Hommedieu, Tiantian Feng, Benjamin Girault, et al. Tiles-2018, a longitudinal physiologic and behavioral data set of hospital workers. Scientific Data , 7(1):354, 2020. A. Nadarajan, K. Somandepalli, and S. Narayanan. Speaker agnostic foreground speech detection from audio recordings in workplace settings from wear-able recorders. In Proceedings of ICASSP , May 2019. A. Richardson, N. Dabner, and S. Curtis. Twelve-hour shift on itu: a nursing evaluation. Nursing in Critical Care , 8(3):103–108, 2003. A. Richardson, C. Turnock, L. Harris, A. Finley, and S. Carson. A study examining the impact of 12-hour shifts on critical care staff. Journal of Nursing Management , 15(8):838–846, 2007. K. R. Scherer. Vocal affect expression: A review and a model for future research. Psychological bulletin ,99(2):143, 1986. Charles D Spielberger, Fernando Gonzalez-Reigosa, Angel Martinez-Urrutia, Luiz FS Natalicio, and Diana S Natalicio. The state-trait anxiety in-ventory. Revista Interamericana de Psicolo-gia/Interamerican journal of psychology , 5(3 & 4), 1971. Joseph B Walther and Ulla Bunz. The rules of vir-tual groups: Trust, liking, and performance in computer-mediated communication. Journal of communication , 55(4):828–846, 2005. Larry J. Williams and Stella E. Anderson. Job satis-faction and organizational commitment as predic-tors of organizational citizenship and in-role behav-iors. Journal of management , 17(3):601–617, 1991. G. D. Wilson. Personality, time of day and arousal. 
+
+Personality and individual differences , 11(2):153– 168, 1990. Joanna C Yau, Benjamin Girault, Tiantian Feng, Karel Mundnich, Amrutha Nadarajan, Brandon M Booth, Emilio Ferrara, Kristina Lerman, Eric Hsieh, and Shrikanth Narayanan. Tiles-2019: Alongitudinal physiologic and behavioral data set of medical residents in an intensive care unit. Scien-tific Data , 9(1):536, 2022. Katerina Zmolikova, Simone Merello, Kaustubh Kal-gaonkar, Ju Lin, Niko Moritz, Pingchuan Ma, Ming Sun, Honglie Chen, Antoine Saliou, Stavros Petridis, et al. The chime-8 mmcsg challenge: Multi-modal conversations in smart glasses. In 
+
+8th International Workshop on Speech Processing in Everyday Environments (CHiME) , pages 7–12, 2024.

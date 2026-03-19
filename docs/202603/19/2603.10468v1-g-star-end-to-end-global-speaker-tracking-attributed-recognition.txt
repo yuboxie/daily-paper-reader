@@ -1,0 +1,284 @@
+Title: G-STAR: End-to-End Global Speaker-Tracking Attributed Recognition
+
+URL Source: https://arxiv.org/pdf/2603.10468v1
+
+Published Time: Thu, 12 Mar 2026 00:42:19 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+# G-STAR: End-to-End Global Speaker-Tracking Attributed Recognition 
+
+# Jing Peng 2,4,∗, Ziyi Chen 1,3,∗, Haoyu Li 1,2,∗, Yucheng Wang 5, Duo Ma 4, Mengtian Li 3, Yunfan Du 3,Dezhu Xu 3, Kai Yu 2, Shuai Wang 1,4,∗∗ 
+
+1 Nanjing University 2 Shanghai Jiao Tong University 3 Central Media Technology Institute, Huawei 
+
+4 Shenzhen Research Institute of Big Data 5 ETH Z¨ urich 
+
+jing.peng@sjtu.edu.cn, zc612997@gmail.com, haoyu.li.cs@sjtu.edu.cn 
+
+# Abstract 
+
+We study timestamped speaker-attributed ASR for long-form, multi-party speech with overlap, where chunk-wise inference must preserve meeting-level speaker identity consistency while producing time-stamped, speaker-labeled transcripts. Previous Speech-LLM systems tend to prioritize either local diarization or global labeling, but often lack the ability to capture fine-grained temporal boundaries or robust cross-chunk identity linking. We propose G-STAR , an end-to-end system that couples a time-aware speaker-tracking module with a Speech-LLM transcrip-tion backbone. The tracker provides structured speaker cues with temporal grounding, and the LLM generates attributed text conditioned on these cues. G-STAR supports both component-wise optimization and joint end-to-end training, enabling flexi-ble learning under heterogeneous supervision and domain shift. Experiments analyze cue fusion, local versus long-context trade-offs and hierarchical objectives. 
+
+Index Terms : speech recognition, diarization, human-computer interaction, computational paralinguistics 
+
+# 1. Introduction 
+
+Large language models (LLMs) have recently become cen-tral to speech understanding systems, largely owing to their strong semantic reasoning, discourse-level context modeling, and instruction-following capabilities[ 1, 2, 3, 4 ]. A prevail-ing paradigm, often referred to as Speech-LLM , combines a pre-trained speech encoder with an LLM through a lightweight projector that maps acoustic representations into the LLM em-bedding space[ 5, 6, 7]. This encoder–projector–LLM recipe has shown promising results across a broad range of speech tasks, especially those requiring higher-level linguistic and pragmatic understanding. However, real-world conversational audio commonly de-parts from the single-speaker assumption. In cocktail-party con-ditions and multi-party meetings, overlapping speech and rapid turn-taking demand not only accurate transcription [ 8, 9, 10 ], but also reliable attribution of who spoke what [11 ], and in-creasingly when [12 ]. This motivates speaker-attributed ASR 
+
+(SA-ASR), which aims to produce a structured transcript con-taining both lexical content and speaker attribution[ 13 , 14 ]. In this work, we consider a timestamped SA-ASR formulation: given an input waveform x, the system outputs a sequence of attributed segments {(sn, τ st  
+
+> n
+
+, τ ed  
+
+> n
+
+, yn)}Nn=1 , where sn denotes a speaker identity , (τ st  
+
+> n
+
+, τ ed  
+
+> n
+
+) denotes temporal boundaries , and 
+
+yn is the corresponding word sequence. Crucially, for long-form recordings processed in chunks, SA-ASR requires global 
+
+> *
+
+These authors contributed equally. 
+
+> **
+
+indicates the corresponding author. 
+
+speaker identity consistency : the same real-world speaker should be assigned the same identity across the entire recording [ 15 ], rather than being re-indexed independently in each chunk. Recent efforts begin to address parts of this problem, yet leave key gaps. SpeakerLM [ 16 ] augments the Speech LLM pipeline with an additional speaker embedding extractor, en-abling robust diarization within a local chunk; however, it does not provide an explicit mechanism to globally associate speaker identities across multiple chunks when long recordings must be processed segment-by-segment. JEDIS-LLM [ 17 ] introduces a Speaker Prompt Cache to store and index speaker represen-tations, thereby enabling the model to emit globally consistent 
+
+speaker labels together with the corresponding transcripts under chunk-wise inference; nevertheless, it lacks explicit perception and emission of fine-grained temporal boundaries (timestamps). TagSpeech [ 18 ] further strengthens temporal grounding by in-corporating a dedicated speaker encoder and temporal anchors to obtain speaker and timestamp cues, but it similarly does not resolve the meeting-level global speaker identity linking prob-lem under chunked inference. Taken together, these advances highlight the need for an end-to-end framework that simultane-ously achieves (i) timestamped, overlap-aware attribution, and (ii) persistent, meeting-level global speaker identity consistency. Motivated by these gaps, we propose G-STAR: End-to-End Global Speaker-Tracking Attributed Recognition , an LLM-based end-to-end SA-ASR system designed explicitly for long-form, multi-speaker speech with overlapping regions. G-STAR integrates an interpretable speaker-tracking module based on Sortformer [ 19 , 20 ]-style modeling with a Speech-LLM tran-scription backbone. The speaker-tracking module provides struc-tured, time-aware speaker cues, while the LLM generates at-tributed text conditioned on these cues. This modular design enables both component-wise optimization (improving tracking and transcription separately) and joint end-to-end optimization (integrating speaker and lexical modeling in a unified objective), thereby supporting flexible training strategies under dataset im-balance and domain shifts. Most importantly, G-STAR is built to preserve global speaker identity consistency across chunk-wise inference, enabling meeting-level speaker labeling without post-hoc global clustering. Accordingly, our contributions are threefold: • We present G-STAR, an end-to-end, LLM-based SA-ASR system for multi-party meetings that produces times-tamped speaker-attributed transcripts with meeting-level global speaker identity consistency under chunk-wise stream-ing inference. We will release the model and code. • We achieve great both local and global SA-ASR performance on challenging meeting benchmarks, outperforming represen-tative Speech-LLM baselines (e.g., V IBE VOICE -ASR [ 21 ]) as well as strong conventional pipelines, demonstrating that 
+
+> arXiv:2603.10468v1 [eess.AS] 11 Mar 2026
+
+G-STAR is competitive for practical deployment. • We conduct extensive analyses and ablations to identify the key design factors behind the gains, including fusion strategies for injecting speaker cues into LLM generation and the impact of hierarchical cross-entropy objectives. 
+
+# 2. Related Work 
+
+2.1. Sortformer and Streaming Sortformer for Speaker Tracking 
+
+Sortformer [ 19 ] proposes a tracking-centric formulation that tightly couples speaker diarization with multi-speaker ASR by explicitly bridging timestamp-level speaker structure and token-level speaker attribution. Concretely, given an input waveform (or its acoustic features) segmented into frames, Sortformer maintains a slot-based speaker representation and enforces an 
+
+arrival-time-ordered assignment of speakers, which ensures in-terpretable speaker indices and eliminates the permutation am-biguity inherent in multi-speaker modeling [ 19 ]. This design is particularly suitable for chunk-wise processing scenarios: when processing long recordings in segments, the model must pre-serve speaker identities across chunk boundaries rather than re-indexing speakers independently within each chunk. Streaming Sortformer [ 20 ] extends Sortformer to online inference by introducing an explicit memory mechanism, the 
+
+Arrival-Order Speaker Cache (AOSC) , which stores speaker evidence and supports incremental updates as new chunks arrive. Formally, let Ct denote the cache state after processing chunk t.The streaming model updates Ct from Ct−1 using chunk-level observations, and uses the cache to condition diarization outputs for the current chunk such that the arrival-order speaker indices remain consistent over time [ 20 ]. This cache-based tracking perspective motivates our adoption of a Sortformer-style tracking module: we treat speaker identity as a compact and persistent state that can be propagated across chunks and provided to the downstream Speech-LLM generator, thereby ensuring global speaker consistency at the meeting level. 
+
+2.2. Serialized Output Training (SOT) for Attributed Tran-scription 
+
+Serialized Output Training (SOT) [ 22 ] addresses the label per-mutation issue in overlapped and multi-speaker transcription by converting multi-stream supervision signals into a single serial-ized target sequence. Instead of predicting K parallel speaker-dependent streams, SOT defines a deterministic serialization function that maps the set of speaker-labeled utterances (or token sequences) into a single sequence by inserting explicit speaker tags (e.g., <spk1> , <spk2> ) between lexical tokens [ 22 ]. This enables standard autoregressive or sequence-to-sequence train-ing while avoiding explicit permutation search at inference time. Crucially, SOT provides an output protocol for speaker-attributed text that is compatible with LLM-style generation: the model emits a single token stream that interleaves speaker iden-tifiers and words, and can be naturally extended with additional structural tokens (e.g., timestamps) when temporal grounding is required. However, under chunk-wise inference, SOT alone does not guarantee meeting-level identity consistency: speaker tags can still permute across chunks unless the model maintains a persistent speaker concept (e.g., via an explicit tracking state). Therefore, in our framework, SOT is adopted as the structured output interface, while global identity persistence is enforced by coupling the generator to a Sortformer-style streaming speaker tracker. 
+
+# 3. Method 
+
+3.1. Problem Setup and Notation 
+
+Let a long-form recording be a waveform x partitioned into T
+
+consecutive chunks {x(t)}Tt=1 . In practice, chunk durations are 
+
+approximately stable but not fixed due to streaming constraints, utterance boundaries, or buffering policies; thus the number of encoder frames Lt and tracker frames Mt may vary with t.Our goal is timestamped speaker-attributed ASR with meeting-level consistent speaker identities . For each chunk t,the model emits a serialized sequence in an SOT-style format: 
+
+z(t) = <t st> , w, <t ed> , <spk=k> ∗, (1) where w denotes lexical tokens, and <spk=k> denotes a global 
+
+speaker-ID token that is consistent across all chunks within the same meeting. G-STAR couples three components in a streaming fashion: (i) an ASR acoustic branch that produces LLM-conditioned acoustic embeddings, (ii) an SD/speaker-tracking branch that produces time-synchronous speaker cues, and (iii) a persistent 
+
+Arrival-Order Speaker Cache (AOSC) that maintains meeting-level speaker identities. At chunk t, the SD branch consumes the previous cache state C(t−1) , produces speaker cues, and updates the cache to C(t). The LLM then performs SOT decoding conditioned on the fused acoustic/speaker embeddings and the cache-induced global speaker indexing. 
+
+3.2. Streaming Dual-Branch Modeling with AOSC 
+
+3.2.1. ASR acoustic branch 
+
+Given chunk x(t), an audio encoder fenc (·) (e.g., Conformer/Whisper-style) produces frame-level representations: 
+
+H(t) = fenc (x(t)) ∈ RLt×dh , (2) where Lt varies with chunk duration. A projector g1(·) maps them into the LLM embedding space: 
+
+U(t) = g1(H(t)) ∈ RLt×dllm . (3) 
+
+3.2.2. SD branch and cache-conditioned speaker cues 
+
+The SD/speaker-tracking module maintains a persistent cache 
+
+C(t) across chunks. For chunk t, the tracker takes the current audio and the previous cache state as input, and outputs frame-synchronous speaker cues: 
+
+S(t) = ftrk (x(t), C(t−1) ) ∈ RMt×ds , (4) where Mt is the number of tracker frames (also varying with chunk duration and the tracker frame rate). A projector g2(·)
+
+maps the speaker cues into the LLM embedding space: 
+
+V(t) = g2(S(t)) ∈ RMt×dllm . (5) Crucially, the tracker updates the cache after observing chunk t:
+
+C(t) = UpdateCache( C(t−1) , S(t)). (6) AOSC stores compact speaker evidence ordered by first-arrival time , thereby defining a stable meeting-level indexing rule. When a new speaker appears, AOSC allocates the next avail-able slot; when a previously seen speaker reappears, AOSC retrieves the corresponding slot. This renders speaker identity 
+
+stateful across chunks and eliminates cross-chunk permutation drift. Segment 2 Segment n Segment 1       
+
+> Audio Encoder
+> ASR Projector
+> Streaming Sortformer
+> Speaker Projector
+> Large Language Model
+> Text
+> prompt
+> Speaker FIFO style SOT Transcription
+> <0> But it works. <5> <spk3>
+> <6> Umm, maybe. <10> <spk2>
+> <12> I don't think so. <18> <spk1>
+> <16> Why? <22> <spk2>
+> Interleaved
+> Temporal Fusion
+> Initialize/
+> Update
+> Arrival-Order
+> Speaker Cache
+> trainable on all stages
+> trainable on stage 3
+
+Figure 1: An Overview of G-STAR Structure. 
+
+3.3. Interleaved Temporal Fusion and Global SOT Decoding 
+
+3.3.1. Interleaved temporal fusion (K:1 insertion) 
+
+We fuse acoustic embeddings U(t) and speaker embeddings V(t)
+
+along time by inserting sparse speaker tokens into the acoustic token stream. Let K be the insertion stride (e.g., K=5 ). We construct a fused embedding sequence: 
+
+E(t) = Interleave( U(t), V(t); K) ∈ RNt×dllm , (7) where Nt ≈ Lt +⌈Lt/K ⌉. Operationally, for i = 1 , . . . , L t, we append U(t) 
+
+> i
+
+and additionally insert a speaker embedding when-ever i ≡ 0 (mod K). When Mt does not match the insertion schedule, we apply a deterministic resampling (nearest-neighbor or linear) to align speaker frames to insertion locations. This yields a single time-ordered embedding stream that periodically carries explicit speaker evidence. 
+
+3.3.2. Cache-consistent SOT decoding with global speaker IDs 
+
+We feed E(t) to an autoregressive LLM decoder. Optionally, a text prompt p is prepended. The decoder generates the SOT sequence conditioned on the fused embeddings and the cache-induced global indexing: 
+
+p(z(t) | x(t), C(t−1) ) = 
+
+> |z(t)|
+
+Y
+
+> m=1
+
+p(z(t) 
+
+> m
+
+| p, E(t), z (t)
+
+> <m
+
+; C(t−1) ).
+
+(8) The speaker token <spk=k> in Eq. (1) corresponds to the cache slot k determined by C(t−1) , hence the same real-world speaker is assigned the same k across all chunks. After decoding, the cache is updated via Eq. (6) , enabling end-to-end meeting-level identity consistency during streaming inference. 
+
+# 4. Experimental Setups 
+
+We implemented our model and conducted experiments using the WEST[23] framework. 
+
+4.1. Data 
+
+We trained and evaluated our models on four conversational and meeting-style speech datasets: MLC[ 24 ], AMI[ 25 ], Fisher[ 26 ], 
+
+Algorithm 1 G-STAR streaming inference with SD cache update and global SOT decoding 
+
+Require: Meeting audio x partitioned into chunks {x(t)}Tt=1 ;insertion stride K.
+
+1: Initialize AOSC cache C(0) ← ∅.
+
+2: for t = 1 to T do 
+
+3: H(t) ← fenc (x(t)) (ASR encoder) 
+
+4: U(t) ← g1(H(t)) (project to LLM space) 
+
+5: S(t) ← ftrk (x(t), C(t−1) ) (SD cues; cache-conditioned) 
+
+6: V(t) ← g2(S(t)) (project speaker cues) 
+
+7: E(t) ← Interleave( U(t), V(t); K) (K:1 insertion) 
+
+8: z(t) ← LLMDecode( E(t); C(t−1) ) (global SOT output) 
+
+9: C(t) ← UpdateCache( C(t−1) , S(t)) (AOSC update) 
+
+10: end for 
+
+11: return Concat( {z(t)}Tt=1 ) (meeting-level transcript with global speaker IDs) and Candor[ 27 ]. For MLC, only the English subset was used; for Candor, only the audio modality was adopted, excluding video information. All training audio was segmented into clips of up to 20 seconds. For evaluation, two settings were considered: in the local setting, the test set was processed in the same way as the training data; in the global setting, the test set comprised full-length audio, with the model performing chunk-by-chunk inference. 
+
+4.2. Modeling 
+
+We have detailed the proposed architecture in Section 3.2. The audio encoder and projector are initialized from Firered-LLM[ 7]. The LLM uses Qwen2-7B-Instruct[ 28 ] with LoRA weights inher-ited from Firered-LLM. For the SD branch, the speaker diariza-tion module is initialized with SortFormer, while its projector consists of a stride-5 1D convolutional downsampling module followed by a two-layer MLP and is randomly initialized. 
+
+4.3. Training Procedure 
+
+We train the model in three stages: (i) meeting-style ASR pre-training, (ii) local speaker-attributed ASR (SA-ASR) training, and (iii) global (meeting-level) SA-ASR training. In both the ASR pre-training and local SA-ASR stages, we set the pack size to 12,000 tokens. The learning rate was linearly warmed up to 5e-5 and then decayed using cosine annealing. Each stage was trained for 20,000 steps. For the global SA-ASR stage, the pack size remained 12,000, while the peak learning rate was reduced to 2e-5 with the same linear warmup + cosine anneal-ing schedule, and training ran for 5,000 steps. During training, timestamps and speaker labels were treated as special tokens of the LLM. Hierarchical cross-entropy was adopted, assigning a 1.5 × loss weight to timestamp tokens and a 2 × loss weight to speaker label tokens. Before evaluation, we performed an addi-tional fine-tuning of the Sortformer for 5 epochs using default configurations to further enhance the system’s final performance. Notably, in the proposed framework, the fine-tuning of diariza-tion module can theoretically be conducted at any stage of the training process. 
+
+4.4. Evaluation Setup 
+
+To ensure a fair comparison at the meeting level, we evaluate all systems under a unified setting without oracle VAD. Instead, we Table 1: Performance comparison of different methods in the local setting (audio up to 20s), reported in cpWER/DER (%). All inference is non-streaming.                                    
+
+> System AMI Fisher MLC Candor cpWER/DER ↓cpWER/DER ↓cpWER/DER ↓cpWER/DER ↓
+> Sortformer [19] – / 29.87 – / 18.33 – / 17.76 – / 30.92 Parakeet [29] 24.62 / – 27.73 / – 25.90 / – 27.44 / – Vibevoice-ASR [21] 30.51 / 31.99 15.18 / 17.68 21.74 / 14.01 22.12 / 30.89 MOSS-Diarizen [30] 25.13 / 32.20 11.69 / 21.61 14.16 / 10.58 16.38 / 31.76 G-STAR 24.86 / 19.00 10.29 /8.18 13.90 /6.49 14.54 /17.56
+
+rely on a common streaming front-end based on Sortformer to perform VAD (and speaker diarization when applicable), so that differences are primarily attributed to the back-end modeling choices rather than segmentation heuristics. We implemented a cascaded pipeline built upon the same Speech-LLM back-end, FireRedASR-LLM, for the ASR component. A VAD model 1
+
+was employed to remove silence segments and generate input utterances for ASR while preserving global timestamps. As FireRedASR-LLM does not provide word-level timestamps, we applied a pre-trained CTC-based forced alignment model 2 to align the ASR outputs and obtain word-level timestamps. For speaker diarization, we adopted the same streaming Softformer front-end as G-STAR to handle long-form speech and produce global speaker timestamps. Finally, the global word-level times-tamps from ASR were integrated with the speaker timestamps to generate the final speaker-attributed transcription with global timing information. Collar is all set to 0 in DER computation. 
+
+# 5. Evaluation 
+
+Following the experimental setup described in Sec 4, we con-ducted a series of evaluation experiments. In addition to ana-lyzing the model’s performance on individual chunks, we also evaluated its behavior in realistic meeting scenarios at the full-meeting level. 
+
+5.1. Chunk-level Evaluation 
+
+In this section, we evaluate G-STAR against baseline systems under the local setting, with a maximum utterance duration of 20 seconds. As shown in Table 1, G-STAR consistently outperforms the SD Sortformer baseline across all datasets, demonstrating that the LLM effectively leverages and integrates speaker diariza-tion outputs for speaker tracking. Moreover, G-STAR achieves comparable or superior cpWER relative to the SD-driven cas-caded Parakeet model [ 29 ], indicating that the LLM backbone successfully utilizes speaker attributes for speaker-aware context recognition. Furthermore, G-STAR surpasses the prior end-to-end Speech-LLM-based Vibevoice-ASR system, validating the efficacy of its joint speaker tracing and contextual modeling capabilities. 
+
+5.2. Meeting-level (Global) Evaluation 
+
+As shown in Table 2, G-STAR achieves strong multi-speaker transcription accuracy at the meeting level, remaining competi-tive with or improving upon prior systems in terms of cpWER across datasets. Meanwhile, its DER is comparatively less favor-able, which is expected given our streaming dynamic registration 
+
+> 1
+
+https://github.com/snakers4/silero-vad 
+
+> 2
+
+https://huggingface.co/MahmoudAshraf/ mms-300m-1130-forced-aligner/tree/main 
+
+Table 2: Global (meeting-level) performance comparison, re-ported in cpWER/DER (%). All inference is non-streaming. Bold 
+
+indicates the best result.                           
+
+> System Fisher MLC Candor cpWER/DER ↓cpWER/DER ↓cpWER/DER ↓
+> Sortformer [19] – / 15.21 – / 21.92 – / 18.03 Parakeet [29] 24.41 / – 31.03 / – 26.92 / – Vibevoice-ASR [21] 25.03 / 27.15 25.41 / 19.83 27.24 / 25.68 Pipeline 21.01 / 23.41 23.18 / 21.38 17.62 / 17.67
+> G-STAR 16.44 / 16.85 17.15 /14.25 15.17 / 24.89
+
+mechanism: the model must track and update speaker representa-tions online, and thus cannot always match the separation quality of pipeline systems that explicitly optimize diarization with dedi-cated modules. Overall, these results highlight the practical trade-off targeted by G-STAR: it preserves robust speaker-attributed transcription under realistic global conditions, while accepting some degradation in diarization purity due to fully streaming, online speaker handling. Table 3: Ablation study on G-STAR (local setting). We report cpWER/DER ↓ (%) on three representative datasets (AMI, Fisher, Candor); lower is better. All rows use the full SD branch and the special token; we ablate the hierarchical CE loss and interleave fusion.                       
+
+> Hierarchical CE loss Interleave fusion AMI Fisher Candor cpWER/DER ↓cpWER/DER ↓cpWER/DER ↓×✓26.33 / 21.06 10.88 / 10.24 14.97 / 20.21
+> ✓×28.63 / 21.28 14.23 / 9.02 18.30 / 18.10
+> ✓✓24.86 /19.00 10.29 /8.18 14.54 /17.56
+
+5.3. Ablation Study 
+
+We ablate the hierarchical cross-entropy (CE) loss and the in-terleave fusion scheme in the local setting (Table 3). Interleave fusion reduces both cpWER and DER, with a larger gain on cpWER, suggesting more reliable prediction of structure-critical tokens such as speaker and timestamp markers. In contrast, adding hierarchical CE consistently yields a clearer improve-ment on DER while leaving cpWER largely unchanged, indicat-ing stronger sensitivity to temporal boundaries and speaker turn segmentation. Together, the two components are complemen-tary: interleave fusion improves token-level attribution, whereas hierarchical CE mainly benefits diarization quality. 
+
+# 6. Conclusion 
+
+We presented G-STAR, an end-to-end framework for times-tamped speaker-attributed ASR on long-form multi-party au-dio under chunk-wise inference. By coupling a streaming Sortformer-style speaker tracker (with a persistent speaker cache) and a Speech-LLM transcription backbone, the model produces globally consistent speaker IDs while retaining fine-grained tem-poral grounding. Our evaluations and ablations show that the proposed cue design and training objectives improve speaker-aware transcription, and expose a practical trade-off between attribution accuracy and diarization purity under fully stream-ing, online speaker handling. Overall, G-STAR provides a new paradigm and a strong, reproducible baseline for Speech-LLM-based SA-ASR in realistic meeting scenarios. 7. References 
+
+[1] C. Tang, W. Yu, G. Sun, X. Chen, T. Tan, W. Li, L. Lu, Z. Ma, and C. Zhang, “Salmonn: Towards generic hearing abilities for large language models,” arXiv preprint arXiv:2310.13289 , 2023. [2] Y. Chu, J. Xu, X. Zhou, Q. Yang, S. Zhang, Z. Yan, C. Zhou, and J. Zhou, “Qwen-audio: Advancing universal audio understanding via unified large-scale audio-language models,” arXiv preprint arXiv:2311.07919 , 2023. [3] J. Xu, Z. Guo, H. Hu, Y. Chu, X. Wang, J. He, Y. Wang, X. Shi, T. He, X. Zhu et al. , “Qwen3-omni technical report,” arXiv preprint arXiv:2509.17765 , 2025. [4] A. Goel, S. Ghosh, J. Kim, S. Kumar, Z. Kong, S.-g. Lee, C.-H. H. Yang, R. Duraiswami, D. Manocha, R. Valle et al. , “Audio flamingo 3: Advancing audio intelligence with fully open large audio language models,” arXiv preprint arXiv:2507.08128 , 2025. [5] J. Peng, Y. Wang, B. Li, Y. Guo, H. Wang, Y. Fang, Y. Xi, H. Li, X. Li, K. Zhang, S. Wang, and K. Yu, “A survey on speech large language models for understanding,” IEEE Journal of Selected Topics in Signal Processing , pp. 1–32, 2025. [6] W. Cui, D. Yu, X. Jiao, Z. Meng, G. Zhang, Q. Wang, S. Y. Guo, and I. King, “Recent advances in speech language models: A sur-vey,” in Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , 2025, pp. 13 943–13 970. [7] K.-T. Xu, F.-L. Xie, X. Tang, and Y. Hu, “Fireredasr: Open-source industrial-grade mandarin speech recognition models from encoder-decoder to llm integration,” arXiv preprint arXiv:2501.14350 ,2025. [Online]. Available: https://arxiv.org/abs/2501.14350 [8] ¨Ozg ¨ur C¸ etin and E. Shriberg, “Analysis of overlaps in meetings by dialog factors, hot spots, speakers, and collection site: insights for automatic speech recognition,” in Interspeech 2006 , 2006, pp. paper 1915–Mon2A2O.6. [9] T. Yoshioka, H. Erdogan, Z. Chen, X. Xiao, and F. Alleva, “Recog-nizing Overlapped Speech in Meetings: A Multichannel Separation Approach Using Neural Networks,” in Interspeech 2018 , 2018, pp. 3038–3042. [10] E. Shriberg, A. Stolcke, and D. Baron, “Observations on overlap: findings and implications for automatic processing of multi-party conversation.” in Interspeech , 2001, pp. 1359–1362. [11] N. Kanda, J. Wu, Y. Wu, X. Xiao, Z. Meng, X. Wang, Y. Gaur, Z. Chen, J. Li, and T. Yoshioka, “Streaming Speaker-Attributed ASR with Token-Level Speaker Embeddings,” in Interspeech 2022 ,2022, pp. 521–525. [12] L. E. Shafey, H. Soltau, and I. Shafran, “Joint Speech Recog-nition and Speaker Diarization via Sequence Transduction,” in 
+
+Interspeech 2019 , 2019, pp. 396–400. [13] L. Lu, N. Kanda, J. Li, and Y. Gong, “Streaming end-to-end multi-talker speech recognition,” IEEE Signal Processing Letters , vol. 28, pp. 803–807, 2021. [14] D. Raj, D. Povey, and S. Khudanpur, “Surt 2.0: Advances in transducer-based multi-talker speech recognition,” IEEE/ACM Transactions on Audio, Speech, and Language Processing , vol. 31, pp. 3800–3813, 2023. [15] D. Raj, M. Wiesner, M. Maciejewski, P. Garcia, D. Povey, and S. Khudanpur, “On Speaker Attribution with SURT,” in The Speaker and Language Recognition Workshop (Odyssey 2024) ,2024, pp. 91–98. [16] H. Yin, Y. Chen, C. Deng, L. Cheng, H. Wang, C.-H. Tan, Q. Chen, W. Wang, and X. Li, “Speakerlm: End-to-end versatile speaker diarization and recognition with multimodal large language models,” 2025, accepted by AAAI 2026. [Online]. Available: https://arxiv.org/abs/2508.06372 [17] M. Shi, X. Xiao, R. Fan, S. Ling, and J. Li, “Train short, infer long: Speech-llm enables zero-shot streamable joint asr and diarization on long audio,” 2025. [Online]. Available: https://arxiv.org/abs/2511.16046 [18] M. Huo, Y. Shao, and Y. Zhang, “Tagspeech: End-to-end multi-speaker asr and diarization with fine-grained temporal grounding,” 2026. [Online]. Available: https://arxiv.org/abs/2601.06896 [19] T. Park, I. Medennikov, K. Dhawan, W. Wang, H. Huang, N. R. Koluguri, K. C. Puvvada, J. Balam, and B. Ginsburg, “Sortformer: Seamless integration of speaker diarization and asr by bridging timestamps and tokens,” arXiv preprint arXiv:2409.06656 , 2024. [20] I. Medennikov, T. Park, W. Wang, H. Huang, K. Dhawan, J. Wang, and B. Ginsburg, “Streaming sortformer: Speaker cache-based on-line speaker diarization with arrival-time ordering,” arXiv preprint arXiv:2507.18446 , 2025. [21] Z. Peng, J. Yu, Y. Chang, Z. Wang, L. Dong, Y. Hao, Y. Tu, C. Yang, W. Wang, S. Xu et al. , “Vibevoice-asr technical report,” 
+
+arXiv preprint arXiv:2601.18184 , 2026. [22] N. Kanda, Y. Fujita, T. Yoshioka, and o. Koichiro, “Serialized output training for end-to-end overlapped speech recognition,” in 
+
+Proc. Interspeech 2020 , 2020, pp. 2797–2801. [23] B. Zhang, C. Liang, S. Wang, X. Geng, Z. Guo, H. Li, H. Yin, X. Yang, P. Zhang, C. Ma, and L. Xie, “West: Llm based speech toolkit for speech understanding, generation, and interaction,” 2025. [Online]. Available: https://arxiv.org/abs/2509.19902 [24] B. Mu, P. Guo, Z. Sun, S. Wang, H. Liu, M. Shao, L. Xie, E. S. Chng, L. Xiao, Q. Feng et al. , “Summary on the multilingual conversational speech language model challenge: Datasets, tasks, baselines, and methods,” arXiv preprint arXiv:2509.13785 , 2025. [25] J. Carletta, S. Ashby, S. Bourban, M. Flynn, M. Guillemot, T. Hain, J. Kadlec, V. Karaiskos, W. Kraaij, M. Kronenthal et al. , “The ami meeting corpus: A pre-announcement,” in International workshop on machine learning for multimodal interaction . Springer, 2005, pp. 28–39. [26] C. Cieri, D. Miller, and K. Walker, “The fisher corpus: A resource for the next generations of speech-to-text.” in LREC , vol. 4, 2004, pp. 69–71. [27] A. Reece, G. Cooney, P. Bull, C. Chung, B. Dawson, C. Fitzpatrick, T. Glazer, D. Knox, A. Liebscher, and S. Marin, “The candor corpus: Insights from a large multimodal dataset of naturalistic conversation,” Science advances , vol. 9, no. 13, p. eadf3197, 2023. [28] A. Yang, A. Li, B. Yang, B. Zhang, B. Hui, B. Zheng, B. Yu, C. Gao, C. Huang, C. Lv et al. , “Qwen3 technical report,” arXiv preprint arXiv:2505.09388 , 2025. [29] W. Wang, T. Park, I. Medennikov, J. Wang, K. Dhawan, H. Huang, N. Rao Koluguri, J. Balam, and B. Ginsburg, “Speaker Targeting via Self-Speaker Adaptation for Multi-talker ASR,” in Interspeech 2025 , 2025, pp. 5498–5502. [30] M. AI, :, D. Yu, Z. Lin, C. Yang, Y. Zhang, H. Chen, J. Chen, K. Chen, L. Fan, Y. Jiang, J. Zhu, M. Li, W. Wang, Y. Wang, Z. Xu, Y. Gong, Y. Zhang, W. Zhang, S. Wang, Z. Wu, Z. Fei, Q. Cheng, S. Li, and X. Qiu, “Moss transcribe diarize technical report,” 2026. [Online]. Available: https://arxiv.org/abs/2601.01554

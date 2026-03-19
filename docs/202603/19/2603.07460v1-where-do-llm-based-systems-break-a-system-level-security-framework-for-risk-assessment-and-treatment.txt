@@ -1,0 +1,1214 @@
+Title: Where Do LLM-based Systems Break? A System-Level Security Framework for Risk Assessment and Treatment
+
+URL Source: https://arxiv.org/pdf/2603.07460v1
+
+Published Time: Tue, 10 Mar 2026 01:05:54 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+## Where Do LLM-based Systems Break? A System-Level Security Framework for Risk Assessment and Treatment 
+
+Neha Nagaraja 
+
+School of Informatics, Computing, and Cyber Systems Northern Arizona University Flagstaff, USA nn454@nau.edu 
+
+Hayretdin Bahsi 1,2 
+
+> 1
+
+School of Informatics, Computing, and Cyber Systems Northern Arizona University, Flagstaff, USA 
+
+> 2
+
+Department of Software Science Tallinn University of Technology, Tallinn, Estonia hayretdin.bahsi@nau.edu 
+
+Abstract - Large Language Models (LLMs) are in-creasingly integrated into safety-critical workflows, yet existing security analyses remain fragmented and often isolate model behavior from the broader system context. This work introduces a goal-driven risk assessment framework for LLM-powered systems that combines sys-tem modeling with Attack–Defense Trees (ADTrees) and Common Vulnerability Scoring System (CVSS)-based exploitability scoring to support structured, comparable analysis. We demonstrate the framework through ahealthcare case study, modeling multi-step attack paths targeting intervention in medical procedures, leakage of electronic health record (EHR) data, and disruption of service availability. Our analysis indicates that threats spanning (i) conventional cyber, (ii) adversarial ML, and (iii) conversational attacks that manipulate prompts or context often consolidate into a small number of dom-inant paths and shared system choke points, enabling targeted defenses to yield meaningful reductions in path exploitability. By systematically comparing defense port-folios, we align these risks with established vulnerability management practices and provide a domain-agnostic workflow applicable to other LLM-enabled critical sys-tems. 
+
+> Index Terms —healthcare, large language models, cyber threats, conversational attacks, adversarial attacks, risk analysis
+
+1. Introduction 
+
+Large Language Models (LLMs) are increasingly de-ployed into safety-critical systems across domains, from healthcare to public infrastructure. Their ability to process natural language and orchestrate external tools makes them promising for automating complex workflows. Healthcare providers exemplify this shift, deploying LLM-powered as-sistants behind orchestration layers that coordinate external services (e.g., EHR backends, translators, and knowledge bases) to support tasks such as drafting notes, summarizing Electronic Health Records (EHRs), and assisting with clini-cal decision-making [1], [2]. While this promise is attractive, it also introduces new security and privacy risks: multi-step interactions among the LLM, external services, and healthcare infrastructure create complex attack surfaces [3] that are not well captured by traditional threat analyses. Risk assessment is a core activity in the secure devel-opment life cycle (SDLC) [4]: it translates a growing set of threats and weaknesses into prioritized engineering work by identifying which attack paths are feasible, which assets and goals they endanger, and which controls provide the paramount risk reduction under practical constraints. This need becomes more acute for LLM-enabled applications, mainly orchestrated or agent-based systems, because the attack surface extends beyond a single model or API call to include tool invocation, workflow logic, memory and state, and cross-component trust boundaries. Consequently, secu-rity analysis must account for how conventional platform attacks, adversarial ML attacks, and conversational attacks (e.g., prompt injections) interact and compound across an end-to-end system. Most existing LLM security work focuses on model-or API-centric threats such as prompt injection [5], jail-breaks [6], unsafe content generation, or training-data ex-traction, often studied in isolation and outside of concrete domains. At the same time, the security development life cycle community has mature practices around threat model-ing and vulnerability scoring (e.g., STRIDE [7], CVSS [8]). Still, these are typically applied to conventional software components (web applications, databases, and networks) rather than to LLM-based systems that maintain cross-session memory and call out to tools. More broadly, many threat modeling and risk assessment efforts conducted at early stage enumerate individual threats but do not clearly demonstrate how those threats align into end-to-end attack paths that connect an entry point to a concrete security goal. Attack-path reasoning matters because defenses are often deployed at shared chokepoints (e.g., authentication boundaries, orchestration logic, and tool connectors), and path-based models make it explicit where a control breaks the chain. The challenge of risk assessment is amplified in LLM-enabled architectures, where three categories of threats must be consolidated within a single system view [9], [10]: 
+
+> arXiv:2603.07460v1 [cs.CR] 8 Mar 2026
+
+(i) conventional cyber threats that target the platform layer (e.g. MitM, credential theft), (ii) adversarial ML threats that exploit the deployed model, and (iii) conversational threats that induce harmful behavior through manipulated prompts or context (e.g., prompt injection). For instance, a white-box adversarial attack may require the attacker to compromise an infrastructure system component to learn the model parame-ters, or an indirect prompt-injection attack can be realized by compromising an information flow or third-party knowledge source. The literature focuses on individual adversarial or conversational threats. However, a consolidated threat view that captures the entire attack path is necessary to conduct a realistic risk assessment and to prioritize treatment in LLM-based systems. Attack graphs have long been used to represent attacker actions and paths in conventional systems [11]. These ap-proaches rely on detailed deployment configurations (e.g., known vulnerabilities and network access control rules) that are often available only in later stages of development or af-ter deployment. In contrast, early-stage analysis for complex ML-based architectures must remain usable under partial system knowledge, while still producing actionable attack paths and defensible prioritization. On the other side, attack trees provide more flexibility in terms of node descriptions in identifying the attack scenarios [12]. However, no sys-tematic approach has been proposed to identify and align tree nodes. The risk calculations conducted on the paths derived from the trees do not specify how to map the impact assessment to the goal of the attack path. Prioritization of risk treatment options has attracted less attention. The litera-ture provides limited, system-wide risk assessment methods that unify heterogeneous threat classes for LLM-enabled systems, supporting defense selection and comparison. This paper addresses this gap by adopting an attack-path-centric methodology for early-stage risk assessment: we treat the LLM as one component in a system architecture and explicitly model how heterogeneous threats compose into multi-step paths that impact mission goals. We focus on three security goals that are central to LLM deployments in healthcare [10]: ( G1) Intervening in medical procedures 
+
+(unsafe or manipulated clinical guidance), ( G2) Leakage of EHR data (violations of patient confidentiality), and ( G3)
+
+Disruption of access or availability (denial or degradation of timely access to records and decision support). For each goal, we construct attack–defense trees (ADTs) that capture realistic multi-step paths involving users, the web applica-tion, the orchestrator, the LLM, and external tools. We use CVSS-based exploitability scoring to estimate and compare the feasibility and likelihood of compound paths and identify where defenses most effectively break them. The tree nodes, except for the root, determine the likelihood of risk scenarios through a consolidated exploitability calculation for the cor-responding attack paths, whereas the root node identifies the risk impact, as the security violation goal is specified in that node. This approach places the complete attack path as the center of risk calculation to estimate the impact with accor-dance to the goal of whole path. Our risk treatment approach also benefits from attack paths to provide a more systematic view of treatment options and their interdependencies. While our evaluation is instantiated as a healthcare case study, the methodological workflow is domain-agnostic. It applies to other LLM-enabled critical systems by substituting goals, assets, and system components. Concretely, we organize our study around the following research questions: RQ1: How can attack–defense trees be used to model multi-step attacks that exploit interactions between LLM components and surrounding system infras-tructure and tools at the early stage of system development, considering all threat categories, including conventional, adversarial, and conversational ones? RQ2: How can CVSS exploitability scores be mapped onto, and aggregated across, attack–defense tree structures to estimate compound risk from heterogeneous threats? RQ3: Under realistic defense budget constraints, which combinations of controls provide the most significant reduction in path exploitability per unit cost, and how can our framework guide these choices? This paper makes three contributions: (1) Goal-driven system modeling and attack-path construction. We present a goal-driven modeling method for LLM-enabled critical systems that combines system-level data flow diagrams with attack–defense trees, capturing (i) conventional platform threats, (ii) adversarial ML threats, and (iii) conversational threats under goals ( G1)–( G3)in a healthcare case study. (2) 
+
+Exploitability scoring for multi-step attack paths. We show how to attach CVSS v3.1 exploitability vectors to ADT leaves (via representative CVEs and explicit LLM-specific assumptions where CVEs do not exist) and propagate them through OR/AND/SAND compositions to obtain path-level exploitability scores that reflect compound, multi-step at-tacks. (3) Defense-portfolio comparison under cost con-straints. We introduce a risk-treatment workflow that models concrete security controls as transformations on CVSS base metrics, defines simple cost levels for those controls, and evaluates canonical hardening scenarios (precondition-first, guardrails-first, and combined) on a realistic healthcare de-ployment. The novelty of this work is methodological: it oper-ationalizes attack-path-centric risk assessment for LLM-enabled systems by unifying heterogeneous threat classes within a single system model, producing explicit paths that support defense placement and portfolio comparison under partial, early-stage knowledge. By connecting paths to CVSS scoring and a control-and-cost workflow, it bridges the gap between abstract AI security concerns and estab-lished vulnerability management practices. The framework provides a practical, domain-agnostic risk management ap-proach for securing LLM deployments across critical infras-tructures. 
+
+2. Related works 
+
+As LLMs become embedded in safety- and mission-critical systems; spanning healthcare, finance, critical infras-tructure, and autonomous operations structured security risk assessment has struggled to keep pace with adoption. The security literature on LLM-integrated systems remains frag-mented: despite rapid adoption, structured risk assessment is still limited, and prior work primarily emphasizes STRIDE-or stakeholder-based threat taxonomies (e.g., prompt injec-tion, data leakage, hallucination) without connecting indi-vidual threats to multi-step attack scenarios or operational impact [13]–[16]. In parallel, traditional IT risk frameworks and outage analyses capture important infrastructure reali-ties, including risks in mission-critical networked systems and cascading failures driven by shared IT dependencies and market concentration. Still, they are often static and coarse-grained, omitting attacker behavior, attack paths, and cross-workflow propagation that are central to operational and patient-safety consequences [17], [18]. Complementary lines of work in IoT/embedded threat modeling and trust-centered studies similarly provide valuable perspectives on cyber-physical exposure and patient–AI decision dynamics. Yet, they under-model AI-native behaviors, rapidly evolving software vulnerabilities, and system-level threat propaga-tion across interconnected components [19]–[22]. Mean-while, structured attack-path reasoning has matured in other domains: attack-defense trees have been applied to ATM security and ML pipelines. They can support explainable risk reasoning even for non-experts [23]–[25], and NIST CSWP 35 cite further illustrates how system modeling, STRIDE enumeration, and attack trees can be applied to genomic sequencing. However, these established approaches primarily target conventional cyber threats in comparatively static infrastructure and do not fully capture the heteroge-neous, behavior-driven threat landscape introduced by LLM-integrated systems, motivating goal-driven, system-level risk modeling adaptable to any domain where LLM orchestration governs critical workflows. The Common Vulnerability Scoring System (CVSS) provides a standardized framework for quantifying vulner-ability severity and has become the authoritative metric in vulnerability management. Although CVSS v3.1/v4.0 has been used for medical device threat modeling and semi-quantitative risk scoring, it has not yet been extended to system-level LLM orchestration where threats propagate across components [21]. Bahar and Wazan [26] demonstrate that CVSS v3.1 exhibits insufficient metric variability when applied to individual LLM attacks in isolation. However, this limitation can be reframed at the system level. By consoli-dating individual threats into multi-step orchestration paths via attack-defense trees, we shift exploitability assessment from metric factors alone to path-level and cross-component interactions. This enables CVSS to provide meaningful differentiation where isolation-level metrics cannot, while exposing chokepoints where defenses break end-to-end at-tacks. Collectively, this leaves a gap: a lack of structured, system-wide models that quantify how attackers can com-bine conventional cyber threats, adversarial ML techniques, and LLM-specific exploits along actionable paths to com-promise critical operations. This work addresses that gap by proposing a goal-driven, attack-defense tree framework tailored to LLM-orchestrated healthcare systems, integrating calibrated CVSS metrics to expose dominant attack paths and critical defensive chokepoints. 
+
+3. Methodology 
+
+In this section, we formalize our end-to-end risk assess-ment workflow for LLM-powered healthcare systems. This workflow integrates and advances two distinct strands of our prior research. First, our system modeling work [9] produced the system model and a foundational catalog of component-level threats (via STRIDE). Second, our concur-rent study [10] used high-level attack trees to prioritize risk scenarios using a likelihood × impact scheme, providing a high-level prioritization view. In contrast, the present study focuses on exploitability and risk treatment: it opera-tionalizes path-level feasibility scoring and enables explicit comparison of defense portfolios under cost constraints. Specifically, we (i) construct goal-driven Attack–Defense Trees (ADTs) for three security objectives; (ii) aggregate exploitability across multi-step attack paths using CVSS v3.1 scoring and combine these with goal-specific impact profiles; and (iii) define canonical defense scenarios and model their effects as transformations of CVSS metrics at selected leaves. This workflow enables systematic comparison of risk reduction and implementation cost across heterogeneous controls. 
+
+3.1. System Modeling 
+
+We analyze a representative LLM-powered healthcare assistant that answers patient and clinician queries, surfaces EHR context, and coordinates external tools. Why this mat-ters for risk: the model anchors our Attack–Defense Tree (ADT) analysis in concrete interfaces, data flows, and trust boundaries, both constraining the attack surface we score and locating where defenses can actually be deployed. Core Components [9]. Figure 1 illustrates the system architecture. A Web Application mediates user sessions; a Healthcare Platform supplies governed EHR data; an 
+
+Orchestrator (agent layer) sequences tools and routes calls via a Task Planner (workflow blueprint + prompt scaffolds), 
+
+Task Executor (API/tool invocation), and a Data Pipeline 
+
+(intermediate state, artifacts); External Resources (e.g., translators, clinical KBs, analytics) provide enrichment; the 
+
+LLM performs the reasoning pass and returns guidance. The LLM may be hosted or third-party, and may be fine-tuned or adapted; this broadens the attack surface beyond pure inference, which is reflected in our ADT construction and risk treatment. 
+
+3.2. Threat Modeling 
+
+In earlier work [9] on the same LLM-based healthcare assistant, we performed a complete STRIDE-per-element [7], [9] analysis over the system-level DFD. Based on this analysis, we constructed an attack taxonomy by combining entries from MITRE ATLAS [27] with the OWASP Top 10 User     
+
+> (Patient/Clinician)
+> Web
+> Application
+> Task Planner
+> Workflow & Prompts
+> Task Executor
+> API & Tools
+> Data Pipeline
+> Intermediate State & Artifacts
+> Orchestrator
+> (Agent Layer)
+> LLM
+> External Resources
+> Healthcare
+> Platform
+> EHR Data
+> queries /
+> response prompts
+> EHR Acces s
+> Guidance &
+> Responses
+> Tool
+> calls
+
+Figure 1: System Architecture of the LLM-based Healthcare Assistant for LLMs [28] and conventional infrastructure threats. The resulting threats clustered into three families: (i) conven-tional cyber threats that target the platform layer (e.g., MitM, credential theft), (ii) adversarial ML threats that exploit the deployed model, and (iii) conversational threats that induce harmful LLM behavior through manipulated prompts or context (e.g., prompt injection). We then mapped this taxon-omy onto eight security boundaries across the components and their interactions, treating every cross-boundary flow as a potential attack vector, and cataloging concrete threats at each interface. In this paper, we reuse that taxonomy, along with its boundary assignments, as the starting point for constructing our attack–defense trees and quantifying risk. 
+
+3.3. Systematic Risk Assessment 
+
+Our risk assessment is goal-driven: instead of identi-fying risks of individual threats in isolation, we model how attackers achieve three high-level security goals within attack paths [10], G1: intervening in medical procedures, G2: leakage of EHR data, and G3: disruption of access or availability, and how defenses alter these threat paths. We structure this analysis in three steps. First, we build At-tack–Defense Trees (ADTs) for each goal, organizing threats into explicit preconditions, execution steps, and resulting impacts, providing a compositional view of how attacks un-fold across system components [RQ1](see subsection 3.4). Second, we apply CVSS- based [8] exploitability scores to ADT and aggregate them using logical connectors, yielding quantitative exploitability scores for complete attack paths [RQ2] (see subsection3.5). Finally, we evaluate risk treat-ment by attaching concrete controls and recomputing path exploitability, enabling comparison of mitigation strategies and trade-offs between residual risk and implementation cost [RQ3] (see subsection 3.6). 
+
+3.4. Attack–Defense Tree Modelling 
+
+We model risk using goal-driven Attack–Defense Trees (ADTs) rather than isolated threats. For each security goal [10], G1: Intervening in Medical Procedures , G2: Leakage of EHR Data , and G3: Disruption of Access or Avail-ability , we construct a separate tree whose root encodes the attacker’s high-level objective. Internal nodes describe how this objective can be realized through combinations of lower-level threats, and attached defense nodes represent concrete controls that disrupt or harden those paths. Each ADT is instantiated directly from the attack taxonomy de-veloped in our prior work, so every node corresponds to a previously identified threat or control. We explicitly decompose each attack path into three semantic layers [10]: Preconditions (P) capture what must already have gone wrong before a specific exploit becomes usable, i.e., how the attacker first gains leverage over the sys-tem. For example, without compromising the orchestration workflow, an attacker cannot misroute tasks or poison shared memory. Execution (V) represents the active attack given those preconditions, i.e, observable attack patterns such as submitting a malicious query, injecting unauthorized tasks, or hijacking a user session. Final impact maps a successful execution step back to one of our three goals, such as unsafe clinical guidance, EHR confidentiality breach, or denial of access to patient records. This precondition–execution–impact decomposition is central to our risk assessment. It lets us distinguish (i) controls that make it harder to reach the attack surface (e.g., stronger authentication, session isolation), (ii) controls that make it harder to exploit once the surface is reached (e.g., prompt guardrails, orchestration consistency checks), and (iii) controls that limit the resulting damage (e.g., narrowing the scope of accessible data). We use three logical connectors to express how attacks compose. OR nodes encode alternative strategies where any child suffices (e.g., user hijacking, OR MitM, OR malicious user as ways to compromise the prompt channel). AND 
+
+nodes encode joint requirements where all children must hold, but order is irrelevant (e.g., a poisoning attack requir-ing both LLM trained on sensitive EHR data AND model access exposed). Sequential AND ( SAND ) encodes ordered dependencies: some conditions must hold before others. At the path level, we model every attack as a SAND [29] of preconditions then execution ( P SAND V), reflecting that exploit attempts only matter once the necessary footholds exist. Defenses are attached as counter-nodes to specific pre-conditions or execution steps. A defense node denotes a fam-ily of controls (e.g., MFA, mTLS, prompt guardrails, context segmentation, RBAC enforcement) that raises the difficulty of satisfying that node rather than simply “removing” it from the tree. This explicit placement of defenses, together with the precondition–execution–impact decomposition, is what allows us to reason systematically about where to invest in controls and how multi-step attack paths are reshaped across the LLM-powered healthcare system. Figure 2 shows a simplified ADT for G2: Leakage of EHR Data that illustrates how we separate preconditions from execution and how impact is handled. In this toy tree, the attacker must first satisfy a precondition P (compromise the prompt channel), which can occur either via a malicious user or a MitM attack ( OR ), and then perform the execution step V (prompt injection), modeled as P SAND V . Impact is associated with the goal node ( G2 ) and applied when the root is achieved; it is not modeled as an additional sequence Impact 
+
+> G2 : Leakage
+> of EHR Data
+> P2:
+> MiTM
+> P1:
+> Malicious
+> User
+> RBAC, Prompt
+> Monitoring
+> End -to -End
+> Encryption, Mutual
+> Authentication
+> Precondition:
+> Compromise
+> Prompt
+> Channel
+> prompt -injection
+> detection +
+> monitoring
+> Execution
+> Prompt
+> Injection
+> SAND
+> OR
+
+Figure 2: Toy ADT illustrating precondi-tion–execution–impact decomposition and defense placement for G2 (EHR leakage) of attack steps. Defense nodes attach to specific P or V
+
+nodes to increase the difficulty of reaching the goal. 
+
+3.5. CVSS-based Quantification of Attack–Defense Trees 
+
+We quantify our Attack–Defense Trees using the Com-mon Vulnerability Scoring System (CVSS) [30] because it is (i) widely adopted in security operations, (ii) directly tied to real-world vulnerability data, and (iii) decomposes risk into factors that fit naturally onto ADT nodes (attack surface, complexity, required privileges, and user interac-tion). Alternatives such as DREAD [31], purely qualitative ratings, or ad-hoc likelihood scales are easier to apply but lack standardized scoring and are rarely tied to concrete CVEs, making it difficult to reuse existing vulnerability data or to compare our results with how vulnerabilities are scored and prioritized in practice. We adopt CVSS v3.1 [8] as the backbone of our exploitability analysis. Because early-stage system analysis often lacks deployment-specific vulnerability evidence, we estimate the feasibility of representative attack steps by mapping them to comparable, publicly scored CVEs and reusing their CVSS v3.1 exploitability vectors; when proof-of-concept exploits or widely reported exploitation patterns exist, they provide additional support for these baseline estimates. First, the vast majority of vulnerabilities we use as representative CVEs for attack steps are still scored in v3.1; using v3.1 lets us reuse their official exploitability vectors without re-estimating metrics. Second, v3.1’s ex-ploitability formulation is stable and well-understood within the security community, which enhances interpretability and reproducibility. Our aggregation method relies solely on the structure of the exploitability sub-score (a multiplicative combination of AV, AC, PR, and UI), so it is straightforward to port to CVSS v4.0 [32] in future work by replacing the per-leaf metric weights while retaining the same ADT aggregation logic. We discuss this migration path in the Discussion. 
+
+Exploitability inside the tree; Impact at the goal. 
+
+Inside the ADT, we focus on how easily the attacker can progress, not on the severity of the outcome. Accordingly, all precondition and execution nodes are annotated only with the CVSS exploitability sub-score. At the same time, impact (C, I, A) and scope are reserved for the goal node reached by a completed path. This separation is deliberate: intermediate steps (e.g., session compromise, prompt-channel compro-mise, or tool misuse) recur across multiple goals, and their feasibility is primarily determined by access, complexity, re-quired privileges, and user interaction. In contrast, severity is goal-specific. Assigning impact to intermediate nodes would double-count consequences along a path and would prevent shared subtrees from being reused consistently across goals. Therefore, we apply impact only once at the goal node reached by a completed path after aggregating exploitability across the path to obtain Epath . For example, a shared precondition such as user session hijacking can appear in paths leading to both G1 and G2 ; its exploitability remains the same, while the impact applied at the goal differs. We use the standard CVSS v3.1 exploitability formula [8]. 
+
+E = 8 .22 × AV × AC × P R × U I (1) where each factor is taken from the standard CVSS met-ric scales: AV ∈ { N, A, L, P }, AC ∈ { L, H }, P R ∈{N, L, H } (evaluated under Scope: Unchanged), and U I ∈{N, R }.Metric interpretation: Attack Vector (AV) captures the at-tacker’s required proximity: N (Network – remotely ex-ploitable), A (Adjacent – same broadcast/domain), L (Local – local system access needed), P (Physical – physical in-teraction needed). Attack Complexity (AC) reflects external conditions needed for exploitation: L (Low – straightfor-ward, no special requirements), H (High – requires specific timing or configuration). Privileges Required (PR) indicates initial access level: N (None), L (Low – regular user), H (High – administrative). User Interaction (UI) depicts de-pendency on legitimate user actions: N (None), R (Required – user must click, open, or interact). This design cleanly separates path difficulty (how hard it is to carry out the attack) from goal severity (how damaging it is if the goal is reached). We keep CVSS Scope fixed to Unchanged (S:U) in all exploitability calculations. Scope indicates whether a vulnerability in one security authority can affect another; here, all three goals (intervening in medical procedures, EHR leakage, and availability disruption) are defined within the healthcare assistant’s own security domain. Cross-scope effects (e.g., lateral movement into external systems) are out of scope for this study. Fixing S:U keeps the analysis transparent and comparable across goals. At each goal node, we reintroduce Impact and compute a CVSS-style base score from the path-level exploitability 
+
+Epath and the chosen impact triple (C, I, A ):
+
+ISC Base = 1 − (1 − C)(1 − I)(1 − A) (2) Impact = 6 .42 × ISC Base (3) Base = round up (min( Impact + Epath , 10)) (4) following the standard CVSS v3.1 equations for S:U. 
+
+How ADT nodes map to CVEs. Each leaf node in the ADT corresponds to a concrete attack step (e.g., “user hijacking,” “unvalidated shared context,” “task injection”). Following our CVSS grounding approach above, for each leaf ℓ we select one or more representative CVEs that satisfy two conditions: (i) the attack technique matches the modeled step, and (ii) a CVSS v3.1 scoring vector is publicly documented for that vulnerability. We also ensure that the representative CVE reflects a comparable attacker posture (network, adjacent, local), privilege level (none, low, high), and user-interaction requirement. From each representative CVE, we extract its CVSS v3.1 exploitability tuple ( (AV ℓ, AC ℓ, P R ℓ, U I ℓ)) and com-pute E(ℓ) using (1). If multiple CVEs plausibly represent the same attack technique (e.g., several variants of session hijacking or cache-leak exploits), we document the candi-date set Cℓ and select the worst-case exploitability. When no directly matching CVE exists for an emerging LLM-specific threat, we approximate the metrics by analogical mapping: we identify CVEs with similar attack surface and preconditions (e.g., cache isolation failures, insecure API integrations) and adapt their metric tuples to the LLM scenario, documenting the rationale for transparency. 
+
+Aggregating exploitability across ADT structure: P
+
+denotes the set of alternative preconditions for an attack step, and V is the execution step that becomes possible once any precondition in P is satisfied. Internal ADT nodes use stan-dard OR, AND, and SAND connectors, which we aggregate as follows. OR node: E(OR) = max i E(child i),since the attacker chooses the easiest available option. AND node: E(AND) = min i E(child i), since the overall diffi-culty is determined by the hardest required precondition. 
+
+SAND node: Connecting the precondition family P to the execution step V , Epath = E(SAND( P → V )) =min  E(P), E (V ⋆), where E(P) is the exploitability of satisfying any precondition in the family, and E(V ⋆) is the exploitability of executing V after those preconditions are met (defined next). Within a precondition family P = {p1, . . . , p k}, we first compute its exploitability as an OR-node: E(P) = max i E(pi), because an attacker only needs to succeed with the easiest available precondition to proceed. How-ever, we also need to capture how the overall conditions established by these preconditions change the difficulty of the subsequent execution step V . CVSS isolates this notion in the Attack Complexity (AC) metric. Intuitively, different preconditions can create different “operating environments” for the attacker: some yield a stable, repeatable foothold (making the next step straightforward), while others require fragile circumstances (e.g., rare timing or system state), making the next step harder even if the attacker targets the same interface. We model this dependency by conditioning only the attack complexity ( AC ) of V on the precondition family. For each precondition pi, we record its complexity label AC (pi) ∈ { L, H } from the mapped CVE. We then compute a majority Attack Complexity: 
+
+AC maj =
+
+(
+
+L, if more preconditions in P have AC = L, H, otherwise (ties default to H, conservative). (5) Intuitively, if most viable ways to enable the execution step are low-complexity attacks (e.g., commodity phishing or straightforward misconfiguration abuse), then operating within this prepared environment also tends to be low complexity. Conversely, if high-complexity preconditions dominate (e.g., precise cache manipulation or rare timing conditions), we treat the subsequent step as high complexity. We deliberately propagate only AC, not the full exploitabil-ity score, to avoid double-counting other factors such as privileges or user interaction, which belong to the specific execution step. More precisely, AV , P R , and U I are prop-erties of the execution interface and requirements encoded by the representative CVE for V ; propagating them from 
+
+P into V would count the same access, privilege, and user-dependence twice—once in reaching the precondition family and again in executing V . Conditioning only AC captures the intended dependency (“how constrained the attacker is once the environment is prepared”) without duplicating step-specific requirements. We then construct the execution node vector V ⋆ by overriding only the AC component of V ’s CVSS tuple and keeping its AV , P R , and U I values from the representative CVE: E(V ⋆) = 8 .22 × AV V × AC maj × P R V × U I V .
+
+This yields a clean separation of responsibilities: (i) 
+
+E(P ) captures how easy it is for the attacker to establish the preconditions under which V becomes feasible; (ii) AC maj 
+
+captures how the environment created by those precondi-tions alters the difficulty of executing V ; and (iii) the SAND operator combines these into a path-level exploitability: we combine them as defined in Eq ( 3.5). which is then propagated upward through the remainder of the ADT using the OR/AND aggregation rules. 
+
+Goal-Level Impact and Final CVSS Score. Once 
+
+Epath has been propagated from the ADT using the OR/AND/SAND rules and Majority-AC conditioning, we introduce impact only at the goal node. For each goal 
+
+Gj ∈ { G1, G 2, G 3}, we specify a triple (Cj , I j , A j ) that reflects the severity of achieving that goal in the healthcare setting. For example, for Prompt Injection under G1, we set C = 0.00 , I = 0.56 , A = 0.00 , representing a primarily integrity-driven hazard. Using these values, we compute the impact sub-score exactly as in CVSS v3.1 using Eq ( 2)( 3). We then combine this with the path-level exploitability to obtain the CVSS base score using Eq ( 4). This convention ensures two key properties:(i) Different goals that share ADT subtrees (e.g., user session hijack-Goal (G)     
+
+> Preconditions
+> (P)
+> P1 P2
+> Execution (V)
+> E= 2.8 , AC =L
+
+OR 
+
+SAND                           
+
+> E= 1.6 , AC =H
+> E(P )= max ( E(P1 ), E(P2 ))
+> =max (2.8, 1. 6)
+> =2.8
+> AC maj (P) = H
+> (tie → H, conservative)
+> V⋆:AC V←AC maj (P)
+> E(V⋆) = 2.1
+> Epath = min ( E(P), E(V⋆))
+> = min (2.8, 2.1)
+> =2. 1
+> (C, I, A) = ( 0.56 , 0, 0)
+> ⇒Impact = 3.6
+> Base (S:U) =round _up (min
+> (3.6 + 2.1, 10))
+
+∴ Base = 5.7 Figure 3: Toy example showing how we compute a path-level CVSS-style score ing under both G1 and G2) reuse the same exploitability structure. (ii)Differences in risk severity across goals are cleanly expressed through the assigned (C, I, A ) impact values, without entangling severity into the internal nodes of the tree. Consider a simplified path (Refer Figure 3) P SAND V
+
+with two alternative preconditions P = {p1, p 2}, where the mapped CVEs yield E(p1) = 2.8 with AC (p1) =
+
+L and E(p2) = 1.6 with AC (p2) = H, giving 
+
+E(P) = max {2.8, 1.6} = 2.8; with a tie-free major-ity AC maj = H, we compute E(V ⋆) by replacing only 
+
+AC V with AC maj in V ’s CVSS tuple (Eq. 3.5), assume 
+
+E(V ⋆) = 2 .1, and obtain the path exploitability Epath =min {2.8, 2.1} = 2 .1 (Eq. 3.5); finally, applying goal-level impact once at the root for (C, I, A ) = (0 .56 , 0, 0) yields 
+
+ISC Base = 0 .56 (Eq. 2), Impact = 6 .42 × 0.56 = 3 .60 
+
+(Eq. 3), and Base = round up(min(3 .60 + 2 .10 , 10)) = round up(5 .70) (Eq. 4), illustrating that exploitability ac-cumulates along the attack sequence while impact is intro-duced only once at the goal node. 
+
+3.6. Risk Treatment 
+
+Risk treatment via exploitability reduction. Our risk treatment focuses on reducing path-level exploitability while keeping the goal-level impact parameters (C, I, A ) fixed, as defined in the CVSS section. For any attack path X that we model as a SAND composition of a precondition family P
+
+and an execution step V (i.e., X = SAND( P → V )), we propagate exploitability using Eq. (3.5) where E(P ) is the OR-aggregated exploitability of the precondition family and 
+
+E(V ⋆) is the execution-step exploitability after conditioning on the (possibly hardened) preconditions (Eq. (3.5)). 
+
+How defenses change E. Leaf transforms: Each defen-sive control is modeled as a transformation on one or more CVSS base metrics at specific leaves of the ADT. For a leaf ℓ
+
+with baseline vector (AV ℓ, AC ℓ, P R ℓ, U I ℓ), a control may, for example: (i) raise the privileges required (e.g., MFA: 
+
+P R : L → H); (ii) increase attack complexity (e.g., strong Goal (G)                                                       
+
+> Preconditions
+> (P)
+> P1 P2
+> Execution (V)
+> AC =L
+> OR
+> SAND
+> AC =L
+> E(P) = max ( E(P1 ), E(P2 ))
+> AC maj (P) = L
+> V⋆tuple: ( AV ,AC ,PR ,UI ) = ( N,L,L,N)
+> V⋆:AC V←AC maj (P) = L(so unchanged)
+> Epath = min ( E(P), E(V⋆))
+> Goal (G)
+> Preconditions
+> (P)
+> P1 P2
+> Execution (V)
+> AC =L→H
+> Recompute E(P1 ’)under AC =L→H
+> OR
+> SAND
+> AC =L
+> E’(P) = max ( E(P1 ’), E(P2 ))
+> AC maj (P) = H
+> (tie → H, conservative)
+> E’path = min ( E’(P), E(V⋆’))
+> (b) After precondition hardening (a) Baseline
+> Precondition hardening
+> AC (P1 ) : L → H
+
+⇒              
+
+> Now, V⋆’tuple: ( N,H,L,N)
+> V⋆’:AC V←AC maj (P) = H
+> (No execution control added)
+
+Figure 4: Toy example for risk treatment parsing or isolation: AC : L → H); or (iii) introduce a human gate (e.g., HITL review: U I : N → R). After applying all orthogonal transforms that protect a leaf ℓ, we recompute its exploitability E(ℓ) using Eq. (1), with the same CVSS v3.1 weights as in our scoring section. 
+
+Exporting hardened preconditions to the execution step: 
+
+Conditioning the system on a hardened set of preconditions 
+
+P also changes the practical difficulty of the execution step 
+
+V . After applying defenses on P , we recompute both the aggregate exploitability E(P ) (Eq. (1)) and the majority Attack Complexity label AC maj (P ) derived from the precon-dition CVEs (Eq. (5)). If no explicit execution-level controls are deployed, we instantiate the conditioned execution vector 
+
+V ⋆ by replacing the original AC V with AC maj (P ), while keeping AV V , P R V , and U I V from V ’s representative CVE, and compute E(V ⋆) via Eq. (3.5). Consider a path (Refer Figure 4) X = SAND (P → V )
+
+where P = {p1, p 2} are alternative preconditions and 
+
+V is an injection-style execution step. Suppose initially 
+
+AC (p1) = L and AC (p2) = L, so AC maj (P ) = L. If 
+
+V ’s representative CVE has (AV V , AC V , P R V , U I V ) = (N, L, L, N ), then V ⋆ remains (N, L, L, N ) and E(V ⋆) = 
+
+E(V ). Now assume we deploy a precondition-hardening control on p1 that raises its complexity AC (p1) : L → H
+
+(e.g., stronger isolation or stricter policy checks), while 
+
+p2 remains L. Then the majority complexity becomes 
+
+AC maj (P ) = H (ties default to H, conservative), and we export this to the execution step by setting V ⋆ =(AV V , AC maj (P ), P R V , U I V ) = ( N, H, L, N ). This re-duces E(V ⋆) relative to E(V ) even though no execution-level control was added, capturing that a harder-to-achieve foothold typically yields a less permissive environment for exploitation. The updated path exploitability is then 
+
+Epath = min( E(P ), E (V ⋆)) (Eq. 3.5). 
+
+What defenses do not change E. We explicitly dis-tinguish between controls that change the CVSS base vector and controls that primarily affect post-compromise outcomes . Detective and operational mechanisms such as anomaly alerts, key/certificate rotation frequency, logging, and post-hoc audits do reduce overall risk by improving detection and response (e.g., shortening time-to-detect and limiting attacker dwell time, blast radius, and realized loss). However, these mechanisms typically do not increase the attacker’s effort to achieve a single successful exploit and therefore do not directly alter the CVSS base metrics ( AV ,
+
+AC , P R , U I ) used to compute exploitability. Accordingly, we model such controls outside the exploitability score E:they are discussed as complementary risk-reduction mea-sures, but they leave E unchanged in our CVSS-based treatment. This separation keeps the exploitability compu-tations interpretable and avoids mixing attacker effort with downstream response-driven loss reduction. 
+
+Canonical Treatment Scenarios. For each attack path, we do not try to optimize over an exponential defense space. Instead, we analyze four canonical “design points” that map directly to realistic engineering choices: 1. Harden major preconditions only. Identify the dominant preconditions in (P) (those with the highest (E) and/or lowest AC) and apply a small number of controls that substantially increase their difficulty. 2. Harden all preconditions. Apply selected controls to every leaf in (P), raising the overall bar to reach the execution step. This represents an “infrastructure-first” strategy. 3. Harden execution only. Leave (P) unchanged, but add guardrails on (V) (e.g., canonicalization, task allowlists, HITL gates) that increase (AC) and/or (UI) for the execution node. This corresponds to a “guardrails-first” approach. 4. Harden both sides. Combine strategies (2) and (3), simul-taneously raising the cost of satisfying preconditions and of turning those footholds into a successful exploit. These scenarios span the main trade-off surface without requiring exhaustive search over all control combinations. 
+
+Computation Workflow. For each path X: 1. Select the scenario and corresponding defense set. 2. Apply transforms to affected CVSS vectors on P and/or V . 3. Recompute 
+
+E(P ) using OR aggregation across preconditions. 4. De-termine AC maj (P ) and export it to the execution step. 5. Compute E(V ⋆) using the exported or transformed vectors. 6. Propagate via SAND. 7. Report updated Epath , ∆E, and total cost level. 
+
+Cost Model. To compare defenses across goals and scenarios, we assign each control an ordinal cost level from 1 to 4 that captures four dimensions: Engineering ef-fort, Platform/infrastructure footprint, Operations load, and UX/process impact. We do not attempt to convert these into monetary values; instead, they function as a ranking scale that can be mapped to local budgets or staffing esti-mates. The levels refer to Table 1 For example, adding an application-level allowlist for tool calls or tightening RBAC policies is typically Level 1-2 (localized configuration and limited code changes), whereas deploying mutual TLS end-to-end with certificate lifecycle management and continuous monitoring is typically Level 3 (cross-service integration, PKI and secrets management, and sustained operational load). 
+
+4. Results 
+
+4.1. RQ1 – Goal-Driven Attack–Defense Trees 
+
+We realize our methodology by building three goal-oriented ADTs G1 (intervening in medical procedures), G2 (EHR data leakage), and G3 (disruption of access or availability) [10]. Each tree factors the goal into [10]: (i) preconditions, which capture the adversary footholds tied to specific components and trust boundaries; (ii) execu-tion steps, which encode empirically observable attacker behaviors; and (iii) a final-impact node representing the security goal. Defense nodes attach to preconditions and execution steps at feasible control points, but we defer a detailed discussion of these defenses to our risk treatment section. In this part of the paper, we focus on constructing the attack paths themselves, turning the STRIDE-derived threat taxonomy from our prior work into explicit, multi-step attack scenarios 
+
+4.1.1. G1: Intervening in medical procedures. This goal reflects adversaries manipulating LLMs in healthcare sys-tems to disrupt medical decision-making and cause harmful outcomes. Figure 6 presents the corresponding Attack Tree. The root node, ”Intervene in Medical Procedures,” branches into five primary attack paths, each with its preconditions and actions for exploitation: (1) Prompt Injection, (2) LLM Session Management, (3) Orchestration Errors, (4) Model Tampering, (6) MiTM Web Session. We elaborate on each path as follows [10]: 
+
+Prompt injection . Successful execution typically in-volves two distinct stages: first, establishing unauthorized control over prompt delivery channels (precondition), fol-lowed by injecting crafted inputs that exploit LLM behavior (attack execution). 
+
+Preconditions : Compromise of Prompt Channel - Prompt injection depends on gaining control over the system’s input pathway. Any one of the following (modeled as OR con-ditions) provides sufficient access: 1. User Hijacking: Ac-quiring legitimate user credentials or session tokens through phishing or credential theft to manipulate inputs directly. 2. User Machine Hijacking: Compromising end-user devices via malware to intercept or alter prompts before submission. 3. Malicious User: Authorized users deliberately inputting adversarial content. 4. Stolen Session API Keys: Exploiting exposed or misconfigured API keys to inject prompts di-rectly at the backend. 5. Man-in-the-Middle (MitM): Inter-cepting and modifying prompts in transit through compro-mised or unsecured network channels. These preconditions establish the necessary presence or influence within the prompt-delivery chain. 
+
+Attack Execution : Crafting Suitable Prompts - Once access is gained, adversaries deliver harmful instructions through either direct or indirect injection: 1. Direct Prompt Injection [5]: Injecting adversarial content into the LLM input stream through: a. Human-Based Injection: Explicitly written instructions. b. Parameter-Based Injection: Malicious commands embedded in API parameters or HTTP requests. c. Obfuscation-Based Injection: Concealed payloads using encoding, character substitutions, invisible tokens, or visu-ally embedded instructions in images [33] or documents. d. Optimization-Based Injection: Leveraging the LLM’s pre-dictive tendencies to guide it toward harmful completions. 2. Indirect Prompt Injection [34]: Manipulating trusted intermediate systems (e.g., translators, knowledge bases, agent tools) to relay hidden instructions. This requires the Level Label Engineering effort Infra / tooling footprint Operations load UX / process impact 
+
+1 Very Low Minor policy/config; sin-gle engineer; no core-path code changes Reuse existing services; no new components “Set-and-forget” checks; negligible monitoring Invisible to users 2 Low Small project; limited code changes; one team Add a light service/lib; standard CI/CD integra-tion Periodic checks/rotations; light on-call playbooks Minor extra step for some users 3 Medium Cross-team work; non-trivial refactors; integra-tion/testing Multiple services or control plane; new secrets/PKI Continuous upkeep (dashboards, tuning); measurable SOC workload Noticeable fric-tion/training; workflow changes 4 High Org-wide program; ar-chitectural changes; spe-cialized skills New platform class or hardware; PKI re-plumb; broad dependency changes Dedicated run-books/audits; sustained operators; compliance reporting Significant user/process change; likely perf/latency trade-offs TABLE 1: Ordinal Cost Levels for Defense Measures User Orchestrator  
+
+> Session
+> Cache
+> Layer
+> Web
+> Application LLM
+
+Figure 5: Workflow of the LLM-based Healthcare System. AND precondition: a. Hidden Instruction Integration - Mali-cious instructions must be covertly embedded within benign-looking textual or visual [33] external content, ensuring they remain unnoticed yet executable by the LLM. Once met, indirect injection proceeds via: Translator Tampering: Al-tering translation outputs. Knowledge Base (KB) Poisoning [35]: Inserting adversarial entries into external databases. Social Engineering: Convincing authorized users or tools to unknowingly relay compromised content OR b. Agent Tool Injection: Introducing harmful instructions through compro-mised plugins or integrated tools. 
+
+LLM Session Mismanagement . An LLM session in our architecture is a stateful interaction between the user-facing web application and the LLM, coordinated by the orches-trator agent. It encompasses prompt–response exchanges, retained conversational context, and per-interaction metadata used to track task progress. As shown in Figure 5 [10], the orchestrator preserves continuity by relaying user inputs to the LLM, managing intermediate results, and maintaining short-term memory across steps to support multi-turn rea-soning and consistent clinical outputs. Session mismanage-ment occurs when controls such as strong authentication, user/session isolation, and context clearing are insufficient, enabling an attacker to interfere with or carry state across sessions. 
+
+Preconditions – Weak Session Handling To exploit the LLM session layer, the attacker must first take advantage of systemic vulnerabilities in how sessions are managed. In our tree, this is modeled as an OR condition- 1. Weak Authentication: Session tokens or credentials are accepted without rigorous verification, allowing spoofing or the use of expired sessions. 2. Lack of Isolation: User contexts are not strictly separated, enabling cross-session memory contamination or influence over shared prompt history. 4. No Context Purging: Dialogue turns or task metadata are not cleared at session end, letting an adversary inherit or reuse contextual content later. These conditions allow an adversary to shape LLM behaviour across requests and to jeopardize output integrity. 
+
+Attack Execution: Session Takeover; 1. Session Hijack-ing: Taking control of an active session by intercepting tokens, exploiting insecure storage, or reusing credentials, then injecting prompts, altering reasoning, or corrupting retained memory. 2. Session Fixation: Planting a pre-chosen session identifier and tricking the orchestrator into accepting it, granting persistent access as the legitimate user interacts, and enabling subtle prompt manipulation or context poison-ing. Both paths undermine temporal boundaries and logical consistency in LLM exchanges; compromised memory can quietly redirect clinical instructions, overwrite diagnostic logic, or disable safety guardrails. 
+
+Orchestration Errors . Orchestration Errors arise when attackers manipulate the control logic coordinating task execution, data routing, or interactions with the LLM. Such manipulation can redirect, alter, or inject operations, allow-ing adversaries to influence how the LLM interprets inputs and generates responses, even without direct access to the model itself. These vulnerabilities pose serious risks to the integrity of downstream clinical decisions. 
+
+Preconditions : Compromising the Orchestration Work-flow ; To exploit orchestration logic, attackers must first compromise the workflow’s integrity. This attack precondi-tion is satisfied through any of the following weaknesses (modeled as an OR condition): 1. Lack of Integrity Checks: Absence of verification mechanisms for control flows and intermediate task results allows forged or tampered instruc-tions to be accepted by the orchestrator unchecked. 2. Weak Authentication: Orchestration APIs or internal task manage-ment components may be exposed without adequate creden-tial enforcement, permitting unauthorized access or manipu-lation. 3. Unvalidated Shared Context Memory: Intermediate memory (e.g., conversation state, task metadata) is not ad-equately validated before reuse across multiple stages. This permits adversaries to poison or overwrite context to influ-ence task planning or execution logic. These weaknesses enable attackers to inject malicious control signals, alter the sequence of task execution, or redirect workflows. 
+
+Attack Execution : Orchestration Manipulation; Once the orchestrator is compromised, attackers can manipulate it in several ways, as formalized in our tree: 1. Task Injec-tion: Attackers introduce unauthorized or adversarial tasks into the orchestrator’s workflow. These tasks may request sensitive data, alter LLM output constraints, or force the invocation of unsafe external tools. 2. Task Mismanagement: Bugs, logic flaws, or adversarial manipulation may cause the orchestrator to misroute tasks to the wrong agents or process them in an incorrect order. This leads to context mismatch, contradictory outputs, or inappropriate medical recommendations. 3. Memory Poisoning [35]: Malicious inputs are injected into intermediate orchestrator memory (e.g., shared variables, pipeline buffers). If reused by down-stream components without sanitization, they can silently corrupt the decision logic or mislead the LLM. 4. Agent-in-the-Middle Attacks [36]: In orchestrator frameworks that use external tool agents or plugins (e.g., medical database lookups or translation modules), attackers may replace or spoof these agents, injecting falsified data or responses into the pipeline. These attacks exploit the orchestrator’s central-ity and authority over the system’s task flow, often resulting in silent and persistent degradation of clinical accuracy. 
+
+Model tampering . involves the unauthorized manipu-lation, replacement, or extraction of a deployed model to alter its behavior or leak knowledge. In a healthcare context, this can corrupt diagnosis logic, introduce bias, and degrade decision reliability. Our tree models three primary meth-ods under this vector: Poisoning, which compromises the model’s training or fine-tuning data. Replacement: Substi-tuting the legitimate model with a malicious one. Extraction: Exploiting model access to steal proprietary parameters or training data. 
+
+Preconditions : Model Tampering Access; Before adver-saries can perform model tampering, certain conditions must be met, grouped under the Preconditions-MT subtree. These include: 1. Gaining Access to Model Artifacts: Attackers must acquire access to the model’s binary weights, archi-tecture, or intermediate outputs, often through misconfigured storage, overly permissive roles, or exposed APIs. 2. Lack of Integrity Verification: In the absence of digital signatures, at-testation mechanisms, or checksum-based validation, model files can be silently replaced or modified during deployment or runtime. Together, these vulnerabilities enable an adver-sary to replace or manipulate a model undetected, laying the groundwork for more targeted tampering strategies. 
+
+Attack Execution ; Once the above preconditions are met, the attacker may proceed with one of the following three classes of attacks, as detailed in our tree. 1. Model Poisoning Model poisoning [37] refers to the adversarial manipulation of the model’s parameters or decision boundaries, typically by injecting malicious data or perturbations into the training pipeline. This attack path is further conditioned on the Precondition-MP branch: Access to the Training Pipeline or Data, Model Retraining or Fine-tuning is Scheduled, or Lack of Data Sanitization or Filtering. When these conditions are satisfied, attackers may introduce: a. Data Poisoning: Corrupt training data injected into the fine-tuning stage alters model behavior, leading to incorrect diagnoses or manipu-lated output for specific inputs. b. Targeted Poisoning: The attacker implants backdoors into the model that activate only when specific trigger phrases or patient attributes are encountered, making the tampering stealthy and targeted. 2. Model Replacement refers to the complete substitution of the deployed LLM with a compromised or malicious variant. In this case, the attacker may deploy a model that mimics the original’s behavior on most inputs but behaves maliciously under specific clinical contexts. Without strong version attestation and deployment control, such substitution can remain undetected, especially in containerized or multi-agent environments. 3. Model Extraction: Model extraction attacks aim to steal proprietary model parameters or repli-cate model behavior through repeated querying [38]. 
+
+MiTM Web Session attack occurs when an adversary intercepts and potentially modifies communication between the user and the web application interface. In the context of LLM-powered healthcare systems, this enables the attacker to inject, suppress, or alter user queries before they reach the orchestrator or LLM, thereby silently manipulating the clinical response workflow. As this conventional attack is widely known, we do not elaborate on this attack path in this study. 
+
+4.1.2. G2: Leakage of Electronic Health Record (EHR) Data. This goal captures threats leading to unauthorized ac-cess, inference, or exfiltration of sensitive Electronic Health Record (EHR) data. Such leakage compromises patient pri-vacy, erodes trust, and violates regulatory frameworks like HIPAA. In LLM-based systems, features such as session memory, external tool integration, and cached inference in-crease the risk of both accidental and adversarial disclosure. Figure 7 presents the Attack Tree constructed for G2, detailing the major threat paths and the preconditions that enable attackers to compromise data confidentiality. 
+
+User Session Compromise leads to EHR leakage via two main vectors. First, man-in-the-middle (MitM) attacks allow interception of prompts and LLM responses contain-ing sensitive data. Second, with session access, adversaries can use prompt injection to extract prior context or inferred patient information. While structurally modeled in G1, the emphasis here is on confidentiality loss rather than care disruption. 
+
+LLM Session Compromise occurs when unauthorized access to memory or cache states within multi-turn LLM sessions leads to leakage of sensitive EHR data. As modeled in our AT, this includes session hijacking, fixation, and cache compromise. Preconditions: These attacks emerge when session iso-lation is weak, memory is not purged between sessions, sandboxing is incomplete, or authentication is insufficient. 
+
+Attack Execution: 1. Session Hijacking: An attacker takes over an active session to retrieve previous EHR-related context. 2. Session Fixation: The attacker tricks the system into using a known session ID, gaining access to the victim’s memory. 3. Cache Compromise: Modern LLM inference often uses key-value (KV) caches to optimize for latency, especially in systems with high query throughput. If cache boundaries are poorly enforced, attackers can ex-tract tokens or responses from past sessions. Two main mechanisms are modeled: a. Cross-User Cache Exposure: If the system uses a shared cache pool (e.g., Redis) [39], and response-to-user validation is missing or faulty, an adversary can receive cached completions associated with another user’s query. This often stems from architectural shortcuts or improper tagging of cache entries. b. KV-Cache Leakage (PromptPeek-style) [40]: In transformer-based ar-chitectures, model-level KV caches [40] may retain query embeddings across users in multi-tenant pipelines. If no per-session isolation is implemented, and the model pipeline lacks query validation or filtering, an attacker can extract token completions using probing inputs. Recent work such as PromptPeek [40] demonstrates this leakage is practical under these conditions. 
+
+Training Data Leakage [41] refers to adversarial techniques that extract sensitive EHR content memorized by the LLM during training or fine-tuning. These attacks do not rely on session compromise but instead exploit the model’s internal representations to reconstruct or infer protected patient data. This becomes especially dangerous when the model is trained on real or poorly anonymized EHRs, as even partial leakage can result in serious privacy violations under healthcare regulations like HIPAA. 
+
+Preconditions: This threat arises when:1. Memorization: the model retains sensitive EHR data due to overfitting or inadequate anonymization; 2. Accessible Query Interface: attackers can query the model directly; 3. Interface Miscon-figurations: lack of rate limiting or output filtering enables large-scale probing and exposure of raw completions. 
+
+Attack Execution: Training Data Extraction involves crafting targeted prompts to reconstruct exact content, such as EHR notes or identifiers, from the training set. Model Inversion infers likely patient attributes, such as conditions or demographics, based on outputs generated from known or partial inputs. While both attacks exploit memorized or internalized data, extraction focuses on recovering exact content, whereas inversion reconstructs generalized patterns. These attacks are particularly concerning in LLM-based healthcare systems because they target the model’s internal behavior rather than its session or orchestration logic. As a result, they enable passive data harvesting and can bypass traditional access controls, especially in public or weakly monitored deployments. 
+
+Membership Inference Attack is modeled as a parallel attack path. Here, the attacker determines whether a specific patient’s data was included in the model’s training set [42]. Even without reconstructing content, this alone can breach confidentiality and violate regulations like HIPAA. 
+
+4.1.3. G3: Disruption of Access to EHR Data. This goal models adversarial threats that prevent legitimate users—patients, clinicians, or support systems—from ac-cessing Electronic Health Record (EHR) data in a timely or reliable manner. While confidentiality and integrity may remain intact, such attacks degrade availability and clinical usability, especially in time sensitive scenarios like emer-gency care. In LLM-based systems, disruptions can stem from both traditional denial-of-service (DoS) vectors and LLM specific misuse patterns. We constructed an Attack Tree (AT) for G3 to capture the key preconditions and attack paths that lead to access disruption. Figure 8 summarizes the structure, which in-cludes both conventional and LLM specific overload strate-gies. 
+
+Preconditions: These attacks require missing or mis-configured controls, including: 1. No Query Rate Limiting: allows adversaries to flood the system with prompts or API calls. 2. Poor Session Management: unused sessions accu-mulate due to lack of timeout or cleanup. 3. Poor Authenti-cation: unauthenticated users or spoofed agents overwhelm resources. 4. No Input Validation: recursive or malformed prompts pass unchecked. 5. Unthrottled Input APIs – plugin endpoints accept unregulated input streams. 
+
+Attack Execution: Once preconditions hold, access may be disrupted via: 1. Prompt Flooding [27]: Overwhelms the LLM with high-volume or complex prompts. Subtypes include: Excessive Prompt Submission: Standard queries submitted repeatedly to deplete throughput. DoS via Prompt Chaining: Recursive instructions cause nested reasoning loops. These attacks are potent when query costs scale with prompt complexity and no throttling exists. 2. Or-chestrator Abuse: Exploits weak task logic. Infinite Agent Loops trigger unresolved cycles between tools and agents. Resource Starvation Attacks tie up compute/memory via sleep commands or long loops. 3. Resource Exhaustion: Directly depletes memory, compute, or task queues. Memory Bombing uses large prompts to trigger token overflow or context spills. Pipeline Queue Flooding submits concurrent tasks to overwhelm orchestration. While both starvation and exhaustion degrade availability, the former deprives specific internal processes, while the latter overloads system-wide resources. 4. External Tool/API Dependency LLM pipelines often invoke third-party services (e.g., translators). If these calls lack protections, Man-in-the-Middle (MitM) attacks can intercept or tamper with responses. Additionally, attack-ers may launch DoS attacks on those external APIs, pre-venting LLMs from receiving required outputs and silently stalling pipeline execution. 5. Prompt Injection: Malicious prompts trigger excessive reasoning, recursion, or internal task chains. Prompt chaining differs in that its primary aim is to overwhelm resources through recursive logic, whereas prompt injection hijacks model behavior (e.g., bypassing filters). Both can induce infinite loops and recursive calls, but their intent and impact differ. 6. Model Tampering: Poi-soned Fine-Tuning introduces inefficiencies during retrain-ing. Backdoor Positioning causes intentional delays or errors when triggered by specific inputs. 7. Access Control Abuse: Weak controls may let unauthorized users bypass limits, opening privileged execution paths that exhaust resources. EHR access disruption poses a serious operational risk in LLM-powered healthcare systems. These attacks are often indirect and subtle, making early detection difficult and impact potentially severe in real-world deployments. 
+
+4.2. Quantitative ADT Analysis using CVSS Ex-ploitability 
+
+To address RQ2, we apply the scoring procedure from Section 3 to representative attack paths. We present the full CVSS computation for the G1 prompt-injection branch (B1) as an end-to-end example, and then summarize the resulting path exploitability scores for the remaining G1 branches as well as the main trees under G2 and G3 using the same workflow. 
+
+G1 Intervening in Medical Procedures. G1 captures how adversaries can manipulate the LLM-based assistant to alter diagnoses, treatment suggestions, or clinical workflows. The corresponding ADT decomposes this goal into five top-level branches: B1 Prompt Injection, B2 LLM Session Mismanagement, B3 Orchestration Errors, B4 Model Tam-pering, and B5 Web MiTM. We quantify each branch using the CVSS v3.1 exploitability model from Section 3 and attach an integrity-focused impact at the goal. 
+
+B1: Prompt Injection. Prompt injection manipulates LLM inputs to steer clinical recommendations. In our ADT, this branch is modeled as a SAND of preconditions P (com-promise of the prompt channel) and execution V (crafting and delivering malicious prompts). 
+
+Preconditions – Compromise of the Prompt Channel. An attacker needs one of five preconditions to control what reaches the LLM (OR-node). We selected some represen-tative vulnerabilities from the relevant databases to approx-imate the risk score of each path. For this purpose, each leaf is mapped to a representative CVE and CVSS v3.1 exploitability vector: User hijacking (→ CVE-2025-22222, AV:N, AC:L, PR:L, UI:N, E = 2 .84 ), User machine hijack 
+
+(→ CVE-2025-22457/53770/32433, AV:N, AC:L, PR:N, UI:N, E = 3 .89 ), Malicious user (→ CVE-2025-42957, AV:N, AC:L, PR:L, UI:N, E = 2 .84 ), Stolen API key (→
+
+CVE-2024-12012, AV:N, AC:L, PR:L, UI:R, E = 2 .07 ), and MiTM on web session (→ CVE-2024-50691, AV:N, AC:H, PR:N, UI:N, E = 2 .22 ). Taking the OR over these leaves yields E(P ) = max {3.89 , 2.84 , 2.84 , 2.07 , 2.22 } =3.89 . The corresponding AC labels are (L, L, L, L, H ), so the majority is low-complexity: AC maj (P ) = L.
+
+Execution – direct and indirect injection. Conditioned on 
+
+P , the attacker can inject prompts either directly (human-entered, parameter-based, obfuscated, or optimized prompts) or indirectly (via translators, knowledge bases, or agent tools). We represent these as an OR of two children: Di-rect injection (→ CVE-2024-5184) and Indirect injection 
+
+(→ CVE-2025-46059). For both execution leaves, we keep 
+
+(AV, P R, U I ) from the representative CVE and override only AC using AC maj (P ) to form the conditioned vectors. Under this shared (AV :N, AC :L, P R :N, U I :N ) profile, both children yield EDirect = EIndirect = 3 .89 , and the OR aggregation gives E(V ⋆) = 3 .89 .
+
+Path score and goal impact. The SAND aggregation (Eq. (3.5)) gives the path-level exploitability for B1: 
+
+Epath (B1) = min  E(P ), E (V ⋆) = min(3 .89 , 3.89) = 3 .89 .
+
+For G1, we model a primarily integrity-driven impact with 
+
+(C, I, A ) = (0 .00 , 0.56 , 0.00) , yielding an impact sub-score of 3.60 via Eqs. (2)–(3). Combining this with Epath under CVSS v3.1 (Scope: Unchanged) yields Base G1,B 1 = 7 .5
+
+(High) via Eq. (4). 
+
+Summary of remaining G1 branches. We compute B2– B5 using the same OR/SAND aggregation and conditioned-execution rule. For brevity, we report their branch-level scores in Table 2. 
+
+G2: Leakage of Electronic Health Record (EHR) Data. G2 captures threats leading to unauthorized access, inference, or exfiltration of sensitive EHR data. In LLM-based systems, session memory, external tool integration, and cached inference increase the risk of both accidental and adversarial disclosure (Figure 7). As for G1, we apply our ADT–CVSS procedure, but summarize the path-level results in Table 3. All G2 paths share a confidentiality-only impact model with (C, I, A ) = (0 .56 , 0.00 , 0.00) 
+
+(Scope: Unchanged), yielding an impact sub-score of 3.60 .Thus, differences in final base scores are driven purely by exploitability Epath .
+
+G3: Disruption of Access to EHR Data. G3 cap-tures attacks that prevent legitimate users from accessing EHR data in a timely or reliable manner (e.g., during emergency care). We fix goal-level impact at availability-only (C, I, A ) = (0 .00 , 0.00 , 0.56) (Scope: Unchanged) and compute Epath using the same OR/SAND aggregation rules from Section 3. In G3, multiple branches share a common precondition family (e.g., missing rate limiting, weak authentication, and unthrottled input interfaces), and branch-level differences primarily arise from the execution step. Table 4 summarizes the resulting CVSS v3.1 scores for the main overload and denial-of-service branches. 
+
+4.3. Risk Treatment 
+
+This subsection addresses RQ3 by instantiating our ADT–CVSS framework with concrete defense sets and com-paring their impact on path-level exploitability under an explicit cost model 
+
+4.4. Risk Treatment for Prompt Injection Attack Path (G1) 
+
+We apply the risk-treatment procedure to the G1–B1 prompt-injection path, modeled as X = SAND (P → V ),where P captures alternative ways to compromise the prompt channel and V captures prompt delivery/execution (direct or indirect injection). Our objective is to reduce the path exploitability Epath while holding the goal-level impact for G1 fixed at (C, I, A ) = (0 .00 , 0.56 , 0.00) .
+
+Precondition hardening (leaf-level transforms ). At the precondition layer, we begin from the five baseline leaves in B1-user hijacking , user–machine hijacking , mali-cious user , stolen session/API keys , and MiTM on the web session . Each leaf ℓ is mapped to a representative CVE with a baseline CVSS vector (AV ℓ, AC ℓ, P R ℓ, U I ℓ). As shown in Section 4.2, OR aggregation yields E(P ) = 3 .89 
+
+and AC maj (P ) = L. We then apply concrete controls and recompute each E(ℓ) using the same CVSS v3.1 weights, interpreting controls as transforms to AV , AC , P R , and/or 
+
+U I .
+
+User hijacking. Strong multi-factor authentication (e.g., FIDO2/WebAuthn) increases the privileges required to suc-cessfully impersonate a clinician, modeled as P R : L → H,reducing E from 2.84 to 1.23 . Short-lived session tokens further increase the effective attack complexity by narrow-ing the exploitation window, modeled as AC : L → H;the combined configuration (P R : H, AC : H) yields 
+
+E = 0.71 . We treat MFA as a cross-team deployment (cost level 3 ) and short-lived tokens as primarily applica-tion/configuration changes ( cost level 2 ). 
+
+User–machine hijacking. Endpoint Detection and Re-sponse (EDR) and OS hardening make endpoint compro-mise less reliable for commodity malware, modeled as 
+
+AC : L → H, reducing E from 3.89 to 2.22 . Device binding and session attestation (e.g., key-bound sessions, posture checks) further restrict viable attacks and effectively require additional local capability, modeled as P R : N → L under 
+
+AC : H, yielding E = 1 .62 . We assign EDR to cost level 2 
+
+and device binding/attestation to level 3 due to enforcement and infrastructure requirements. 
+
+Malicious user. Role-Based Access Control (RBAC) and least-privilege policies reduce the ability of low-privilege accounts to reach high-impact clinical functions, modeled as P R : L → H, lowering E from 2.84 to 1.23 . Prompt monitoring is primarily detective and does not change the base CVSS vector for this leaf; we treat it as a comple-mentary control that affects detection/response rather than exploitability. RBAC is categorized as cost level 2 .
+
+Stolen session/API keys. Scope limiting (fine-grained permissions, per-tenant keys) increases the required priv-ilege level to achieve the same clinical effect, modeled as 
+
+P R : L → H, reducing E from 2.07 to 0.90 . Secret vaulting and frequent rotation reduce dwell time but do not increase the effort for a single successful exploit; we therefore do not model them as changes to E. Scope limiting is cost level 2 .
+
+MiTM on the web session. The baseline vector (AV :
+
+N, AC : H, P R : N, U I : N ) yields E = 2 .22 . Enforc-ing TLS 1.3 with certificate pinning increases the attacker capability required for practical interception (e.g., requiring compromise of a trusted anchor), modeled as P R : N → L,giving E = 1 .62 . Mutual TLS (mTLS) further strengthens endpoint authentication and certificate handling, modeled as 
+
+P R : L → H, yielding E = 0 .71 . We treat TLS hardening as cost level 2 and mTLS as level 3 due to PKI lifecycle and client-certificate management. 
+
+Execution hardening (guardrails on V ). The ex-ecution node V represents crafting and delivering mali-cious prompts (directly or indirectly). In our model, if no execution-specific guardrails are deployed, V is conditioned on the precondition family by exporting AC maj (P ) to the execution step, yielding V ⋆ (Section 3.5). Concretely, when 
+
+AC maj (P ) = L, the execution remains low-complexity and 
+
+E(V ⋆) = 3 .89 ; if precondition hardening shifts AC maj (P )
+
+to H, then E(V ⋆) = 2 .22 even without additional execu-tion controls. We additionally model prompt guardrails as transforms to (AC V , U I V ).Canonicalization/paraphrasing and normalization (e.g., Unicode normalization, retokenization) disrupt brittle trigger patterns and are modeled as AC V : L → H, reducing 
+
+E(V ⋆) to 2.22 (cost level 2 ). Delimited input channels (structured tool inputs, fenced instruction fields) improve data/instruction separation [43] and are also modeled as maintaining AC V : H at cost level 1 . Sandwich-prevention rules and policy allowlists/filters restrict explicit override directives, maintaining AC V at High while adding tuning and operational overhead ( cost levels 2–3 ). Finally, human-in-the-loop (HITL) gating for high-impact actions increases required user interaction, modeled as U I V : N → R, which reduces E(V ⋆) from 2.22 to 1.62 once AC V is already High. When HITL is deployed as an approval gate in the critical path, we treat it as cost level 4 due to staffing and sustained operational burden. 
+
+Scenario-level outcomes and trade-offs. Table 5 re-ports the baseline and four post-treatment scenarios for the 
+
+G1–B1 prompt-injection path. Hardening a single precon-dition (S1) yields only a limited reduction because the OR aggregation over preconditions remains dominated by other network-reachable leaves, so E(P ) remains the limiting term. In contrast, bundling precondition controls (S2) raises the majority precondition complexity to AC maj (P ) = H
+
+and reduces the path score to Epath = 1.62 , reflecting an infrastructure-first posture. A complementary strategy is execution-only hardening (S3): even with unchanged preconditions, guardrails that increase execution complex-ity reduce E(V ⋆) and therefore lower Epath to 2.22, of-fering a pragmatic mitigation when platform changes are constrained. Finally, adding HITL gating (S4) provides a last-resort control for high-impact clinical actions; while it reduces E(V ⋆), it does not improve on S2 in Epath because the SAND composition remains bounded by E(P ), but it strengthens operational safety by inserting explicit human approval at the execution stage. A useful outcome of the treatment analysis is that it makes efficiency explicit: the SAND aggregation Epath =min( E(P ), E (V ⋆)) identifies the current bottleneck and therefore the most leverageful place to invest engineering effort. Once one stage is sufficiently hardened, additional controls on the other stage yield diminishing returns in Epath 
+
+(e.g., S2 and S4). Rather than being a limitation, this is a practical advantage: the framework helps avoid “double-paying” for controls that do not further reduce exploitability, while still providing a principled basis for adding procedural defenses (e.g., HITL) for governance, assurance, or fail-safe workflows. Overall, this case study demonstrates how the ADT– CVSS workflow supports comparative treatment analysis across heterogeneous controls: it makes explicit which base metrics are altered, how those changes propagate to Epath ,and where reductions saturate due to OR/SAND aggrega-tion. For space, we apply the same treatment procedure to 
+
+G2 and G3 at a summarized level. 
+
+4.5. Risk Treatment for Orchestration Errors (G1) 
+
+We instantiate our treatment workflow on the G1–B3 Or-chestration Error path, modeled as SAND (P → V ), keeping the goal-level impact fixed at (C, I, A ) = (0 .00 , 0.56 , 0.00) 
+
+and quantifying how concrete controls reduce Epath . The preconditions P capture orchestration weaknesses—lack of integrity checks, weak authentication, and unvalidated shared context—while the execution node V captures run-time manipulations such as task injection, task misman-agement, memory poisoning, and agent-in-the-middle. We treat defenses as metric transforms on (AV, AC, P R, U I ):precondition hardening centers on signing and verifying orchestrator artifacts (raising AC and P R by requiring the attacker to compromise a signing key), mTLS for certificate-bound service identity (raising P R versus token replay), and context segmentation plus write RBAC (raising AC and/or 
+
+P R by enforcing isolation and controlled writes). Execution hardening similarly constrains runtime behavior via task allowlists that restrict which tasks the orchestrator may ex-ecute, sequence enforcement (DAG/state-machine checks), integrity-checked context hand-offs between pipeline stages (using checksums or signatures), and response signing for agent outputs; collectively, these controls shift the path from surfaces that are easily exploitable over the network without credentials toward interfaces that require verified identities and integrity checks, yielding substantial reductions in the representative exploitability terms. We summarize the re-sulting treatment portfolios, costs, and the corresponding 
+
+(E(P), AC maj (P ), E (V ⋆), E path ) outcomes across canon-ical scenarios in Table 6. 
+
+5. Discussion 
+
+It is essential to distinguish between notions such as ’at-tack’ and ’threat’ to understand early-stage security require-ments development efforts. Compared to attacks, threats are more abstract concepts that define the security objectives that various attacks can realize. In the early stages, threats can be conceptually defined; however, no detailed system evidence exists to predict attack details. Threat modeling efforts typically elicit threats individually without consider-ing their interdependencies. However, rigorous security risk assessment requires a more system view, in the form of a threat path, that relates threats to each other depending on their pre- and post-conditions and the attack actor’s objec-tives. Threat paths, rather than individual threats, could be more instrumental in identifying effective and efficient coun-termeasures that complement each other. Although some ap-proaches, such as PASTA [44] or the NIST Threat Modeling Approach [45], apply attack trees to provide this system view, they address later development stages rather than the early-stage requirement analysis phase. In this study, we propose an approach to consolidate individual threats obtained from conventional, adversarial, and conversational categories for an LLM-based system and create threat paths to achieve a specific goal. We still use the term ”attack path” throughout the paper, as we use the attack tree as the main approach for identifying paths, and readers may be more familiar with this term. However, each tree node defines a threat rather than an attack. Thus, those attack paths can also be termed as threat paths. We utilize the CVSS framework to quantify the risk of threat paths derived from attack-defense trees. Specif-ically, the exploitability sub-score is used to estimate the likelihood of individual threat paths, while the impact sub-score, obtained from the root node, complements the overall risk calculation. Vulnerability databases such as the Na-tional Vulnerability Database (NVD), which are built on the CVE and CVSS frameworks, constitute one of the most comprehensive and systematically created data sources in cyber security, extensively supported by professional com-munities. Although these databases and scoring frameworks has originally evolved to assess vulnerabilities in deployed operational systems, we still found them instrumental in estimating risks in early-stage. In particular, CVSS has well-established exploitability sub-scores that enable us to approximate the likelihood of threat paths. Many vulnerabil-ities relevant to specific threat categories have been already scored by the community. We leverage the exploitability of those vulnerabilities to approximate the exploitability score of the relevant threats identified during the early stage analysis. We consider that risk quantification without relying on such a comprehensive data source would have been inherently vague. Our results show a striking concentration of path-level CVSS base scores around 7.5 across many attack branches under G1–G3. At first glance, this might suggest that the framework lacks resolution, but it is in fact a direct conse-quence of two deliberate modeling choices. First, we focus on realistic, Internet- or network-reachable attack surfaces for LLM-powered healthcare systems, where adversaries typically enjoy network access (AV :N ), face relatively low attack complexity ( AC :L), and do not require prior privileges ( P R :N ) or user interaction ( U I :N ). Second, for each goal we assign a single “dominant” CIA dimension a High impact value (integrity for G1, confidentiality for G2,availability for G3), while leaving the other dimensions at None. Under CVSS v3.1’s discrete weights and rounding rules, many combinations of these vectors converge to a base score near 7.5, even when the internal attack logic, preconditions, and affected components differ. The attack–defense trees compensate for this coarse numerical clustering by exposing where the effort lies within each path. For example, both Prompt Injection (B1) and Orchestration Errors (B3) score 7.5 under G1, but the trees show that B1 is dominated by user endpoint compromise and weak prompt execution guardrails, whereas B3 con-centrates risk in orchestration-layer integrity and context isolation. Similarly, under G2, User Session Compromise, LLM Session Compromise, and Model Extraction all reach 7.5, yet the underlying attack families (session management vs. KV-cache isolation vs. model memorization and query controls) are structurally distinct. In this sense, the absolute base score is less important than (i) the relative change in Epath when we apply defenses (our ∆E), and (ii) the decomposition into precondition and execution subtrees that tells an engineer where to spend effort. The quantitative layer is therefore primarily a ranking and comparison tool; identical base scores should not be interpreted as implying that risks are operationally equivalent, share the same un-derlying weaknesses, or admit the same mitigation strategy. Our risk assessment is conducted at an early stage, with no mitigations assumed, and the scenarios are selected from inherently high-impact ones; the initial findings, thus, converge to similar high values. As mitigation alternatives are included in the security requirement list, the reduced scores span a range of values, allowing us to compare them and apply more effective yet less costly mitigation plans. Our choice of CVSS v3.1 as the underlying scoring scheme reflects its current adoption in vulnerability man-agement workflows and its compatibility with existing se-curity guidance for healthcare and cloud systems. However, some LLM-specific phenomena, such as prompt flooding and resource-exhaustion via recursive reasoning, are not yet captured by official v3.1 vectors and only recently began to appear in CVE records. For one such case (prompt flooding), we derived a representative vector by aligning with emerging CVSS v4.0 semantics, while still mapping back to the v3.1 metric set for consistency. The main limitation is that CVSS v3.1 has no native way to represent LLM-service behaviors such as cost amplification (prompt flooding), re-cursive agent/tool loops, or multi-tenant inference artifacts. Consequently, we must approximate these with proxies in 
+
+(AV, AC, P R, U I ), which compresses distinct LLM attack families into similar exploitability values and reduces rank-ing resolution. CVSS v4.0 introduces more granular notions of attack requirements and environment, and it is better suited to modeling multi-tenant, service-heavy architectures where LLMs reside. A natural extension of our work is therefore to re-parameterize the same attack–defense trees using full v4.0 vectors, and to compare how path rankings and treatment recommendations shift when richer metrics (e.g., safety requirements, system-specific environmental weighting) become first-class citizens. An organizational barrier observed in the real-world security development life cycles is the presence of si-los between the security, software engineering, and ML teams. Experts in these domains often lack a common understanding and language on security threats and relevant mitigations. Security engineers may be less familiar with adversarial threats and relevant mitigation techniques, while ML and software engineering experts may not comprehend the cyber kill chains that harmonize adversarial and con-ventional threats. Addressing these gaps requires broader interdisciplinary collaboration and security awareness pro-grams across these teams. However, this paper provides a risk management instrument that enables these teams to consolidate and compare all potential threats and mitigations within a unified framework. Thus, the proposed framework may facilitate collaborative risk management efforts between these teams. We also see a natural next step in using LLMs them-selves to assist with threat modeling and risk analysis. In our study, the LLM is only the object under evaluation, but the same technology could be used to draft candidate attack–defense trees from natural-language system descrip-tions, suggest missing preconditions or defenses, or help explore large spaces of treatment scenarios by proposing concrete metric transforms and rough cost estimates. Any such use would remain advisory and require human vali-dation, but it could substantially lower the barrier for non-expert teams to apply structured, goal-driven risk assessment to LLM-powered healthcare systems. 
+
+6. Conclusion 
+
+We presented a goal-driven, reproducible risk-assessment framework for LLM-powered systems. Using Attack–Defense Trees across three goals (G1–G3), we factorize each path into Preconditions and Execution via SAND and aggregate with AND/OR to make threat evolution explicit. We bind CVSS v3.1 exploitability to leaves and reserve impact for goal nodes, cleanly separating “how easy” from “how bad,” which yields auditable, comparable scores. Our risk treatment recomputes path exploitability under concrete defense vector transforms and ranks options by a transparent 1–4 cost scale, enabling cost-aware mitigation choices. Although instantiated for healthcare, the workflow is plug-and-play for other LLM deployments, supports goal swaps, updates, and reruns, and supports repeatable evaluations and iterative calibration as evidence accumulates. 
+
+References                                                
+
+> [1] OpenAI, J. Achiam, S. Adler, and et al., “GPT-4 Technical Report,” OpenAI, Tech. Rep., 2024, available at https://arxiv.org/abs/2303. 08774. [2] K. Denecke, R. May, LLMHealthGroup, and O. Rivera Romero, “Potential of large language models in health care: Delphi study,”
+> Journal of Medical Internet Research , vol. 26, p. e52399, 2024. [Online]. Available: https://doi.org/10.2196/52399 [3] L. Zhui, L. Fenghe, W. Xuehu, F. Qining, and R. Wei, “Ethical considerations and fundamental principles of large language models in medical education: Viewpoint,” Journal of Medical Internet Research , vol. 26, p. e60083, 2024. [Online]. Available: https://www.jmir.org/2024/1/e60083 [4] Microsoft Corporation. (2025, Sep.) Microsoft security devel-opment lifecycle (sdl). Microsoft Learn, Microsoft Corporation. Accessed January 19, 2026; Microsoft security assurance documentation on SDL processes and phases. [Online]. Available: https://learn.microsoft.com/en-us/compliance/assurance/ assurance-microsoft-security-development-lifecycle [5] S. Rossi, A. M. Michel, R. R. Mukkamala, and J. B. Thatcher, “An early categorization of prompt injection attacks on large language models,” 2024. [Online]. Available: https://arxiv.org/abs/2402.00898
+
+[6] J. Chu, Y. Liu, Z. Yang, X. Shen, M. Backes, and Y. Zhang, “Comprehensive assessment of jailbreak attacks against llms,” 2024. [Online]. Available: https://arxiv.org/abs/2402.05668 [7] A. Shostack, Threat Modeling: Designing for Security . John Wiley & Sons, 2014. [8] FIRST.Org, Inc., Common Vulnerability Scoring System v3.1: Specification Document , FIRST.Org, Inc., 2019, version 3.1. [Online]. Available: https://www.first.org/cvss/v3-1/specification-document [9] N. Nagaraja and H. Bahsi, “Cyber threat modeling of an llm-based healthcare system,” in Proceedings of the 11th International Con-ference on Information Systems Security and Privacy - Volume 1: ICISSP , INSTICC. SciTePress, 2025, pp. 325–336. [10] ——, “Goal-driven risk assessment for llm-powered systems: A healthcare case study,” 2026. [Online]. Available: https: //arxiv.org/abs/2603.03633 [11] H. S. Lallie, K. Debattista, and J. Bal, “A review of attack graph and attack tree visual syntax in cyber security,” Computer Science Review ,vol. 35, p. 100219, 2020. [12] S. M. Khalil, H. Bahsi, and T. Korotko, “Threat modeling of indus-trial control systems: A systematic literature review,” Computers & Security , vol. 136, p. 103543, 2024. [13] S. B. Tete, “Threat modelling and risk analysis for large language model (llm)-powered applications,” 2024. [Online]. Available: https://arxiv.org/abs/2406.11007 [14] R. Pankajakshan, S. Biswal, Y. Govindarajulu, and G. Gressel, “Mapping llm security landscapes: A comprehensive stakeholder risk assessment proposal,” 2024. [Online]. Available: https://arxiv. org/abs/2403.13309 [15] R. Hamid and S. Brohi, “A review of large language models in healthcare: Taxonomy, threats, vulnerabilities, and framework,” Big Data and Cognitive Computing , vol. 8, no. 11, p. 161, 2024. [Online]. Available: https://doi.org/10.3390/bdcc8110161 [16] J. Clusmann, D. Ferber, I. C. Wiest, C. V. Schneider, T. J. Brinker, S. Foersch, D. Truhn, and J. N. Kather, “Prompt injection attacks on large language models in oncology,” 2024. [Online]. Available: https://arxiv.org/abs/2407.18981 [17] M. Aijaz, M. Nazir, and M. N. A. Mohammad, “Threat modeling and assessment methods in the healthcare-it system: A critical review and systematic evaluation,” SN Computer Science , vol. 4, no. 6, September 2023. [Online]. Available: https://doi.org/10.1007/s42979-023-02221-1 [18] W. Yurcik, A. Schick, S. North, M. T. Gastner, F. R. de Miranda, R. d. S. Avelino, A. F. d. M. Batista, G. Pluta, and I. Brooks, “Cybersecurity monitoring/mapping of usa healthcare (all hospitals): Magnified vulnerability due to shared it infrastructure, market concentration, and geographical distribution,” in Proceedings of the 2024 ACM Workshop on Cybersecurity in Healthcare (HealthSec ’24) ,2024. [Online]. Available: https://doi.org/10.1145/3689942.3694754 [19] A. Omotosho, B. A. Haruna, and O. M. Olaniyi, “Threat modeling of internet of things health devices,” Journal of Applied Security Research , vol. 14, no. 1, pp. 1–16, April 2019. [Online]. Available: https://doi.org/10.1080/19361610.2019.1545278 [20] V. Vakhter, B. Soysal, P. Schaumont, and U. Guler, “Threat modeling and risk analysis for miniaturized wireless biomedical devices,” IEEE Internet of Things Journal , vol. PP, no. 99, pp. 1–1, August 2022. [Online]. Available: https://doi.org/10.1109/JIOT.2022.3144130 [21] E. Kwarteng and M. Cebe, “Medicalharm - a threat modeling de-signed for modern medical devices,” in 2023 IEEE 22nd Interna-tional Conference on Trust, Security and Privacy in Computing and Communications (TrustCom) , 2023, pp. 1147–1156. [22] R. E. Thompson et al. , “There are rabbit holes i want to go down that i’m not allowed to go down: An investigation of security expert threat modeling practices for medical device,” in Proc. USENIX Security 2024 , 2024, pp. 4909–4926. [Online]. Available: https:// www.usenix.org/conference/usenixsecurity24/presentation/thompson [23] M. Fraile, M. Ford, O. Gadyatskaya, R. Trujillo-Rasua et al. , “Using attack-defense trees to analyze threats and countermeasures in an atm: A case study,” in Proc. IFIP PoEM 2016 , vol. 267, 2016, pp. 365–373. [Online]. Available: https://doi.org/10.1007/978-3-319-48393-1 24 [24] S. V. Hoseini et al. , “Threat modeling ai/ml with the attack tree,” pp. 1–1, January 2024, license: CC BY-NC-ND 4.0. [Online]. Available: https://doi.org/10.1109/ACCESS.2024.3497011 [25] N. D. Schiele and O. Gadyatskaya, “A limited technical background is sufficient for attack-defense tree acceptability,” 2025. [Online]. Available: https://arxiv.org/abs/2502.11920 [26] A. A. M. Bahar and A. S. Wazan, “On the validity of traditional vulnerability scoring systems for adversarial attacks against llms,” 2024. [Online]. Available: https://arxiv.org/abs/2412.20087 [27] MITRE, “Atlas matrix,” 2024. [Online]. Available: https://atlas.mitre. org/matrices/ATLAS [28] OWASP, “Owasp top 10 for large language model applications,” 2023-2024. [Online]. Available: https://genai.owasp.org/llm-top-10-2023-24/ [29] A.-M. Konsta, A. Lluch Lafuente, B. Spiga, and N. Dragoni, “Survey: Automatic generation of attack trees and attack graphs,” 
+
+Computers & Security , vol. 137, p. 103602, 2024. [Online]. Available: https://doi.org/10.1016/j.cose.2023.103602 [30] Forum of Incident Response and Security Teams (FIRST). (2019) Common vulnerability scoring system (cvss) version 3.1 specification document. FIRST.org. Accessed January 19, 2026; Official CVSS v3.1 specification from FIRST, providing the standard for scoring software vulnerability severity. [Online]. Available: https://www.first.org/cvss/v3-1/specification-document [31] Microsoft. (2023, Aug.) Threat modeling for drivers. Mi-crosoft Learn. Defines the DREAD risk model (Damage, Reproducibility, Exploitability, Affected users, Discoverability) and describes a 1–10 scoring approach. [Online]. Avail-able: https://learn.microsoft.com/en-us/windows-hardware/drivers/ driversecurity/threat-modeling-for-drivers [32] Forum of Incident Response and Security Teams (FIRST). (2023) Common vulnerability scoring system version 4.0. FIRST.org. Official CVSS v4.0 standard information; CVSS v4.0 was officially released on November 1, 2023. [Online]. Available: https://www.first.org/cvss/v4.0/ [33] N. Nagaraja, L. Zhang, Z. Wang, B. Zhang, and P. Patil, “Image-based prompt injection: Hijacking multimodal llms through visually embedded adversarial instructions,” in 2025 3rd International Conference on Foundation and Large Language Models (FLLM) .IEEE, Nov. 2025, p. 916–922. [Online]. Available: http://dx.doi.org/ 10.1109/FLLM67465.2025.11391218 [34] K. Greshake, S. Abdelnabi, S. Mishra, C. Endres, T. Holz, and M. Fritz, “Not what you’ve signed up for: Compromising real-world llm-integrated applications with indirect prompt injection,” in 
+
+Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security , ser. AISec ’23. New York, NY, USA: Association for Computing Machinery, 2023, p. 79–90. [Online]. Available: https://doi.org/10.1145/3605764.3623985 [35] Z. Chen, Z. Xiang, C. Xiao, D. Song, and B. Li, “Agentpoison: Red-teaming llm agents via poisoning memory or knowledge bases,” 2024. [Online]. Available: https://arxiv.org/abs/2407.12784 [36] P. He, Y. Lin, S. Dong, H. Xu, Y. Xing, and H. Liu, “Red-teaming llm multi-agent systems via communication attacks,” 2025. [Online]. Available: https://arxiv.org/abs/2502.14847 [37] OWASP, “Owasp top 10 for large language model applications, 2025,” 2025. [Online]. Available: https://genai.owasp.org/llm-top-10/ [38] N. Carlini, D. Paleka, K. D. Dvijotham, T. Steinke, J. Hayase, A. F. Cooper, K. Lee, M. Jagielski, M. Nasr, A. Conmy, I. Yona, E. Wallace, D. Rolnick, and F. Tram` er, “Stealing part of a production language model,” 2024. [Online]. Available: https://arxiv.org/abs/2403.06634 [39] OpenAI, “March 20 chatgpt outage,” 2024, accessed December 15, 2025. [Online]. Available: https://openai.com/index/march-20-chatgpt-outage/ [40] G. Wu, Z. Zhang, Y. Zhang, W. Wang, J. Niu, Y. Wu, and Y. Zhang, “I know what you asked: Prompt leakage via kv-cache sharing in multi-tenant llm serving,” in NDSS , 2025. [Online]. Available: https: //www.ndss-symposium.org/ndss-paper/i-know-what-you-asked-prompt-leakage-via-kv-cache-sharing-in-multi-tenant-llm-serving/ [41] N. Carlini, F. Tram` er, E. Wallace, M. Jagielski, A. Herbert-Voss, K. Lee, A. Roberts, T. Brown, D. Song, ´U. Erlingsson, A. Oprea, and C. Raffel, “Extracting training data from large language models,” in 30th USENIX Security Symposium (USENIX Security 21) . USENIX Association, Aug. 2021, pp. 2633–2650. [Online]. Available: https://www.usenix.org/conference/ usenixsecurity21/presentation/carlini-extracting [42] N. Carlini, S. Chien, M. Nasr, S. Song, A. Terzis, and F. Tramer, “Membership inference attacks from first principles,” 2022. [Online]. Available: https://arxiv.org/abs/2112.03570 [43] Z. Wang, N. Nagaraja, L. Zhang, H. Bahsi, P. Patil, and P. Liu, “To protect the llm agent against the prompt injection attack with polymorphic prompt,” in 2025 55th Annual IEEE/IFIP International Conference on Dependable Systems and Networks - Supplemental Volume (DSN-S) , 2025, pp. 22–28. [44] T. UcedaVelez and M. M. Morana, Risk Centric Threat Modeling: process for attack simulation and threat analysis . John Wiley & Sons, 2015. [45] R. Pulivarti, J. Wagner, J. Zook, B. Kreider, J. Snyder, K. Wilson, S. Ross, P. Whitlow, E. Alim, I. Brown et al. , “Cybersecurity threat modeling the genomic data sequencing workflow: An example threat model implementation for genomic data sequencing and analysis (draft),” US Department of Commerce, Tech. Rep., 2024. Branch Precondition CVEs (ex-amples) Execution CVEs (exam-ples) 
+
+Epath AC maj (C, I, A ) Base (S:U) 
+
+B1: Prompt Injection User hijacking (CVE-2025-22222); User machine hijack (CVE-2025-22457/53770/32433); Malicious user (CVE-2025-42957); Stolen API key (CVE-2024-12012); HTTPS MiTM (CVE-2024-50691) Direct injection (CVE-2024-5184); Indirect injection (CVE-2025-46059) 3.89 Low (0.00, 0.56, 0.00) 7.5 (High) B2: LLM Session Mis-management Weak authentication (CVE-2025-46801); Lack of session isolation (CVE-2025-32441); No context purging (CVE-2023-4969) Session hijacking (CVE-2024-6587); Session fixa-tion (CVE-2024-38513) 3.89 Low (0.00, 0.56, 0.00) 7.5 (High) B3: Orchestration Errors Lack of integrity checks (CVE-2025-59334); Weak orchestration API auth (CVE-2025-46801); Unvalidated shared context (CVE-2023-29374) Task injection (CVE-2024-8156); Task mismanagement (CVE-2022-29164); Memory poisoning (CVE-2024-8309); Agent-in-the-middle (CVE-2025-6159) 3.89 Low (0.00, 0.56, 0.00) 7.5 (High) B4: Model Tampering Access to model artifacts (CVE-2023-6018); Lack of integrity verification (CVE-2025-59334) Poisoning (CVE-2024-5185); Model replacement (CVE-2025-24357); Model extraction (CVE-2024-6868) 3.89 Low (0.00, 0.56, 0.00) 7.5 (High) B5: Web MiTM — HTTPS MiTM (CVE-2024-50691) 2.22 High (0.00, 0.56, 0.00) 5.9 (Medium) TABLE 2: Summary of exploitability and impact for G1 (Intervening in medical procedures). Precondition CVEs map to 
+
+P , execution CVEs map to V , and Epath is computed for P SAND V with Scope: Unchanged. G1: Intervening 
+
+> in Medical
+> Procedures
+> Orchestrat
+> or Error
+> Compromi
+> se
+> Orchestrati
+> on
+> Workflow
+> Perform
+> Orchestrati
+> on
+> Manipulati
+> on
+> Task
+> Injection
+> Task
+> Mismanage
+> ment
+> Memory
+> Poisoning
+> Agent in
+> the Middle
+> Shared
+> context
+> memory
+> not
+> validated
+> Weak
+> Authenticat
+> ion
+> Lack of
+> Integrity
+> Check
+> Digital Signatures,
+> Attestation, Tool
+> Version Pinning
+> Mutual TLS
+> Authentication, RBAC
+> Enforcement
+> RBAC Enforcement,
+> Context Segmentation,
+> Audit Logs
+> Mutually attested
+> Trusted Execution
+> Environments
+> Input Validation, Task
+> Allowlisting, Task
+> Signature Verification
+> Task Sequence Enforcement&
+> Monitoring, Input Validation,
+> Output Checks
+> Context Isolation,
+> Validated Memory
+> Access, Context
+> Signature Verification
+> End -to -End Encryption,
+> Message Signing &
+> Integrity Checks,
+> Anomaly Detection
+> Prompt
+> Injection
+> Compromi
+> se Prompt
+> Channel
+> Crafting
+> suitable
+> prompts
+> Direct
+> Prompt
+> Injection
+> Indirect
+> Prompt
+> Injection
+> Hidden
+> Instruction
+> are
+> integrated
+> Agent Tool
+> Injection
+> Faulty
+> MiTM
+> User
+> Hijacking
+> Stolen
+> Session API
+> Keys
+> Malicious
+> User
+> User
+> machine
+> Hijacking
+> Obfuscatio
+> n based
+> Direct
+> Prompt
+> Injection
+> Parameter
+> based
+> Direct
+> Prompt
+> Injection
+> Optimizatio
+> n based
+> Direct
+> Prompt
+> Injection
+> Human
+> based
+> Direct
+> Prompt
+> Injection
+> Translator
+> Tampering
+> KB
+> Poisoning
+> Social
+> Engineering
+> MFA, Short -Lived Session
+> Tokens, Anomaly
+> Detection & Alerts
+> Endpoint Security,
+> Session Validation
+> RBAC, Prompt
+> Monitoring
+> API Key Management,
+> Scope Limiting
+> End -to -End
+> Encryption, Mutual
+> Authentication
+> Trusted Tool Registry,
+> Task Verification
+> Input Validation &
+> Filtering, Source
+> Attribution
+> Multi -Factor
+> Verification, User
+> Awareness
+> Paraphrasing, Retokenization,
+> Delimiters, Sandwich
+> prevention, Instructional
+> prevention, Response -based
+> detection
+> Model
+> Tampering
+> Pre -
+> conditions
+> - MT
+> Perform
+> Model
+> Manipulati
+> on
+> Model
+> Poisoning
+> Model
+> Replaceme
+> nt
+> Gain
+> Access to
+> Model
+> Artifacts
+> No Integrity
+> Verification
+> Pre -
+> condition  -
+> MP
+> Attacks
+> possible
+> Access to
+> Training
+> Pipeline or
+> Data
+> Model
+> Retraining
+> or Fine -
+> tuning is
+> Scheduled
+> Lack of
+> Data
+> Sanitizatio
+> n or
+> Filtering
+> Data
+> Poisoning
+> Targeted
+> Poisoning
+> Encrypted Model Storage,
+> Access Control & Endpoint
+> Hardening, Logging & Alerts
+> Digital Signatures and
+> Verification, Periodic
+> Integrity Audits
+> Access Isolation for
+> Training Pipeline, Data
+> Provenance & Version
+> Control
+> Training Data Sanitization
+> Pipeline, Robust Data
+> Validation Policies, Poisoning
+> & Outlier Detection
+> Controlled Retraining
+> Process, Signed &
+> Verified Update Inputs
+> Anomaly Detection & Robust
+> Training, Continuous Output
+> Monitoring & Validation Tests
+> Backdoor Detection
+> & Removal
+> Model Integrity
+> Verification, Trusted
+> Deployment Pipeline
+> LLM
+> Session
+> Mismanage
+> ment
+> Pre -
+> conditions
+> - LSM
+> Session
+> Takeover
+> attacks
+> Session
+> Hijacking
+> Session
+> Fixation
+> Weak
+> authenticat
+> ion
+> No context
+> Purging
+> Lack of
+> session
+> isolation
+> Per -Session Memory
+> Isolation, Authenticated
+> Access Control, Session
+> Lifecycle Enforcement
+> Session Reset, Context
+> Expiry Timers, Prompt
+> Isolation Boundaries  MFA, TLS Mutual
+> Authentication, OAuth2
+> with Scoped Tokens
+> Secure Session Token
+> Transmission, Proper
+> Timeouts, Anomaly
+> Monitoring
+> Session Regeneration on
+> Authentication, Strict
+> Cookie -Based Session
+> Handling
+> MitM Web
+> session
+> End -to -End
+> Encryption, Mutual
+> Authentication
+
+Figure 6: Attack Tree for G1: Intervening in Medical Procedures. G2: Leakage of 
+
+> EHR Data
+> MitM Web
+> session
+> User
+> Session
+> Compromi
+> se
+> End -to -End
+> Encryption, Mutual
+> Authentication
+> Prompt
+> Injection
+> Compromi
+> se Prompt
+> Channel
+> Crafting
+> suitable
+> prompts
+> Direct
+> Prompt
+> Injection
+> Indirect
+> Prompt
+> Injection
+> Hidden
+> Instruction
+> are
+> integrated
+> Agent Tool
+> Injection
+> Faulty
+> MiTM
+> User
+> Hijacking
+> Stolen
+> Session API
+> Keys
+> Malicious
+> User
+> User
+> machine
+> Hijacking
+> Obfuscatio
+> n based
+> Direct
+> Prompt
+> Injection
+> Parameter
+> based
+> Direct
+> Prompt
+> Injection
+> Optimizatio
+> n based
+> Direct
+> Prompt
+> Injection
+> Human
+> based
+> Direct
+> Prompt
+> Injection
+> Translator
+> Tampering
+> KB
+> Poisoning
+> Social
+> Engineering
+> MFA, Short -Lived Session
+> Tokens, Anomaly
+> Detection & Alerts
+> Endpoint Security,
+> Session Validation
+> RBAC, Prompt
+> Monitoring
+> API Key Management,
+> Scope Limiting
+> End -to -End
+> Encryption, Mutual
+> Authentication
+> Trusted Tool Registry,
+> Task Verification
+> Input Validation &
+> Filtering, Source
+> Attribution
+> Multi -Factor
+> Verification, User
+> Awareness
+> Paraphrasing, Retokenization,
+> Delimiters, Sandwich
+> prevention, Instructional
+> prevention, Response -based
+> detection
+> LLM
+> Session
+> Compromi
+> se
+> Pre -
+> conditions
+> - LSM
+> Session
+> Memory
+> Leak
+> Session
+> Hijacking
+> Session
+> Fixation
+> Cache
+> Compromi
+> se
+> Cross -
+> User
+> Cache
+> Exposure
+> Inference
+> KV -Cache
+> Leakage
+> (PromptPe
+> ek)
+> Weak
+> authenticati
+> on
+> No context
+> Purging
+> Lack of
+> session
+> isolation
+> Sandbox
+> cross
+> session
+> leakage
+> Pre -
+> condition  -
+> KV
+> Shared
+> model -
+> level KV -
+> cache
+> Missing
+> response  –
+> user
+> validation
+> Shared
+> Cache
+> Pool
+> Pre -
+> condition  -
+> CC
+> Multi -
+> tenant
+> inference
+> pipeline
+> No per -
+> session KV
+> isolation
+> Per -Session
+> Isolation, RBAC,
+> Session Tracking
+> Session Reset, Context
+> Expiry Timers, Prompt
+> Isolation Boundaries  MFA, TLS Mutual
+> Authentication, OAuth2
+> with Scoped Tokens
+> Secure Session Token
+> Transmission, Proper
+> Timeouts, Anomaly
+> Monitoring
+> Session Regeneration on
+> Authentication, Strict
+> Cookie -Based Session
+> Handling
+> Ephemeral Sandbox
+> & Memory Isolation
+> Dedicated Cache Pools
+> Response –User Binding
+> Checks
+> Per -User Cache
+> Segregation, User -Aware
+> Cache Validation
+> Per -Session KV -Cache
+> Isolation, Randomized Cache
+> Scheduling, Anomaly
+> Detection & Rate Limiting for
+> Cache Probing
+> Model
+> Extraction
+> Any of the
+> following
+> Attack
+> Technique
+> s
+> Training
+> Data
+> Extraction
+> Attack
+> Accessible
+> Query
+> Interface
+> Lack of
+> Output
+> Filtering
+> Lack of
+> Query
+> Rate
+> Limiting
+> Pre -
+> conditions
+> -ME
+> Memorizat
+> ion  Model
+> Inversion
+> Attack
+> RBAC
+> Rate Limiting & User
+> Quotas
+> Training on De -
+> identified Data
+> Differential Privacy &
+> Data Anonymization
+> Output Moderation
+> and Redaction
+> Data Deduplication,
+> Prompt Sensitivity
+> Hardening
+> Membersh
+> ip
+> Inference
+> Attacks
+> Self -Distilled Fine -
+> Tuning, Response
+> Filtering
+
+Figure 7: Attack Tree for G2: Leakage of Electronic Health Record (EHR) Data. G3: Disrupting 
+
+> Access to EHR
+> No Query
+> Rate
+> Limiting
+> Poor
+> Session
+> Managem
+> ent
+> Preconditi
+> ons
+> Attack
+> Vectors
+> Prompt
+> Flooding
+> Resource
+> Exhaustio
+> n
+> Memory
+> Bombing
+> Excessive
+> Prompt
+> Submissio
+> n
+> DoS via
+> Complex
+> Prompts /
+> Prompt
+> Chaining
+> Poor
+> Authentica
+> tion
+> No Input
+> Validation
+> Unthrottle
+> d Input API
+> Orchestrat
+> or Abuse
+> Infinite
+> Agent
+> Loops
+> Resource
+> Starvation
+> Attacks
+> Pipeline
+> Queue
+> Flooding
+> External
+> Tool/API
+> Dependen
+> cy
+> Man -in -
+> the -Middle
+> (MitM)
+> Model
+> Tampering
+> Prompt
+> Injection
+> Poisoning
+> Fine -
+> Tuning
+> Backdoor
+> Positioning
+> Fine -
+> Tuning
+> Access
+> Control
+> abuse
+> Rate Limiting & User
+> Quotas
+> Input Validation &
+> Sanitization
+> Throttling & Quota
+> Enforcement
+> MFA, TLS Mutual
+> Authentication, OAuth2
+> with Scoped Tokens
+> Session Expiry, Token
+> Rotation, Binding to
+> User Context
+> Adaptive Throttling
+> Complexity &
+> Timeout Limits
+> Loop Limiting &
+> Timeout Enforcement  Resource Quotas &
+> Monitoring  Task Queue
+> Prioritization & Rate
+> Monitoring
+> Input Size Limits &
+> Memory Caps
+> Data Validation &
+> Monitoring
+> Backdoor Detection
+> End -to -End
+> Encryption, Mutual
+> Authentication
+> Role -Based Access &
+> Least Privilege
+> Policies
+
+Figure 8: Attack Tree for G3: Disruption of Access or Availability. Branch Precondition CVEs (ex-amples) Execution CVEs (exam-ples) 
+
+Epath AC maj (C, I, A ) Base (S:U) 
+
+B1: User Session Compromise 
+
+Reused from G1 (no addi-tional precondition family in G2)
+
+MitM on web session (CVE-2024-50691, 
+
+E=2 .22 , AC maj =High) 
+
+OR Prompt Injection (Direct/Indirect; CVE-2024-5184 / CVE-2025-46059, E=3 .89 ,
+
+AC maj =Low) 3.89 – (OR reuse) (0.56, 0.00, 0.00) 7.5 (High) B2: LLM Session Compromise Weak authentication (CVE-2025-46801, 
+
+E=3 .89 ); Lack of session isolation (CVE-2025-32441, E=1 .62 ); No context purging (CVE-2023-4969, E=1 .83 ); Cross-session leakage (CVE-2024-27935, 
+
+E=3 .89 )
+
+Reused from G1: Session hijacking (CVE-2024-6587, E=3 .89 ), Session fixation (CVE-2024-38513, E=3 .89 ); Cache compromise: Cross-user cache exposure (CVE-2023-2885, E=2 .84 )
+
+OR KV-cache leakage /PromptPeek-style (CVE-2024-27935, E=3 .89 )3.89 Low (0.56, 0.00, 0.00) 7.5 (High) B3: Model Ex-traction (Train-ing Data Leak-age) Accessible query interface (CVE-2024-32965, 
+
+E=3 .89 ); Missing rate limiting (CVE-2024-51557, E=2 .84 ); Insufficient output filtering (CVE-2024-3402, E=2 .07 )Extraction / inversion /membership inference ( no CVE )†
+
+3.89 Low (0.56, 0.00, 0.00) 7.5 (High) TABLE 3: Summary of exploitability and impact for G2 (Leakage of EHR data). All paths use confidentiality-only impact with Scope: Unchanged. B1 reuses G1 exploitability values for MitM and Prompt Injection and aggregates them via OR. In B2, session hijacking and fixation reuse the G1 execution CVEs, while preconditions and cache-compromise mechanisms are instantiated for G2.
+
+> †
+
+We treat model memorization of EHR data as a scenario-level gating assumption (the risk applies only when memorization is present). CVSS v3.1 exploitability metrics focus on attacker reach and effort (AV, AC, PR, UI), so memorization is handled in the goal/scenario definition rather than encoded as a CVSS exploitability vector. Branch Precondition CVEs Execution CVEs Epath AC maj (C, I, A ) Base (S:U) 
+
+B1: Prompt flood-ing 
+
+> †
+
+PG3 (shared) CVE-2025-46569 ‡
+
+(prompt-chaining / flooding DoS, 
+
+E(V ) = 2 .84 )2.84 Low (0.00, 0.00, 0.56) 6.5 (Medium) B2: Orchestrator abuse 
+
+> †
+
+PG3 (shared) CVE-2025-48956 (infinite agent/tool loops, E(V ) = 3.89 )3.89 Low (0.00, 0.00, 0.56) 7.5 (High) B3: Resource ex-haustion 
+
+> †
+
+PG3 (shared) CVE-2025-61771 (resource exhaustion, 
+
+E(V ) = 3 .89 )3.89 Low (0.00, 0.00, 0.56) 7.5 (High) B4: External tool / API dependency 
+
+> †
+
+PG3 (shared) CVE-2024-2466 (external API DoS / upstream out-age trigger, E(V ) = 3 .89 )3.89 Low (0.00, 0.00, 0.56) 7.5 (High) B5: Prompt in-jection (availabil-ity misuse) 
+
+> †
+
+PG3 (shared) Reused from G1:CVE-2024-5184 (direct injection) / CVE-2025-46059 (indirect injection), 
+
+E(V ) = 3 .89 
+
+3.89 Low (0.00, 0.00, 0.56) 7.5 (High) B6: Model tam-pering (availabil-ity impact) 
+
+> †
+
+PG3 (shared) Reused from G1 model-tampering branch (e.g., poisoning/replacement vectors), E(V ) = 3 .89 
+
+3.89 Low (0.00, 0.00, 0.56) 7.5 (High) B7: Access con-trol abuse 
+
+> †
+
+PG3 (shared) CVE-2025-29927 (access control bypass enabling quota/resource abuse, 
+
+E(V ) = 3 .89 )3.89 Low (0.00, 0.00, 0.56) 7.5 (High) TABLE 4: Summary of exploitability and impact for G3 (Disruption of access to EHR data), with availability-only impact (Scope: Unchanged).                  
+
+> †PG3 denotes the shared precondition family from the draft: (i) No query rate limiting (CVE-2024-51557, E= 2 .84 ; reused from G2), (ii) Poor session management (reused from G1,E= 1 .62 ; e.g., CVE-2025-32441 vector), (iii) Poor authentication (reused from G1,E= 3 .89 ; e.g., CVE-2025-46801 vector), (iv) No input validation (CVE-2025-8320, E= 2 .84 ), and (v) Unthrottled input APIs (CVE-2025-61770, E= 3 .89 ). This yields
+> E(PG3 ) = 3 .89 and AC maj (PG3 ) = Low.
+> ‡CVE-2025-46569 had no official CVSS v3.1 at the time of writing; the exploitability vector used here follows the draft’s derived mapping.
+
+ID Defense Set (post-treatment; after hardening) 
+
+E(P ) AC maj (P ) E(V ⋆) Epath Final Base (S:U) Cost 
+
+Baseline None (original path; no added con-trols) 3.89 L 3.89 3.89 7.5 (High) –S1 Harden one major precondition: 
+
+User–Machine hijack → device binding / session attestation (AC:H, PR:L) 2.84 L 3.89 2.84 6.5 (Med) 3S2 Harden all preconditions: User Hijack: MFA + short-lived tokens (PR:H, AC:H); User–Machine: de-vice binding (AC:H, PR:L); Mali-cious User: RBAC (PR:H); Stolen API Key: scope limiting (PR:H); MitM: TLS 1.3 + pinning (PR:L) 1.62 H 2.22 1.62 5.3 (Med) 2–3 S3 Harden execution only (lightweight): Canonicalization + delimited channels + sandwich-prevention rules (AC :H)
+
+3.89 L 2.22 2.22 5.9 (Med) 1–3 S4 Harden both: S2 preconditions + HITL gate for high-impact actions 
+
+(U I :R, AC :H)
+
+1.62 H 1.62 1.62 5.3 (Med) 2–4 TABLE 5: Prompt-injection treatment scenarios for G1–B1 (Scope unchanged). Baseline reports the original path scores. Rows S1–S4 report post-treatment values recomputed after applying the listed controls as CVSS base-metric transforms at the affected leaves and/or execution step. Impact is fixed at (C, I, A ) = (0 .00 , 0.56 , 0.00) (Impact = 3 .60 ), so differences in Base are driven by Epath . Cost is reported as ordinal level(s) per Table 1. 
+
+ID Defense Set (post-treatment; after hardening) 
+
+E(P ) AC maj (P ) E(V ⋆) Epath Final Base (S:U) Cost 
+
+Baseline None (original path; no added controls) 3.89 L 3.89 3.89 7.5 (High) –S1 Harden major preconditions only: 
+
+mTLS on orchestrator APIs (P R :N →
+
+H); context segmentation + write-RBAC (AC :L → H, P R :N → L)
+
+2.84 L 3.89 2.84 6.5 (Med) 2–4 S2 Harden all preconditions: sign & ver-ify orchestration artifacts (AC :L →
+
+H, P R :N → L); mTLS on APIs 
+
+(P R :N → H); context segmentation + write-RBAC (AC :L → H, P R :N →
+
+L)
+
+1.62 H 2.22 1.62 5.3 (Med) 3–4 S3 Harden execution only: task allowlist-ing + task/plan signing; task-sequence enforcement; context integrity checks; agent-response signing/verification 3.89 L 1.62 1.62 5.3 (Med) 2–4 S4 Harden both: S2 preconditions + S3 execution controls 1.62 H 1.62 1.62 5.3 (Med) 3–4 TABLE 6: Orchestration-error treatment scenarios for G1–B3 (Scope unchanged). Baseline reports the original path scores. Rows S1–S4 report post-treatment values recomputed after applying the listed controls as CVSS base-metric transforms at the affected leaves and/or execution step. Impact is fixed at (C, I, A ) = (0 .00 , 0.56 , 0.00) (Impact = 3 .60 ), so differences in Base are driven by Epath . Cost is reported as ordinal level(s) per Table 1.
