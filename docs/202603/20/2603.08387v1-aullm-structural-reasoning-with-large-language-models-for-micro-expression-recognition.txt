@@ -1,0 +1,503 @@
+Title: AULLM++: Structural Reasoning with Large Language Models for Micro-Expression Recognition
+
+URL Source: https://arxiv.org/pdf/2603.08387v1
+
+Published Time: Tue, 10 Mar 2026 02:19:48 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+> 1
+
+# AULLM++: Structural Reasoning with Large Language Models for Micro-Expression Recognition 
+
+Zhishu Liu, Kaishen Yuan, Bo Zhao, Hui Ma, and Zitong Yu, Senior Member, IEEE 
+
+Abstract —Micro-expression Action Unit (AU) detection aims to identify localized AUs from subtle, transient facial muscle activations, providing a foundation for decoding detailed affec-tive cues. Previous methods exhibit three key limitations: (1) Heavy reliance on low-density visual information for learning extremely low signal-to-noise ratios, rendering discriminative evidence vulnerable to background noise; (2) Coarse-grained feature processing, which misaligns with the task’s inherent demand for fine-grained representations; and (3) Neglect of inter-AU correlations, which restricts the capability to parse complex expression patterns. In this paper, we leverage Large Language Models (LLMs) to propose a reasoning-oriented framework, AULLM++, which injects visual features into textual prompts by converting them into actionable semantic premises to guide the inference process, and formulates micro-expression action unit prediction into three stages: evidence construction, structure modeling, and deduction-based prediction. Specifically, in the visual branch, we design a Multi-Granularity Evidence-Enhanced Fusion Projector (MGE-EFP) to fuse subtle mid-level texture cues with high-level semantic information, distilling them into a compact Content Token (CT). Furthermore, inspired by the subset correspondence between micro- and macro-expression AU combinations, we encode AU relationships as a sparse structural prior and learn instance-conditioned interaction strengths via a Relation-Aware Action Unit Graph Neural Network (R-AUGNN), thereby producing an Instruction Token (IT). In the text branch, we fuse CT and IT into a structured textual prompt, and introduce Counterfactual Consistency Regularization (CCR) to construct diverse counterfactual samples, thereby enhancing the model’s generalization capability. Extensive experiments demon-strate that AULLM++ achieves state-of-the-art performance on standard benchmarks and exhibits superior generalization in cross-domain evaluations.The code will be released at https: //github.com/ZS-liu-JLU/AULLMplusplus upon acceptance. 
+
+Index Terms —Micro-Expression, Action Unit Detection, Large Language Model 
+
+I. I NTRODUCTION 
+
+# DEFINED by the Facial Action Coding System (FACS) [1], facial action units directly reflect the activation state of local facial muscles and serve as a fundamental basis for affective computing and behavioral analysis. While action unit recognition for macro-expressions has achieved signifi-cant progress, detecting them in micro-expressions remains a formidable challenge due to their inherent physiological 
+
+Zhishu Liu and Kaishen Yuan contributed equally to this work. Corresponding authors: Zitong Yu and Hui Ma. Z. Liu, B. Zhao, H. Ma, and Z. Yu are with Great Bay University, Dongguan, China. H. Ma is also with Shenzhen International Graduate School, Tsinghua University, Shenzhen, China. K. Yuan is with The Hong Kong University of Science and Technology (Guangzhou), Guangzhou, China. AU4+7  AU4+15+17     
+
+> Challenges : Subtle & Visual Ambiguity
+> & Complex AU Combinations
+> Conventional methods struggle to
+> distinguish due to subtle visual cues.
+> Approach : Integrating Visual
+> Evidence Structural Priors via LLM
+> Multi -granularity
+> Visual Evidence
+> Extraction LLM
+> Structural AU Relationship
+> Prior Modeling
+> Micro -Expression
+> AU Detection
+> (a) (b)
+> 𝑻 𝒗
+> 𝝉 𝒂𝒖
+
+Fig. 1: (a) Micro-expression AU detection is challenged by subtle intensity and visually similar AU mixtures (e.g., AU4+7 vs. AU4+15+17), which leads to ambiguity for con-ventional detectors. (b) We integrate multi-granularity visual evidence with a structured AU-relation prior and leverage LLM-based reasoning to produce coherent AU predictions, yielding stronger cross-dataset generalization. attributes of being involuntary, exceptionally brief, and of ex-ceedingly low intensity [2], [3]. The visual evidence of micro-expressions typically manifests merely as fleeting local texture or boundary perturbations around facial muscles, resulting in an extremely low signal-to-noise ratio at the computational level. Under such weak signal amplitudes, truly discriminative features are highly susceptible to being overshadowed by background noises like subject identity variations, illumination fluctuations, and subtle head movements [4]. As illustrated in Fig. 1(a), this subtlety often leads to severe visual ambiguity, making it extremely difficult for conventional detectors to distinguish between complex, visually similar AU combina-tions (e.g., AU4+7 versus AU4+15+17). Therefore, accurately capturing these fundamental muscle movements for emotion inference from barely perceptible visual perturbations consti-tutes a core problem that urgently needs resolution in current micro-expression analysis. To address the challenges of feature extraction in micro-expressions, existing research predominantly relies on hand-designed spatio-temporal operators or conventional end-to-end 3D convolutional networks for multi-label feature mining [5]– [7]. However, when confronted with the extreme physical con-ditions of micro-expressions, these standard paradigms expose significant limitations in feature representation and relation de-duction. Current methods often over-rely on low-density visual information when learning from features with extremely low signal-to-noise ratios. Whether calculating global optical flow fields or extracting coarse-grained pooled features through 
+
+> arXiv:2603.08387v1 [cs.CV] 9 Mar 2026 2
+
+deep networks, such processing approaches misalign with the intrinsic need for fine-grained representations in micro-expression analysis [4], [8]. The instantaneous activation of subtle muscles highly depends on precise high-frequency local evidence, whereas conventional mechanisms easily smooth out these crucial subtle clues. Consequently, the extracted discriminative evidence becomes highly fragile and is easily dominated by background noise. Simultaneously, the anatomical structure of facial mus-cles determines the natural synergistic or mutually inhibitory relationships between action units [9], [10]. Many existing approaches still treat action unit detection as mutually in-dependent classification tasks, severing this inherent physical correlation and thereby limiting the model’s ability to parse complex and rare expression combinations. Although recent studies have attempted to introduce graph neural networks to model the co-occurrence dependencies of action units, they still face substantial bottlenecks in this specific context [11]. Because micro-expression datasets are limited in scale and exhibit severe long-tail distributions, traditional graph models often fall into a dilemma. They either rely on fixed and rigid topologies that fail to generalize across unknown subjects and acquisition environments, or perform fully data-driven topology learning on small samples which easily overfits the statistical biases of specific datasets. In other words, existing relation modeling generally lacks an elastic mechanism capa-ble of integrating anatomical physical priors while performing adaptive deduction based on current visual features. Given the extremely low signal-to-noise ratio and complex co-occurrence distribution of micro-expression visual signals, relying solely on data-driven visual feature pattern matching struggles to achieve robust multi-label classification. There-fore, we transform micro-expression action unit recognition from a singular feature extraction paradigm into a joint rea-soning process that combines visual evidence with structural priors. Large language models (LLMs) exhibit significant tech-nical advantages in processing structured inputs and executing complex logical reasoning [12], [13]. By mapping subtle visual features and facial anatomical priors into semantic prompts parsable by large language models, their reasoning mecha-nisms can be leveraged to accomplish accurate recognition under the guidance of explicit structured instructions. As depicted in Fig. 1(b), based on these observations, this paper proposes a reasoning-oriented micro-expression action unit detection framework named AULLM++, which deconstructs the classification task into three stages including evidence construction, structure modeling, and logical reasoning. Specifically, during the visual evidence construction stage, we design a Multi-Granularity Evidence-Enhanced Fusion Projector (MGE-EFP) to capture discriminative clues of subtle muscle movements. This module integrates mid-level features representing local high-frequency texture changes with high-level semantic features possessing global abstract expressions, compressing them into compact visual content tokens. In the structure modeling stage, inspired by the subset cor-respondence between macro- and micro-expression action unit combinations, we propose a Relation-Aware Action Unit Graph Neural Network (R-AUGNN). This component injects FACS anatomical priors as a sparse topological structure and adaptively learns the interaction weights among action units based on the current input instance, thereby generating explicit instruction tokens. During the reasoning stage, the large language model receives a structured sequence composed of content and instruction tokens, deduces the visual evidence guided by relational instructions, and ultimately outputs multi-label predictions. Furthermore, to mitigate model overfitting to the statistical biases of specific datasets, we introduce Counterfactual Consistency Regularization (CCR) during the training phase [14]. By applying targeted logical interventions to the structural instructions and constraining the model to output consistent responses, this regularization strategy effec-tively enhances the generalization ability and robustness of the network in cross-domain scenarios. In summary, our main contributions are fourfold:  
+
+> •
+
+We propose a reasoning-oriented micro-expression action unit detection framework. This architecture shifts away from the traditional paradigm of pure visual feature pooling and multi-label classification by introducing a large language model into the inference module, thereby reconstructing the recognition task into a logical deduction process that combines visual evidence with structural priors.  
+
+> •
+
+We design the multi-granularity evidence-enhanced fusion projector (MGE-EFP) to address the extremely low signal-to-noise ratio of micro-expressions. This component ef-fectively merges mid-level representations of local high-frequency textures with high-level global abstract semantics to extract compact and semantically aligned visual content tokens, preventing the dilution of subtle signals.  
+
+> •
+
+We develop a relation-aware action unit graph neural net-work (R-AUGNN). By injecting anatomical physical priors as a sparse topology and incorporating an instance-adaptive graph learning mechanism, this network explicitly models the synergistic and mutually inhibitory relationships among action units to generate structural instruction tokens for guiding the reasoning process.  
+
+> •
+
+We introduce counterfactual consistency regularization (CCR) alongside comprehensive benchmarking. Operat-ing exclusively during the training phase, this regulariza-tion strategy mitigates overfitting caused by data distribu-tion shifts through counterfactual interventions on struc-tural instructions. Extensive experiments demonstrate that AULLM++ achieves state-of-the-art performance in both leave-one-subject-out cross-validation and cross-domain evaluations across three major datasets. 
+
+Extensions from Conference Version. This paper is a sub-stantially extended version of our prior preliminary confer-ence publication, AULLM [15]. While the conference version pioneered the integration of LLMs for micro-expression AU detection by projecting concatenated visual features into the language model space, it inherently treated different AUs as isolated classification targets and lacked explicit mechanisms to handle severe cross-domain distribution shifts. To overcome these bottlenecks, this manuscript advances the preliminary work into a more robust framework, AULLM++, with the following major improvements: 1) Structural Priors: We in-3
+
+troduce the R-AUGNN to inject FACS anatomical rules, shift-ing the paradigm from isolated recognition to relation-guided logical deduction. 2) Visual Enhancement: We upgrade the visual frontend to the MGE-EFP, explicitly decoupling high-frequency muscle tremors from global semantics to form more precise visual tokens. 3) Causal Robustness: We propose the CCR mechanism during training to sever environmen-tal pseudo-correlations, thereby significantly enhancing cross-domain generalization. 4) Comprehensive Evaluation: We conduct far more extensive experiments, including rigorous cross-domain evaluations and new validations on the highly challenging 4DME-Micro dataset [16]. II. R ELATED WORK 
+
+A. Micro-Expression Action Unit Detection 
+
+Early micro-expression analysis heavily relied on hand-designed spatio-temporal feature operators. For instance, clas-sical methods like LBP-TOP [5], histograms of oriented opti-cal flow(HOOF), and optical strain were widely proposed to capture subtle facial dynamics. With the rapid development of deep learning in recent years, spatio-temporal convolutional networks and Vision Transformers (e.g., AUFormer [2]) have gradually become mainstream, driving feature extraction to-ward an end-to-end learning paradigm. To tackle the specific challenge of weak micro-expression features, researchers have designed various targeted mecha-nisms. For example, Li et al. [17] introduced a Spatial and Channel Attention (SCA) network to explicitly focus on criti-cal facial regions, and further proposed a Dual-View Attentive Similarity-Preserving (DVASP) [18] knowledge distillation strategy to enhance the discriminative power of action units at the feature level. Furthermore, Eulerian video magnification techniques have been incorporated to explicitly amplify visu-ally imperceptible movements. Recent representative works, such as the Learnable Eulerian Dynamics (LED) module proposed by Varanka et al. [19], combine frequency-domain filters with deep networks to achieve adaptive enhancement of subtle motions. To address the background and illumination noise accompanying the magnification process, Khor et al. [20] developed infused suppression mechanisms to purify the au-thentic weak motion signals from magnification artefacts. Despite these significant attempts to improve the signal-to-noise ratio, existing methods still exhibit considerable lim-itations under extremely low-intensity signals. Conventional dense convolutions or global pooling operations easily conflate local high-frequency textures with global background noise, leading to an irreversible loss of fine-grained information [17], [21]. Moreover, feeding high-dimensional dense visual features directly into downstream modules incurs prohibitive computational costs and severely dilutes the weak discrim-inative signals during complex forward propagation [13], [22]. Motivated by this, we design the Multi-Granularity Evidence-Enhanced Fusion Projector (MGE-EFP). By decou-pling and re-fusing mid-level features representing local high-frequency textures and high-level features depicting global abstract semantics, this module compresses multi-dimensional spatio-temporal evidence into highly compact and semantically aligned content tokens. This design effectively filters out redundant noise while maximizing the retention of fine-grained discriminative clues for subsequent logical deduction. 
+
+B. Facial Relation Modeling and Physical Priors 
+
+Facial action units are driven by the anatomical structure of facial skeletal muscles, exhibiting strong combinational patterns. Early research mostly treated them as a series of independent binary classification tasks or relied on simple multi-label regression (e.g., Zhao et al. [23]), often ignoring the inherent physiological dependencies among action units. Recently, graph neural networks (GNNs) have been widely applied to capture these topological relationships. In the micro-expression domain, pioneering works have also emerged [24]. For instance, Xie et al. [11] proposed an AU-assisted graph attention convolutional network to model spatial and temporal interactions between facial regions for micro-expression recog-nition. Similarly, Li et al. [10] utilized semantic relationships to guide representation learning for AU recognition. Despite these advances, modeling graph relations specif-ically for pure micro-expression AU detection poses severe challenges. Because micro-expression datasets are extremely limited in scale and exhibit severe long-tail class distributions, traditional graph models easily fall into a dilemma. Fixed static topologies are too rigid to adapt to individual differences and dynamic variations among subjects, whereas fully data-driven dynamic graph learning mechanisms are highly prone to overfitting the statistical biases of small-sample datasets. To break through this bottleneck, our proposed Relation-Aware Action Unit Graph Neural Network (R-AUGNN) di-rectly targets the detection task itself. Rather than relying on purely data-driven topologies, this module injects Facial Action Coding System (FACS) anatomical rules as a sparse prior topology. It then adaptively infers interaction weights based on the micro-visual features of the current instance, ultimately generating explicit structural instruction tokens that provide precise prior guidance for the subsequent logical reasoning of the large language model. 
+
+C. Large Language Models and Causal Representation 
+
+With the rapid development of vision-language models (e.g., BLIP-2 [13] and LLaVA [25]), Large Language Models (LLMs) have demonstrated immense potential in multi-modal reasoning. In affective computing, recent approaches typically convert visual features into soft prompts for LLMs to output emotion labels. However, micro-expression detection is a fine-grained task relying on subtle visual evidence. Adopting standard visual reasoning paradigms—such as feeding massive image patches directly into an LLM—marginalizes the already weak micro-expression signals during long-context attention calculations. [ ?], [26] Consequently, AULLM++ constructs an efficient tokenized interface. By inputting highly compressed content tokens and structural instruction tokens into the LLM, we impose explicit physical constraints, enabling complex AU decoding purely at the logical deduction level. Furthermore, real-world micro-expression recognition suf-fers from severe domain shifts. Traditional countermeasures 4Micro -Expression    
+
+> Video Sequence
+> (64*64,T=6)
+> Temporal
+> Enhancement
+> &
+> 3D
+> Conv
+> Visual
+> Encoder
+> Meso Conv
+> Meso Conv
+> Global Conv
+> Laplacian
+> AU Node Chunking  K AUs AUs Relation Graph
+> High -level
+> Extraction  Relational
+> Reasoning
+> Structural
+> Attention Pooling
+> Learned
+> attention
+> MoE
+> Gate
+> ∑
+> Harmonization Layer
+> Mid -level
+> Extraction
+> Content Token  Instruction Token
+> LLM Reasoning & Classification
+> Input Prompt Construction
+> [Content token ]
+> [Task prompt ]
+> [Instruction token ]
+> LLM Inference Module
+> LoRA
+> EFP:Evidence Construction
+> R-AUGNN
+> Linear Classification Head
+> AU Prediction Logits (K AUs)
+> CCR (Training Only)
+> Original Counterfactual
+> prompt
+> LLM
+> (shared)
+> Logits
+> Counterfactual
+> Generator
+> (AU Flip)
+> prompt
+> LLM
+> (shared)
+> Logits
+> 𝑭 𝒎𝒊𝒅
+> 𝑭 𝒉𝒊𝒈𝒉
+> 𝒙 𝒇𝒖𝒔𝒆𝒅
+> 𝑻 𝒗 𝑻 𝒗
+> 𝝉 𝒂𝒖
+> 𝝉 𝒂𝒖
+> 𝓛 𝒎𝒂𝒊𝒏
+> 𝒁 𝒄𝒇
+> 𝑻 𝒗
+> 𝒁
+> 𝝉 𝒂𝒖
+> 𝒄𝒇
+> 𝝉 𝒂𝒖
+> 𝒄𝒇
+> 𝒙 𝒂𝒕𝒕
+
+ℒ𝑡𝑜𝑡𝑎𝑙 = ℒ𝑚𝑎𝑖𝑛 + 𝜆 ℒ𝑐𝑓 
+
+> ℒ𝑐𝑓
+
+Fig. 2: Overall architecture of AULLM++. The model constructs a compact visual evidence token Tv and a psychology-guided AU-structure instruction token τau , injects them into an LLM for AU reasoning and classification, and applies CCR during training for robustness. mostly focus on domain adaptation (e.g., adversarial training like DANN [27]), which implicitly aligns feature distribu-tions but rarely verifies the intrinsic causal connections be-tween muscle movements and labels. Recently, counterfactual learning has emerged as a powerful tool to sever pseudo-correlations in computer vision [14]. However, performing counterfactual interventions directly in the pixel space easily destroys the integrity of the original micro-expression signals. To overcome this, our Counterfactual Consistency Regular-ization (CCR) executes logical interventions directly at the structural instruction level during training, forcing the model to learn authentic causal relationships and significantly improving cross-domain robustness without inference overhead. Finally, our preliminary conference version, AULLM [15], made an early attempt to apply LLM reasoning to micro-expression detection. Despite its pioneering nature, AULLM relied on superficial pattern matching without explicit physical constraints, rendering it vulnerable to domain shifts. The proposed AULLM++ advances this framework by integrating structural graph reasoning (R-AUGNN) and causal counter-factual intervention (CCR). Deviating from the traditional fragmented paradigm, AULLM++ constructs a unified system that successfully maps subtle facial dynamics and physical priors into logical premises, systematically overcoming the technical bottlenecks of weak features, rigid relations, and cross-domain fragility. III. M ETHODOLOGY 
+
+This section elaborates on the theoretical foundation and technical details of the proposed AULLM++ framework. We first provide a rigorous mathematical formulation of the micro-expression action unit detection task and an overview of the architecture. Subsequently, we systematically derive the computational mechanisms of the visual evidence construction module and the structural relation graph [28]. Finally, we introduce the logical deduction process driven by the large language model and the optimization objective of Counterfac-tual Consistency Regularization (CCR) [29]. 
+
+Problem Formulation and Overall Architecture. Micro-expression action unit detection is fundamentally a multi-label binary classification problem challenged by an extremely low signal-to-noise ratio. Given a micro-expression dataset 
+
+D = {(X(i), y(i))}Mi=1 containing M samples, the input for the i-th instance is a face-aligned and cropped micro-expression video clip X ∈ RT ×C×H×W , where T denotes the sequence length, C is the number of channels, and H
+
+and W represent the spatial resolution. Our target label is defined as y = [ y1, y 2, . . . , y N ]⊤ ∈ { 0, 1}N , where N is the total number of predefined action unit categories. An element yk = 1 indicates that the k-th AU is genuinely activated in the clip, whereas 0 denotes its absence. The core objective is to learn a highly robust non-linear mapping function F : X → ˆy. This function must be capable of filtering out intense background noises, such as identity variations and illumination fluctuations, to precisely capture exceedingly subtle local facial muscle deformations and decode them into an accurate multi-label probability distribution ˆy ∈ [0 , 1] N .To break through the performance bottlenecks of traditional pure visual feature mapping under extreme physical condi-tions, the proposed AULLM++ framework abandons the end-to-end black-box regression paradigm. Instead, it deconstructs the mapping function F into three synergistically computed stages: visual evidence construction, structural instruction modeling, and large model logical deduction. The information flow of the entire system is illustrated in Fig. 2. Specifically, in the visual evidence construction stage, the input video sequence is fed into a Multi-Granularity Evidence-Enhanced Fusion Projector (MGE-EFP). This module independently extracts and disentangles mid-level high-frequency features and high-level abstract semantics. Following adaptive feature fusion, the system compresses the multi-dimensional spatio-temporal features into a compact visual content token aligned with the hidden dimension of the large model. In parallel, for structural instruction modeling, a Relation-Aware Action Unit Graph Neural Network (R-AUGNN) instantiates predefined natural AU correlations into a sparse prior topology. Combined 5
+
+with the micro-visual features from the current instance, the network adaptively infers an instruction token containing dynamic interaction weights. Ultimately, during the logical de-duction and regularization stage, the visual content token and the structural instruction token are seamlessly embedded into a structured text prompt. The large language model receives this joint prompt and performs deep causal deduction under the strict physical constraints of the instructions. Furthermore, the system activates the CCR mechanism during training, applying adversarial interventions to force the model to learn consistent causal logic and enhance cross-domain robustness. 
+
+Multi-Granularity Evidence-Enhanced Fusion Projector. 
+
+The core contradiction in micro-expression visual signals lies in the fact that subtle muscle boundary deformations are typically concealed within local high-frequency textures, whereas understanding the overall facial posture requires global low-frequency abstract features [30], [31]. Conventional single-scale pooling operations easily cause high-frequency micro-clues to be overshadowed by global semantics [32]. To address this, the MGE-EFP aims to extract highly purified visual evidence by disentangling and refusing spatio-temporal information under different receptive fields. Given the input sequence X, we first perform hierarchical feature encoding through a lightweight 3D spatio-temporal backbone network. Let the mid-level spatio-temporal tensor extracted by the network be Fmid ∈ RT ′×C1×H′×W ′
+
+, and the high-level semantic tensor be Fhigh ∈ RT ′×C2×H′′ ×W ′′ 
+
+. To explicitly amplify the instantaneous facial texture perturbations when micro-expressions occur, we introduce a differentiable Laplacian enhancement operator ∇2 along the spatial di-mensions to apply high-frequency excitation to the mid-level features. The high-frequency micro-feature representation Fhf 
+
+is obtained as follows: 
+
+Fhf = Fmid + γ · ∇ 2(Fmid ), (1) where γ is a learnable adaptive enhancement coefficient used to control the injection intensity of high-frequency textures. Physically, this operation effectively magnifies minute gradient changes at the edges of muscle movements. To integrate global semantic context while preserving high-frequency details, we introduce an attention-gated mechanism. Spatial downsampling alignment is first applied to Fhf to match the spatio-temporal resolution of Fhigh , yielding ˜Fhf .We then generate an adaptive fusion weight matrix G ∈ (0 , 1) 
+
+via a cross-channel gating function: 
+
+G = σ
+
+
+
+Wg1 ∗ ˜Fhf + Wg2 ∗ Fhigh + bg
+
+
+
+, (2) where σ(·) is the Sigmoid activation function, and Wg1, Wg2
+
+are convolutional kernels. This gating matrix determines the fusion ratio between local micro-textures and global seman-tic features at the pixel level. The fused enhanced multi-granularity feature Ff used is formulated as: 
+
+Ff used = G ⊙ ˜Fhf + (1 − G) ⊙ Fhigh , (3) where ⊙ denotes the Hadamard product. Finally, to satisfy the structural constraints of the large language model for 1D sequence inputs, we perform spatio-temporal pooling on 
+
+Ff used and map it to the hidden subspace of the large language model through a non-linear projection matrix Wproj . This generates a highly condensed visual content token Tv :
+
+Tv = ReLU (Pool (Ff used )Wproj ) ∈ R1×D, (4) where D is the embedding dimension. This token encapsulates the purest visual evidence after denoising and high-frequency enhancement, serving as the factual reliable foundation for subsequent complex logical reasoning. 
+
+Relation-Aware Action Unit Graph Neural Network. Rely-ing solely on visual evidence is highly prone to misjudgments under the long-tail distribution of micro-expressions [33]. The Facial Action Coding System (FACS) indicates that anatomical linkages between muscles constitute strong prior distributions for AU activations. The R-AUGNN is designed to combine static anatomical priors with dynamic visual instances to explicitly construct structured physical instructions. We define all N target AUs as the node set of a graph. Based on extensive psychological statistics and FACS anatomical rules, we pre-construct a sparse static prior adjacency matrix 
+
+Aprior ∈ RN ×N . When a strong synergistic or mutually inhibitory relationship exists between the i-th and j-th AUs, 
+
+A(i,j ) 
+
+> prior
+
+is assigned an initial connection weight; otherwise, it is set to 0. Simultaneously, utilizing the high-level features Fhigh 
+
+extracted by the visual backbone, we initialize an independent node representation h(0)  
+
+> i
+
+∈ Rd for each AU through class-specific projections, forming the initial node matrix H(0) .Considering facial skeletal differences among subjects and the dynamic nature of micro-expressions, a rigid Aprior cannot handle all scenarios. Therefore, we introduce a self-attention mechanism in the node feature space to calculate the dynamic interaction intensity eij between node i and node j under the current instance: 
+
+eij = LeakyReLU 
+
+
+
+a⊤[Wq h(0)  
+
+> i
+
+∥ Wkh(0)  
+
+> j
+
+]
+
+
+
+, (5) where ∥ denotes vector concatenation, and Wq , Wk, and a
+
+are learnable parameters. By applying Softmax normaliza-tion to eij , we obtain the instance-adaptive adjacency matrix 
+
+Adynamic . To achieve an optimal balance between anatomical rules and instance uniqueness, the system performs a weighted fusion of the static prior and dynamic attention to generate the final relation routing matrix ˆA:
+
+ˆA = αAprior + (1 − α)Adynamic , (6) where α is a learnable balancing coefficient biased toward the FACS prior. Having established the optimal relation graph, R-AUGNN executes message passing via an L-layer Graph Convolutional Network. The information update formulation for the l-th layer is defined as: 
+
+H(l+1) = σ
+
+ ˜D− 12 ˆA ˜D− 12 H(l)W(l)
+
+> gcn
+
+
+
+, (7) where ˜D is the degree matrix, and W(l) 
+
+> gcn
+
+is the transition weight matrix. After L iterations of reasoning, a Multi-Layer Perceptron (MLP) aligns these relation-aware node features to the semantic space of the large language model, generating 6
+
+Algorithm 1 Training and Inference Pipeline of AULLM++ 
+
+Require: Dataset D, FACS prior matrix Aprior , LLM prompt prefix Ptext , Pre-trained LLM MΦ, Hyperparameters 
+
+γ, α, λ inv , λ ∆, λ ccr . 
+
+> 1:
+
+// Phase 1: Forward Inference (Training & Testing)  
+
+> 2:
+
+for each instance sequence X in mini-batch do  
+
+> 3:
+
+Extract features Fmid , Fhigh via 3D backbone.  
+
+> 4:
+
+Fhf ← Fmid +γ ·∇ 2(Fmid ) {High-freq enhancement } 
+
+> 5:
+
+Ff used ← G ⊙ ˜Fhf + (1 − G) ⊙ Fhigh {Gated fusion } 
+
+> 6:
+
+Tv ← Pool (Ff used )Wproj {Visual content token } 
+
+> 7:
+
+ˆA ← αAprior + (1 − α)Adynamic {Adaptive routing } 
+
+> 8:
+
+τau ← MLP (GCN (H(0) , ˆA)) {Structural instruction } 
+
+> 9:
+
+Construct prompt: Ein ← [Etext ∥ Tv ∥ τau ] 
+
+> 10:
+
+Deduce probabilities: ˆy ← σ(MΦ(Ein ))  
+
+> 11:
+
+end for  
+
+> 12:
+
+// Phase 2: CCR Intervention (Training Only)  
+
+> 13:
+
+Compute base classification loss: Lcls = BCE (ˆ y, y) 
+
+> 14:
+
+for each target AU k do  
+
+> 15:
+
+Inject directed perturbation: ˜τ (k) 
+
+> au
+
+← τ (k) 
+
+> au
+
++ δk 
+
+> 16:
+
+Re-forward LLM with ˜τ (k) 
+
+> au
+
+to obtain counterfactual 
+
+ˆycf . 
+
+> 17:
+
+Calculate targeted flip loss: Lf lip = BCE (ˆ ycf k , 1 − yk) 
+
+> 18:
+
+Calculate invariance loss: Linv = P  
+
+> j̸=k
+
+KL (ˆ yj ∥ ˆycf j ) 
+
+> 19:
+
+Lccr ← L f lip + λinv Linv + λ∆∥δk∥2 
+
+> 20:
+
+end for  
+
+> 21:
+
+Update network parameters by minimizing Ltotal =
+
+Lcls + λccr Lccr .the structural instruction token τau = MLP (H(L)) ∈ RN ×D .These N structural tokens serve as expert prior guides for the large model’s decision-making. 
+
+LLM-Driven Deduction and Consistency Regularization. 
+
+After acquiring the visual content token Tv and the struc-tural instruction token τau , AULLM++ leverages the com-plex reasoning capabilities of Large Language Models for final decoding. We first define a task-specific text prompt mapped to sequence features Etext . We then concatenate the visual content and structural instructions along the sequence dimension to construct the complete structured input prompt tensor Ein = [ Etext ∥ Tv ∥ τau ]. To preserve the generalized commonsense reasoning capability while avoiding catastrophic forgetting, we freeze the backbone parameters and inject Low-Rank Adaptation (LoRA) matrices into the attention modules. The LLM receives Ein and performs autoregressive logical de-duction, extracting the final hidden state hout ∈ RD [34]–[36]. The AU multi-label prediction probabilities are calculated via a linear classification head ˆy = σ(Wcls hout +bcls ) ∈ [0 , 1] N .Micro-expression recognition faces severe distribution shifts in cross-domain environments. Models often fit specific il-lumination or identity features as statistical shortcuts rather than learning the genuine causal links. To sever this pseudo-correlation, we introduce an instruction-level Counterfactual Consistency Regularization (CCR) mechanism. As summa-rized in Algorithm 1, during training, for a target AU k, we apply a directed perturbation δk to its corresponding structural instruction token, constructing a counterfactual instruction 
+
+˜τ (k) 
+
+> au
+
+= τ (k) 
+
+> au
+
++ δk. The tampered instructions are re-fed into the LLM to yield a counterfactual prediction ˆycf . Based on causal inference logic, a logical inversion in the k-th instruction should flip the prediction for AU k (trending toward 1 − yk), while predictions for un-intervened AUs ( j̸ = k) should remain invariant. Thus, the CCR objective Lccr is defined as: 
+
+Lccr = Lbce (ˆ ycf k , 1 − yk) + λinv 
+
+X 
+
+> j̸=k
+
+KL (ˆ yj ∥ ˆycf j ) + λ∆∥δk∥2,
+
+(8) where KL (· ∥ · ) is the Kullback-Leibler divergence penalizing minute drifts in non-target distributions, ∥δk∥2 regulates the perturbation magnitude, and λinv , λ ∆ are balancing coeffi-cients. Throughout the training process, standard Binary Cross-Entropy (BCE) loss serves as the primary classification ob-jective Lcls . The global optimization objective of AULLM++ is formulated as: 
+
+Ltotal = Lcls (ˆ y, y) + λccr Lccr . (9) It is imperative to note that CCR acts solely as a regularization constraint during training. During inference, the counterfactual module is completely removed, ensuring that AULLM++ achieves exceptional cross-domain robustness without intro-ducing any additional computational overhead. IV. E XPERIMENTS 
+
+To comprehensively evaluate the effectiveness, logical rea-soning capability, and cross-domain robustness of the proposed AULLM++ framework, we conduct extensive experiments on three widely recognized spontaneous micro-expression bench-marks. We systematically compare AULLM++ against state-of-the-art methods [19], specifically including our conference preliminary version (AULLM) [15], and provide in-depth ablation studies alongside qualitative analyses. 
+
+A. Datasets and Evaluation Protocols 
+
+Datasets. We utilize three spontaneous micro-expression datasets: CASME II [40], SAMM [41], and the recently introduced 4DME-Micro [16]. CASME II contains 247 spon-taneous micro-expression samples elicited from 26 subjects, recorded at 200 frames per second (fps). The samples are rigorously annotated with Action Units (AUs) based on the Facial Action Coding System (FACS) [1]. Following standard practices in the community, we focus on eight main AUs: AU1, AU2, AU4, AU7, AU12, AU14, AU15, and AU17. SAMM comprises 159 micro-movements from 32 subjects of diverse demographic backgrounds, ensuring a high degree of ethnic diversity. 4DME-Micro is a highly challenging benchmark encompassing spontaneous expressions captured under diverse and complex elicitation paradigms. For all datasets, apex frames and their surrounding temporal sequences are extracted and utilized as inputs. 
+
+Evaluation Protocols. Micro-expression datasets exhibit ex-tremely skewed long-tail distributions, with certain AUs (e.g., 7
+
+TABLE I: Micro-Expression AU Detection Performance Comparison on CASME II under LOSO protocol. F1-scores (%) are reported. Best results are highlighted in bold . Avg. denotes Macro-F1.                                                                                                                      
+
+> Method AU1 AU2 AU4 AU7 AU12 AU14 AU15 AU17 Avg.
+> LBP-TOP [5] 80.9 60.7 89.8 56.2 69.3 63.2 52.2 75.8 68.5 ResNet18 [21] 58.9 76.2 82.7 48.7 59.3 64.2 48.1 62.9 62.6 ResNet34 [21] 55.1 69.2 83.2 55.4 62.8 56.7 52.2 62.9 62.2 FitNet [37] 65.5 74.3 79.1 46.8 61.7 62.4 53.9 57.6 62.7 SP [38] 69.0 68.5 77.7 51.1 57.0 65.3 56.6 61.3 63.3 AT [39] 65.0 62.7 83.1 57.6 58.6 62.5 46.6 65.6 62.7 SCA [17] 64.1 76.7 81.1 56.2 61.3 61.9 68.8 64.4 66.8 DVASP [18] 72.6 72.1 89.8 56.9 79.6 68.5 71.5 70.0 72.6 Res18Net LED [19] 85.8 81.7 89.0 53.9 71.4 78.5 74.5 83.5 77.3 SSSNet LED [19] 92.6 83.7 88.6 63.7 76.6 74.4 71.5 76.1 78.4 AULLM (Conf.) [15] 92.2 88.4 87.0 68.1 79.0 75.1 79.0 81.0 81.4
+> AULLM++ (Ours) 93.1 88.1 90.5 67.1 81.0 76.1 80.0 82.0 82.4
+
+TABLE II: Micro-Expression AU Detection Performance Comparison on SAMM dataset under LOSO protocol. F1-scores (%) are reported. Best results are highlighted in bold .Avg. denotes Macro-F1.                                                                  
+
+> Method AU2 AU4 AU7 AU12 Avg.
+> LBP-TOP [5] 58.8 47.9 44.5 49.5 50.2 ResNet18 [21] 49.7 49.1 46.1 40.5 46.4 ResNet34 [21] 44.0 55.2 38.0 40.5 44.4 Fit-18 [37] 54.1 51.2 44.5 48.3 49.5 SP-18 [38] 42.8 64.2 38.1 49.5 48.7 AT-18 [39] 47.2 60.5 43.5 38.0 47.3 SCA [17] 45.7 59.2 43.9 53.2 50.5 DVASP-18 [18] 47.8 67.5 48.1 44.7 52.0 Res18 LED [19] 57.4 71.3 53.2 47.3 57.3 SSSNet LED [19] 61.5 62.4 45.2 47.8 54.2 AULLM (Conf.) [15] 66.9 71.9 55.8 52.8 61.9
+> AULLM++ (Ours) 70.6 72.6 56.5 53.5 62.6
+
+AU12) appearing frequently while others (e.g., AU15) are exceptionally rare. Consequently, evaluating models using standard accuracy is highly misleading and conceals poor performance on minority classes. To address this, we adopt the Macro F1-Score (Macro-F1) as our primary evaluation metric. It calculates the unweighted average of F1-scores across all evaluated AUs, providing a stringent and unbiased measurement of the model’s true detection capability across unbalanced distributions. Furthermore, micro-expression sig-nals are highly susceptible to being overshadowed by subject-specific physiological traits. As highlighted by recent studies on data leakage and evaluation issues in micro-expression analysis [42], preventing subject identity overlap is crucially important. Therefore, to rigorously prevent subject identity leakage and evaluate genuine generalization, all within-domain experiments strictly adhere to the Leave-One-Subject-Out (LOSO) cross-validation protocol. 
+
+B. Implementation Details 
+
+To guarantee full reproducibility and demonstrate the optimization efficiency of our framework, we detail the implementation configurations of AULLM++. 
+
+Visual and Reasoning Backbone. For the visual evidence extraction phase, we employ a lightweight 3D Convolutional Neural Network (3D-CNN) backbone [6]. Given the data scarcity and extreme subtlety of micro-expressions, a lightweight architecture effectively prevents the severe overfitting typically associated with heavily parameterized networks, allowing for the direct extraction of genuine spatio-temporal dynamics. For the core reasoning engine, we instantiate our framework using the 
+
+deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B 
+
+[43]. This specific model is selected for its powerful distilled logical reasoning capabilities, which perfectly match our paradigm of decoding explicit structural instructions. To seamlessly align the multi-modal tokens while preventing catastrophic forgetting of the LLM’s generalized commonsense, we freeze the original backbone parameters. We solely inject Low-Rank Adaptation (LoRA) matrices into the attention modules, configuring the rank as 
+
+r = 16 and the scaling factor as α = 32 [36]. 
+
+Module Configurations and Optimization. In the Evidence-Enhanced Fusion Projector (MGE-EFP), the high-frequency excitation is driven by a differentiable Laplacian operator. The Relation-Aware Graph Network (R-AUGNN) is deliberately constrained to L = 2 graph convolutional layers to capture multi-hop AU interactions while preventing the over-smoothing of node features. During the training phase, the Counterfactual Consistency Regularization (CCR) is activated with empirically determined balancing coefficients λccr = 0 .1.The entire framework is optimized using the AdamW op-timizer with a weight decay of 1e-4. We apply a differential learning rate strategy to stabilize the cross-modal alignment: 2e-4 for the visual and graph neural modules, and a more conservative 1e-4 for the LLM LoRA parameters. To en-sure stable gradient estimation across the highly noisy and imbalanced micro-expression samples, we employ a large batch size of 256. Given the complexity of aligning multi-granular visual features and topological structures with the LLM’s semantic space, the model requires an extended train-ing schedule to reach optimal convergence. Consequently, the framework achieves its best performance after being trained for 350 epochs. All experiments are accelerated using asingle NVIDIA H100 Tensor Core GPU, which provides the necessary memory bandwidth and computational efficiency for the LLM-driven deduction process. 8
+
+TABLE III: Micro-Expression AU Detection Performance Comparison on 4DME-Micro dataset under LOSO protocol. F1-scores (%) are reported. Best results are highlighted in 
+
+bold . Avg. denotes Macro-F1.                                              
+
+> Method AU1 AU2 AU4 AU6 AU7 AU12 AU17 AU45 Avg.
+> ResNet18 [21] 57.6 55.4 45.9 50.1 50.8 56.9 52.0 52.5 52.6 SSSNet LED [19] 46.9 50.7 52.9 46.3 42.8 47.6 49.0 72.9 51.1 AULLM (Conf.) [15] 53.7 58.8 51.2 50.5 51.8 48.2 49.0 77.0 55.0
+> AULLM++ (Ours) 54.1 59.1 56.4 50.0 48.6 49.0 62.5 79.5 57.7
+
+C. Within-Domain Evaluation 
+
+We first evaluate the within-domain detection performance of AULLM++ across the CASME II, SAMM, and 4DME-Micro datasets under the rigorous Leave-One-Subject-Out (LOSO) cross-validation protocol. The comparative results against representative state-of-the-art methods are summarized in the corresponding tables. The baselines encompass tradi-tional handcrafted features, pure CNN architectures, knowl-edge distillation paradigms, recent advanced motion magni-fication approaches (e.g., SSSNet LED), and our conference preliminary framework, AULLM. 
+
+Superiority over Conventional Paradigms. As demonstrated in the SAMM evaluation (Table II), AULLM++ achieves an unprecedented Macro-F1 score of 62.6%, outperforming the state-of-the-art motion magnification method (SSSNet LED) by a massive margin of 13.3%. A similar dominant trend is observed on the CASME II dataset, where our framework reaches a compelling 82.4% Macro-F1. While recent motion magnification techniques attempt to address the low signal-to-noise ratio by explicitly amplifying temporal changes, they fundamentally remain confined to the traditional feature pooling and pure data-driven classification paradigm. Conse-quently, these methods still suffer from the severe dilution of fine-grained high-frequency evidence during deep network propagation and lack the capacity for complex logical rea-soning. In stark contrast, AULLM++ explicitly disentangles and preserves localized high-frequency textures via the MGE-EFP, compressing them into compact semantic tokens. This explicitly demonstrates that shifting from pure visual pattern matching to LLM-driven logical deduction yields a paradigm-shifting improvement in identifying subtle micro-expressions. 
+
+Evolutionary Advancement over the Conference Version. 
+
+The evaluation on the highly challenging and newly introduced 4DME-Micro dataset (Table III) particularly highlights the architectural superiority of AULLM++ over our preliminary conference version, AULLM. While AULLM established a strong baseline (55.0% Macro-F1) by pioneering the inte-gration of LLMs for micro-expression analysis, it inherently treated different Action Units as isolated classification targets. It lacked a mechanism to comprehend the underlying physio-logical dependencies between facial muscles. By integrating the Relation-Aware Action Unit Graph Neu-ral Network (R-AUGNN) to inject FACS anatomical priors, alongside the MGE-EFP for refined high-frequency texture en-hancement, AULLM++ effectively captures these co-occurring and mutually inhibitory muscle dynamics. For instance, the TABLE IV: Cross-dataset generalization (Macro-F1, %). ‘C’, ‘S’, and ‘D’ denote the CASME II, SAMM, and 4DME-Micro datasets, respectively. The arrow ( →) indicates the Train →
+
+Test direction. Best results are highlighted in bold .                                               
+
+> Method C→SC→DS→CS→DD→CD→SAvg.
+> ResNet18 [21] 37.3 42.3 47.4 39.3 44.9 39.1 41.7 SSSNet LED [19] 36.5 42.7 46.1 37.7 31.5 33.4 38.0 AULLM (Conf.) [15] 49.9 44.1 52.8 48.3 47.2 41.6 47.3
+> AULLM++ (Ours) 51.3 48.9 54.1 52.6 55.0 49.3 51.9
+
+synergistic activation of AU6 (cheek raiser) and AU12 (lip corner puller) is explicitly modeled as a structural instruc-tion. Consequently, AULLM++ boosts the overall Macro-F1 score to 57.7% on 4DME-Micro, achieving comprehensive improvements across the vast majority of individual AUs. This substantiates that explicitly modeling physical priors is indispensable for accurate logical deduction in complex micro-expression scenarios. 
+
+D. Generalization Evaluation 
+
+Micro-expression detection typically suffers from noticeable performance degradation when applied to unseen domains, a challenge widely recognized in recent domain-invariant representation learning and contrastive learning studies [44], [45]. This vulnerability stems from the significant domain shifts introduced by heterogeneous elicitation environments, varying camera specifications, and diverse subject demograph-ics (e.g., the high ethnic diversity in SAMM compared to the predominant Asian demographic in CASME II). To rigorously evaluate cross-domain robustness, we conduct comprehensive transfer experiments across six dataset pairs, where models are trained on the source dataset and directly evaluated on the target dataset without any fine-tuning. As detailed in Table IV, under this highly challenging setting, conventional data-driven CNNs (ResNet18) and mo-tion magnification methods (LED-SSSNet) experience con-siderable performance drops. For instance, in the 4DME 
+
+→ CASME II transfer task, the Macro-F1 of LED-SSSNet decreases to 31.5%. Because these models often lack explicit physical constraints, they tend to overfit to the source domain’s statistical biases—such as specific illumination conditions or sensor noise—rather than fully capturing the underlying physiological mechanisms of micro-expressions. In contrast, AULLM++ demonstrates strong resilience across all six transfer protocols. Notably, in the challeng-ing 4DME → CASME II and 4DME → SAMM tasks, AULLM++ achieves notable Macro-F1 improvements of 7.8% and 7.7%, respectively, over the preliminary conference ver-sion (AULLM). This robust generalization capability primar-ily arises from the synergistic effect of modeling consistent physical laws and enforcing causal consistency. At the struc-tural level, human facial anatomical structures and muscle dependencies defined by FACS remain highly consistent across different ethnicities and environments. By integrating the R-AUGNN, AULLM++ anchors the LLM’s reasoning process upon these domain-invariant physical rules, guiding the model 9
+
+TABLE V: Ablation study of AULLM++ modules (Macro-F1, %). The results validate the necessity of each architectural component across all three major benchmarks. Best results are highlighted in bold .                                     
+
+> Variant CASME II SAMM 4DME Full Framework (AULLM++) 82.4 62.6 57.7
+> Structure reasoning
+> w/o R-AUGNN (no τau )79.8 61.3 55.5 FACS graph →fully-connected 81.6 61.8 56.0 FACS graph →self-loops only 80.2 60.5 54.0
+> Evidence construction
+> w/o EFP (linear proj.) 78.9 59.6 51.3
+> Fmid only 80.2 60.4 56.4
+> Fhigh only 79.7 60.5 53.6
+> LLM and robustness
+> w/o LLM (MLP head) 78.3 57.2 49.8 w/o CCR++ 81.4 60.9 55.2
+
+to focus on the topological correlations of muscle activations rather than superficial pixel-level discrepancies. Complementing this structural prior, the Counterfactual Consistency Regularization (CCR) acts as a reliable causal regularizer during training. By executing directed causal in-terventions, CCR helps mitigate residual pseudo-correlations between domain-specific environmental noise and AU la-bels. The combination of R-AUGNN’s structural guidance and CCR’s causal intervention effectively encourages the DeepSeek-R1 engine to shift its learning focus from pattern memorization to robust logical deduction, yielding a more reliable cross-dataset micro-expression generalization. 
+
+E. Ablation Studies 
+
+To systematically deconstruct the performance gains and validate the necessity of each of our proposed core modules, we conduct comprehensive ablation studies across the CASME II, SAMM, and 4DME-Micro datasets. As detailed in Table V, we independently evaluate the specific contributions of the structural reasoning, visual evidence construction, and logical deduction components. We first investigate the impact of structural reasoning. Removing the Relation-Aware Action Unit Graph Neural Net-work (R-AUGNN) entirely leads to a noticeable performance drop; for instance, the Macro-F1 score on 4DME-Micro de-creases from 57.7% to 55.5%. To further verify the necessity of physical priors, we replace the FACS-guided sparse topology with a fully-connected graph and a self-loops-only graph. Both variants yield sub-optimal results compared to the full model. This suggests that blindly learning relation weights from small-sample datasets can easily lead to overfitting, and incorporating explicit anatomical priors is highly beneficial for regularizing the graph structure. Regarding visual evidence construction, the Multi-Granularity Evidence-Enhanced Fusion Projector (MGE-EFP) plays a vital role in capturing subtle dynamics. When the attention-gated fusion is removed and replaced by a simple linear projection, the performance degrades considerably 
+
+Fig. 3: t-SNE visualization of high-level features across CASME II, SAMM, and 4DME-Micro datasets. (a) The base-line LED-SSSNet exhibits severe domain shifts with isolated clusters. (b) AULLM++ demonstrates significantly improved domain alignment and feature entanglement. across all benchmarks. More importantly, utilizing only mid-level high-frequency features or exclusively high-level global semantics fails to match the performance of the integrated module. This confirms our hypothesis that accurate micro-expression detection benefits greatly from the simultaneous extraction and adaptive fusion of localized edge deformations and overall facial contexts. Finally, evaluating the core reasoning engine reveals that replacing the DeepSeek-R1 LLM with a conventional MLP classification head results in the most severe performance decline, such as dropping from 62.6% to 57.2% on the SAMM dataset. This emphasizes the substantial advantage of mapping multi-modal tokens into a semantic space for logical deduction rather than relying on standard multi-label regression. Additionally, discarding the Counterfactual Con-sistency Regularization (CCR) leads to consistent declines across all datasets. This observation highlights its practical contribution to maintaining model stability and mitigating dataset-specific overfitting, thereby completing the reasoning loop of the proposed framework. 
+
+F. Cross-Domain Feature Visualization 
+
+To intuitively demonstrate the effectiveness of AULLM++ in mitigating cross-domain distribution shifts, we employ t-SNE to visualize the high-level feature spaces across the CASME II, SAMM, and 4DME-Micro datasets. As illustrated in Fig. 3(a), the feature distribution of the baseline method (LED-SSSNet) exhibits severe domain gaps. In the standard baseline, features exhibit severe domain shifts, forming com-pletely isolated clusters based on their dataset origins rather than their physiological meanings. This clearly indicates that the baseline model heavily overfits to these dataset-specific environmental biases, such as lighting conditions, camera sen-sors, or ethnic backgrounds, failing to capture robust, domain-invariant micro-expression cues. In contrast, Fig. 3(b) reveals that the feature distribution of AULLM++ demonstrates a notably higher degree of domain overlap and entanglement. Driven by the universal anatomical 10 (a)Apex frames  (b)Baseline  (c)Mid -level  (d)High -level  (e)Attention Heatmap 
+
+Fig. 4: Visualization of feature evolution. priors from R-AUGNN and the causal intervention of CCR, our framework successfully forces the model to discard a significant portion of dataset-specific environmental pseudo-correlations. Consequently, features from different datasets are projected into a much closer, generalized semantic space. While perfectly aligning distinct datasets into a singular, domain-agnostic manifold remains an open challenge, this visualization explicitly confirms that AULLM++ achieves a substantial leap in learning robust, domain-invariant micro-expression representations. 
+
+G. Qualitative Analysis 
+
+To intuitively validate the reasoning capability and inter-pretability of AULLM++, we visualize the feature evolution process in Fig. 4. Compared to the diffuse and scattered activation patterns of the baseline 3D-CNN (Fig. 4b), which often drift toward irrelevant background noise or static facial contours, AULLM++ exhibits a highly precise, coarse-to-fine refinement trajectory. As illustrated, the mid-level features (Fig. 4c) effectively capture the transient, high-frequency texture variations inherent to micro-expressions, highlighting the subtle edge deformations. Subsequently, the high-level features (Fig. 4d) consolidate these fine-grained cues into co-herent semantic regions. Driven by the R-AUGNN’s structural instructions, this multi-granular integration enables the final attention map (Fig. 4e) to precisely target anatomically signif-icant muscles. For instance, the model accurately localizes the 
+
+zygomaticus major for AU12 and distinctly isolates the specific muscle groups for the complex AU6+12+17 combination. This explicitly demonstrates our framework’s capacity to disen-tangle subtle, co-occurring facial dynamics under physical guidance rather than relying on statistical guesswork. Furthermore, to investigate the impact of the Counterfactual Consistency Regularization (CCR) on alleviating cross-domain distribution shifts, we employ t-SNE to visualize the high-level feature spaces across different datasets, as shown in Fig. 3. In the standard baseline, features exhibit severe domain shifts, forming completely isolated clusters based on their dataset origins rather than their physiological meanings. In contrast, the feature distribution of AULLM++ demonstrates a notably higher degree of domain overlap and entanglement. This confirms that causal intervention successfully forces the model to discard a significant portion of dataset-specific environmental pseudo-correlations (e.g., lighting and camera biases). However, from a rigorous academic perspective, it is imperative to acknowledge that while AULLM++ substantially narrows the domain gap, the dataset distributions are not yet perfectly aligned into a singular, domain-agnostic manifold. This observation candidly indicates that while introducing causal LLM reasoning provides a substantial leap forward, completely resolving the fundamental domain generalization bottleneck in micro-expression analysis remains an arduous open challenge for future research. V. C ONCLUSION 
+
+In this paper, we proposed AULLM++, a novel frame-work that advances micro-expression action units detection by integrating physical anatomical priors with large language model deduction. To address the inherent challenges of low signal-to-noise ratios and severe domain shifts, we designed a synergistically functioning architecture. The Multi-Granularity Evidence-Enhanced Fusion Projector effectively extracts and fuses high-frequency local muscle variations with global facial contexts to form condensed visual tokens. Complementing this, the Relation-Aware Action Unit Graph Neural Network embeds FACS-guided anatomical rules, anchoring the rea-soning process upon universal physiological dependencies. Furthermore, the Counterfactual Consistency Regularization serves as a causal intervention mechanism during training, significantly mitigating dataset-specific biases.Extensive ex-periments on three benchmark demonstrate that AULLM++ consistently outperforms existing methods and it establishes strong performance in both within-domain evaluations and challenging cross-domain transfer task. Despite these advancements, achieving complete domain generalization in micro-expression analysis remains an ongo-ing challenge. In our future work, we aim to develop a special-ized micro-expression AU large foundation model endowed 11 
+
+with explicit reasoning capabilities. By encouraging the model to generate transparent, step-by-step interpretable deduction processes for AU activations, we seek to further enhance the reliability, interpretability, and generalization of affective computing systems under complex real-world conditions. REFERENCES [1] P. Ekman and W. V. Friesen, “Facial action coding system: a technique for the measurement of facial movement,” Consulting Psychologists Press , 1978. [2] K. Yuan, Z. Yu, X. Liu, W. Xie, H. Yue, and J. Yang, “Auformer: Vision transformers are parameter-efficient facial action unit detectors,” in ECCV , 2024. [3] B. Martinez, M. F. Valstar, B. Jiang, and M. Pantic, “Automatic analysis of facial actions: A survey,” IEEE Transactions on Affective Computing ,2019. [4] A. Piergiovanni and M. S. Ryoo, “Representation flow for action recognition,” in CVPR , 2019. [5] G. Zhao and M. Pietikainen, “Dynamic texture recognition using local binary patterns with an application to facial expressions,” IEEE Trans-actions on Pattern Analysis and Machine Intelligence , 2007. [6] D. Tran, L. Bourdev, R. Fergus, L. Torresani, and M. Paluri, “Learning spatiotemporal features with 3d convolutional networks,” 2015. [Online]. Available: https://arxiv.org/abs/1412.0767 [7] S. P. Teja Reddy, S. Teja Karri, S. R. Dubey, and S. Mukherjee, “Spon-taneous facial micro-expression recognition using 3d spatiotemporal convolutional neural networks,” in 2019 International Joint Conference on Neural Networks (IJCNN) , 2019. [8] Y.-J. Liu, J.-K. Zhang, W.-J. Yan, S.-J. Wang, G. Zhao, and X. Fu, “A main directional mean optical flow feature for spontaneous micro-expression recognition,” IEEE Transactions on Affective Computing ,2016. [9] L. Zhang, O. Arandjelovic, and X. Hong, “Facial action unit detection with local key facial sub-region based multi-label classification for micro-expression analysis,” in Proceedings of the 1st Workshop on Facial Micro-Expression: Advanced Techniques for Facial Expressions Generation and Spotting , 2021. [10] G. Li, X. Zhu, Y. Zeng, Q. Wang, and L. Lin, “Semantic relationships guided representation learning for facial action unit recognition,” in 
+
+AAAI , 2019. [11] H.-X. Xie, L. Lo, H.-H. Shuai, and W.-H. Cheng, “Au-assisted graph attention convolutional network for micro-expression recognition,” in 
+
+ACM MM , 2020. [12] S. Minaee, T. Mikolov, N. Nikzad, M. Chenaghlu, R. Socher, X. Am-atriain, and J. Gao, “Large language models: A survey,” arXiv preprint arXiv:2402.06196 , 2024. [13] J. Li, D. Li, S. Savarese, and S. Hoi, “Blip-2: Bootstrapping language-image pre-training with frozen image encoders and large language models,” 2023. [Online]. Available: https://arxiv.org/abs/2301.12597 [14] Y. Niu, K. Tang, H. Zhang, Z. Lu, X.-S. Hua, and J.-R. Wen, “Coun-terfactual vqa: A cause-effect look at language bias,” in CVPR , 2021. [15] Z. Liu, K. Yuan, B. Zhao, Y. Xu, and Z. Yu, “Au-llm: Micro-expression action unit detection via enhanced llm-based feature fusion,” in Chinese Conference on Biometric Recognition (CCBR) , 2026. [16] X. Li, S. Cheng, Y. Li, M. Behzad, J. Shen, S. Zafeiriou, M. Pantic, and G. Zhao, “4dme: A spontaneous 4d micro-expression dataset with multimodalities,” IEEE Transactions on Affective Computing , 2023. [17] Y. Li, X. Huang, and G. Zhao, “Micro-expression action unit detection with spatial and channel attention,” Neurocomputing , 2021. [18] Y. Li, W. Peng, and G. Zhao, “Micro-expression action unit detection with dual-view attentive similarity-preserving knowledge distillation,” in 2021 16th IEEE International Conference on Automatic Face and Gesture Recognition (FG 2021) , 2021. [19] T. Varanka, W. Peng, and G. Zhao, “Learnable eulerian dynamics for micro-expression action unit detection,” in Image Analysis , 2024. [20] H.-Q. Khor, Y. Li, X. Jiang, and G. Zhao, “Infused suppression of magnification artefacts for micro-au detection,” in SCIA , 2025. [21] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image recognition,” in CVPR , 2016. [22] Y. Zhu, L. Zhang, Z. Yu, R. Shao, T. Tan, and L. Nie, “Uniemo: Unifying emotional understanding and generation with learnable expert queries,” 
+
+arXiv preprint arXiv:2507.23372 , 2025. [23] K. Zhao, W.-S. Chu, F. De la Torre, J. F. Cohn, and H. Zhang, “Joint patch and multi-label learning for facial action unit detection,” in CVPR ,2015. [24] A. J. Rakesh Kumar and B. Bhanu, “Micro-expression classification based on landmark relations with graph attention convolutional net-work,” in 2021 IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW) , 2021. [25] H. Liu, C. Li, Q. Wu, and Y. J. Lee, “Visual instruction tuning,” 
+
+Advances in neural information processing systems , 2023. [26] Y. Zhu, Y. Lyu, Z. Yu, R. Shao, K. Zhou, and L. Nie, “Emosym: A symbiotic framework for unified emotional understanding and generation via latent reasoning,” in Proceedings of the 33nd ACM International Conference on Multimedia , 2025. [27] A. Sicilia, X. Zhao, and S. J. Hwang, “Domain adversarial neural networks for domain generalization: When it works and how to improve,” 2022. [Online]. Available: https://arxiv.org/abs/2102.03924 [28] F. Scarselli, M. Gori, A. C. Tsoi, M. Hagenbuchner, and G. Monfardini, “The graph neural network model,” IEEE Transactions on Neural Networks , 2009. [29] S. Verma, V. Boonsanong, M. Hoang, K. E. Hines, J. P. Dickerson, and C. Shah, “Counterfactual explanations and algorithmic recourses for machine learning: A review,” 2022. [Online]. Available: https: //arxiv.org/abs/2010.10596 [30] J. Hu, L. Shen, and G. Sun, “Squeeze-and-excitation networks,” in 
+
+CVPR , 2018. [31] F. Liu, B. Nan, X. Qian, and X. Fu, “Temporal and spatial feature fusion framework for dynamic micro expression recognition,” arXiv preprint arXiv:2505.16372 , 2025. [32] Z. Shao, B. Chen, Y. Zhou, X. Shi, C. Li, L. Ma, and D.-Y. Yeung, “Constrained and directional ensemble attention for facial action unit detection,” Pattern Recognition , 2026. [33] A. J. Rakesh Kumar and B. Bhanu, “Micro-expression classification based on landmark relations with graph attention convolutional net-work,” in 2021 IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW) , 2021. [34] M. Jia, L. Tang, B.-C. Chen, C. Cardie, S. Belongie, B. Hariharan, and S.-N. Lim, “Visual prompt tuning,” in European conference on computer vision , 2022. [35] K. Zhou, J. Yang, C. C. Loy, and Z. Liu, “Learning to prompt for vision-language models,” IJCV , 2022. [36] E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, W. Chen et al. , “Lora: Low-rank adaptation of large language models,” in ICLR , 2022. [37] A. Romero, N. Ballas, S. E. Kahou, A. Chassang, G. Gkioxari, and Y. Bengio, “Fitnets: Hints for thin deep nets,” arXiv preprint arXiv:1412.6550 , 2014. [38] F. Tung and G. Mori, “Similarity-preserving knowledge distillation,” in 
+
+ICCV , 2017. [39] S. Zagoruyko and N. Komodakis, “Paying more attention to attention: Improving the performance of convolutional neural networks via atten-tion transfer,” arXiv preprint arXiv:1612.03928 , 2016. [40] W.-J. Yan, X. Li, S.-J. Wang, G. Zhao et al. , “Casme ii: An improved spontaneous micro-expression database and the baseline evaluation,” 
+
+PLoS One , 2014. [41] A. K. Davison, C. Lansley, N. Costen, K. Tan, and M. H. Yap, “Samm: A spontaneous micro-facial movement dataset,” IEEE Transactions on Affective Computing , 2018. [42] T. Varanka, Y. Li, W. Peng, and G. Zhao, “Data leakage and evaluation issues in micro-expression analysis,” IEEE TAFFC , 2023. [43] DeepSeek-AI, “Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning,” 2025. [Online]. Available: https: //arxiv.org/abs/2501.12948 [44] H. Kim, Y. Jung, and B. C. Song, “Dire: Enhancing facial expression recognition through domain-invariant representation learning for robust generalization,” IEEE Transactions on Multimedia , 2025. [45] R. Zhi, J. Hu, and F. Wan, “Micro-expression recognition with super-vised contrastive learning,” Pattern Recognition Letters , 2022.
