@@ -6,139 +6,103 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-20
-- 运行时间：2026-03-20 20:23:56 UTC
+- 最新运行日期：2026-03-21
+- 运行时间：2026-03-21 19:32:14 UTC
 - 运行状态：成功
-- 本次总论文数：39
-- 精读区：23
+- 本次总论文数：27
+- 精读区：11
 - 速读区：16
 
 ### 今日简报（AI）
-今日精选 39 篇前沿论文，深度解析多模态安全与智慧医疗等 23 项核心进展。
-重点关注针对隐蔽有害幽默的多语言评测基准，以及利用超图关系显著提升的用药推荐系统。
-建议优先阅读关于 1720 亿 Token 规模的 LLM 幻觉研究，掌握大模型在长文本问答
-- 详情：[/202603/20/README](/202603/20/README)
+今日精选 27 篇前沿论文，深度聚焦 AI 的社交谄媚行为与长上下文竞技学习。
+重点推荐首个心理学验证的 AI 谄媚量表及 PokeAgent 挑战赛，揭示了大模型在“讨好”人类与处理复杂长程任务上的最新进展。
+建议关注 AI 谄媚性研究以提升交互辨别力，或通过 PokeAgent 了解智能体在动态竞技中的进化。
+- 详情：[/202603/21/README](/202603/21/README)
 
 ### 精读区论文标签
-1. [Harm or Humor: A Multimodal, Multilingual Benchmark for Overt and Covert Harmful Humor](/202603/20/2603.17759v2-harm-or-humor-a-multimodal-multilingual-benchmark-for-overt-and-covert-harmful-humor)  
-   标签：评分：10.0/10、query:llm-hum
-   evidence：用于检测和理解有害及冒犯性幽默的多模态基准
-2. [HypeMed: Enhancing Medication Recommendations with Hypergraph-Based Patient Relationships](/202603/20/2603.18459v1-hypemed-enhancing-medication-recommendations-with-hypergraph-based-patient-relationships)  
-   标签：评分：10.0/10、query:llm-mr
-   evidence：利用超图从健康记录中进行药物推荐
-3. [Words at Play: Benchmarking Audio Pun Understanding in Large Audio-Language Models](/202603/20/2603.18678v1-words-at-play-benchmarking-audio-pun-understanding-in-large-audio-language-models)  
-   标签：评分：10.0/10、query:llm-hum
-   evidence：在大语言模型中对音频双关语理解和幽默生成进行基准测试
-4. [MemMA: Coordinating the Memory Cycle through Multi-Agent Reasoning and In-Situ Self-Evolution](/202603/20/2603.18718v1-memma-coordinating-the-memory-cycle-through-multi-agent-reasoning-and-in-situ-self-evolution)  
-   标签：评分：10.0/10、query:lh-llm
-   evidence：用于长程交互的记忆增强LLM智能体
-5. [LMEB: Long-horizon Memory Embedding Benchmark](/202603/20/2603.12572v2-lmeb-long-horizon-memory-embedding-benchmark)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：涉及长程记忆检索任务和时间跨度较远信息的基准测试
-6. [Long-form RewardBench: Evaluating Reward Models for Long-form Generation](/202603/20/2603.12963v1-long-form-rewardbench-evaluating-reward-models-for-long-form-generation)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：评估长文本生成的奖励模型
-7. [QuarkMedBench: A Real-World Scenario Driven Benchmark for Evaluating Large Language Models](/202603/20/2603.13691v1-quarkmedbench-a-real-world-scenario-driven-benchmark-for-evaluating-large-language-models)  
-   标签：评分：9.0/10、query:llm-mr
-   evidence：评估LLM在真实医疗查询下的基准测试
-8. [Compute Allocation for Reasoning-Intensive Retrieval Agents](/202603/20/2603.14635v1-compute-allocation-for-reasoning-intensive-retrieval-agents)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：检索对于长程运行的智能体至关重要
-9. [Listening to the Echo: User-Reaction Aware Policy Optimization via Scalar-Verbal Hybrid Reinforcement Learning](/202603/20/2603.15434v2-listening-to-the-echo-user-reaction-aware-policy-optimization-via-scalar-verbal-hybrid-reinforcement-learning)  
+1. [The Social Sycophancy Scale: A psychometrically validated measure of sycophancy](/202603/21/2603.15448v1-the-social-sycophancy-scale-a-psychometrically-validated-measure-of-sycophancy)  
    标签：评分：9.0/10、query:llm-ac
-   evidence：情感支持对话系统与积极情感转变
-10. [Conflict-Aware Multimodal Fusion for Ambivalence and Hesitancy Recognition](/202603/20/2603.15818v1-conflict-aware-multimodal-fusion-for-ambivalence-and-hesitancy-recognition)  
-   标签：评分：9.0/10、query:llm-ac
-   evidence：临床环境下矛盾与犹豫识别的多模态融合
-11. [FleetOpt: Analytical Fleet Provisioning for LLM Inference with Compress-and-Route as Implementation Mechanism](/202603/20/2603.16514v1-fleetopt-analytical-fleet-provisioning-for-llm-inference-with-compress-and-route-as-implementation-mechanism)  
+   evidence：大语言模型在情感支持和人际对话中的行为
+2. [The PokeAgent Challenge: Competitive and Long-Context Learning at Scale](/202603/21/2603.15563v1-the-pokeagent-challenge-competitive-and-long-context-learning-at-scale)  
    标签：评分：9.0/10、query:lh-llm
-   evidence：长上下文LLM推理的KV缓存优化
-12. [Ablation Study of a Fairness Auditing Agentic System for Bias Mitigation in Early-Onset Colorectal Cancer Detection](/202603/20/2603.17179v1-ablation-study-of-a-fairness-auditing-agentic-system-for-bias-mitigation-in-early-onset-colorectal-cancer-detection)  
-   标签：评分：9.0/10、query:llm-mr
-   evidence：用于临床癌症检测审计的生成式AI和LLM
-13. [Multi-Trait Subspace Steering to Reveal the Dark Side of Human-AI Interaction](/202603/20/2603.18085v1-multi-trait-subspace-steering-to-reveal-the-dark-side-of-human-ai-interaction)  
-   标签：评分：9.0/10、query:llm-mh
-   evidence：大语言模型用于心理健康危机和非正式治疗
-14. [The Validity Gap in Health AI Evaluation: A Cross-Sectional Analysis of Benchmark Composition](/202603/20/2603.18294v1-the-validity-gap-in-health-ai-evaluation-a-cross-sectional-analysis-of-benchmark-composition)  
+   evidence：长程规划和顺序决策的基准测试
+3. [LoGSAM: Parameter-Efficient Cross-Modal Grounding for MRI Segmentation](/202603/21/2603.17576v1-logsam-parameter-efficient-cross-modal-grounding-for-mri-segmentation)  
    标签：评分：9.0/10、query:ehr-tr
-   evidence：对健康相关大语言模型验证基准的分析
-15. [Relationship-Centered Care: Relatedness and Responsible Design for Human Connections in Mental-Health Care](/202603/20/2603.18375v1-relationship-centered-care-relatedness-and-responsible-design-for-human-connections-in-mental-health-care)  
-   标签：评分：9.0/10、query:llm-mh
-   evidence：心理健康护理中的 AI 对话代理
-16. [Self-Tuning Sparse Attention: Multi-Fidelity Hyperparameter Optimization for Transformer Acceleration](/202603/20/2603.18417v1-self-tuning-sparse-attention-multi-fidelity-hyperparameter-optimization-for-transformer-acceleration)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：用于长上下文Transformer加速的稀疏注意力
-17. [UT-ACA: Uncertainty-Triggered Adaptive Context Allocation for Long-Context Inference](/202603/20/2603.18446v1-ut-aca-uncertainty-triggered-adaptive-context-allocation-for-long-context-inference)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：针对长上下文推理动态调整上下文窗口
-18. [AlignMamba-2: Enhancing Multimodal Fusion and Sentiment Analysis with Modality-Aware Mamba](/202603/20/2603.18462v1-alignmamba-2-enhancing-multimodal-fusion-and-sentiment-analysis-with-modality-aware-mamba)  
-   标签：评分：9.0/10、query:llm-ac
-   evidence：用于情感计算和情感分析的高效框架
-19. [EntropyCache: Decoded Token Entropy Guided KV Caching for Diffusion Language Models](/202603/20/2603.18489v1-entropycache-decoded-token-entropy-guided-kv-caching-for-diffusion-language-models)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：扩散语言模型的KV缓存方法以降低成本
-20. [D-Mem: A Dual-Process Memory System for LLM Agents](/202603/20/2603.18631v1-d-mem-a-dual-process-memory-system-for-llm-agents)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：用于长程推理的双过程记忆系统
-21. [Mi:dm K 2.5 Pro](/202603/20/2603.18788v1-midm-k-25-pro)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：长上下文理解和128K token支持
-22. [A Dataset and Resources for Identifying Patient Health Literacy Information from Clinical Notes](/202603/20/2603.19082v1-a-dataset-and-resources-for-identifying-patient-health-literacy-information-from-clinical-notes)  
+   evidence：用于从放射科医生口述中提取肿瘤提示的临床自然语言处理
+4. [Consumer-to-Clinical Language Shifts in Ambient AI Draft Notes and Clinician-Finalized Documentation: A Multi-level Analysis](/202603/21/2603.18327v1-consumer-to-clinical-language-shifts-in-ambient-ai-draft-notes-and-clinician-finalized-documentation-a-multi-level-analysis)  
    标签：评分：9.0/10、query:ehr-tr
-   evidence：源自真实临床记录的带注释健康素养数据集
-23. [LVOmniBench: Pioneering Long Audio-Video Understanding Evaluation for Omnimodal LLMs](/202603/20/2603.19217v1-lvomnibench-pioneering-long-audio-video-understanding-evaluation-for-omnimodal-llms)  
-   标签：评分：9.0/10、query:lh-llm
-   evidence：长篇音视频理解基准
+   evidence：临床自然语言处理与文档规范化
+5. [PathoScribe: Transforming Pathology Data into a Living Library with a Unified LLM-Driven Framework for Semantic Retrieval and Clinical Integration](/202603/21/2603.08935v1-pathoscribe-transforming-pathology-data-into-a-living-library-with-a-unified-llm-driven-framework-for-semantic-retrieval-and-clinical-integration)  
+   标签：评分：8.0/10、query:ehr-tr
+   evidence：用于病理报告临床集成和推理的LLM驱动框架
+6. [Deep Tabular Research via Continual Experience-Driven Execution](/202603/21/2603.09151v1-deep-tabular-research-via-continual-experience-driven-execution)  
+   标签：评分：8.0/10、query:lh-llm
+   evidence：非结构化表格上的复杂长程分析任务
+7. [Investigating Gender Stereotypes in Large Language Models via Social Determinants of Health](/202603/21/2603.09416v1-investigating-gender-stereotypes-in-large-language-models-via-social-determinants-of-health)  
+   标签：评分：8.0/10、query:ehr-tr
+   evidence：利用LLM调查法国患者记录中的性别偏见
+8. [Team LEYA in 10th ABAW Competition: Multimodal Ambivalence/Hesitancy Recognition Approach](/202603/21/2603.12848v1-team-leya-in-10th-abaw-competition-multimodal-ambivalencehesitancy-recognition-approach)  
+   标签：评分：8.0/10、query:llm-ac
+   evidence：多模态矛盾情绪识别与情感帧级嵌入
+9. [ReMem-VLA: Empowering Vision-Language-Action Model with Memory via Dual-Level Recurrent Queries](/202603/21/2603.12942v1-remem-vla-empowering-vision-language-action-model-with-memory-via-dual-level-recurrent-queries)  
+   标签：评分：8.0/10、query:lh-llm
+   evidence：用于长期记忆保留的循环记忆查询
+10. [Clinician input steers frontier AI models toward both accurate and harmful decisions](/202603/21/2603.14158v1-clinician-input-steers-frontier-ai-models-toward-both-accurate-and-harmful-decisions)  
+   标签：评分：8.0/10、query:ehr-tr
+   evidence：临床交互和鉴别诊断中的大模型行为
+11. [What Really Controls Temporal Reasoning in Large Language Models: Tokenisation or Representation of Time?](/202603/21/2603.19017v1-what-really-controls-temporal-reasoning-in-large-language-models-tokenisation-or-representation-of-time)  
+   标签：评分：8.0/10、query:ehr-tr
+   evidence：针对大语言模型的多语言时序推理基准测试
 
 ### 速读区论文标签
-1. [FrameVGGT: Frame Evidence Rolling Memory for streaming VGGT](/202603/20/2603.07690v1-framevggt-frame-evidence-rolling-memory-for-streaming-vggt)  
-   标签：评分：8.0/10、query:lh-llm
-   evidence：长流数据的有界内存流处理和KV缓存管理
-2. [Optimising antibiotic switching via forecasting of patient physiology](/202603/20/2603.08242v1-optimising-antibiotic-switching-via-forecasting-of-patient-physiology)  
-   标签：评分：8.0/10、query:llm-mr
-   evidence：利用患者生理数据进行抗生素切换的临床决策支持
-3. [How Much Do LLMs Hallucinate in Document Q&A Scenarios? A 172-Billion-Token Study Across Temperatures, Context Lengths, and Hardware Platforms](/202603/20/2603.08274v1-how-much-do-llms-hallucinate-in-document-qa-scenarios-a-172-billion-token-study-across-temperatures-context-lengths-and-hardware-platforms)  
-   标签：评分：8.0/10、query:lh-llm
-   evidence：针对文档问答在不同上下文长度（32K至200K）下的研究
-4. [AULLM++: Structural Reasoning with Large Language Models for Micro-Expression Recognition](/202603/20/2603.08387v1-aullm-structural-reasoning-with-large-language-models-for-micro-expression-recognition)  
+1. ["Who wants to be nagged by AI?": Investigating the Effects of Agreeableness on Older Adults' Perception of LLM-Based Voice Assistants' Explanations](/202603/21/2603.09012v1-who-wants-to-be-nagged-by-ai-investigating-the-effects-of-agreeableness-on-older-adults-perception-of-llm-based-voice-assistants-explanations)  
    标签：评分：8.0/10、query:llm-ac
-   evidence：基于LLM的微表情识别和情感线索推理
-5. [OfficeQA Pro: An Enterprise Benchmark for End-to-End Grounded Reasoning](/202603/20/2603.08655v1-officeqa-pro-an-enterprise-benchmark-for-end-to-end-grounded-reasoning)  
+   evidence：对LLM语音助手的共情感知
+2. [Deep Tabular Research via Continual Experience-Driven Execution](/202603/21/2603.09151v2-deep-tabular-research-via-continual-experience-driven-execution)  
    标签：评分：8.0/10、query:lh-llm
-   evidence：大型语料库多文档推理基准
-6. [Scale-Plan: Scalable Language-Enabled Task Planning for Heterogeneous Multi-Robot Teams](/202603/20/2603.08814v1-scale-plan-scalable-language-enabled-task-planning-for-heterogeneous-multi-robot-teams)  
+   evidence：复杂的长程分析任务
+3. [LooComp: Leverage Leave-One-Out Strategy to Encoder-only Transformer for Efficient Query-aware Context Compression](/202603/21/2603.09222v1-loocomp-leverage-leave-one-out-strategy-to-encoder-only-transformer-for-efficient-query-aware-context-compression)  
    标签：评分：8.0/10、query:lh-llm
-   evidence：多机器人团队的长程任务规划
-7. [Multivariate Functional Principal Component Analysis for Mixed-Type mHealth Data: An Application to Mood Disorders](/202603/20/2603.11385v1-multivariate-functional-principal-component-analysis-for-mixed-type-mhealth-data-an-application-to-mood-disorders)  
-   标签：评分：7.0/10、query:llm-mh
-   evidence：移动健康数据在心境障碍中的应用
-8. [LLMs can construct powerful representations and streamline sample-efficient supervised learning](/202603/20/2603.11679v1-llms-can-construct-powerful-representations-and-streamline-sample-efficient-supervised-learning)  
-   标签：评分：7.0/10、query:ehr-tr
-   evidence：用于复杂数据集中时间序列和结构化记录的LLM流水线
-9. [Large Language Models for Biomedical Article Classification](/202603/20/2603.11780v1-large-language-models-for-biomedical-article-classification)  
-   标签：评分：7.0/10、query:ehr-tr
-   evidence：LLM 作为生物医学文章分类文本分类器的效用
-10. [DocSage: An Information Structuring Agent for Multi-Doc Multi-Entity Question Answering](/202603/20/2603.11798v1-docsage-an-information-structuring-agent-for-multi-doc-multi-entity-question-answering)  
+   evidence：针对LLM阅读成本的高效查询感知上下文压缩
+4. [Evoking User Memory: Personalizing LLM via Recollection-Familiarity Adaptive Retrieval](/202603/21/2603.09250v1-evoking-user-memory-personalizing-llm-via-recollection-familiarity-adaptive-retrieval)  
+   标签：评分：8.0/10、query:lh-llm
+   evidence：个性化LLM的记忆检索
+5. [EXPLORE-Bench: Egocentric Scene Prediction with Long-Horizon Reasoning](/202603/21/2603.09731v2-explore-bench-egocentric-scene-prediction-with-long-horizon-reasoning)  
+   标签：评分：8.0/10、query:lh-llm
+   evidence：具有长程推理能力的自我中心场景预测基准
+6. [MedMASLab: A Unified Orchestration Framework for Benchmarking Multimodal Medical Multi-Agent Systems](/202603/21/2603.09909v1-medmaslab-a-unified-orchestration-framework-for-benchmarking-multimodal-medical-multi-agent-systems)  
+   标签：评分：8.0/10、query:ehr-tr
+   evidence：多模态医疗多智能体系统基准测试与临床推理
+7. [MemRoPE: Training-Free Infinite Video Generation via Evolving Memory Tokens](/202603/21/2603.12513v1-memrope-training-free-infinite-video-generation-via-evolving-memory-tokens)  
    标签：评分：7.0/10、query:lh-llm
-   evidence：用于多文档证据链的信息结构化智能体
-11. [OMNIA: Closing the Loop by Leveraging LLMs for Knowledge Graph Completion](/202603/20/2603.11820v1-omnia-closing-the-loop-by-leveraging-llms-for-knowledge-graph-completion)  
+   evidence：通过演化记忆令牌实现长程无限视频生成
+8. [ChainFuzzer: Greybox Fuzzing for Workflow-Level Multi-Tool Vulnerabilities in LLM Agents](/202603/21/2603.12614v1-chainfuzzer-greybox-fuzzing-for-workflow-level-multi-tool-vulnerabilities-in-llm-agents)  
+   标签：评分：7.0/10、query:lh-llm
+   evidence：多工具LLM智能体中的长程行为
+9. [HSEmotion Team at ABAW-10 Competition: Facial Expression Recognition, Valence-Arousal Estimation, Action Unit Detection and Fine-Grained Violence Classification](/202603/21/2603.12693v1-hsemotion-team-at-abaw-10-competition-facial-expression-recognition-valence-arousal-estimation-action-unit-detection-and-fine-grained-violence-classification)  
+   标签：评分：7.0/10、query:llm-ac
+   evidence：效价-唤醒度估计与面部情感理解
+10. [Steve-Evolving: Open-World Embodied Self-Evolution via Fine-Grained Diagnosis and Dual-Track Knowledge Distillation](/202603/21/2603.13131v1-steve-evolving-open-world-embodied-self-evolution-via-fine-grained-diagnosis-and-dual-track-knowledge-distillation)  
+   标签：评分：7.0/10、query:lh-llm
+   evidence：解决具身智能体长程任务的框架
+11. [Developing and evaluating a chatbot to support maternal health care](/202603/21/2603.13168v1-developing-and-evaluating-a-chatbot-to-support-maternal-health-care)  
    标签：评分：7.0/10、query:llm-mr
-   evidence：利用LLM进行知识图谱补全
-12. ["I followed what felt right, not what I was told": Autonomy, Coaching, and Recognizing Bias Through AI-Mediated Dialogue](/202603/20/2603.11274v1-i-followed-what-felt-right-not-what-i-was-told-autonomy-coaching-and-recognizing-bias-through-ai-mediated-dialogue)  
-   标签：评分：6.0/10、query:llm-mh
-   evidence：用于识别偏见和情感影响的AI介导对话
-13. [Beyond Polarity: Multi-Dimensional LLM Sentiment Signals for WTI Crude Oil Futures Return Prediction](/202603/20/2603.11408v1-beyond-polarity-multi-dimensional-llm-sentiment-signals-for-wti-crude-oil-futures-return-prediction)  
-   标签：评分：6.0/10、query:llm-ac
-   evidence：用于预测的多维大语言模型情感信号
-14. [Beyond Polarity: Multi-Dimensional LLM Sentiment Signals for WTI Crude Oil Futures Return Prediction](/202603/20/2603.11408v2-beyond-polarity-multi-dimensional-llm-sentiment-signals-for-wti-crude-oil-futures-return-prediction)  
-   标签：评分：6.0/10、query:llm-ac
-   evidence：用于预测任务的多维大语言模型情感信号
-15. [CAETC: Causal Autoencoding and Treatment Conditioning for Counterfactual Estimation over Time](/202603/20/2603.11565v1-caetc-causal-autoencoding-and-treatment-conditioning-for-counterfactual-estimation-over-time)  
+   evidence：用于孕产妇保健和症状分诊的聊天机器人
+12. [Rank-based methods for estimating landmark win probability in longitudinal randomized controlled trials with missing data](/202603/21/2603.12454v1-rank-based-methods-for-estimating-landmark-win-probability-in-longitudinal-randomized-controlled-trials-with-missing-data)  
    标签：评分：6.0/10、query:ehr-tr
-   evidence：个性化医学中的跨时反事实估计
-16. [Taming OpenClaw: Security Analysis and Mitigation of Autonomous LLM Agent Threats](/202603/20/2603.11619v1-taming-openclaw-security-analysis-and-mitigation-of-autonomous-llm-agent-threats)  
+   evidence：纵向随机对照试验分析
+13. [Rank-based methods for estimating landmark win probability in longitudinal randomized controlled trials with missing data](/202603/21/2603.12454v2-rank-based-methods-for-estimating-landmark-win-probability-in-longitudinal-randomized-controlled-trials-with-missing-data)  
+   标签：评分：6.0/10、query:ehr-tr
+   evidence：纵向随机对照试验与地标推理
+14. [TRACE: Temporal Rule-Anchored Chain-of-Evidence on Knowledge Graphs for Interpretable Stock Movement Prediction](/202603/21/2603.12500v1-trace-temporal-rule-anchored-chain-of-evidence-on-knowledge-graphs-for-interpretable-stock-movement-prediction)  
    标签：评分：6.0/10、query:lh-llm
-   evidence：执行复杂长程任务的自主大模型智能体的安全性分析
+   evidence：结合大模型在知识图谱上进行时序推理
+15. [Thinking in Dynamics: How Multimodal Large Language Models Perceive, Track, and Reason Dynamics in Physical 4D World](/202603/21/2603.12746v1-thinking-in-dynamics-how-multimodal-large-language-models-perceive-track-and-reason-dynamics-in-physical-4d-world)  
+   标签：评分：6.0/10、query:ehr-tr
+   evidence：动态场景中的时空推理
+16. [Explainable AI Using Inherently Interpretable Components for Wearable-based Health Monitoring](/202603/21/2603.12880v1-explainable-ai-using-inherently-interpretable-components-for-wearable-based-health-monitoring)  
+   标签：评分：6.0/10、query:ehr-tr
+   evidence：健康监测中时间序列数据的可解释AI
 
 
 <div class="dpr-home-promo-card">
