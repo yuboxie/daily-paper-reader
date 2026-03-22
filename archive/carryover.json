@@ -1,549 +1,8 @@
 {
-  "generated_at": "2026-03-21T19:29:14.912507+00:00",
-  "updated_date": "20260321",
+  "generated_at": "2026-03-22T19:35:54.763309+00:00",
+  "updated_date": "20260322",
   "carryover_days": 9,
   "items": [
-    {
-      "id": "2603.10089v1",
-      "title": "Trajectory-informed graph-based clustering for longitudinal cancer subtyping",
-      "abstract": "Cancer subtyping plays a crucial role in informing prognosis and guiding personalized treatment strategies. However, conventional subtyping approaches often rely on static, biopsy-derived scores that hardly capture the biological heterogeneity and temporal evolution of the disease. In this study, we propose a novel trajectory-informed clustering method for cancer subtyping that integrates multi-modal clinical data and longitudinal patient trajectories. Our method constructs a patient similarity graph using time-varying imaging-derived features, clinical covariates, and transitions among key clinical states such as therapy, surveillance, relapse, and death. This graph structure enables the identification of patient subgroups that are not only phenotypically and genotypically distinct but also aligned with patterns of disease progression. We position our approach within the landscape of existing subtyping methods and highlight its advantages in terms of temporal modeling and graph-based interpretability. Through simulation studies and application to a real world dataset of liver metastases, we demonstrate the ability of our framework to uncover clinically relevant subtypes with distinct prognostic trajectories. Our results underscore the potential of trajectory-informed clustering to enhance personalized oncology by bridging cross-sectional biomarkers with dynamic disease evolution.",
-      "authors": [
-        "Lara Cavinato",
-        "Marco Rocchi",
-        "Luca Viganò",
-        "Francesca Ieva"
-      ],
-      "primary_category": "stat.ME",
-      "categories": [
-        "stat.ME",
-        "stat.AP"
-      ],
-      "published": "2026-03-10T14:53:33+00:00",
-      "link": "https://arxiv.org/pdf/2603.10089v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "longitudinal cancer subtyping using multi-modal clinical data and patient trajectories",
-      "llm_evidence_cn": "利用多模态临床数据和患者轨迹进行纵向癌症分型",
-      "llm_evidence": "利用多模态临床数据和患者轨迹进行纵向癌症分型",
-      "canonical_evidence": "利用多模态临床数据和患者轨迹进行纵向癌症分型",
-      "llm_tldr_en": "Proposes a trajectory-informed clustering method for longitudinal cancer subtyping using time-varying clinical data.",
-      "llm_tldr_cn": "提出一种基于轨迹感知的聚类方法，利用时变临床数据进行纵向癌症亚型分析。",
-      "llm_tldr": "提出一种基于轨迹感知的聚类方法，利用时变临床数据进行纵向癌症亚型分析。",
-      "llm_tags": [
-        "query:ehr-tr"
-      ],
-      "matched_query_tag": "query:ehr-tr",
-      "matched_query_text": "State of the art LLM methods for longitudinal EHR analysis",
-      "matched_requirement_id": "req-7",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.10089v1",
-      "carry_days": 4
-    },
-    {
-      "id": "2603.10560v1",
-      "title": "PET-F2I: A Comprehensive Benchmark and Parameter-Efficient Fine-Tuning of LLMs for PET/CT Report Impression Generation",
-      "abstract": "PET/CT imaging is pivotal in oncology and nuclear medicine, yet summarizing complex findings into precise diagnostic impressions is labor-intensive. While LLMs have shown promise in medical text generation, their capability in the highly specialized domain of PET/CT remains underexplored. We introduce PET-F2I-41K (PET Findings-to-Impression Benchmark), a large-scale benchmark for PET/CT impression generation using LLMs, constructed from over 41k real-world reports. Using PET-F2I-41K, we conduct a comprehensive evaluation of 27 models across proprietary frontier LLMs, open-source generalist models, and medical-domain LLMs, and we develop a domain-adapted 7B model (PET-F2I-7B) fine-tuned from Qwen2.5-7B-Instruct via LoRA. Beyond standard NLG metrics (e.g., BLEU-4, ROUGE-L, BERTScore), we propose three clinically grounded metrics - Entity Coverage Rate (ECR), Uncovered Entity Rate (UER), and Factual Consistency Rate (FCR) - to assess diagnostic completeness and factual reliability. Experiments reveal that neither frontier nor medical-domain LLMs perform adequately in zero-shot settings. In contrast, PET-F2I-7B achieves substantial gains (e.g., 0.708 BLEU-4) and a 3.0x improvement in entity coverage over the strongest baseline, while offering advantages in cost, latency, and privacy. Beyond this modeling contribution, PET-F2I-41K establishes a standardized evaluation framework to accelerate the development of reliable and clinically deployable reporting systems for PET/CT.",
-      "authors": [
-        "Yuchen Liu",
-        "Wenbo Zhang",
-        "Liling Peng",
-        "Yichi Zhang",
-        "Yu Fu",
-        "Xin Guo",
-        "Chao Qu",
-        "Yuan Qi",
-        "Le Xue"
-      ],
-      "primary_category": "cs.CV",
-      "categories": [
-        "cs.CV"
-      ],
-      "published": "2026-03-11T09:08:25+00:00",
-      "link": "https://arxiv.org/pdf/2603.10560v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "LLM benchmark for medical report generation",
-      "llm_evidence_cn": "医疗报告生成的LLM基准",
-      "llm_evidence": "医疗报告生成的LLM基准",
-      "canonical_evidence": "医疗报告生成的LLM基准",
-      "llm_tldr_en": "A large-scale benchmark and fine-tuned model for generating PET/CT diagnostic impressions.",
-      "llm_tldr_cn": "一个用于生成PET/CT诊断结论的大规模基准和微调模型。",
-      "llm_tldr": "一个用于生成PET/CT诊断结论的大规模基准和微调模型。",
-      "llm_tags": [
-        "query:ehr-tr:composite"
-      ],
-      "matched_query_tag": "query:ehr-tr:composite",
-      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
-      "matched_requirement_id": "req-composite-ehr-tr",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.10560v1",
-      "carry_days": 9
-    },
-    {
-      "id": "2603.12071v1",
-      "title": "Paper Title: LoV3D: Grounding Cognitive Prognosis Reasoning in Longitudinal 3D Brain MRI via Regional Volume Assessments",
-      "abstract": "Longitudinal brain MRI is essential for characterizing the progression of neurological diseases such as Alzheimer's disease assessment. However, current deep-learning tools fragment this process: classifiers reduce a scan to a label, volumetric pipelines produce uninterpreted measurements, and vision-language models (VLMs) may generate fluent but potentially hallucinated conclusions. We present LoV3D, a pipeline for training 3D vision-language models, which reads longitudinal T1-weighted brain MRI, produces a region-level anatomical assessment, conducts longitudinal comparison with the prior scan, and finally outputs a three-class diagnosis (Cognitively Normal, Mild Cognitive Impairment, or Dementia) along with a synthesized diagnostic summary. The stepped pipeline grounds the final diagnosis by enforcing label consistency, longitudinal coherence, and biological plausibility, thereby reducing the risks of hallucinations. The training process introduces a clinically-weighted Verifier that scores candidate outputs automatically against normative references derived from standardized volume metrics, driving Direct Preference Optimization without a single human annotation. On a subject-level held-out ADNI test set (479 scans, 258 subjects), LoV3D achieves 93.7% three-class diagnostic accuracy (+34.8% over the no-grounding baseline), 97.2% on two-class diagnosis accuracy (+4% over the SOTA) and 82.6% region-level anatomical classification accuracy (+33.1% over VLM baselines). Zero-shot transfer yields 95.4% on MIRIAD (100% Dementia recall) and 82.9% three-class accuracy on AIBL, confirming high generalizability across sites, scanners, and populations. Code is available at https://github.com/Anonymous-TEVC/LoV-3D.",
-      "authors": [
-        "Zhaoyang Jiang",
-        "Zhizhong Fu",
-        "David McAllister",
-        "Yunsoo Kim",
-        "Honghan Wu"
-      ],
-      "primary_category": "cs.CV",
-      "categories": [
-        "cs.CV",
-        "cs.AI"
-      ],
-      "published": "2026-03-12T15:40:59+00:00",
-      "link": "https://arxiv.org/pdf/2603.12071v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "longitudinal brain MRI and cognitive prognosis reasoning",
-      "llm_evidence_cn": "纵向脑部 MRI 与认知预后推理",
-      "llm_evidence": "纵向脑部 MRI 与认知预后推理",
-      "canonical_evidence": "纵向脑部 MRI 与认知预后推理",
-      "llm_tldr_en": "LoV3D uses 3D vision-language models for longitudinal medical assessment and disease progression reasoning.",
-      "llm_tldr_cn": "LoV3D 使用 3D 视觉语言模型进行纵向医学评估和疾病进展推理。",
-      "llm_tldr": "LoV3D 使用 3D 视觉语言模型进行纵向医学评估和疾病进展推理。",
-      "llm_tags": [
-        "query:ehr-tr:composite"
-      ],
-      "matched_query_tag": "query:ehr-tr:composite",
-      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
-      "matched_requirement_id": "req-composite-ehr-tr",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.12071v1",
-      "carry_days": 9
-    },
-    {
-      "id": "2603.11119v1",
-      "title": "Group Resonance Network: Learnable Prototypes and Multi-Subject Resonance for EEG Emotion Recognition",
-      "abstract": "Electroencephalography(EEG)-basedemotionrecognitionre- mains challenging in cross-subject settings due to severe inter-subject variability. Existing methods mainly learn subject-invariant features, but often under-exploit stimulus-locked group regularities shared across sub- jects. To address this issue, we propose the Group Resonance Network (GRN), which integrates individual EEG dynamics with offline group resonance modeling. GRN contains three components: an individual en- coder for band-wise EEG features, a set of learnable group prototypes for prototype-induced resonance, and a multi-subject resonance branch that encodes PLV/coherence-based synchrony with a small reference set. A resonance-aware fusion module combines individual and group-level rep- resentations for final classification. Experiments on SEED and DEAP under both subject-dependent and leave-one-subject-out protocols show that GRN consistently outperforms competitive baselines, while abla- tion studies confirm the complementary benefits of prototype learning and multi-subject resonance modeling.",
-      "authors": [
-        "Renwei Meng"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG"
-      ],
-      "published": "2026-03-11T13:46:54+00:00",
-      "link": "https://arxiv.org/pdf/2603.11119v1",
-      "tags": [
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "EEG-based emotion recognition using group resonance modeling",
-      "llm_evidence_cn": "基于群体共振建模的脑电图情感识别",
-      "llm_evidence": "基于群体共振建模的脑电图情感识别",
-      "canonical_evidence": "基于群体共振建模的脑电图情感识别",
-      "llm_tldr_en": "Proposes a Group Resonance Network for improved cross-subject EEG emotion recognition.",
-      "llm_tldr_cn": "提出一种群体共振网络，用于改进跨受试者的脑电图情感识别。",
-      "llm_tldr": "提出一种群体共振网络，用于改进跨受试者的脑电图情感识别。",
-      "llm_tags": [
-        "query:llm-ac"
-      ],
-      "matched_query_tag": "query:llm-ac",
-      "matched_query_text": "Affective Computing and Sentiment Analysis",
-      "matched_requirement_id": "req-22",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11119v1",
-      "carry_days": 9
-    },
-    {
-      "id": "2603.11413v1",
-      "title": "Evaluation format, not model capability, drives triage failure in the assessment of consumer health AI",
-      "abstract": "Ramaswamy et al. reported in \\textit{Nature Medicine} that ChatGPT Health under-triages 51.6\\% of emergencies, concluding that consumer-facing AI triage poses safety risks. However, their evaluation used an exam-style protocol -- forced A/B/C/D output, knowledge suppression, and suppression of clarifying questions -- that differs fundamentally from how consumers use health chatbots. We tested five frontier LLMs (GPT-5.2, Claude Sonnet 4.6, Claude Opus 4.6, Gemini 3 Flash, Gemini 3.1 Pro) on a 17-scenario partial replication bank under constrained (exam-style, 1,275 trials) and naturalistic (patient-style messages, 850 trials) conditions, with targeted ablations and prompt-faithful checks using the authors' released prompts. Naturalistic interaction improved triage accuracy by 6.4 percentage points ($p = 0.015$). Diabetic ketoacidosis was correctly triaged in 100\\% of trials across all models and conditions. Asthma triage improved from 48\\% to 80\\%. The forced A/B/C/D format was the dominant failure mechanism: three models scored 0--24\\% with forced choice but 100\\% with free text (all $p < 10^{-8}$), consistently recommending emergency care in their own words while the forced-choice format registered under-triage. Prompt-faithful checks on the authors' exact released prompts confirmed the scaffold produces model-dependent, case-dependent results. The headline under-triage rate is highly contingent on evaluation format and should not be interpreted as a stable estimate of deployed triage behavior. Valid evaluation of consumer health AI requires testing under conditions that reflect actual use.",
-      "authors": [
-        "David Fraile Navarro",
-        "Farah Magrabi",
-        "Enrico Coiera"
-      ],
-      "primary_category": "cs.HC",
-      "categories": [
-        "cs.HC",
-        "cs.AI"
-      ],
-      "published": "2026-03-12T00:58:22+00:00",
-      "link": "https://arxiv.org/pdf/2603.11413v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "assessment of consumer health AI and triage safety",
-      "llm_evidence_cn": "消费者健康AI评估与分诊安全",
-      "llm_evidence": "消费者健康AI评估与分诊安全",
-      "canonical_evidence": "消费者健康AI评估与分诊安全",
-      "llm_tldr_en": "Evaluates LLM triage safety in consumer health, finding that evaluation format significantly impacts performance.",
-      "llm_tldr_cn": "评估LLM在消费者健康分诊中的安全性，发现评估形式对模型表现有显著影响。",
-      "llm_tldr": "评估LLM在消费者健康分诊中的安全性，发现评估形式对模型表现有显著影响。",
-      "llm_tags": [
-        "query:llm-mr"
-      ],
-      "matched_query_tag": "query:llm-mr",
-      "matched_query_text": "generative artificial intelligence in healthcare",
-      "matched_requirement_id": "req-47",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11413v1",
-      "carry_days": 9
-    },
-    {
-      "id": "2603.10087v1",
-      "title": "Pooling Engram Conditional Memory in Large Language Models using CXL",
-      "abstract": "Engram conditional memory has emerged as a promising component for LLMs by decoupling static knowledge lookup from dynamic computation. Since Engram exhibits sparse access patterns and supports prefetching, its massive embedding tables are well-suited for offloading to lower-tier memory. In this paper, we propose using Compute Express Link (CXL) memory pool for Engram storage. Compared to RDMA, CXL provides fine-grained and low-latency access required by minimal and discrete retrieval patterns of Engram. We integrate the CXL-based Engram pool into SGLang, achieving near-DRAM end-to-end performance. This provides a scalable and cost-efficient storage solution for future Engram-integrated LLMs without compromising inference performance.",
-      "authors": [
-        "Ruiyang Ma",
-        "Teng Ma",
-        "Zhiyuan Su",
-        "Hantian Zha",
-        "Xinpeng Zhao",
-        "Xuchun Shang",
-        "Xingrui Yi",
-        "Zheng Liu",
-        "Zhu Cao",
-        "An Wu",
-        "Zhichong Dou",
-        "Ziqian Liu",
-        "Daikang Kuang",
-        "Guojie Luo"
-      ],
-      "primary_category": "cs.AR",
-      "categories": [
-        "cs.AR",
-        "cs.DC"
-      ],
-      "published": "2026-03-10T14:13:02+00:00",
-      "link": "https://arxiv.org/pdf/2603.10087v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LH LLM"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "external memory for LLMs using CXL memory pool",
-      "llm_evidence_cn": "使用CXL内存池的LLM外部存储",
-      "llm_evidence": "使用CXL内存池的LLM外部存储",
-      "canonical_evidence": "使用CXL内存池的LLM外部存储",
-      "llm_tldr_en": "Proposes using CXL memory pools for Engram storage to scale LLM memory efficiently without losing performance.",
-      "llm_tldr_cn": "提出使用CXL内存池存储Engram，在不损失性能的情况下高效扩展LLM内存。",
-      "llm_tldr": "提出使用CXL内存池存储Engram，在不损失性能的情况下高效扩展LLM内存。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "External memory and retrieval augmented generation for long horizons",
-      "matched_requirement_id": "req-37",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.10087v1",
-      "carry_days": 4
-    },
-    {
-      "id": "2603.11988v1",
-      "title": "ConvScale: Conversational Interviews for Scale-Aligned Measurement",
-      "abstract": "Conversational interviews are commonly used to complement structured surveys by eliciting rich and contextualized responses, which are typically analyzed qualitatively. However, their potential contribution to quantitative measurement remains underexplored. In this paper, we introduce ConvScale, an AI-supported approach that transforms psychometric scales into natural conversational interviews while preserving the original measurement structure. Based on interview data, ConvScale predicts item-level scores and aggregates them to derive scale-based assessments. In a within-subjects study with 18 participants, our results show that ConvScale-derived scores align closely with participants' self-report scores at both the item and construct levels, while maintaining moderate internal reliability; however, the structural validity was inadequate. In light of this, we discussed the potential of supporting quantitative measurement through interviews and proposed implications for future designs.",
-      "authors": [
-        "Peinuan Qin",
-        "Jingzhu Chen",
-        "Yitian Yang",
-        "Han Meng",
-        "Zicheng Zhu",
-        "Yi-Chieh Lee"
-      ],
-      "primary_category": "cs.HC",
-      "categories": [
-        "cs.HC"
-      ],
-      "published": "2026-03-12T14:39:44+00:00",
-      "link": "https://arxiv.org/pdf/2603.11988v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "AI-supported conversational interviews for psychometric scale measurement",
-      "llm_evidence_cn": "用于心理测量量表评估的AI支持对话式访谈",
-      "llm_evidence": "用于心理测量量表评估的AI支持对话式访谈",
-      "canonical_evidence": "用于心理测量量表评估的AI支持对话式访谈",
-      "llm_tldr_en": "ConvScale transforms psychometric scales into conversational interviews to derive quantitative mental health assessments.",
-      "llm_tldr_cn": "ConvScale将心理测量量表转化为对话式访谈，以获取定量的心理健康评估结果。",
-      "llm_tldr": "ConvScale将心理测量量表转化为对话式访谈，以获取定量的心理健康评估结果。",
-      "llm_tags": [
-        "query:llm-mh"
-      ],
-      "matched_query_tag": "query:llm-mh",
-      "matched_query_text": "LLMs in clinical psychology research",
-      "matched_requirement_id": "req-63",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11988v1",
-      "carry_days": 9
-    },
-    {
-      "id": "2603.11611v1",
-      "title": "Fractional Rotation, Full Potential? Investigating Performance and Convergence of Partial RoPE",
-      "abstract": "Rotary Positional Embedding (RoPE) is a common choice in transformer architectures for encoding relative positional information. Although earlier work has examined omitting RoPE in specific layers, the effect of varying the fraction of hidden dimensions that receive rotary transformations remains largely unexplored. This design choice can yield substantial memory savings, which becomes especially significant at long context lengths. We find up to 10x memory savings over the standard RoPE cache, while achieving comparable final loss. In this work, we present a systematic study examining the impact of partial RoPE on training dynamics and convergence across architectures and datasets. Our findings uncover several notable patterns: (1) applying RoPE to only a small fraction of dimensions (around 10%) achieves convergence comparable to using full RoPE; (2) these trends hold consistently across model size, sequence lengths and datasets of varying quality and architectures, with higher-quality data resulting in lower overall loss and similar benchmark performance; and (3) some models trained with NoPE (No Positional Encoding) showcase unstable learning trajectories, which can be alleviated through minimal RoPE application or QK-Norm which converges to a higher loss. Together, these results offer practical guidance for model designers aiming to balance efficiency and training stability, while emphasizing the previously overlooked importance of partial RoPE.",
-      "authors": [
-        "Mohammad Aflah Khan",
-        "Krishna P. Gummadi",
-        "Manish Gupta",
-        "Abhilasha Ravichander"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG",
-        "cs.CL"
-      ],
-      "published": "2026-03-12T07:05:13+00:00",
-      "link": "https://arxiv.org/pdf/2603.11611v1",
-      "tags": [
-        "keyword:LH LLM",
-        "query:LH LLM"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "memory savings for long context lengths using partial RoPE",
-      "llm_evidence_cn": "使用部分RoPE为长上下文长度节省内存",
-      "llm_evidence": "使用部分RoPE为长上下文长度节省内存",
-      "canonical_evidence": "使用部分RoPE为长上下文长度节省内存",
-      "llm_tldr_en": "Investigates partial Rotary Positional Embedding to achieve significant memory savings in long-context transformers.",
-      "llm_tldr_cn": "研究了部分旋转位置嵌入（RoPE），以在长上下文Transformer中实现显著的内存节省。",
-      "llm_tldr": "研究了部分旋转位置嵌入（RoPE），以在长上下文Transformer中实现显著的内存节省。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "LLMs with extended context window length",
-      "matched_requirement_id": "req-34",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11611v1",
-      "carry_days": 9
-    },
-    {
-      "id": "2603.12221v1",
-      "title": "A Two-Stage Dual-Modality Model for Facial Emotional Expression Recognition",
-      "abstract": "This paper addresses the expression (EXPR) recognition challenge in the 10th Affective Behavior Analysis in-the-Wild (ABAW) workshop and competition, which requires frame-level classification of eight facial emotional expressions from unconstrained videos. This task is challenging due to inaccurate face localization, large pose and scale variations, motion blur, temporal instability, and other confounding factors across adjacent frames. We propose a two-stage dual-modal (audio-visual) model to address these difficulties. Stage I focuses on robust visual feature extraction with a pretrained DINOv2-based encoder. Specifically, DINOv2 ViT-L/14 is used as the backbone, a padding-aware augmentation (PadAug) strategy is employed for image padding and data preprocessing from raw videos, and a mixture-of-experts (MoE) training head is introduced to enhance classifier diversity. Stage II addresses modality fusion and temporal consistency. For the visual modality, faces are re-cropped from raw videos at multiple scales, and the extracted visual features are averaged to form a robust frame-level representation. Concurrently, frame-aligned Wav2Vec 2.0 audio features are derived from short audio windows to provide complementary acoustic cues. These dual-modal features are integrated via a lightweight gated fusion module, followed by inference-time temporal smoothing. Experiments on the ABAW dataset demonstrate the effectiveness of the proposed method. The two-stage model achieves a Macro-F1 score of 0.5368 on the official validation set and 0.5122 +/- 0.0277 under 5-fold cross-validation, outperforming the official baselines.",
-      "authors": [
-        "Jiajun Sun",
-        "Zhe Gao"
-      ],
-      "primary_category": "cs.CV",
-      "categories": [
-        "cs.CV"
-      ],
-      "published": "2026-03-12T17:45:12+00:00",
-      "link": "https://arxiv.org/pdf/2603.12221v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "facial emotional expression recognition in affective behavior analysis",
-      "llm_evidence_cn": "情感行为分析中的面部情感表达识别",
-      "llm_evidence": "情感行为分析中的面部情感表达识别",
-      "canonical_evidence": "情感行为分析中的面部情感表达识别",
-      "llm_tldr_en": "Proposes a dual-modality model for frame-level classification of eight facial emotional expressions in videos.",
-      "llm_tldr_cn": "提出了一种双模态模型，用于对视频中的八种面部情感表达进行帧级分类。",
-      "llm_tldr": "提出了一种双模态模型，用于对视频中的八种面部情感表达进行帧级分类。",
-      "llm_tags": [
-        "query:llm-ac"
-      ],
-      "matched_query_tag": "query:llm-ac",
-      "matched_query_text": "Affective Computing and Sentiment Analysis",
-      "matched_requirement_id": "req-22",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.12221v1",
-      "carry_days": 9
-    },
-    {
-      "id": "2603.11468v1",
-      "title": "Stage-Adaptive Reliability Modeling for Continuous Valence-Arousal Estimation",
-      "abstract": "Continuous valence-arousal estimation in real-world environments is challenging due to inconsistent modality reliability and interaction-dependent variability in audio-visual signals. Existing approaches primarily focus on modeling temporal dynamics, often overlooking the fact that modality reliability can vary substantially across interaction stages. To address this issue, we propose SAGE, a Stage-Adaptive reliability modeling framework that explicitly estimates and calibrates modality-wise confidence during multimodal integration. SAGE introduces a reliability-aware fusion mechanism that dynamically rebalances audio and visual representations according to their stage-dependent informativeness, preventing unreliable signals from dominating the prediction process. By separating reliability estimation from feature representation, the proposed framework enables more stable emotion estimation under cross-modal noise, occlusion, and varying interaction conditions. Extensive experiments on the Aff-Wild2 benchmark demonstrate that SAGE consistently improves concordance correlation coefficient scores compared with existing multimodal fusion approaches, highlighting the effectiveness of reliability-driven modeling for continuous affect prediction.",
-      "authors": [
-        "Yubeen Lee",
-        "Sangeun Lee",
-        "Junyeop Cha",
-        "Eunil Park"
-      ],
-      "primary_category": "cs.MM",
-      "categories": [
-        "cs.MM",
-        "cs.AI",
-        "cs.SD"
-      ],
-      "published": "2026-03-12T02:45:41+00:00",
-      "link": "https://arxiv.org/pdf/2603.11468v1",
-      "tags": [
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "query:LLM AC",
-        "query:LLM MH"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "continuous valence-arousal estimation and multimodal integration",
-      "llm_evidence_cn": "连续效价-唤醒度估计与多模态融合",
-      "llm_evidence": "连续效价-唤醒度估计与多模态融合",
-      "canonical_evidence": "连续效价-唤醒度估计与多模态融合",
-      "llm_tldr_en": "Proposes SAGE for adaptive reliability modeling in continuous valence-arousal estimation.",
-      "llm_tldr_cn": "提出SAGE框架，通过阶段自适应可靠性建模实现连续的情感效价-唤醒度估计。",
-      "llm_tldr": "提出SAGE框架，通过阶段自适应可靠性建模实现连续的情感效价-唤醒度估计。",
-      "llm_tags": [
-        "query:llm-ac"
-      ],
-      "matched_query_tag": "query:llm-ac",
-      "matched_query_text": "Affective Computing and Sentiment Analysis",
-      "matched_requirement_id": "req-22",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11468v1",
-      "carry_days": 2
-    },
-    {
-      "id": "2603.11279v1",
-      "title": "AI Psychometrics: Evaluating the Psychological Reasoning of Large Language Models with Psychometric Validities",
-      "abstract": "The immense number of parameters and deep neural networks make large language models (LLMs) rival the complexity of human brains, which also makes them opaque ``black box'' systems that are challenging to evaluate and interpret. AI Psychometrics is an emerging field that aims to tackle these challenges by applying psychometric methodologies to evaluate and interpret the psychological traits and processes of artificial intelligence (AI) systems. This paper investigates the application of AI Psychometrics to evaluate the psychological reasoning and overall psychometric validity of four prominent LLMs: GPT-3.5, GPT-4, LLaMA-2, and LLaMA-3. Using the Technology Acceptance Model (TAM), we examined convergent, discriminant, predictive, and external validity across these models. Our findings reveal that the responses from all these models generally met all validity criteria. Moreover, higher-performing models like GPT-4 and LLaMA-3 consistently demonstrated superior psychometric validity compared to their predecessors, GPT-3.5 and LLaMA-2. These results help to establish the validity of applying AI Psychometrics to evaluate and interpret large language models.",
-      "authors": [
-        "Yibai Li",
-        "Xiaolin Lin",
-        "Zhenghui Sha",
-        "Zhiye Jin",
-        "Xiaobing Li"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI"
-      ],
-      "published": "2026-03-11T20:15:56+00:00",
-      "link": "https://arxiv.org/pdf/2603.11279v1",
-      "tags": [
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "evaluating psychological reasoning of LLMs",
-      "llm_evidence_cn": "评估LLM的心理推理能力",
-      "llm_evidence": "评估LLM的心理推理能力",
-      "canonical_evidence": "评估LLM的心理推理能力",
-      "llm_tldr_en": "Applies psychometric methodologies to evaluate the psychological reasoning and validity of prominent LLMs.",
-      "llm_tldr_cn": "应用心理测量学方法评估主流大语言模型的心理推理能力和有效性。",
-      "llm_tldr": "应用心理测量学方法评估主流大语言模型的心理推理能力和有效性。",
-      "llm_tags": [
-        "query:llm-mh"
-      ],
-      "matched_query_tag": "query:llm-mh",
-      "matched_query_text": "LLMs in clinical psychology research",
-      "matched_requirement_id": "req-63",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11279v1",
-      "carry_days": 2
-    },
-    {
-      "id": "2603.11938v1",
-      "title": "Prototype-Based Knowledge Guidance for Fine-Grained Structured Radiology Reporting",
-      "abstract": "Structured radiology reporting promises faster, more consistent communication than free text, but automation remains difficult as models must make many fine-grained, discrete decisions about rare findings and attributes from limited structured supervision. In contrast, free-text reports are produced at scale in routine care and implicitly encode fine-grained, image-linked information through detailed descriptions. To leverage this unstructured knowledge, we propose ProtoSR, an approach for injecting free-text information into structured report population. First, we introduce an automatic extraction pipeline that uses an instruction-tuned LLM to mine 80k+ MIMIC-CXR studies and build a multimodal knowledge base aligned with a structured reporting template, representing each answer option with a visual prototype. Using this knowledge base, ProtoSR is trained to retrieve prototypes relevant for the current image-question pair and augment the model predictions through a prototype-conditioned residual, providing a data-driven second opinion that selectively corrects predictions. On the Rad-ReStruct benchmark, ProtoSR achieves state-of-the-art results, with the largest improvements on detailed attribute questions, demonstrating the value of integrating free-text derived signal for fine-grained image understanding.",
-      "authors": [
-        "Chantal Pellegrini",
-        "Adrian Delchev",
-        "Ege Özsoy",
-        "Nassir Navab",
-        "Matthias Keicher"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI",
-        "cs.CV",
-        "cs.LG"
-      ],
-      "published": "2026-03-12T13:51:13+00:00",
-      "link": "https://arxiv.org/pdf/2603.11938v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "LLM for structured radiology reporting and clinical data extraction",
-      "llm_evidence_cn": "用于结构化放射报告和大临床数据提取的 LLM",
-      "llm_evidence": "用于结构化放射报告和大临床数据提取的 LLM",
-      "canonical_evidence": "用于结构化放射报告和大临床数据提取的 LLM",
-      "llm_tldr_en": "Uses LLMs to extract knowledge from free-text radiology reports to improve structured clinical reporting.",
-      "llm_tldr_cn": "利用 LLM 从自由文本放射报告中提取知识，以改进结构化临床报告的生成。",
-      "llm_tldr": "利用 LLM 从自由文本放射报告中提取知识，以改进结构化临床报告的生成。",
-      "llm_tags": [
-        "query:ehr-tr:composite"
-      ],
-      "matched_query_tag": "query:ehr-tr:composite",
-      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
-      "matched_requirement_id": "req-composite-ehr-tr",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11938v1",
-      "carry_days": 9
-    },
     {
       "id": "2603.13415v1",
       "title": "Distance-aware Soft Prompt Learning for Multimodal Valence-Arousal Estimation",
@@ -586,7 +45,7 @@
       "matched_requirement_id": "req-22",
       "selection_source": "carryover_cache",
       "paper_id": "2603.13415v1",
-      "carry_days": 2
+      "carry_days": 3
     },
     {
       "id": "2603.13056v1",
@@ -632,7 +91,7 @@
       "matched_requirement_id": "req-24",
       "selection_source": "carryover_cache",
       "paper_id": "2603.13056v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.14361v1",
@@ -658,13 +117,13 @@
         "query:LLM MH"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "multimodal fusion pipeline for predicting behavioral states like ambivalence and hesitancy",
-      "llm_evidence_cn": "用于预测矛盾和犹豫等行为状态的多模态融合流水线",
-      "llm_evidence": "用于预测矛盾和犹豫等行为状态的多模态融合流水线",
-      "canonical_evidence": "用于预测矛盾和犹豫等行为状态的多模态融合流水线",
-      "llm_tldr_en": "BROTHER uses a regularized multimodal ensemble to recognize complex behavioral states in video.",
-      "llm_tldr_cn": "BROTHER 使用正则化多模态集成来识别视频中的复杂行为状态。",
-      "llm_tldr": "BROTHER 使用正则化多模态集成来识别视频中的复杂行为状态。",
+      "llm_evidence_en": "behavioral recognition and affective computing for ambivalence",
+      "llm_evidence_cn": "针对矛盾情绪的行为识别与情感计算",
+      "llm_evidence": "针对矛盾情绪的行为识别与情感计算",
+      "canonical_evidence": "针对矛盾情绪的行为识别与情感计算",
+      "llm_tldr_en": "Proposes a multimodal fusion pipeline to recognize complex behavioral states like ambivalence in affective computing.",
+      "llm_tldr_cn": "提出一种多模态融合流水线，用于识别情感计算中如矛盾和犹豫等复杂的行为状态。",
+      "llm_tldr": "提出一种多模态融合流水线，用于识别情感计算中如矛盾和犹豫等复杂的行为状态。",
       "llm_tags": [
         "query:llm-ac"
       ],
@@ -674,57 +133,6 @@
       "selection_source": "carryover_cache",
       "paper_id": "2603.14361v1",
       "carry_days": 1
-    },
-    {
-      "id": "2603.11103v1",
-      "title": "Understanding by Reconstruction: Reversing the Software Development Process for LLM Pretraining",
-      "abstract": "While Large Language Models (LLMs) have achieved remarkable success in code generation, they often struggle with the deep, long-horizon reasoning required for complex software engineering. We attribute this limitation to the nature of standard pre-training data: static software repositories represent only the terminal state of an intricate intellectual process, abstracting away the intermediate planning, debugging, and iterative refinement. To bridge this gap, we propose a novel paradigm: understanding via reconstruction. We hypothesize that reverse-engineering the latent agentic trajectories -- the planning, reasoning, and debugging steps -- behind static repositories provides a far richer supervision signal than raw code alone. To operationalize this, we introduce a framework that synthesizes these trajectories using a multi-agent simulation. This process is grounded in the structural realities of the source repositories (e.g., dependency graphs and file hierarchies) to ensure fidelity. Furthermore, to guarantee the logical rigor of the synthetic data, we employ a search-based optimization technique that iteratively refines the Chain-of-Thought (CoT) reasoning to maximize the likelihood of the ground-truth code. Empirical results demonstrate that continuous pre-training on these reconstructed trajectories significantly enhances Llama-3-8B's performance across diverse benchmarks, including long-context understanding, coding proficiency, and agentic capabilities.",
-      "authors": [
-        "Zhiyuan Zeng",
-        "Yichi Zhang",
-        "Yong Shan",
-        "Kai Hua",
-        "Siyuan Fang",
-        "Zhaiyu Liu",
-        "Jiaheng Liu",
-        "Haozhe Wang",
-        "Yining Zheng",
-        "Ming Ding",
-        "Ke Shen",
-        "Ge Zhang",
-        "Wenhao Huang",
-        "Xipeng Qiu"
-      ],
-      "primary_category": "cs.SE",
-      "categories": [
-        "cs.SE"
-      ],
-      "published": "2026-03-11T09:23:20+00:00",
-      "link": "https://arxiv.org/pdf/2603.11103v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM MR",
-        "query:LH LLM"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "long-horizon reasoning for complex software engineering",
-      "llm_evidence_cn": "复杂软件工程的长程推理",
-      "llm_evidence": "复杂软件工程的长程推理",
-      "canonical_evidence": "复杂软件工程的长程推理",
-      "llm_tldr_en": "Proposes pre-training via reconstruction to improve LLMs' long-horizon reasoning in software engineering.",
-      "llm_tldr_cn": "提出通过重构轨迹进行预训练，以提升大模型在软件工程中的长程推理能力。",
-      "llm_tldr": "提出通过重构轨迹进行预训练，以提升大模型在软件工程中的长程推理能力。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
-      "matched_requirement_id": "req-40",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11103v1",
-      "carry_days": 3
     },
     {
       "id": "2603.12430v1",
@@ -789,135 +197,7 @@
       "matched_requirement_id": "req-48",
       "selection_source": "carryover_cache",
       "paper_id": "2603.12430v1",
-      "carry_days": 5
-    },
-    {
-      "id": "2603.11864v1",
-      "title": "Social, Legal, Ethical, Empathetic and Cultural Norm Operationalisation for AI Agents",
-      "abstract": "As AI agents are increasingly used in high-stakes domains like healthcare and law enforcement, aligning their behaviour with social, legal, ethical, empathetic, and cultural (SLEEC) norms has become a critical engineering challenge. While international frameworks have established high-level normative principles for AI, a significant gap remains in translating these abstract principles into concrete, verifiable requirements. To address this gap, we propose a systematic SLEEC-norm operationalisation process for determining, validating, implementing, and verifying normative requirements. Furthermore, we survey the landscape of methods and tools supporting this process, and identify key remaining challenges and research avenues for addressing them. We thus establish a framework - and define a research and policy agenda - for developing AI agents that are not only functionally useful but also demonstrably aligned with human norms and values.",
-      "authors": [
-        "Radu Calinescu",
-        "Ana Cavalcanti",
-        "Marsha Chechik",
-        "Lina Marsso",
-        "Beverley Townsend"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI",
-        "cs.SE"
-      ],
-      "published": "2026-03-12T12:37:39+00:00",
-      "link": "https://arxiv.org/pdf/2603.11864v1",
-      "tags": [
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "aligning AI behavior with empathetic and social norms in healthcare",
-      "llm_evidence_cn": "使AI行为符合医疗领域的情感和社会规范",
-      "llm_evidence": "使AI行为符合医疗领域的情感和社会规范",
-      "canonical_evidence": "使AI行为符合医疗领域的情感和社会规范",
-      "llm_tldr_en": "Proposes a process to operationalize social, ethical, and empathetic norms for AI agents in high-stakes domains.",
-      "llm_tldr_cn": "提出一种在医疗等高风险领域为AI智能体落实社会、伦理和共情规范的流程。",
-      "llm_tldr": "提出一种在医疗等高风险领域为AI智能体落实社会、伦理和共情规范的流程。",
-      "llm_tags": [
-        "query:llm-ac:composite"
-      ],
-      "matched_query_tag": "query:llm-ac:composite",
-      "matched_query_text": "Papers central to 查找LLM做情感计算和共情对话的论文, especially work that connects or combines: Large Language Models; Affective Computing and Sentiment Analysis; Artificial Emotional Intelligence in LLMs; Emotion Recognition in Conversation; Empathetic Response Generation; LLMs for Psychological Support and Counseling; Chain of Empathy prompting for LLMs; benchmarking empathy in large language models; fine tuning LLMs for empathetic conversation; prompt engineering for emotional intelligence in AI.",
-      "matched_requirement_id": "req-composite-llm-ac",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11864v1",
-      "carry_days": 2
-    },
-    {
-      "id": "2603.16171v1",
-      "title": "MemX: A Local-First Long-Term Memory System for AI Assistants",
-      "abstract": "We present MemX, a local-first long-term memory system for AI assistants with stability-oriented retrieval design. MemX is implemented in Rust on top of libSQL and an OpenAI-compatible embedding API, providing persistent, searchable, and explainable memory for conversational agents. Its retrieval pipeline applies vector recall, keyword recall, Reciprocal Rank Fusion (RRF), four-factor re-ranking, and a low-confidence rejection rule that suppresses spurious recalls when no answer exists in the memory store.   We evaluate MemX on two axes. First, two custom Chinese-language benchmark suites (43 queries, <=1,014 records) validate pipeline design: Hit@1=91.3% on a default scenario and 100% under high confusion, with conservative miss-query suppression. Second, the LongMemEval benchmark (500 queries, up to 220,349 records) quantifies system boundaries across four ability types and three storage granularities. At fact-level granularity the system reaches Hit@5=51.6% and MRR=0.380, doubling session-level performance, while temporal and multi-session reasoning remain challenging (<=43.6% Hit@5). FTS5 full-text indexing reduces keyword search latency by 1,100x at 100k-record scale, keeping end-to-end search under 90 ms.   Unlike Mem0 and related work that targets end-to-end agent benchmarks, MemX focuses on a narrower, reproducible baseline: local-first deployment, structural simplicity, explainable retrieval, and stability-oriented design.",
-      "authors": [
-        "Lizheng Sun"
-      ],
-      "primary_category": "cs.IR",
-      "categories": [
-        "cs.IR",
-        "cs.AI"
-      ],
-      "published": "2026-03-17T06:39:54+00:00",
-      "link": "https://arxiv.org/pdf/2603.16171v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LH LLM",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Long-term memory system for AI assistants",
-      "llm_evidence_cn": "AI助手的长期记忆系统",
-      "llm_evidence": "AI助手的长期记忆系统",
-      "canonical_evidence": "AI助手的长期记忆系统",
-      "llm_tldr_en": "Presents a local-first long-term memory system to provide persistent and searchable memory for agents.",
-      "llm_tldr_cn": "介绍了一种本地优先的长期记忆系统，为智能体提供持久且可搜索的记忆。",
-      "llm_tldr": "介绍了一种本地优先的长期记忆系统，为智能体提供持久且可搜索的记忆。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "External memory and retrieval augmented generation for long horizons",
-      "matched_requirement_id": "req-37",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.16171v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.17803v1",
-      "title": "Swarm: Co-Activation Aware KVCache Offloading Across Multiple SSDs",
-      "abstract": "The key-value (KV) cache has become the dominant contributor to memory consumption in large language model (LLM) inference. Although offloading KVCache from GPU high-bandwidth memory (HBM) to CPU DRAM alleviates device memory pressure, DRAM remains capacity-limited and costly for large, persistent workloads. Solid-state drives (SSDs) provide a cost-effective alternative, but naive SSD-based paging is fundamentally bandwidth-bound due to limited PCIe throughput and per-device bandwidth constraints.   In this paper, we observe that KVCache activations in real-world workloads exhibit strong and stable correlations. We term this phenomenon KVCache Co-Activation, where accessing a KV entry is often accompanied by a stable and recurring set of other KV entries. Leveraging this property, we present Swarm, an SSD-based KVCache offloading system that converts bandwidth-bound single-device access into parallel I/O across multiple SSDs. Specifically, Swarm clusters co-activated KV entries offline and distributes the resulting clusters across SSDs using graph-based placement with selective replication to maximize parallel I/O bandwidth. At runtime, Swarm performs load-balanced cluster retrieval and dynamically adapts clustering and caching decisions to sustain high bandwidth utilization under evolving access patterns. Evaluations show that Swarm reduces I/O time by 2.41x and improves effective bandwidth utilization by 2.72x.",
-      "authors": [
-        "Tuowei Wang",
-        "Liyun Chu",
-        "Ruwen Fan",
-        "Ju Ren"
-      ],
-      "primary_category": "cs.PF",
-      "categories": [
-        "cs.PF"
-      ],
-      "published": "2026-03-18T14:59:16+00:00",
-      "link": "https://arxiv.org/pdf/2603.17803v1",
-      "tags": [
-        "keyword:LH LLM",
-        "query:LH LLM"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "KVCache offloading and optimization for LLM inference",
-      "llm_evidence_cn": "LLM推理中的KVCache卸载与优化",
-      "llm_evidence": "LLM推理中的KVCache卸载与优化",
-      "canonical_evidence": "LLM推理中的KVCache卸载与优化",
-      "llm_tldr_en": "Introduces Swarm, a system for co-activation aware KVCache offloading across SSDs to improve LLM inference efficiency.",
-      "llm_tldr_cn": "引入了Swarm系统，通过SSD间的协同激活感知KVCache卸载来提高LLM推理效率。",
-      "llm_tldr": "引入了Swarm系统，通过SSD间的协同激活感知KVCache卸载来提高LLM推理效率。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "Optimization of KV cache for long horizon document understanding",
-      "matched_requirement_id": "req-44",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.17803v1",
-      "carry_days": 1
+      "carry_days": 6
     },
     {
       "id": "2603.16939v1",
@@ -962,378 +242,7 @@
       "matched_requirement_id": "req-24",
       "selection_source": "carryover_cache",
       "paper_id": "2603.16939v1",
-      "carry_days": 3
-    },
-    {
-      "id": "2603.11971v2",
-      "title": "Multimodal Emotion Recognition via Bi-directional Cross-Attention and Temporal Modeling",
-      "abstract": "Expression recognition in in-the-wild video data remains challenging due to substantial variations in facial appearance, background conditions, audio noise, and the inherently dynamic nature of human affect. Relying on a single modality, such as facial expressions or speech, is often insufficient for capturing these complex emotional cues. To address this limitation, we propose a multimodal emotion recognition framework for the Expression (EXPR) task in the 10th Affective Behavior Analysis in-the-wild (ABAW) Challenge. Our framework builds on large-scale pre-trained models for visual and audio representation learning and integrates them in a unified multimodal architecture. To better capture temporal patterns in facial expression sequences, we incorporate temporal visual modeling over video windows. We further introduce a bi-directional cross-attention fusion module that enables visual and audio features to interact in a symmetric manner, facilitating cross-modal contextualization and complementary emotion understanding. In addition, we employ a text-guided contrastive objective to encourage semantically meaningful visual representations through alignment with emotion-related text prompts. Experimental results on the ABAW 10th EXPR benchmark demonstrate the effectiveness of the proposed framework, achieving a Macro F1 score of 0.32 compared to the baseline score of 0.25, and highlight the benefit of combining temporal visual modeling, audio representation learning, and cross-modal fusion for robust emotion recognition in unconstrained real-world environments.",
-      "authors": [
-        "Junhyeong Byeon",
-        "Jeongyeol Kim",
-        "Sejoon Lim"
-      ],
-      "primary_category": "cs.CV",
-      "categories": [
-        "cs.CV",
-        "cs.AI"
-      ],
-      "published": "2026-03-12T14:20:29+00:00",
-      "link": "https://arxiv.org/pdf/2603.11971v2",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Multimodal emotion recognition and temporal modeling",
-      "llm_evidence_cn": "多模态情感识别与时序建模",
-      "llm_evidence": "多模态情感识别与时序建模",
-      "canonical_evidence": "多模态情感识别与时序建模",
-      "llm_tldr_en": "Develops a multimodal framework for emotion recognition using temporal modeling of visual and audio cues.",
-      "llm_tldr_cn": "开发了一个利用视觉和音频线索的时序建模进行情感识别的多模态框架。",
-      "llm_tldr": "开发了一个利用视觉和音频线索的时序建模进行情感识别的多模态框架。",
-      "llm_tags": [
-        "query:llm-ac"
-      ],
-      "matched_query_tag": "query:llm-ac",
-      "matched_query_text": "Emotion Recognition in Conversation",
-      "matched_requirement_id": "req-24",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11971v2",
-      "carry_days": 2
-    },
-    {
-      "id": "2603.10313v1",
-      "title": "Large language models can disambiguate opioid slang on social media",
-      "abstract": "Social media text shows promise for monitoring trends in the opioid overdose crisis; however, the overwhelming majority of social media text is unrelated to opioids. When leveraging social media text to monitor trends in the ongoing opioid overdose crisis, a common strategy for identifying relevant content is to use a lexicon of opioid-related terms as inclusion criteria. However, many slang terms for opioids, such as \"smack\" or \"blues,\" have common non-opioid meanings, making them ambiguous. The advanced textual reasoning capability of large language models (LLMs) presents an opportunity to disambiguate these slang terms at scale. We present three tasks on which to evaluate four state-of-the-art LLMs (GPT-4, GPT-5, Gemini 2.5 Pro, and Claude Sonnet 4.5): a lexicon-based setting, in which the LLM must disambiguate a specific term within the context of a given post; a lexicon-free setting, in which the LLM must identify opioid-related posts from context without a lexicon; and an emergent slang setting, in which the LLM must identify opioid-related posts with simulated new slang terms. All four LLMs showed excellent performance across all tasks. In both subtasks of the lexicon-based setting, LLM F1 scores (\"fenty\" subtask: 0.824-0.972; \"smack\" subtask: 0.540-0.862) far exceeded those of the best lexicon strategy (0.126 and 0.009, respectively). In the lexicon-free task, LLM F1 scores (0.544-0.769) surpassed those of lexicons (0.080-0.540), and LLMs demonstrated uniformly higher recall. On emergent slang, all LLMs had higher accuracy (average: 0.784), F1 score (average: 0.712), precision (average: 0.981), and recall (average: 0.587) than the two lexicons assessed. Our results show that LLMs can be used to identify relevant content for low-prevalence topics, including but not limited to opioid references, enhancing data provided to downstream analyses and predictive models.",
-      "authors": [
-        "Kristy A. Carpenter",
-        "Issah A. Samori",
-        "Mathew V. Kiang",
-        "Keith Humphreys",
-        "Anna Lembke",
-        "Johannes C. Eichstaedt",
-        "Russ B. Altman"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL"
-      ],
-      "published": "2026-03-11T01:27:48+00:00",
-      "link": "https://arxiv.org/pdf/2603.10313v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "LLMs for disambiguating medical slang in social media",
-      "llm_evidence_cn": "利用LLM消除社交媒体中医学俚语的歧义",
-      "llm_evidence": "利用LLM消除社交媒体中医学俚语的歧义",
-      "canonical_evidence": "利用LLM消除社交媒体中医学俚语的歧义",
-      "llm_tldr_en": "Evaluates LLMs on their ability to disambiguate opioid-related slang terms in social media text for crisis monitoring.",
-      "llm_tldr_cn": "评估LLM在社交媒体文本中消除阿片类药物相关俚语歧义的能力，用于危机监测。",
-      "llm_tldr": "评估LLM在社交媒体文本中消除阿片类药物相关俚语歧义的能力，用于危机监测。",
-      "llm_tags": [
-        "query:ehr-tr"
-      ],
-      "matched_query_tag": "query:ehr-tr",
-      "matched_query_text": "clinical natural language processing",
-      "matched_requirement_id": "req-4",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.10313v1",
-      "carry_days": 3
-    },
-    {
-      "id": "2603.14265v1",
-      "title": "MedPriv-Bench: Benchmarking the Privacy-Utility Trade-off of Large Language Models in Medical Open-End Question Answering",
-      "abstract": "Recent advances in Retrieval-Augmented Generation (RAG) have enabled large language models (LLMs) to ground outputs in clinical evidence. However, connecting LLMs with external databases introduces the risk of contextual leakage: a subtle privacy threat where unique combinations of medical details enable patient re-identification even without explicit identifiers. Current benchmarks in healthcare heavily focus on accuracy, ignoring such privacy issues, despite strict regulations like Health Insurance Portability and Accountability Act (HIPAA) and General Data Protection Regulation (GDPR). To fill this gap, we present MedPriv-Bench, the first benchmark specifically designed to jointly evaluate privacy preservation and clinical utility in medical open-ended question answering. Our framework utilizes a multi-agent, human-in-the-loop pipeline to synthesize sensitive medical contexts and clinically relevant queries that create realistic privacy pressure. We establish a standardized evaluation protocol leveraging a pre-trained RoBERTa-Natural Language Inference (NLI) model as an automated judge to quantify data leakage, achieving an average of 85.9% alignment with human experts. Through an extensive evaluation of 9 representative LLMs, we demonstrate a pervasive privacy-utility trade-off. Our findings underscore the necessity of domain-specific benchmarks to validate the safety and efficacy of medical AI systems in privacy-sensitive environments.",
-      "authors": [
-        "Shaowei Guan",
-        "Yu Zhai",
-        "Hin Chi Kwok",
-        "Jiawei Du",
-        "Xinyu Feng",
-        "Jing Li",
-        "Harry Qin",
-        "Vivian Hui"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL",
-        "cs.MA"
-      ],
-      "published": "2026-03-15T07:47:35+00:00",
-      "link": "https://arxiv.org/pdf/2603.14265v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Benchmarking LLMs on medical open-end question answering with clinical evidence",
-      "llm_evidence_cn": "在包含临床证据的医疗开放式问答中对大语言模型进行基准测试",
-      "llm_evidence": "在包含临床证据的医疗开放式问答中对大语言模型进行基准测试",
-      "canonical_evidence": "在包含临床证据的医疗开放式问答中对大语言模型进行基准测试",
-      "llm_tldr_en": "Introduces MedPriv-Bench to evaluate the privacy-utility trade-off in medical LLM applications.",
-      "llm_tldr_cn": "提出MedPriv-Bench，用于评估医疗大语言模型应用中的隐私与效用权衡。",
-      "llm_tldr": "提出MedPriv-Bench，用于评估医疗大语言模型应用中的隐私与效用权衡。",
-      "llm_tags": [
-        "query:ehr-tr:composite"
-      ],
-      "matched_query_tag": "query:ehr-tr:composite",
-      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
-      "matched_requirement_id": "req-composite-ehr-tr",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.14265v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.15280v1",
-      "title": "Advancing Multimodal Agent Reasoning with Long-Term Neuro-Symbolic Memory",
-      "abstract": "Recent advances in large language models have driven the emergence of intelligent agents operating in open-world, multimodal environments. To support long-term reasoning, such agents are typically equipped with external memory systems. However, most existing multimodal agent memories rely primarily on neural representations and vector-based retrieval, which are well-suited for inductive, intuitive reasoning but fundamentally limited in supporting analytical, deductive reasoning critical for real-world decision making. To address this limitation, we propose NS-Mem, a long-term neuro-symbolic memory framework designed to advance multimodal agent reasoning by integrating neural memory with explicit symbolic structures and rules. Specifically, NS-Mem is operated around three core components of a memory system: (1) a three-layer memory architecture that consists episodic layer, semantic layer and logic rule layer, (2) a memory construction and maintenance mechanism implemented by SK-Gen that automatically consolidates structured knowledge from accumulated multimodal experiences and incrementally updates both neural representations and symbolic rules, and (3) a hybrid memory retrieval mechanism that combines similarity-based search with deterministic symbolic query functions to support structured reasoning. Experiments on real-world multimodal reasoning benchmarks demonstrate that Neural-Symbolic Memory achieves an average 4.35% improvement in overall reasoning accuracy over pure neural memory systems, with gains of up to 12.5% on constrained reasoning queries, validating the effectiveness of NS-Mem.",
-      "authors": [
-        "Rongjie Jiang",
-        "Jianwei Wang",
-        "Gengda Zhao",
-        "Chengyang Luo",
-        "Kai Wang",
-        "Wenjie Zhang"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI"
-      ],
-      "published": "2026-03-16T13:43:22+00:00",
-      "link": "https://arxiv.org/pdf/2603.15280v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LH LLM",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "long-term neuro-symbolic memory for multimodal agent reasoning",
-      "llm_evidence_cn": "用于多模态智能体推理的长期神经符号记忆",
-      "llm_evidence": "用于多模态智能体推理的长期神经符号记忆",
-      "canonical_evidence": "用于多模态智能体推理的长期神经符号记忆",
-      "llm_tldr_en": "Proposes NS-Mem, a neuro-symbolic memory framework to support long-term analytical reasoning in agents.",
-      "llm_tldr_cn": "提出NS-Mem神经符号记忆框架，支持智能体在多模态环境下的长期分析推理。",
-      "llm_tldr": "提出NS-Mem神经符号记忆框架，支持智能体在多模态环境下的长期分析推理。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "External memory and retrieval augmented generation for long horizons",
-      "matched_requirement_id": "req-37",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.15280v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.11598v1",
-      "title": "Survival Meets Classification: A Novel Framework for Early Risk Prediction Models of Chronic Diseases",
-      "abstract": "Chronic diseases are long-lasting conditions that require lifelong medical attention. Using big EMR data, we have developed early disease risk prediction models for five common chronic diseases: diabetes, hypertension, CKD, COPD, and chronic ischemic heart disease. In this study, we present a novel approach for disease risk models by integrating survival analysis with classification techniques. Traditional models for predicting the risk of chronic diseases predominantly focus on either survival analysis or classification independently. In this paper, we show survival analysis methods can be re-engineered to enable them to do classification efficiently and effectively, thereby making them a comprehensive tool for developing disease risk surveillance models. The results of our experiments on real-world big EMR data show that the performance of survival models in terms of accuracy, F1 score, and AUROC is comparable to or better than that of prior state-of-the-art models like LightGBM and XGBoost. Lastly, the proposed survival models use a novel methodology to generate explanations, which have been clinically validated by a panel of three expert physicians.",
-      "authors": [
-        "Shaheer Ahmad Khan",
-        "Muhammad Usamah Shahid",
-        "Muddassar Farooq"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG",
-        "cs.AI"
-      ],
-      "published": "2026-03-12T06:40:28+00:00",
-      "link": "https://arxiv.org/pdf/2603.11598v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "early disease risk prediction models using big EMR data",
-      "llm_evidence_cn": "使用大型电子病历数据进行早期疾病风险预测模型",
-      "llm_evidence": "使用大型电子病历数据进行早期疾病风险预测模型",
-      "canonical_evidence": "使用大型电子病历数据进行早期疾病风险预测模型",
-      "llm_tldr_en": "Integrates survival analysis with classification for early risk prediction of chronic diseases using EMR data.",
-      "llm_tldr_cn": "结合生存分析与分类技术，利用电子病历数据进行慢性病早期风险预测。",
-      "llm_tldr": "结合生存分析与分类技术，利用电子病历数据进行慢性病早期风险预测。",
-      "llm_tags": [
-        "query:ehr-tr"
-      ],
-      "matched_query_tag": "query:ehr-tr",
-      "matched_query_text": "Electronic Health Records",
-      "matched_requirement_id": "req-2",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11598v1",
-      "carry_days": 2
-    },
-    {
-      "id": "2603.14876v1",
-      "title": "A Hybrid AI and Rule-Based Decision Support System for Disease Diagnosis and Management Using Labs",
-      "abstract": "This research paper outlines the development and implementation of a novel Clinical Decision Support System (CDSS) that integrates AI predictive modeling with medical knowledge bases. It utilizes the quantifiable information elements in lab results for inferring likely diagnoses a patient might have. Subsequently, suggesting investigations to confirm the likely diagnoses -- an assistive tool for physicians. The system fuses knowledge contained in a rule-base expert system with inferences of data driven predictors based on the features in labs. The data for 593,055 patients was collected from 547 primary care centers across the US to model our decision support system and derive Real-Word Evidence (RWE) to make it relevant for a large demographic of patients. Our Rule-Base comprises clinically validated rules, modeling 59 health conditions that can directly confirm one or more of diseases and assign ICD-10 codes to them. The Likely Diagnosis system uses multi-class classification, covering 37 ICD-10 codes, which are grouped together into 11 categories based on the labs that physicians prescribe to confirm the diagnosis. This research offers a novel system that assists a physician by utilizing medical profile of a patient and routine lab investigations to predict a group of likely diseases and then confirm them, coupled with providing explanations for inferences, thereby assisting physicians to reduce misdiagnosis of patients in clinical decision-making.",
-      "authors": [
-        "Muhammad Hammad Maqsood",
-        "Mubashir Sajid",
-        "Khubaib Ahmed",
-        "Muhammad Usamah Shahid",
-        "Muddassar Farooq"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI"
-      ],
-      "published": "2026-03-16T06:22:48+00:00",
-      "link": "https://arxiv.org/pdf/2603.14876v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Clinical Decision Support System for disease diagnosis and management using lab results",
-      "llm_evidence_cn": "利用实验室结果进行疾病诊断和管理的临床决策支持系统",
-      "llm_evidence": "利用实验室结果进行疾病诊断和管理的临床决策支持系统",
-      "canonical_evidence": "利用实验室结果进行疾病诊断和管理的临床决策支持系统",
-      "llm_tldr_en": "Develops a hybrid CDSS integrating AI predictive modeling with rule-based expert systems for diagnosis.",
-      "llm_tldr_cn": "开发了一种结合AI预测模型与规则专家系统的混合临床决策支持系统，用于辅助疾病诊断。",
-      "llm_tldr": "开发了一种结合AI预测模型与规则专家系统的混合临床决策支持系统，用于辅助疾病诊断。",
-      "llm_tags": [
-        "query:llm-mr"
-      ],
-      "matched_query_tag": "query:llm-mr",
-      "matched_query_text": "clinical decision support systems for medication",
-      "matched_requirement_id": "req-48",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.14876v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.15120v1",
-      "title": "How Attention Shapes Emotion: A Comparative Study of Attention Mechanisms for Speech Emotion Recognition",
-      "abstract": "Speech Emotion Recognition (SER) plays a key role in advancing human-computer interaction. Attention mechanisms have become the dominant approach for modeling emotional speech due to their ability to capture long-range dependencies and emphasize salient information. However, standard self-attention suffers from quadratic computational and memory complexity, limiting its scalability. In this work, we present a systematic benchmark of optimized attention mechanisms for SER, including RetNet, LightNet, GSA, FoX, and KDA. Experiments on both MSP-Podcast benchmark versions show that while standard self-attention achieves the strongest recognition performance across test sets, efficient attention variants dramatically improve scalability, reducing inference latency and memory usage by up to an order of magnitude. These results highlight a critical trade-off between accuracy and efficiency, providing practical insights for designing scalable SER systems.",
-      "authors": [
-        "Marc Casals-Salvador",
-        "Federico Costa",
-        "Rodolfo Zevallos",
-        "Javier Hernando"
-      ],
-      "primary_category": "eess.AS",
-      "categories": [
-        "eess.AS"
-      ],
-      "published": "2026-03-16T11:16:27+00:00",
-      "link": "https://arxiv.org/pdf/2603.15120v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "query:LH LLM",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "benchmark of attention mechanisms for speech emotion recognition",
-      "llm_evidence_cn": "语音情感识别注意力机制的基准测试",
-      "llm_evidence": "语音情感识别注意力机制的基准测试",
-      "canonical_evidence": "语音情感识别注意力机制的基准测试",
-      "llm_tldr_en": "Evaluates efficient attention mechanisms for speech emotion recognition to improve scalability and performance.",
-      "llm_tldr_cn": "评估用于语音情感识别的高效注意力机制，以提高可扩展性和性能。",
-      "llm_tldr": "评估用于语音情感识别的高效注意力机制，以提高可扩展性和性能。",
-      "llm_tags": [
-        "query:llm-ac"
-      ],
-      "matched_query_tag": "query:llm-ac",
-      "matched_query_text": "Emotion Recognition in Conversation",
-      "matched_requirement_id": "req-24",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.15120v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.16738v1",
-      "title": "MedCL-Bench: Benchmarking stability-efficiency trade-offs and scaling in biomedical continual learning",
-      "abstract": "Medical language models must be updated as evidence and terminology evolve, yet sequential updating can trigger catastrophic forgetting. Although biomedical NLP has many static benchmarks, no unified, task-diverse benchmark exists for evaluating continual learning under standardized protocols, robustness to task order and compute-aware reporting. We introduce MedCL-Bench, which streams ten biomedical NLP datasets spanning five task families and evaluates eleven continual learning strategies across eight task orders, reporting retention, transfer, and GPU-hour cost. Across backbones and task orders, direct sequential fine-tuning on incoming tasks induces catastrophic forgetting, causing update-induced performance regressions on prior tasks. Continual learning methods occupy distinct retention-compute frontiers: parameter-isolation provides the best retention per GPU-hour, replay offers strong protection at higher cost, and regularization yields limited benefit. Forgetting is task-dependent, with multi-label topic classification most vulnerable and constrained-output tasks more robust. MedCL-Bench provides a reproducible framework for auditing model updates before deployment.",
-      "authors": [
-        "Min Zeng",
-        "Shuang Zhou",
-        "Zaifu Zhan",
-        "Rui Zhang"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI"
-      ],
-      "published": "2026-03-17T16:18:41+00:00",
-      "link": "https://arxiv.org/pdf/2603.16738v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LH LLM",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Benchmarking biomedical continual learning and medical language models",
-      "llm_evidence_cn": "生物医学持续学习和医学语言模型的基准测试",
-      "llm_evidence": "生物医学持续学习和医学语言模型的基准测试",
-      "canonical_evidence": "生物医学持续学习和医学语言模型的基准测试",
-      "llm_tldr_en": "Introduces MedCL-Bench to evaluate stability and efficiency in updating medical language models.",
-      "llm_tldr_cn": "引入MedCL-Bench基准，用于评估医学语言模型更新过程中的稳定性和效率。",
-      "llm_tldr": "引入MedCL-Bench基准，用于评估医学语言模型更新过程中的稳定性和效率。",
-      "llm_tags": [
-        "query:ehr-tr:composite"
-      ],
-      "matched_query_tag": "query:ehr-tr:composite",
-      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
-      "matched_requirement_id": "req-composite-ehr-tr",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.16738v1",
-      "carry_days": 1
+      "carry_days": 4
     },
     {
       "id": "2603.13430v1",
@@ -1370,59 +279,7 @@
       "matched_requirement_id": "req-42",
       "selection_source": "carryover_cache",
       "paper_id": "2603.13430v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.16741v1",
-      "title": "Bayesian Inference of Psychometric Variables From Brain and Behavior in Implicit Association Tests",
-      "abstract": "Objective. We establish a principled method for inferring mental health related psychometric variables from neural and behavioral data using the Implicit Association Test (IAT) as the data generation engine, aiming to overcome the limited predictive performance (typically under 0.7 AUC) of the gold-standard D-score method, which relies solely on reaction times.   Approach. We propose a sparse hierarchical Bayesian model that leverages multi-modal data to predict experiences related to mental illness symptoms in new participants. The model is a multivariate generalization of the D-score with trainable parameters, engineered for parameter efficiency in the small-cohort regime typical of IAT studies. Data from two IAT variants were analyzed: a suicidality-related E-IAT ($n=39$) and a psychosis-related PSY-IAT ($n=34$).   Main Results. Our approach overcomes a high inter-individual variability and low within-session effect size in the dataset, reaching AUCs of 0.73 (E-IAT) and 0.76 (PSY-IAT) in the best modality configurations, though corrected 95% confidence intervals are wide ($\\pm 0.18$) and results are marginally significant after FDR correction ($q=0.10$). Restricting the E-IAT to MDD participants improves AUC to 0.79 $[0.62, 0.97]$ (significant at $q=0.05$). Performance is on par with the best reference methods (shrinkage LDA and EEGNet) for each task, even when the latter were adapted to the task, while the proposed method was not. Accuracy was substantially above near-chance D-scores (0.50-0.53 AUC) in both tasks, with more consistent cross-task performance than any single reference method.   Significance. Our framework shows promise for enhancing IAT-based assessment of experiences related to entrapment and psychosis, and potentially other mental health conditions, though further validation on larger and independent cohorts will be needed to establish clinical utility.",
-      "authors": [
-        "Christian A. Kothe",
-        "Sean Mullen",
-        "Michael V. Bronstein",
-        "Grant Hanada",
-        "Marcelo Cicconet",
-        "Aaron N. McInnes",
-        "Tim Mullen",
-        "Marc Aafjes",
-        "Scott R. Sponheim",
-        "Alik S. Widge"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG",
-        "q-bio.NC",
-        "q-bio.QM",
-        "stat.ML"
-      ],
-      "published": "2026-03-17T16:20:55+00:00",
-      "link": "https://arxiv.org/pdf/2603.16741v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "inferring mental health related psychometric variables",
-      "llm_evidence_cn": "推断与心理健康相关的心理测量变量",
-      "llm_evidence": "推断与心理健康相关的心理测量变量",
-      "canonical_evidence": "推断与心理健康相关的心理测量变量",
-      "llm_tldr_en": "Uses Bayesian inference to predict mental illness symptoms from neural and behavioral data.",
-      "llm_tldr_cn": "利用贝叶斯推断，通过神经和行为数据预测精神疾病症状。",
-      "llm_tldr": "利用贝叶斯推断，通过神经和行为数据预测精神疾病症状。",
-      "llm_tags": [
-        "query:llm-mh"
-      ],
-      "matched_query_tag": "query:llm-mh",
-      "matched_query_text": "Computational psychiatry and LLMs",
-      "matched_requirement_id": "req-58",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.16741v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.18758v1",
@@ -1452,13 +309,13 @@
         "query:LLM MR"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Affective computing approach for predicting audience engagement",
-      "llm_evidence_cn": "用于预测观众参与度的情感计算方法",
-      "llm_evidence": "用于预测观众参与度的情感计算方法",
-      "canonical_evidence": "用于预测观众参与度的情感计算方法",
-      "llm_tldr_en": "Develops a speaker-centric Emotion AI to predict affective engagement in video-based learning.",
-      "llm_tldr_cn": "开发了一种以演讲者为中心的情感AI，用于预测视频学习中的情感参与度。",
-      "llm_tldr": "开发了一种以演讲者为中心的情感AI，用于预测视频学习中的情感参与度。",
+      "llm_evidence_en": "Affective engagement and Emotion AI approach",
+      "llm_evidence_cn": "情感参与和情感AI方法",
+      "llm_evidence": "情感参与和情感AI方法",
+      "canonical_evidence": "情感参与和情感AI方法",
+      "llm_tldr_en": "Develops a speaker-centric Emotion AI approach to predict affective engagement in video-based learning.",
+      "llm_tldr_cn": "开发了一种以演讲者为中心的情感AI方法，用于预测视频学习中的受众情感参与度。",
+      "llm_tldr": "开发了一种以演讲者为中心的情感AI方法，用于预测视频学习中的受众情感参与度。",
       "llm_tags": [
         "query:llm-ac"
       ],
@@ -1504,19 +361,19 @@
         "query:LLM MH"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "improving long-horizon behavior of LLM agents",
-      "llm_evidence_cn": "改善LLM智能体的长程行为",
-      "llm_evidence": "改善LLM智能体的长程行为",
-      "canonical_evidence": "改善LLM智能体的长程行为",
-      "llm_tldr_en": "Introduces ProRL Agent, a scalable infrastructure for RL training to improve long-horizon behavior in LLM agents.",
-      "llm_tldr_cn": "引入ProRL Agent，这是一种用于强化学习训练的可扩展基础设施，旨在改善LLM智能体的长程行为。",
-      "llm_tldr": "引入ProRL Agent，这是一种用于强化学习训练的可扩展基础设施，旨在改善LLM智能体的长程行为。",
+      "llm_evidence_en": "improving long-horizon behavior of multi-turn LLM agents",
+      "llm_evidence_cn": "改善多轮LLM智能体的长程行为",
+      "llm_evidence": "改善多轮LLM智能体的长程行为",
+      "canonical_evidence": "改善多轮LLM智能体的长程行为",
+      "llm_tldr_en": "Proposes ProRL Agent, a scalable infrastructure for RL training to improve long-horizon agent behavior.",
+      "llm_tldr_cn": "提出了ProRL Agent，一种用于强化学习训练的可扩展基础设施，旨在改善智能体的长程行为。",
+      "llm_tldr": "提出了ProRL Agent，一种用于强化学习训练的可扩展基础设施，旨在改善智能体的长程行为。",
       "llm_tags": [
         "query:lh-llm"
       ],
       "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
-      "matched_requirement_id": "req-40",
+      "matched_query_text": "Long-horizon large language models research papers",
+      "matched_requirement_id": "req-33",
       "selection_source": "carryover_cache",
       "paper_id": "2603.18815v1",
       "carry_days": 1
@@ -1558,217 +415,21 @@
         "query:LLM MR"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Long-context benchmark for diagnostic reasoning in clinical cases",
-      "llm_evidence_cn": "临床病例诊断推理的长上下文基准",
-      "llm_evidence": "临床病例诊断推理的长上下文基准",
-      "canonical_evidence": "临床病例诊断推理的长上下文基准",
-      "llm_tldr_en": "Constructs DermCase, a long-context benchmark for evaluating step-by-step diagnostic reasoning in dermatology.",
-      "llm_tldr_cn": "构建DermCase，一个用于评估皮肤病逐步诊断推理能力的长上下文基准。",
-      "llm_tldr": "构建DermCase，一个用于评估皮肤病逐步诊断推理能力的长上下文基准。",
+      "llm_evidence_en": "long-context benchmark for clinical reasoning in rare skin diseases",
+      "llm_evidence_cn": "罕见皮肤病临床推理的长上下文基准",
+      "llm_evidence": "罕见皮肤病临床推理的长上下文基准",
+      "canonical_evidence": "罕见皮肤病临床推理的长上下文基准",
+      "llm_tldr_en": "Constructs DermCase, a long-context benchmark for evaluating step-by-step clinical reasoning in dermatology.",
+      "llm_tldr_cn": "构建了DermCase，一个用于评估皮肤科分步临床推理的长上下文基准。",
+      "llm_tldr": "构建了DermCase，一个用于评估皮肤科分步临床推理的长上下文基准。",
       "llm_tags": [
-        "query:llm-mh:composite"
+        "query:ehr-tr:composite"
       ],
-      "matched_query_tag": "query:llm-mh:composite",
-      "matched_query_text": "Papers central to 查找大语言模型（LLM）在医疗心理健康（Mental Health）领域的应用论文, especially work that connects or combines: Large Language Models; Mental health applications and diagnosis; Computational psychiatry and LLMs; AI-assisted psychotherapy and counseling; LLM for depression detection and analysis; Large language models for anxiety assessment; Emotional and sentiment analysis in mental health; LLMs in clinical psychology research; Applications of large language models in mental health diagnosis; LLM based conversational agents for psychological counseling.",
-      "matched_requirement_id": "req-composite-llm-mh",
+      "matched_query_tag": "query:ehr-tr:composite",
+      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
+      "matched_requirement_id": "req-composite-ehr-tr",
       "selection_source": "carryover_cache",
       "paper_id": "2603.18418v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.18558v1",
-      "title": "HiMu: Hierarchical Multimodal Frame Selection for Long Video Question Answering",
-      "abstract": "Long-form video question answering requires reasoning over extended temporal contexts, making frame selection critical for large vision-language models (LVLMs) bound by finite context windows. Existing methods face a sharp trade-off: similarity-based selectors are fast but collapse compositional queries into a single dense vector, losing sub-event ordering and cross-modal bindings; agent-based methods recover this structure through iterative LVLM inference, but at prohibitive cost. We introduce HiMu, a training-free framework that bridges this gap. A single text-only LLM call decomposes the query into a hierarchical logic tree whose leaves are atomic predicates, each routed to a lightweight expert spanning vision (CLIP, open-vocabulary detection, OCR) and audio (ASR, CLAP). The resulting signals are normalized, temporally smoothed to align different modalities, and composed bottom-up through fuzzy-logic operators that enforce temporal sequencing and adjacency, producing a continuous satisfaction curve. Evaluations on Video-MME, LongVideoBench and HERBench-Lite show that HiMu advances the efficiency-accuracy Pareto front: at 16 frames with Qwen3-VL 8B it outperforms all competing selectors, and with GPT-4o it surpasses agentic systems operating at 32-512 frames while requiring roughly 10x fewer FLOPs.",
-      "authors": [
-        "Dan Ben-Ami",
-        "Gabriele Serussi",
-        "Kobi Cohen",
-        "Chaim Baskin"
-      ],
-      "primary_category": "cs.CV",
-      "categories": [
-        "cs.CV",
-        "cs.AI"
-      ],
-      "published": "2026-03-19T07:11:53+00:00",
-      "link": "https://arxiv.org/pdf/2603.18558v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LH LLM",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "reasoning over extended temporal contexts in long-form video QA",
-      "llm_evidence_cn": "在长视频问答中进行长程时序上下文推理",
-      "llm_evidence": "在长视频问答中进行长程时序上下文推理",
-      "canonical_evidence": "在长视频问答中进行长程时序上下文推理",
-      "llm_tldr_en": "Introduces HiMu, a training-free framework using LLMs to decompose queries for long-form video reasoning.",
-      "llm_tldr_cn": "引入HiMu框架，利用LLM分解查询，实现长视频的高效时序推理。",
-      "llm_tldr": "引入HiMu框架，利用LLM分解查询，实现长视频的高效时序推理。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
-      "matched_requirement_id": "req-40",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.18558v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.14602v1",
-      "title": "$PA^3$: $\\textbf{P}$olicy-$\\textbf{A}$ware $\\textbf{A}$gent $\\textbf{A}$lignment through Chain-of-Thought",
-      "abstract": "Conversational assistants powered by large language models (LLMs) excel at tool-use tasks but struggle with adhering to complex, business-specific rules. While models can reason over business rules provided in context, including all policies for every query introduces high latency and wastes compute. Furthermore, these lengthy prompts lead to long contexts, harming overall performance due to the \"needle-in-the-haystack\" problem. To address these challenges, we propose a multi-stage alignment method that teaches models to recall and apply relevant business policies during chain-of-thought reasoning at inference time, without including the full business policy in-context. Furthermore, we introduce a novel PolicyRecall reward based on the Jaccard score and a Hallucination Penalty for GRPO training. Altogether, our best model outperforms the baseline by 16 points and surpasses comparable in-context baselines of similar model size by 3 points, while using 40% fewer words.",
-      "authors": [
-        "Shubhashis Roy Dipta",
-        "Daniel Bis",
-        "Kun Zhou",
-        "Lichao Wang",
-        "Benjamin Z. Yao",
-        "Chenlei Guo",
-        "Ruhi Sarikaya"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL",
-        "cs.AI",
-        "cs.LG"
-      ],
-      "published": "2026-03-15T20:52:26+00:00",
-      "link": "https://arxiv.org/pdf/2603.14602v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LH LLM",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Addressing needle-in-the-haystack in long contexts",
-      "llm_evidence_cn": "解决长上下文中的大海捞针问题",
-      "llm_evidence": "解决长上下文中的大海捞针问题",
-      "canonical_evidence": "解决长上下文中的大海捞针问题",
-      "llm_tldr_en": "A policy-aware alignment method using CoT to help LLMs recall rules without long in-context prompts.",
-      "llm_tldr_cn": "一种策略感知对齐方法，利用思维链帮助LLM在无需长上下文提示的情况下召回规则。",
-      "llm_tldr": "一种策略感知对齐方法，利用思维链帮助LLM在无需长上下文提示的情况下召回规则。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "Needle in a haystack evaluation for long context LLMs",
-      "matched_requirement_id": "req-36",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.14602v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.14864v1",
-      "title": "Shopping Companion: A Memory-Augmented LLM Agent for Real-World E-Commerce Tasks",
-      "abstract": "In e-commerce, LLM agents show promise for shopping tasks such as recommendations, budgeting, and bundle deals, where accurately capturing user preferences from long-term conversations is critical. However, two challenges hinder realizing this potential: (1) the absence of benchmarks for evaluating long-term preference-aware shopping tasks, and (2) the lack of end-to-end optimization due to existing designs that treat preference identification and shopping assistance as separate components. In this paper, we introduce a novel benchmark with a long-term memory setup, spanning two shopping tasks over 1.2 million real-world products, and propose Shopping Companion, a unified framework that jointly tackles memory retrieval and shopping assistance while supporting user intervention. To train such capabilities, we develop a dual-reward reinforcement learning strategy with tool-wise rewards to handle the sparse and discontinuous rewards inherent in multi-turn interactions. Experimental results demonstrate that even state-of-the-art models (such as GPT-5) achieve success rates under 70% on our benchmark, highlighting the significant challenges in this domain. Notably, our lightweight LLM, trained with Shopping Companion, consistently outperforms strong baselines, achieving better preference capture and task performance, which validates the effectiveness of our unified design.",
-      "authors": [
-        "Zijian Yu",
-        "Kejun Xiao",
-        "Huaipeng Zhao",
-        "Tao Luo",
-        "Xiaoyi Zeng"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL"
-      ],
-      "published": "2026-03-16T06:07:52+00:00",
-      "link": "https://arxiv.org/pdf/2603.14864v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LH LLM",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "memory-augmented LLM agent for long-term conversations",
-      "llm_evidence_cn": "用于长期对话的记忆增强型 LLM 智能体",
-      "llm_evidence": "用于长期对话的记忆增强型 LLM 智能体",
-      "canonical_evidence": "用于长期对话的记忆增强型 LLM 智能体",
-      "llm_tldr_en": "Proposes a memory-augmented framework and benchmark for long-term preference-aware e-commerce tasks.",
-      "llm_tldr_cn": "为长期偏好感知的电子商务任务提出了记忆增强框架和基准测试。",
-      "llm_tldr": "为长期偏好感知的电子商务任务提出了记忆增强框架和基准测试。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "External memory and retrieval augmented generation for long horizons",
-      "matched_requirement_id": "req-37",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.14864v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.16546v1",
-      "title": "DanceHA: A Multi-Agent Framework for Document-Level Aspect-Based Sentiment Analysis",
-      "abstract": "Aspect-Based Sentiment Intensity Analysis (ABSIA) has garnered increasing attention, though research largely focuses on domain-specific, sentence-level settings. In contrast, document-level ABSIA--particularly in addressing complex tasks like extracting Aspect-Category-Opinion-Sentiment-Intensity (ACOSI) tuples--remains underexplored. In this work, we introduce DanceHA, a multi-agent framework designed for open-ended, document-level ABSIA with informal writing styles. DanceHA has two main components: Dance, which employs a divide-and-conquer strategy to decompose the long-context ABSIA task into smaller, manageable sub-tasks for collaboration among specialized agents; and HA, Human-AI collaboration for annotation. We release Inf-ABSIA, a multi-domain document-level ABSIA dataset featuring fine-grained and high-accuracy labels from DanceHA. Extensive experiments demonstrate the effectiveness of our agentic framework and show that the multi-agent knowledge in DanceHA can be effectively transferred into student models. Our results highlight the importance of the overlooked informal styles in ABSIA, as they often intensify opinions tied to specific aspects.",
-      "authors": [
-        "Lei Wang",
-        "Min Huang",
-        "Eduard Dragut"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL",
-        "cs.AI"
-      ],
-      "published": "2026-03-17T14:11:07+00:00",
-      "link": "https://arxiv.org/pdf/2603.16546v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Document-level aspect-based sentiment intensity analysis",
-      "llm_evidence_cn": "文档级方面级情感强度分析",
-      "llm_evidence": "文档级方面级情感强度分析",
-      "canonical_evidence": "文档级方面级情感强度分析",
-      "llm_tldr_en": "Introduces a multi-agent framework for complex document-level aspect-based sentiment analysis.",
-      "llm_tldr_cn": "引入了一个多智能体框架，用于处理复杂的文档级方面级情感分析任务。",
-      "llm_tldr": "引入了一个多智能体框架，用于处理复杂的文档级方面级情感分析任务。",
-      "llm_tags": [
-        "query:llm-ac"
-      ],
-      "matched_query_tag": "query:llm-ac",
-      "matched_query_text": "Affective Computing and Sentiment Analysis",
-      "matched_requirement_id": "req-22",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.16546v1",
       "carry_days": 1
     },
     {
@@ -1795,19 +456,19 @@
         "query:LLM MR"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "integrating knowledge graphs for drug and clinical data",
-      "llm_evidence_cn": "整合药物和临床数据的知识图谱",
-      "llm_evidence": "整合药物和临床数据的知识图谱",
-      "canonical_evidence": "整合药物和临床数据的知识图谱",
-      "llm_tldr_en": "Presents large-scale biomedical KGs for pathways, clinical trials, and drug interactions to support AI agents.",
-      "llm_tldr_cn": "提供大规模生物医学知识图谱，涵盖临床试验和药物相互作用，支持AI智能体访问。",
-      "llm_tldr": "提供大规模生物医学知识图谱，涵盖临床试验和药物相互作用，支持AI智能体访问。",
+      "llm_evidence_en": "Biomedical knowledge graphs for drug interactions and clinical trials",
+      "llm_evidence_cn": "用于药物相互作用和临床试验的生物医学知识图谱",
+      "llm_evidence": "用于药物相互作用和临床试验的生物医学知识图谱",
+      "canonical_evidence": "用于药物相互作用和临床试验的生物医学知识图谱",
+      "llm_tldr_en": "Constructs large-scale biomedical knowledge graphs to support AI agents in drug and clinical research.",
+      "llm_tldr_cn": "构建大规模生物医学知识图谱，支持AI智能体进行药物和临床研究。",
+      "llm_tldr": "构建大规模生物医学知识图谱，支持AI智能体进行药物和临床研究。",
       "llm_tags": [
-        "query:llm-mr"
+        "query:llm-mr:composite"
       ],
-      "matched_query_tag": "query:llm-mr",
-      "matched_query_text": "integrating knowledge graphs with LLMs for drug suggestion",
-      "matched_requirement_id": "req-54",
+      "matched_query_tag": "query:llm-mr:composite",
+      "matched_query_text": "Papers central to 查找大语言模型（LLM）在药物推荐系统中的应用及相关研究论文, especially work that connects or combines: Large Language Models; drug recommendation systems; medication recommendation algorithms; generative artificial intelligence in healthcare; clinical decision support systems for medication; personalized drug recommendation using LLMs; knowledge graph enhanced drug recommendation; LLM for drug recommendation based on EHR; survey of large language models for drug recommendation; LLM based personalized medication recommendation systems.",
+      "matched_requirement_id": "req-composite-llm-mr",
       "selection_source": "carryover_cache",
       "paper_id": "2603.15080v2",
       "carry_days": 1
@@ -1847,113 +508,21 @@
         "query:LLM MH"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Speech Emotion Recognition (SER) and emotion understanding",
-      "llm_evidence_cn": "语音情感识别（SER）与情感理解",
-      "llm_evidence": "语音情感识别（SER）与情感理解",
-      "canonical_evidence": "语音情感识别（SER）与情感理解",
-      "llm_tldr_en": "Evaluates the limitations of current emotion recognition models when applied to synthesized speech.",
-      "llm_tldr_cn": "评估了当前情感识别模型在应用于合成语音时的局限性。",
-      "llm_tldr": "评估了当前情感识别模型在应用于合成语音时的局限性。",
+      "llm_evidence_en": "evaluating Speech Emotion Recognition (SER) on synthesized speech",
+      "llm_evidence_cn": "评估合成语音中的语音情感识别",
+      "llm_evidence": "评估合成语音中的语音情感识别",
+      "canonical_evidence": "评估合成语音中的语音情感识别",
+      "llm_tldr_en": "Evaluates emotion understanding in synthesized speech across various discriminative and generative models.",
+      "llm_tldr_cn": "系统评估了语音情感识别模型在合成语音上的表现及其在情感表达评估中的局限性。",
+      "llm_tldr": "系统评估了语音情感识别模型在合成语音上的表现及其在情感表达评估中的局限性。",
       "llm_tags": [
-        "query:llm-ac"
+        "query:llm-ac:composite"
       ],
-      "matched_query_tag": "query:llm-ac",
-      "matched_query_text": "LLM based emotion recognition and sentiment classification",
-      "matched_requirement_id": "req-32",
+      "matched_query_tag": "query:llm-ac:composite",
+      "matched_query_text": "Papers central to 查找LLM做情感计算和共情对话的论文, especially work that connects or combines: Large Language Models; Affective Computing and Sentiment Analysis; Artificial Emotional Intelligence in LLMs; Emotion Recognition in Conversation; Empathetic Response Generation; LLMs for Psychological Support and Counseling; Chain of Empathy prompting for LLMs; benchmarking empathy in large language models; fine tuning LLMs for empathetic conversation; prompt engineering for emotional intelligence in AI.",
+      "matched_requirement_id": "req-composite-llm-ac",
       "selection_source": "carryover_cache",
       "paper_id": "2603.16483v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.17887v1",
-      "title": "AI-Assisted Goal Setting Improves Goal Progress Through Social Accountability",
-      "abstract": "Helping people identify and pursue personally meaningful career goals at scale remains a key challenge in applied psychology. Career coaching can improve goal quality and attainment, but its cost and limited availability restrict access. Large language model (LLM)-based chatbots offer a scalable alternative, yet the psychological mechanisms by which they might support goal pursuit remain untested. Here we report a preregistered three-arm randomised controlled trial (N = 517) comparing an AI career coach (\"Leon,\" powered by Claude Sonnet), a matched structured written questionnaire covering closely matched reflective topics, and a no-support control on goal progress at a two-week follow-up. The AI chatbot produced significantly higher goal progress than the control (d = 0.33, p = .016). Compared with the written-reflection condition, the AI did not significantly improve overall goal progress, but it increased perceived social accountability. In the preregistered mediation model, perceived accountability mediated the AI-over-questionnaire effect on goal progress (indirect effect = 0.15, 95% CI [0.04, 0.31]), whereas self-concordance did not. These findings suggest that AI-assisted goal setting can improve short-term goal progress, and that its clearest added value over structured self-reflection lies in increasing felt accountability.",
-      "authors": [
-        "Michel Schimpf",
-        "Julian Voigt",
-        "Thomas Bohné"
-      ],
-      "primary_category": "cs.HC",
-      "categories": [
-        "cs.HC",
-        "cs.AI"
-      ],
-      "published": "2026-03-18T16:12:25+00:00",
-      "link": "https://arxiv.org/pdf/2603.17887v1",
-      "tags": [
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:LLM AC",
-        "query:LLM MH"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "randomized trial of an AI career coach for goal setting and progress",
-      "llm_evidence_cn": "AI 职业教练用于目标设定和进展的随机对照试验",
-      "llm_evidence": "AI 职业教练用于目标设定和进展的随机对照试验",
-      "canonical_evidence": "AI 职业教练用于目标设定和进展的随机对照试验",
-      "llm_tldr_en": "Demonstrates that LLM-based career coaching significantly improves goal progress through social accountability.",
-      "llm_tldr_cn": "证明基于大语言模型的职业辅导通过社会责任感显著促进了目标的达成。",
-      "llm_tldr": "证明基于大语言模型的职业辅导通过社会责任感显著促进了目标的达成。",
-      "llm_tags": [
-        "query:llm-mh"
-      ],
-      "matched_query_tag": "query:llm-mh",
-      "matched_query_text": "AI-assisted psychotherapy and counseling",
-      "matched_requirement_id": "req-59",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.17887v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.15255v1",
-      "title": "SAGE: Multi-Agent Self-Evolution for LLM Reasoning",
-      "abstract": "Reinforcement learning with verifiable rewards improves reasoning in large language models (LLMs), but many methods still rely on large human-labeled datasets. While self-play reduces this dependency, it often lacks explicit planning and strong quality control, limiting stability in long-horizon multi-step reasoning. We present SAGE (Self-evolving Agents for Generalized reasoning Evolution), a closed-loop framework where four agents: Challenger, Planner, Solver, and Critic, co-evolve from a shared LLM backbone using only a small seed set. The Challenger continuously generates increasingly difficult tasks; the Planner converts each task into a structured multi-step plan; and the Solver follows the plan to produce an answer, whose correctness is determined by external verifiers. The Critic scores and filters both generated questions and plans to prevent curriculum drift and maintain training signal quality, enabling stable self-training. Across mathematics and code-generation benchmarks, SAGE delivers consistent gains across model scales, improving the Qwen-2.5-7B model by 8.9% on LiveCodeBench and 10.7% on OlympiadBench.",
-      "authors": [
-        "Yulin Peng",
-        "Xinxin Zhu",
-        "Chenxing Wei",
-        "Nianbo Zeng",
-        "Leilei Wang",
-        "Ying Tiffany He",
-        "F. Richard Yu"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI",
-        "cs.MA"
-      ],
-      "published": "2026-03-16T13:24:20+00:00",
-      "link": "https://arxiv.org/pdf/2603.15255v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LH LLM",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "multi-agent self-evolution for long-horizon multi-step reasoning in LLMs",
-      "llm_evidence_cn": "LLM长程多步推理的多智能体自我进化",
-      "llm_evidence": "LLM长程多步推理的多智能体自我进化",
-      "canonical_evidence": "LLM长程多步推理的多智能体自我进化",
-      "llm_tldr_en": "SAGE uses a multi-agent co-evolution framework to improve stability in long-horizon LLM reasoning.",
-      "llm_tldr_cn": "SAGE采用多智能体协同进化框架，提升LLM长程推理的稳定性。",
-      "llm_tldr": "SAGE采用多智能体协同进化框架，提升LLM长程推理的稳定性。",
-      "llm_tags": [
-        "query:lh-llm"
-      ],
-      "matched_query_tag": "query:lh-llm",
-      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
-      "matched_requirement_id": "req-40",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.15255v1",
       "carry_days": 1
     },
     {
@@ -1989,13 +558,13 @@
         "query:LLM MR"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "benchmarking LLM-based collective intelligence in a medical arena",
-      "llm_evidence_cn": "在医疗场景中基准测试基于大模型的集体智能",
-      "llm_evidence": "在医疗场景中基准测试基于大模型的集体智能",
-      "canonical_evidence": "在医疗场景中基准测试基于大模型的集体智能",
-      "llm_tldr_en": "Introduces OpenHospital, an arena for evolving and benchmarking medical proficiency of LLM agents.",
-      "llm_tldr_cn": "推出OpenHospital，一个用于演进和基准测试大模型代理医疗能力的交互式竞技场。",
-      "llm_tldr": "推出OpenHospital，一个用于演进和基准测试大模型代理医疗能力的交互式竞技场。",
+      "llm_evidence_en": "Benchmarking LLM-based physician agents in a medical arena",
+      "llm_evidence_cn": "在医疗竞技场中对基于 LLM 的医生智能体进行基准测试",
+      "llm_evidence": "在医疗竞技场中对基于 LLM 的医生智能体进行基准测试",
+      "canonical_evidence": "在医疗竞技场中对基于 LLM 的医生智能体进行基准测试",
+      "llm_tldr_en": "OpenHospital is an interactive arena for evolving and benchmarking the collective intelligence of medical LLM agents.",
+      "llm_tldr_cn": "OpenHospital 是一个用于进化和基准测试医疗 LLM 智能体集体智能的交互式竞技场。",
+      "llm_tldr": "OpenHospital 是一个用于进化和基准测试医疗 LLM 智能体集体智能的交互式竞技场。",
       "llm_tags": [
         "query:ehr-tr:composite"
       ],
@@ -2004,138 +573,6 @@
       "matched_requirement_id": "req-composite-ehr-tr",
       "selection_source": "carryover_cache",
       "paper_id": "2603.14771v2",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.15047v1",
-      "title": "CrossADR: enhancing adverse drug reactions prediction for combination pharmacotherapy with cross-layer feature integration and cross-level associative learning",
-      "abstract": "Combination pharmacotherapy offers substantial therapeutic advantages but also poses substantial risks of adverse drug reactions (ADRs). The accurate prediction of ADRs with interpretable computational methods is crucial for clinical safety management, drug development, and precision medicine. However, managing ADRs remains a challenge due to the vast search space of drug combinations and the complexity of physiological responses. Current graph-based architectures often struggle to effectively integrate multi-scale biological information and frequently rely on fixed association matrices, which limits their ability to capture dynamic organ-level dependencies and generalize across diverse datasets. Here we propose CrossADR, a hierarchical framework for organ-level ADR prediction through cross-layer feature integration and cross-level associative learning. It incorporates a gated-residual-flow graph neural network to fuse multi-scale molecular features and utilizes a learnable ADR embedding space to dynamically capture latent biological correlations across 15 organ systems. Systematic evaluation on the newly constructed CrossADR-Dataset-covering 1,376 drugs and 946,000 unique combinations-demonstrates that CrossADR consistently achieves state-of-the-art performance across 80 distinct experimental scenarios and provides high-resolution insights into drug-related protein protein interactions and pathways. Overall, CrossADR represents a robust tool for cross-scale biomedical information integration, cross-layer feature integration as well as cross-level associative learning, and can be effectively utilized to prevent ADRs in clinical decision-making.",
-      "authors": [
-        "Y. Cheung"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG",
-        "math.AG"
-      ],
-      "published": "2026-03-16T09:58:03+00:00",
-      "link": "https://arxiv.org/pdf/2603.15047v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "adverse drug reactions prediction for combination pharmacotherapy",
-      "llm_evidence_cn": "联合用药的不良反应预测",
-      "llm_evidence": "联合用药的不良反应预测",
-      "canonical_evidence": "联合用药的不良反应预测",
-      "llm_tldr_en": "Enhances ADR prediction using cross-layer feature integration and associative learning for clinical safety.",
-      "llm_tldr_cn": "利用跨层特征融合和关联学习增强不良反应预测，提升临床用药安全。",
-      "llm_tldr": "利用跨层特征融合和关联学习增强不良反应预测，提升临床用药安全。",
-      "llm_tags": [
-        "query:llm-mr"
-      ],
-      "matched_query_tag": "query:llm-mr",
-      "matched_query_text": "drug recommendation systems",
-      "matched_requirement_id": "req-45",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.15047v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.15939v1",
-      "title": "Data-Local Autonomous LLM-Guided Neural Architecture Search for Multiclass Multimodal Time-Series Classification",
-      "abstract": "Applying machine learning to sensitive time-series data is often bottlenecked by the iteration loop: Performance depends strongly on preprocessing and architecture, yet training often has to run on-premise under strict data-local constraints. This is a common problem in healthcare and other privacy-constrained domains (e.g., a hospital developing deep learning models on patient EEG). This bottleneck is particularly challenging in multimodal fusion, where sensor modalities must be individually preprocessed and then combined. LLM-guided neural architecture search (NAS) can automate this exploration, but most existing workflows assume cloud execution or access to data-derived artifacts that cannot be exposed.   We present a novel data-local, LLM-guided search framework that handles candidate pipelines remotely while executing all training and evaluation locally under a fixed protocol. The controller observes only trial-level summaries, such as pipeline descriptors, metrics, learning-curve statistics, and failure logs, without ever accessing raw samples or intermediate feature representations. Our framework targets multiclass, multimodal learning via one-vs-rest binary experts per class and modality, a lightweight fusion MLP, and joint search over expert architectures and modality-specific preprocessing.   We evaluate our method on two regimes: UEA30 (public multivariate time-series classification dataset) and SleepEDFx sleep staging (heterogeneous clinical modalities such as EEG, EOG, and EMG). The results show that the modular baseline model is strong, and the LLM-guided NAS further improves it. Notably, our method finds models that perform within published ranges across most benchmark datasets. Across both settings, our method reduces manual intervention by enabling unattended architecture search while keeping sensitive data on-premise.",
-      "authors": [
-        "Emil Hardarson",
-        "Luka Biedebach",
-        "Ómar Bessi Ómarsson",
-        "Teitur Hrólfsson",
-        "Anna Sigridur Islind",
-        "María Óskarsdóttir"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG",
-        "cs.AI"
-      ],
-      "published": "2026-03-16T21:46:05+00:00",
-      "link": "https://arxiv.org/pdf/2603.15939v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LH LLM",
-        "keyword:LLM AC",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "LLM-guided neural architecture search for multimodal time-series in healthcare",
-      "llm_evidence_cn": "LLM引导的医疗多模态时间序列神经架构搜索",
-      "llm_evidence": "LLM引导的医疗多模态时间序列神经架构搜索",
-      "canonical_evidence": "LLM引导的医疗多模态时间序列神经架构搜索",
-      "llm_tldr_en": "Automates architecture search for sensitive clinical time-series data using LLMs under data-local constraints.",
-      "llm_tldr_cn": "在数据本地限制下，利用LLM自动搜索敏感临床时间序列数据的模型架构。",
-      "llm_tldr": "在数据本地限制下，利用LLM自动搜索敏感临床时间序列数据的模型架构。",
-      "llm_tags": [
-        "query:ehr-tr:composite"
-      ],
-      "matched_query_tag": "query:ehr-tr:composite",
-      "matched_query_text": "Papers central to LLM在电子健康记录（EHR）时序推理方面的研究论文, especially work that connects or combines: Large Language Models; Electronic Health Records; temporal reasoning in clinical data; clinical natural language processing; benchmarking LLMs on medical temporal reasoning; Large language models for temporal reasoning in electronic health records; State of the art LLM methods for longitudinal EHR analysis; Challenges of temporal reasoning for LLMs in the healthcare domain.",
-      "matched_requirement_id": "req-composite-ehr-tr",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.15939v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.18239v1",
-      "title": "Impact of automatic speech recognition quality on Alzheimer's disease detection from spontaneous speech: a reproducible benchmark study with lexical modeling and statistical validation",
-      "abstract": "Early detection of Alzheimer's disease from spontaneous speech has emerged as a promising non-invasive screening approach. However, the influence of automatic speech recognition (ASR) quality on downstream clinical language modeling remains insufficiently understood. In this study, we investigate Alzheimer's disease detection using lexical features derived from Whisper ASR transcripts on the ADReSSo 2021 diagnosis dataset. We evaluate interpretable machine-learning models, including Logistic Regression and Linear Support Vector Machines, using TF-IDF text representations under repeated 5x5 stratified cross-validation.   Our results demonstrate that transcript quality has a statistically significant impact on classification performance. Models trained on Whisper-small transcripts consistently outperform those using Whisper-base transcripts, achieving balanced accuracy above 0.7850 with Linear SVM. Paired statistical testing confirms that the observed improvements are significant. Importantly, classifier complexity contributes less to performance variation than ASR transcription quality. Feature analysis reveals that cognitively normal speakers produce more semantically precise object- and scene-descriptive language, whereas Alzheimer's speech is characterized by vagueness, discourse markers, and increased hesitation patterns.   These findings suggest that high-quality ASR can enable simple, interpretable lexical models to achieve competitive Alzheimer's detection performance without explicit acoustic modeling. The study provides a reproducible benchmark pipeline and highlights ASR selection as a critical modeling decision in clinical speech-based artificial intelligence systems.",
-      "authors": [
-        "Himadri Samanta"
-      ],
-      "primary_category": "q-bio.QM",
-      "categories": [
-        "q-bio.QM",
-        "cs.CL",
-        "cs.LG"
-      ],
-      "published": "2026-03-18T19:46:29+00:00",
-      "link": "https://arxiv.org/pdf/2603.18239v1",
-      "tags": [
-        "keyword:EHR TR",
-        "keyword:LLM AC",
-        "keyword:LLM HUM",
-        "keyword:LLM MH",
-        "keyword:LLM MR",
-        "query:EHR TR",
-        "query:LLM AC",
-        "query:LLM HUM",
-        "query:LLM MH",
-        "query:LLM MR"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Alzheimer's disease detection from speech using clinical language modeling",
-      "llm_evidence_cn": "利用临床语言建模从语音中检测阿尔茨海默病",
-      "llm_evidence": "利用临床语言建模从语音中检测阿尔茨海默病",
-      "canonical_evidence": "利用临床语言建模从语音中检测阿尔茨海默病",
-      "llm_tldr_en": "Benchmarks the impact of speech recognition quality on detecting Alzheimer's disease via lexical modeling.",
-      "llm_tldr_cn": "基准测试了语音识别质量对通过词汇建模检测阿尔茨海默病的影响。",
-      "llm_tldr": "基准测试了语音识别质量对通过词汇建模检测阿尔茨海默病的影响。",
-      "llm_tags": [
-        "query:llm-mh"
-      ],
-      "matched_query_tag": "query:llm-mh",
-      "matched_query_text": "Mental health applications and diagnosis",
-      "matched_requirement_id": "req-57",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.18239v1",
       "carry_days": 1
     },
     {
@@ -2155,7 +592,6 @@
       "published": "2026-03-15T15:16:25+00:00",
       "link": "https://arxiv.org/pdf/2603.14432v1",
       "tags": [
-        "keyword:EHR TR",
         "keyword:LH LLM",
         "keyword:LLM AC",
         "keyword:LLM HUM",
@@ -2165,13 +601,13 @@
         "query:LLM MH"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "affective cues and nonverbal vocalizations like laughter in speech synthesis",
-      "llm_evidence_cn": "语音合成中的情感线索和非语言发声（如笑声）",
-      "llm_evidence": "语音合成中的情感线索和非语言发声（如笑声）",
-      "canonical_evidence": "语音合成中的情感线索和非语言发声（如笑声）",
-      "llm_tldr_en": "Develops Affectron for generating contextually aligned nonverbal vocalizations in emotional speech synthesis.",
-      "llm_tldr_cn": "开发Affectron框架，在情感语音合成中生成上下文一致的非语言发声。",
-      "llm_tldr": "开发Affectron框架，在情感语音合成中生成上下文一致的非语言发声。",
+      "llm_evidence_en": "affective and contextually aligned nonverbal vocalizations like laughter",
+      "llm_evidence_cn": "情感和上下文对齐的非语言发声（如笑声）",
+      "llm_evidence": "情感和上下文对齐的非语言发声（如笑声）",
+      "canonical_evidence": "情感和上下文对齐的非语言发声（如笑声）",
+      "llm_tldr_en": "Proposes a framework for synthesizing emotional speech with contextually aligned nonverbal vocalizations.",
+      "llm_tldr_cn": "提出一种框架，用于合成具有上下文对齐非语言发声的情感语音。",
+      "llm_tldr": "提出一种框架，用于合成具有上下文对齐非语言发声的情感语音。",
       "llm_tags": [
         "query:llm-ac:composite"
       ],
@@ -2180,6 +616,411 @@
       "matched_requirement_id": "req-composite-llm-ac",
       "selection_source": "carryover_cache",
       "paper_id": "2603.14432v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.18893v1",
+      "title": "Quantitative Introspection in Language Models: Tracking Internal States Across Conversation",
+      "abstract": "Tracking the internal states of large language models across conversations is important for safety, interpretability, and model welfare, yet current methods are limited. Linear probes and other white-box methods compress high-dimensional representations imperfectly and are harder to apply with increasing model size. Taking inspiration from human psychology, where numeric self-report is a widely used tool for tracking internal states, we ask whether LLMs' own numeric self-reports can track probe-defined emotive states over time. We study four concept pairs (wellbeing, interest, focus, and impulsivity) in 40 ten-turn conversations, operationalizing introspection as the causal informational coupling between a model's self-report and a concept-matched probe-defined internal state. We find that greedy-decoded self-reports collapse outputs to few uninformative values, but introspective capacity can be unmasked by calculating logit-based self-reports. This metric tracks interpretable internal states (Spearman $ρ= 0.40$-$0.76$; isotonic $R^2 = 0.12$-$0.54$ in LLaMA-3.2-3B-Instruct), follows how those states change over time, and activation steering confirms the coupling is causal. Furthermore, we find that introspection is present at turn 1 but evolves through conversation, and can be selectively improved by steering along one concept to boost introspection for another ($ΔR^2$ up to $0.30$). Crucially, these phenomena scale with model size in some cases, approaching $R^2 \\approx 0.93$ in LLaMA-3.1-8B-Instruct, and partially replicate in other model families. Together, these results position numeric self-report as a viable, complementary tool for tracking internal emotive states in conversational AI systems.",
+      "authors": [
+        "Nicolas Martorell"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-19T13:33:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.18893v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "tracking emotive states in LLMs through numeric self-reports",
+      "llm_evidence_cn": "通过数字自报告跟踪大语言模型中的情感状态",
+      "llm_evidence": "通过数字自报告跟踪大语言模型中的情感状态",
+      "canonical_evidence": "通过数字自报告跟踪大语言模型中的情感状态",
+      "llm_tldr_en": "Studies whether LLMs can track their own internal emotive states over time through numeric self-reports.",
+      "llm_tldr_cn": "研究大语言模型是否能通过数字自报告随时间跟踪其内部情感状态。",
+      "llm_tldr": "研究大语言模型是否能通过数字自报告随时间跟踪其内部情感状态。",
+      "llm_tags": [
+        "query:llm-ac"
+      ],
+      "matched_query_tag": "query:llm-ac",
+      "matched_query_text": "Artificial Emotional Intelligence in LLMs",
+      "matched_requirement_id": "req-23",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.18893v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.18330v1",
+      "title": "MemArchitect: A Policy Driven Memory Governance Layer",
+      "abstract": "Persistent Large Language Model (LLM) agents expose a critical governance gap in memory management. Standard Retrieval-Augmented Generation (RAG) frameworks treat memory as passive storage, lacking mechanisms to resolve contradictions, enforce privacy, or prevent outdated information (\"zombie memories\") from contaminating the context window.   We introduce MemArchitect, a governance layer that decouples memory lifecycle management from model weights. MemArchitect enforces explicit, rule-based policies, including memory decay, conflict resolution, and privacy controls.   We demonstrate that governed memory consistently outperforms unmanaged memory in agentic settings, highlighting the necessity of structured memory governance for reliable and safe autonomous systems.",
+      "authors": [
+        "Lingavasan Suresh Kumar",
+        "Yang Ba",
+        "Rong Pan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.HC",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-03-18T22:37:05+00:00",
+      "link": "https://arxiv.org/pdf/2603.18330v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "query:EHR TR",
+        "query:LH LLM"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "memory governance layer for persistent LLM agents",
+      "llm_evidence_cn": "持久化LLM智能体的记忆治理层",
+      "llm_evidence": "持久化LLM智能体的记忆治理层",
+      "canonical_evidence": "持久化LLM智能体的记忆治理层",
+      "llm_tldr_en": "MemArchitect provides a rule-based memory governance layer to manage context and prevent memory contamination.",
+      "llm_tldr_cn": "MemArchitect提供了一个基于规则的记忆治理层，用于管理上下文并防止记忆污染。",
+      "llm_tldr": "MemArchitect提供了一个基于规则的记忆治理层，用于管理上下文并防止记忆污染。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "External memory and retrieval augmented generation for long horizons",
+      "matched_requirement_id": "req-37",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.18330v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.15255v2",
+      "title": "SAGE: Multi-Agent Self-Evolution for LLM Reasoning",
+      "abstract": "Reinforcement learning with verifiable rewards improves reasoning in large language models (LLMs), but many methods still rely on large human-labeled datasets. While self-play reduces this dependency, it often lacks explicit planning and strong quality control, limiting stability in long-horizon multi-step reasoning. We present SAGE (Self-evolving Agents for Generalized reasoning Evolution), a closed-loop framework where four agents: Challenger, Planner, Solver, and Critic, co-evolve from a shared LLM backbone using only a small seed set. The Challenger continuously generates increasingly difficult tasks; the Planner converts each task into a structured multi-step plan; and the Solver follows the plan to produce an answer, whose correctness is determined by external verifiers. The Critic scores and filters both generated questions and plans to prevent curriculum drift and maintain training signal quality, enabling stable self-training. Across mathematics and code-generation benchmarks, SAGE delivers consistent gains across model scales, improving the Qwen-2.5-7B model by 8.9% on LiveCodeBench and 10.7% on OlympiadBench.",
+      "authors": [
+        "Yulin Peng",
+        "Xinxin Zhu",
+        "Chenxing Wei",
+        "Nianbo Zeng",
+        "Leilei Wang",
+        "Ying Tiffany He",
+        "F. Richard Yu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-03-16T13:24:20+00:00",
+      "link": "https://arxiv.org/pdf/2603.15255v2",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "stability in long-horizon multi-step reasoning",
+      "llm_evidence_cn": "长程多步推理的稳定性",
+      "llm_evidence": "长程多步推理的稳定性",
+      "canonical_evidence": "长程多步推理的稳定性",
+      "llm_tldr_en": "SAGE uses a multi-agent self-evolution framework to improve stability and quality in long-horizon LLM reasoning.",
+      "llm_tldr_cn": "SAGE通过多智能体自我进化框架，提升了LLM在长程多步推理中的稳定性和质量。",
+      "llm_tldr": "SAGE通过多智能体自我进化框架，提升了LLM在长程多步推理中的稳定性和质量。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "State of the art methods for long horizon reasoning in LLMs",
+      "matched_requirement_id": "req-40",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.15255v2",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.18124v1",
+      "title": "Evaluating FrameNet-Based Semantic Modeling for Gender-Based Violence Detection in Clinical Records",
+      "abstract": "Gender-based violence (GBV) is a major public health issue, with the World Health Organization estimating that one in three women experiences physical or sexual violence by an intimate partner during her lifetime. In Brazil, although healthcare professionals are legally required to report such cases, underreporting remains significant due to difficulties in identifying abuse and limited integration between public information systems. This study investigates whether FrameNet-based semantic annotation of open-text fields in electronic medical records can support the identification of patterns of GBV. We compare the performance of an SVM classifier for GBV cases trained on (1) frame-annotated text, (2) annotated text combined with parameterized data, and (3) parameterized data alone. Quantitative and qualitative analyses show that models incorporating semantic annotation outperform categorical models, achieving over 0.3 improvement in F1 score and demonstrating that domain-specific semantic representations provide meaningful signals beyond structured demographic data. The findings support the hypothesis that semantic analysis of clinical narratives can enhance early identification strategies and support more informed public health interventions.",
+      "authors": [
+        "Lívia Dutra",
+        "Arthur Lorenzi",
+        "Frederico Belcavello",
+        "Ely Matos",
+        "Marcelo Viridiano",
+        "Lorena Larré",
+        "Olívia Guaranha",
+        "Erik Santos",
+        "Sofia Reinach",
+        "Pedro de Paula",
+        "Tiago Torrent"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-18T17:04:50+00:00",
+      "link": "https://arxiv.org/pdf/2603.18124v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LLM AC",
+        "query:LLM MH",
+        "query:LLM MR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "semantic modeling for detection in clinical records",
+      "llm_evidence_cn": "临床记录检测的语义建模",
+      "llm_evidence": "临床记录检测的语义建模",
+      "canonical_evidence": "临床记录检测的语义建模",
+      "llm_tldr_en": "Evaluates semantic modeling in electronic medical records to identify patterns of gender-based violence.",
+      "llm_tldr_cn": "评估电子病历中的语义建模，以识别性别暴力模式。",
+      "llm_tldr": "评估电子病历中的语义建模，以识别性别暴力模式。",
+      "llm_tags": [
+        "query:ehr-tr"
+      ],
+      "matched_query_tag": "query:ehr-tr",
+      "matched_query_text": "clinical natural language processing",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.18124v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.15061v1",
+      "title": "Writer-R1: Enhancing Generative Writing in LLMs via Memory-augmented Replay Policy Optimization",
+      "abstract": "As a typical open-ended generation task, creative writing lacks verifiable reference answers, which has long constrained reward modeling and automatic evaluation due to high human annotation costs, evaluative bias, and coarse feedback signals. To address these challenges, this paper first designs a multi-agent collaborative workflow based on Grounded Theory, performing dimensional decomposition and hierarchical induction of the problem to dynamically produce interpretable and reusable fine-grained criteria. Furthermore, we propose the Memory-augmented Replay Policy Optimization (MRPO) algorithm: on the one hand, without additional training, MRPO guides models to engage in self-reflection based on dynamic criteria, enabling controlled iterative improvement; on the other hand, we adopt the training paradigm that combines supervised fine-tuning with reinforcement learning to convert evaluation criteria into reward signals, achieving end-to-end optimization. Experimental results demonstrate that the automatically constructed criteria achieve performance gains comparable to human annotations. Writer-R1-4B models trained with this approach outperform baselines across multiple creative writing tasks and surpass some 100B+ parameter open-source models.",
+      "authors": [
+        "Jihao Zhao",
+        "Shuaishuai Zu",
+        "Zhiyuan Ji",
+        "Chunlai Zhou",
+        "Biao Qin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-16T10:18:20+00:00",
+      "link": "https://arxiv.org/pdf/2603.15061v1",
+      "tags": [
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "enhancing generative creative writing via self-reflection and policy optimization",
+      "llm_evidence_cn": "通过自我反思和策略优化增强生成式创意写作",
+      "llm_evidence": "通过自我反思和策略优化增强生成式创意写作",
+      "canonical_evidence": "通过自我反思和策略优化增强生成式创意写作",
+      "llm_tldr_en": "Writer-R1 improves creative writing in LLMs using a memory-augmented replay policy optimization algorithm.",
+      "llm_tldr_cn": "Writer-R1 通过记忆增强重放策略优化算法提升了 LLM 的创意写作能力。",
+      "llm_tldr": "Writer-R1 通过记忆增强重放策略优化算法提升了 LLM 的创意写作能力。",
+      "llm_tags": [
+        "query:llm-hum"
+      ],
+      "matched_query_tag": "query:llm-hum",
+      "matched_query_text": "fine tuning language models for creative and humorous writing",
+      "matched_requirement_id": "req-19",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.15061v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.16719v1",
+      "title": "Emotion-Aware Classroom Quality Assessment Leveraging IoT-Based Real-Time Student Monitoring",
+      "abstract": "This study presents high-throughput, real-time multi-agent affective computing framework designed to enhance classroom learning through emotional state monitoring. As large classroom sizes and limited teacher student interaction increasingly challenge educators, there is a growing need for scalable, data-driven tools capable of capturing students' emotional and engagement patterns in real time. The system was evaluated using the Classroom Emotion Dataset, consisting of 1,500 labeled images and 300 classroom detection videos. Tailored for IoT devices, the system addresses load balancing and latency challenges through efficient real-time processing. Field testing was conducted across three educational institutions in a large metropolitan area: a primary school (hereafter school A), a secondary school (school B), and a high school (school C). The system demonstrated robust performance, detecting up to 50 faces at 25 FPS and achieving 88% overall accuracy in classifying classroom engagement states. Implementation results showed positive outcomes, with favorable feedback from students, teachers, and parents regarding improved classroom interaction and teaching adaptation. Key contributions of this research include establishing a practical, IoT-based framework for emotion-aware learning environments and introducing the 'Classroom Emotion Dataset' to facilitate further validation and research.",
+      "authors": [
+        "Hai Nguyen",
+        "Hieu Dao",
+        "Hung Nguyen",
+        "Nam Vu",
+        "Cong Tran"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-17T16:06:30+00:00",
+      "link": "https://arxiv.org/pdf/2603.16719v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "keyword:LLM MH",
+        "query:LLM AC",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "affective computing framework for emotional state monitoring",
+      "llm_evidence_cn": "用于情感状态监测的情感计算框架",
+      "llm_evidence": "用于情感状态监测的情感计算框架",
+      "canonical_evidence": "用于情感状态监测的情感计算框架",
+      "llm_tldr_en": "Presents an IoT-based affective computing framework for real-time student emotional monitoring in classrooms.",
+      "llm_tldr_cn": "提出了一种基于物联网的情感计算框架，用于实时监测课堂中学生的情感状态。",
+      "llm_tldr": "提出了一种基于物联网的情感计算框架，用于实时监测课堂中学生的情感状态。",
+      "llm_tags": [
+        "query:llm-ac"
+      ],
+      "matched_query_tag": "query:llm-ac",
+      "matched_query_text": "Affective Computing and Sentiment Analysis",
+      "matched_requirement_id": "req-22",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.16719v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.16148v1",
+      "title": "NeuronSpark: A Spiking Neural Network Language Model with Selective State Space Dynamics",
+      "abstract": "We ask whether a pure spiking backbone can learn large-scale language modeling from random initialization, without Transformer distillation. We introduce NeuronSpark, a 0.9B-parameter SNN language model trained with next-token prediction and surrogate gradients. The model combines selective state-space spiking dynamics, leakage-current inter-layer communication, PonderNet adaptive timesteps, fused Triton PLIF kernels, and stabilization techniques (residual centering, lateral-inhibition normalization, and natural-gradient compensation). Under a constrained budget (about 1.4B pretraining tokens and 6.5K SFT steps), NeuronSpark-0.9B reaches 3.6 pretraining loss and shows early multi-turn dialogue behavior after SFT. These results support the feasibility of end-to-end language modeling with a pure SNN architecture at this scale.",
+      "authors": [
+        "Zhengzheng Tang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-17T06:01:05+00:00",
+      "link": "https://arxiv.org/pdf/2603.16148v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:LH LLM",
+        "query:LLM AC",
+        "query:LLM HUM",
+        "query:LLM MH"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Spiking neural network structures for large-scale language modeling",
+      "llm_evidence_cn": "用于大规模语言建模的脉冲神经网络结构",
+      "llm_evidence": "用于大规模语言建模的脉冲神经网络结构",
+      "canonical_evidence": "用于大规模语言建模的脉冲神经网络结构",
+      "llm_tldr_en": "Introduces NeuronSpark, a 0.9B-parameter spiking neural network language model with state-space dynamics.",
+      "llm_tldr_cn": "介绍了NeuronSpark，一个具有状态空间动力学的0.9B参数脉冲神经网络语言模型。",
+      "llm_tldr": "介绍了NeuronSpark，一个具有状态空间动力学的0.9B参数脉冲神经网络语言模型。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "Recurrent neural network structures for long-horizon language modeling",
+      "matched_requirement_id": "req-39",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.16148v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.15467v1",
+      "title": "Evaluating Time Awareness and Cross-modal Active Perception of Large Models via 4D Escape Room Task",
+      "abstract": "Multimodal Large Language Models (MLLMs) have recently made rapid progress toward unified Omni models that integrate vision, language, and audio. However, existing environments largely focus on 2D or 3D visual context and vision-language tasks, offering limited support for temporally dependent auditory signals and selective cross-modal integration, where different modalities may provide complementary or interfering information, which are essential capabilities for realistic multimodal reasoning. As a result, whether models can actively coordinate modalities and reason under time-varying, irreversible conditions remains underexplored. To this end, we introduce \\textbf{EscapeCraft-4D}, a customizable 4D environment for assessing selective cross-modal perception and time awareness in Omni models. It incorporates trigger-based auditory sources, temporally transient evidence, and location-dependent cues, requiring agents to perform spatio-temporal reasoning and proactive multimodal integration under time constraints. Building on this environment, we curate a benchmark to evaluate corresponding abilities across powerful models. Evaluation results suggest that models struggle with modality bias, and reveal significant gaps in current model's ability to integrate multiple modalities under time constraints. Further in-depth analysis uncovers how multiple modalities interact and jointly influence model decisions in complex multimodal reasoning environments.",
+      "authors": [
+        "Yurui Dong",
+        "Ziyue Wang",
+        "Shuyun Lu",
+        "Dairu Liu",
+        "Xuechen Liu",
+        "Fuwen Luo",
+        "Peng Li",
+        "Yang Liu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-16T16:03:34+00:00",
+      "link": "https://arxiv.org/pdf/2603.15467v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LLM AC",
+        "query:LLM AC"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "time awareness and reasoning under time-varying conditions",
+      "llm_evidence_cn": "时间意识与时变条件下的推理",
+      "llm_evidence": "时间意识与时变条件下的推理",
+      "canonical_evidence": "时间意识与时变条件下的推理",
+      "llm_tldr_en": "Introduces EscapeCraft-4D to evaluate time awareness and cross-modal reasoning in large models.",
+      "llm_tldr_cn": "引入EscapeCraft-4D来评估大模型的时间意识和跨模态推理能力。",
+      "llm_tldr": "引入EscapeCraft-4D来评估大模型的时间意识和跨模态推理能力。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "Benchmark datasets for evaluating long context large language models",
+      "matched_requirement_id": "req-41",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.15467v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.15994v1",
+      "title": "Selective Memory for Artificial Intelligence: Write-Time Gating with Hierarchical Archiving",
+      "abstract": "Retrieval-augmented generation stores all content indiscriminately, degrading accuracy as noise accumulates. Parametric approaches compress knowledge into weights, precluding selective updates. Neither mirrors biological memory, which gates encoding based on salience and archives rather than deletes superseded information. We introduce write-time gating that filters incoming knowledge objects using composite salience scores (source reputation, novelty, reliability) while maintaining version chains that preserve prior states. Using real LLM evaluation without oracle access to quality labels, write gating achieves 100 percent accuracy versus 13 percent for ungated stores. The critical finding emerges under distractor scaling: at 8:1 distractor ratios, read-time filtering (Self-RAG) collapses to 0 percent while write gating maintains 100 percent, revealing a structural advantage of write-time over read-time curation. Validation on Wikipedia (20 entities), procedurally generated pharmacology data, and 2026 arXiv papers confirms these findings. The gating advantage scales inversely with parametric memory support: +25pp for Wikipedia, +48pp for post-cutoff arXiv, +65pp for procedural data with zero training knowledge. Signal ablation confirms the method does not depend on oracle-correlated metadata. Write gating matches Self-RAG accuracy at one-ninth the query-time cost.",
+      "authors": [
+        "Oliver Zahn",
+        "Simran Chana"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-03-16T23:06:44+00:00",
+      "link": "https://arxiv.org/pdf/2603.15994v1",
+      "tags": [
+        "keyword:EHR TR",
+        "keyword:LH LLM",
+        "keyword:LLM AC",
+        "keyword:LLM HUM",
+        "keyword:LLM MH",
+        "keyword:LLM MR",
+        "query:EHR TR",
+        "query:LH LLM",
+        "query:LLM HUM",
+        "query:LLM MR"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Retrieval-augmented generation and selective memory",
+      "llm_evidence_cn": "检索增强生成与选择性记忆",
+      "llm_evidence": "检索增强生成与选择性记忆",
+      "canonical_evidence": "检索增强生成与选择性记忆",
+      "llm_tldr_en": "Introduces write-time gating for RAG to filter noise and preserve salience, mimicking biological memory.",
+      "llm_tldr_cn": "为RAG引入写入时门控，以过滤噪声并保留显著性，模拟生物记忆。",
+      "llm_tldr": "为RAG引入写入时门控，以过滤噪声并保留显著性，模拟生物记忆。",
+      "llm_tags": [
+        "query:lh-llm"
+      ],
+      "matched_query_tag": "query:lh-llm",
+      "matched_query_text": "External memory and retrieval augmented generation for long horizons",
+      "matched_requirement_id": "req-37",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.15994v1",
       "carry_days": 1
     }
   ]

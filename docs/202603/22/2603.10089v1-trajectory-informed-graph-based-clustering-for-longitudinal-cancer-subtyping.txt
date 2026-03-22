@@ -1,0 +1,1556 @@
+Title: Trajectory-informed graph-based clustering for longitudinal cancer subtyping
+
+URL Source: https://arxiv.org/pdf/2603.10089v1
+
+Published Time: Thu, 12 Mar 2026 00:04:04 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# Trajectory-informed graph-based clustering for longitudinal cancer subtyping 
+
+# Lara Cavinato 1 , Marco Rocchi 1, Luca Viganò 2,3 , Francesca Ieva 1,4
+
+> 1
+
+MOX, Department of Mathematics, Politecnico di Milano, Milan, Italy 
+
+> 2
+
+Hepatobiliary Unit, Department of Minimally Invasive General & Oncologic Surgery, Humanitas Gavazzeni University Hospital, Bergamo, Italy 
+
+> 3
+
+Department of Biomedical Sciences, Humanitas University, Milan, Italy 
+
+> 4
+
+Health Data Science Centre, Human Technopole, Milan, Italy 
+
+Abstract 
+
+Cancer subtyping plays a crucial role in informing prognosis and guiding personalized treatment strategies. However, conventional subtyping approaches often rely on static, biopsy-derived scores that hardly capture the biological heterogeneity and temporal evolution of the disease. In this study, we propose a novel trajectory-informed clustering method for cancer subtyping that integrates multi-modal clinical data and longitudinal patient trajectories. Our method constructs a patient similarity graph using time-varying imaging-derived features, clinical covariates, and transitions among key clinical states such as therapy, surveillance, relapse, and death. This graph structure enables the identification of patient subgroups that are not only phenotypically and genotypically distinct but also aligned with patterns of disease progression. We position our approach within the landscape of existing subtyping methods and highlight its advantages in terms of temporal modeling and graph-based interpretability. Through simulation studies and application to a real world dataset of liver metastases, we demonstrate the ability of our framework to uncover clinically relevant subtypes with distinct prognostic trajectories. Our results underscore the potential of trajectory-informed clustering to enhance personalized oncology by bridging cross-sectional biomarkers with dynamic disease evolution. An R implementation can be found at this link. 
+
+# 1 Introduction 
+
+Cancer remains one of the leading causes of mortality worldwide, accounting for nearly 10 million deaths in 2020 alone, according to the World Health Organization [1]. Despite decades of research and significant advancements in diagnostics and therapeutics, cancer continues to present difficult challenges to clinicians and researchers. These challenges stem not only from the aggressive nature of many malignancies but more fundamentally from the intrinsic complexity and heterogeneity of the disease across individuals, subtypes, and stages [2]. The term cancer encompasses a wide family of diseases characterized by uncontrolled cellular prolifera-tion, but the clinical and molecular presentation of each case can vary dramatically. This heterogeneity manifests across several dimensions: from genetic mutations and epigenetic alterations at the molecular level, to tumour microenvironment dynamics, patient immune response, and resistance to therapy. More-over, tumours can evolve under selective pressures, such as treatment, leading to further divergence in disease progression and clinical outcome. These layers of complexity make cancer a moving target, which in turn complicates the development of universally effective therapies and stratification systems [3]. Despite the biological diversity of cancer, clinical treatment guidelines are often built upon a limited num-ber of criteria. Standardized approaches typically rely on tumour histology, anatomical site, and coarse staging information derived from diagnostic biopsies. These indicators, while clinically valuable, fail to fully represent the variability of individual cases [4]. Personalized treatment decisions based on molecular and phenotypic characteristics, both at the microscale (e.g., genomics, transcriptomics, proteomics) and macroscale (e.g., imaging phenotypes, patient-reported symptoms), remain largely underutilized in clin-ical protocols. As a result, the current paradigm risks under-treating aggressive forms or over-treating mild cases, hampering the efficacy and safety of interventions [5]. Cancer subtyping, the classification of tumours into biologically and clinically relevant and prognostic subgroups, is a growing field that aims to address these limitations [6]. Traditional subtyping systems 1
+
+> arXiv:2603.10089v1 [stat.ME] 10 Mar 2026
+
+often rely on static, population-level biopsy scores that are limited in scope and fail to capture the dy-namic nature of disease progression. These systems also neglect longitudinal aspects of cancer evolution, such as response to therapy, relapse, and survival outcomes. In contrast, modern subtyping approaches aim to integrate a broad range of data sources, including time-resolved imaging, clinical covariates, and high-dimensional omics data, to construct refined patient stratifications that are both more representa-tive and potentially actionable [7, 8]. To this end, several recent methodologies have emerged for cancer subtyping based on multi-source data and longitudinal observations. Profile regression, for instance, is a Bayesian clustering framework that simultaneously models covariates and outcomes using a Dirichlet process mixture model [9]. It provides flexible clustering while accounting for uncertainty, but it can be computationally intensive and less effective in high-dimensional settings. Nearest shrunken centroid methods, as used in gene expression analysis, classify samples by shrinking class centroids towards the overall centroid to improve discrimination [10]. While simple and interpretable, these methods are typi-cally limited to cross-sectional data and may not capture temporal dynamics. Variational deep survival clustering combines deep learning representations with survival analysis to learn patient subgroups with distinct prognostic patterns [11]. Although powerful, this approach requires careful tuning and is often a black-box. Graph-based survival clustering methods, in contrast, model patient similarities as a network, using graph structures to incorporate both feature similarity and survival behavior [12]. This class of methods excels at capturing complex dependencies and relational structures among patients, although estimating the underlying graph from noisy, high-dimensional data remains challenging. In this work, we propose a novel graph-based clustering method specifically designed for cancer subtyping that integrates both temporal and cross-sectional patient information. Our approach constructs a patient similarity graph informed by time-varying imaging-derived features, clinical covariates, and the sequence of transitions among critical clinical states such as therapy, surveillance, relapse, and death. These tran-sitions are modeled as trajectories that capture the evolution of the disease, enabling us to group patients not only by static characteristics but also by their disease course. By encoding temporal information directly into the graph structure, our method facilitates the identification of clinically relevant subtypes that reflect both phenotypic and genotypic diversity, while also being sensitive to disease dynamics. The main contribution of this paper is the development of this trajectory-informed, graph-based clus-tering framework for robust and interpretable cancer subtyping. In contrast to existing approaches, our model leverages longitudinal clinical trajectories to inform the graph structure, thereby enabling subtype definitions that are sensitive to both patient-specific evolution and multimodal data integration. The long term goal is to derive imaging, possibly time-varying, biomarkers that correlate with tumour evolution to be used to guide clinical decision making. The remainder of this paper is structured as follows. In Section 2, we present the formal model formulation and describe how the patient similarity graph is constructed from multimodal and temporal data. Section 3 details the optimization procedure for clustering and inference. Section 4 evaluates the performance of our method through extensive simulation studies designed to test sensitivity to noise, missing data, and temporal resolution. Section 5 demonstrates the utility of our framework in a real-world case study on liver metastases, highlighting the clinical and biological relevance of the derived subtypes. Finally, Section 6 concludes with a discussion of future directions and potential clinical applications. 
+
+# 2 Model formulation 
+
+In this section, we present a framework to model patient similarity and subtyping by jointly leveraging static covariates and time-to-event information from multiple transitions, modeled through a Multi-State Model. The approach builds a similarity graph among patients, where the similarity score is not precomputed but learned from data, guided by survival outcomes. This results in a data-driven affinity matrix that better captures disease trajectories and patient phenotypes. 
+
+# 2.1 Preliminaries on Multi-State Models 
+
+Multi-State Models (MSM) are an extension of survival analysis used to describe processes in which individuals move through a finite number of states over time [13]. These models are particularly well-suited for applications in clinical research, where patients may experience multiple events or transitions, such as disease progression, remission, or death. The key idea is to model the stochastic process {X(t), t ≥
+
+0}, where X(t) denotes the state occupied by an individual at time t.Let S = {1, 2, . . . , K } denote the finite set of possible states. The process starts in an initial state (e.g., 
+
+X(0) = 1 ) and evolves over time as transitions occur between states. Transitions can be either reversible ,2Healthy  Cancer precursor  Diagnosis  Therapy  Recurrence 
+
+> Death
+
+Figure 1: Example of a clock-reset multi-state model (MSM) representing the natural history and clinical management of cancer. The states reflect key phases of disease progression: Healthy represents the absence of malignancy; Cancer precursor indicates a subclinical or pre-malignant condition; Diagnosis 
+
+marks the point of clinical detection; Therapy includes the treatment phase such as surgery, chemotherapy, or radiotherapy; Recurrence denotes relapse after treatment; and Death is the absorbing terminal state. Arrows represent possible transitions between states, and time is reset at each state transition, consistent with a clock-reset MSM framework. This structure allows for modelling heterogeneous disease trajectories and estimating transition hazards between clinically relevant states. where individuals can return to a previously visited state, or irreversible , where once a transition occurs, the individual cannot return (e.g., progression to death). The structure of allowed transitions is often visualized as a directed graph, where nodes represent states and edges represent possible transitions. An example of MSM in the context of cancer clinical pathway is given in Figure 1. The fundamental quantities of interest in a multi-state model are the transition intensities or hazards :
+
+λrs (t) = lim 
+
+> ∆t→0
+
+P (X(t + ∆ t) = s | X(t) = r)∆t , r̸ = s
+
+which define the instantaneous risk of moving from state r to state s at time t. A common assumption is that the process follows the Markov property , meaning that future transitions depend only on the current state and not on the past history, i.e.: 
+
+P (X(t + ∆ t) = s | F t) = P (X(t + ∆ t) = s | X(t) = r)
+
+where Ft denotes the filtration (history) up to time t.In a semi-parametric setting, the Cox proportional hazards model can be used to model the transition intensities. For a transition from state r to state s, the hazard function for individual i at time t is given by: 
+
+λ(i) 
+
+> rs
+
+(t) = λ0,rs (t) exp  βTrs Xrs i (t)
+
+Here, λ0,rs (t) is the unspecified baseline hazard for the r → s transition, βrs is a vector of regression coefficients, and Xrs i (t) is the vector of covariates (possibly time-dependent) relevant to the transition. Inference in multi-state models is typically based on partial likelihoods, constructed from observed tran-sition times and states. Let Ti denote the observed transition time and δi the indicator of the observed transition (from state r to s). The partial likelihood for the transition r → s across individuals is given by: 
+
+Lrs (βrs ) = Y
+
+> i∈D rs
+
+exp  βTrs Xrs i (Ti)P 
+
+> j∈R rs (Ti)
+
+exp  βTrs Xrs j (Ti)
+
+where Drs is the set of individuals who experience the transition r → s, and Rrs (Ti) is the risk set at time Ti.Multi-state models are particularly useful in settings where patients may experience intermediate events before a terminal event, such as disease progression through well-defined clinical stages, relapse and recovery in chronic diseases, time to treatment and adverse events in pharmacological studies. They provide a more nuanced understanding of the disease process than traditional survival models, enabling researchers to assess transition-specific risks and the effect of covariates on different parts of the clinical pathway. 32.2 Population Graph Estimation 
+
+As stated in the introduction, we aim to learn a graph structure describing the population under study in a way that allows us to directly segment such graph is groups of patients displaying both similar clinical representations and similar histories. To do this, we exploit graph and MSM literature. We define a similarity graph G = ( V, E ), where each node vi ∈ V corresponds to a patient, and each edge (vi, v j ) ∈ E encodes the similarity between patients i and j. This graph is represented by an affinity matrix S ∈ Rn×n, where each entry Sij quantifies how similar patient i is to patient j. A higher value of 
+
+Sij indicates greater similarity between the two patients. Rather than computing this matrix using unsupervised or heuristic rules, we propose to learn S in a supervised fashion, using both the covariate profiles and disease progression trajectories of each patient, as informed by their observed survival transitions. 
+
+2.2.1 Learning the Graph Similarity Matrix via Distance Minimization 
+
+Let d(i, j ) be a distance function that captures the dissimilarity between patient i and patient j. Our objective is to assign higher similarity scores to pairs of patients that are more similar according to this distance. To formalize this intuition, we aim to minimize the total distance between similar pairs in the graph by solving the following optimization problem [14]: 
+
+min 
+
+> Sn
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+d(i, j )Sij subject to 
+
+> n
+
+X
+
+> j=1
+
+Sij = 1 , Sij ≥ 0 ∀i, j. (1) This formulation enforces that the similarity scores associated with each patient sum to one, and that all similarity values are non-negative. As a result, each row of the matrix S can be interpreted as a distribution over neighbors, assigning probabilistic similarity weights to other patients. However, this formulation can lead to degenerate solutions, such as the case in which each patient assigns all its similarity mass to a single nearest neighbor. To prevent such collapse, we introduce a regularization term that penalizes highly concentrated similarity vectors [14]: 
+
+min 
+
+> Sn
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+ d(i, j )Sij + λS 2
+
+> ij
+
+ subject to 
+
+> n
+
+X
+
+> j=1
+
+Sij = 1 , Sij ≥ 0. (2) This regularized formulation encourages more balanced similarity distributions, with the parameter λ ≥ 0
+
+controlling the degree of smoothness. The definition of the distance function d(i, j ) plays a central role in learning meaningful similarities. We propose a function that combines two complementary components: one based on baseline covariates, and another based on patient-specific risk scores derived from a multi-state survival model. The combined distance is written as: 
+
+d(i, j ) = μ d cov (i, j ) + dmsm (i, j ), (3) where μ ≥ 0 is a scalar hyperparameter that balances the contribution of the two components. 
+
+Covariate-based Distance The first term dcov (i, j ) captures differences in baseline patient charac-teristics. Each patient i is associated with a vector Xi ∈ Rp with p number of unique covariates across all transitions (i.e., covariates such as sex or age, which may appear in multiple transitions, are included only once). The covariate-based distance is then computed as the squared Euclidean distance between these vectors: 
+
+dcov (i, j ) = ∥Xi − Xj ∥22. (4) 
+
+MSM-based Distance The second term, dmsm (i, j ), measures the difference in the predicted risk trajectories of the two patients, using a Multi-State Model. We assume that patients follow specific clinical pathways defined by K state-to-state transitions. For each transition k, patients are described by a set of covariates, denoted as Xk, which may differ from the covariates describing other transitions. These covariates can represent various clinical and demographic factors, such as age, gender, clinical markers, as well as other relevant biomarkers derived from both invasive and non-invasive disease assessments. For instance, in our case study, we exploit time-resolved imaging data to extract useful patterns in the dynamics of imaging biomarkers, from a tumour texture 4point of view. In fact, imaging has been proven to entail useful clinical information while being non-invasively acquired during clinical routine. The transitions between these states can be modeled using stratified Cox models, which describe the hazard of transitioning from one state to another as a function of the covariates. To define a distance between two patients, say i and j, who belong to the set of patients following this clinical pathway, we aim to calculate a weighted distance that reflects the differences in the Cox-related risks for transitioning between states. The approach involves computing the difference in transition hazards, where the risks of transitioning depend on the covariates of the patients, and then aggregating these differences in a weighted way across all possible transitions to quantify the similarity between trajectories. The stratified Cox model provides a framework to model the hazard for transitioning between states. The hazard function λk(t|Xk) for a patient in the transition k at time t is given by the following expression: 
+
+λk(t|Xk) = λ0(t) exp( βTk Xk)
+
+Here, λ0(t) represents the baseline hazard function, which is common across all patients, while βTk Xk
+
+is the linear predictor for the transition k hazard from state. The vector βk contains the regression coefficients associated with the covariates Xk of the patient, and the exponential term reflects how these covariates influence the risk of transitioning between states. The difference in the risk between two patients i and j for a given transition k can be measured using the hazard ratio (HR), which is defined as the ratio of their hazards for that transition. The hazard ratio for the transition k between patients i and j is given by: HR ki,j = λk(t|Xki )
+
+λk(t|Xkj ) = λ0(t) exp( βTk Xki )
+
+λ0(t) exp( βTk Xkj ) = exp( βTk Xki )exp( βTk Xkj ) = exp  βTk (Xki − Xkj )
+
+This hazard ratio reflects how much the risk of transitioning differs between patients i and j. A hazard ratio greater than 1 indicates that patient i has a higher risk of transitioning compared to patient j, while a hazard ratio less than 1 suggests the opposite. To define a distance between patients i and j based on their clinical pathways, we need to aggregate the differences in their risks for transitioning between all K state-to-state transitions. The key idea is to compute the logarithmic difference in hazard ratios for each transition and then weight these differences according to the precision with which the Cox model estimates the corresponding hazard [15]. This precision can be captured by the inverse of the variance of the regression coefficients βk.Let the weighted distance dmsm (i, j ) between patients i and j be defined as the sum of the weighted differences across all states. The difference for each transition is proportional to the absolute difference in the linear predictor βTk (Xki − Xkj ), with the weights reflecting the uncertainty in the estimates of the transition hazards. A natural form for this squared weighted distance can be expressed as follows. We take the squared form for compliance with dcov (i, j ) distance: 
+
+dmsm (i, j ) = 
+
+> K
+
+X
+
+> k=1
+
+wk · βTk (Xki − Xkj ) 22
+
+Here, K denotes the total number of transitions, and wk represents the weight assigned to each of them. These weights can be designed in various ways, but a common approach is to set wk to be inversely proportional to the estimated variance of the regression coefficients, ˆVar (βk), reflecting the precision of the transition-specific Cox model estimates [16, 17, 18], as more uncertain estimates (larger variances) should contribute less to the overall distance. Thus, the weight for each transition would be: 
+
+wk = 1ˆVar (βk)
+
+In this case, the distance dmsm (i, j ) between two patients could be written as: 
+
+dmsm (i, j ) = 
+
+> K
+
+X
+
+> k=1
+
+βTk (Xki − Xkj ) 22
+
+ˆVar (βk)
+
+In this formulation, the inverse variance 1ˆVar (βk ) serves as a weight that reflects the precision of the Cox model’s estimate for each transition. Larger variances in βk (indicating less precision) reduce the influence of the corresponding transition on the overall distance between the two patients [19, 20]. Alternatively, 5one could use other forms of weighting based on clinical relevance or empirical evidence regarding the importance of different transitions [21, 15]. The resulting distance measure provides a way to quantify how similar or different two patients are in terms of their clinical pathway. A smaller distance suggests that the two patients have similar risk profiles for transitioning between states, while a larger distance indicates that their risk profiles are more distinct. This weighted distance captures both the difference in covariates across states and the uncertainty associated with the estimation of transition hazards, making it a useful tool for comparing patients in a their clinical evolution, to be considered together with the mere distance between patients’ covariates. 
+
+2.2.2 Learning Transition Parameters via Stratified Cox Loss 
+
+The MSM-based distance dmsm (i, j ) introduced previously depends on the transition-specific regression coefficients βk, which must be estimated from data. To obtain these estimates, we employ a stratified Cox proportional hazards model, where each transition k ∈ { 1, . . . , K } is treated as a separate stratum with its own covariates and parameter vector βk.Let δki denote the event indicator for patient i associated with transition k, such that δki = 1 if patient 
+
+i undergoes the transition k, and δki = 0 otherwise. Let Rki be the risk set for patient i at the time of their observed event or censoring in stratum k, and let Xki be the covariate vector of patient i relevant to transition k.Being the partial likelihood for the transition k across individuals previously defined 
+
+Lk(βk) = Y
+
+> i∈D k
+
+exp  βTk Xki (Ti)P  
+
+> j∈R k(Ti)
+
+exp  βTk Xkj (Ti) ,
+
+we derive the stratified partial likelihood across all transitions. Under standard assumptions such as independence of transitions (given covariates), non-informative censoring, markovianity and separate risk sets and time scales for each transition, the overall likelihood of the multi-state process can be factorized and defined as the summation of log-partial-likelihoods across transitions as theoretically justified under the stratified Cox framework [22]: 
+
+L(β) = −
+
+> K
+
+X
+
+> k=1
+> n
+
+X
+
+> i=1
+
+δki
+
+βTk Xki − log X
+
+> j∈R ki
+
+exp  βTk Xkj
+
+
+
+This loss function estimates the transition-specific coefficients βk by maximizing the stratified Cox par-tial likelihood, accounting for the heterogeneity across transitions. To promote sparsity in the learned coefficients and facilitate model interpretability and variable selection, we augment the loss with an 
+
+ℓ1-regularization term. The total regularized loss function is given by: 
+
+Lreg (β) = L(β) + η
+
+> K
+
+X
+
+> k=1
+
+∥βk∥1
+
+where η ≥ 0 is a hyperparameter that controls the degree of regularization. The optimization of Lreg (β)
+
+yields the set of transition-specific parameter vectors βk that are used in defining the patient-specific transition risks and, consequently, the distance dmsm (i, j ) between individuals. 
+
+2.2.3 Joint Objective Function 
+
+Bringing together all the defined components into a joint objective function that simultaneously learns the parameters {βk} and the similarity matrix S. The final optimization problem is defined as: 6min  
+
+> β,S
+
+−
+
+> K
+
+X
+
+> k=1
+> n
+
+X
+
+> i=1
+
+δki
+
+βTk Xki − log X
+
+> j∈R ki
+
+exp  βTk Xkj
+
+| {z }
+
+> Stratified Cox partial log-likelihood
+
++ η
+
+> K
+
+X
+
+> k=1
+
+∥βk∥1
+
+| {z } 
+
+> Sparsity via ℓ1-regularization
+
++ γ
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+μ ∥Xi − Xj ∥22 +
+
+> K
+
+X
+
+> k=1
+
+wk · βTk (Xki − Xkj ) 22
+
+!
+
+Sij + λS 2
+
+> ij
+
+| {z }
+
+> Similarity-regularized patient distance learning
+
+subject to 
+
+> n
+
+X
+
+> j=1
+
+Sij = 1 , Sij ≥ 0 ∀i, j. 
+
+(5) The first term in this objective corresponds to the stratified Cox partial log-likelihood, used to estimate the survival risk for each transition. The second term imposes sparsity through an ℓ1-norm on the transition weights. The third term integrates the learned similarity scores, by minimizing a regularized and weighted distance between patients in both covariate and risk space. The hyperparameters γ and μ
+
+control the influence of the similarity structure in the overall optimization. This joint learning framework integrates survival modelling with similarity learning in a principled and interpretable manner. By combining a stratified Cox formulation with a graph-based regularized objec-tive, the method captures both baseline differences and disease trajectory similarities, enabling nuanced patient stratification that is informed by both static and temporal data. 
+
+# 2.3 Convergence analysis 
+
+To establish the theoretical soundness of the proposed joint optimization framework, we now examine its convergence properties. In particular, we aim to demonstrate that, under standard regularity conditions, the objective function defined in (5) admits a well-posed solution. The following proof shows that the optimization problem is convex in each block of variables when the others are fixed, that the subproblem in the similarity matrix S is strictly convex with a unique minimizer, and that substituting this solution yields a reduced problem in w that remains convex. These properties together ensure the existence and uniqueness of a global minimum for the joint problem, thus guaranteeing stability and convergence of the proposed learning algorithm. 
+
+Step 1: Reformulating the objective function. 
+
+The optimization problem (5) can be rewritten as: 
+
+min  
+
+> β,S
+
+f (β) + λ∥S∥22 + γ⟨g(β), S ⟩, (6) Rewriting the quadratic term explicitly: 
+
+min  
+
+> β,S
+
+f (β) + λ
+
+2 S⊤IS + ⟨γg (β), S ⟩, (7) where f (β) is a function of β (representing the original objective terms depending solely on β), ∥S∥22
+
+denotes the squared Frobenius norm of S, ensuring convexity, ⟨g(β), S ⟩ is the inner product between S
+
+and a function g(β) and λ > 0 and γ are scalar parameters. 
+
+Step 2: Convexity of the problem. 
+
+The term λ 
+
+> 2
+
+S⊤IS = λ 
+
+> 2
+
+∥S∥22 is strictly convex in S, while the linear term ⟨γg (β), S ⟩ is affine in S. Assuming 
+
+f (β) is convex in β, the constraints on S
+
+X
+
+> j
+
+Sij = 1 , Sij ≥ 0, ∀i, j, 
+
+7define a convex polytope and the optimization problem in S for a given β is a strictly convex quadratic program. Therefore, for any fixed β, the problem 
+
+S∗(β) = arg min 
+
+> S
+
+λ
+
+2 ∥S∥22 + γ⟨g(β), S ⟩
+
+admits a unique solution S∗(β), since quadratic objectives with strictly positive-definite terms ( λ > 0)have unique minimizers over convex sets. 
+
+Step 3: Reduced problem and existence of solution. 
+
+Substituting S∗(β) into the original problem yields the reduced problem: 
+
+min  
+
+> β
+
+f ∗(β) = f (β) + λ∥S∗(β)∥22 + γ⟨g(β), S ∗(β)⟩
+
+Since S∗(β) is uniquely defined for each β, f ∗(β) remains convex whenever f (β) is convex. Moreover, if f (β) is strongly convex, then f ∗(β) is also strongly convex, ensuring a unique global minimum with respect to β.
+
+Step 4: Compactness and global minimum. 
+
+If β is restricted to a compact domain (which is often the case in regularized learning problems) then 
+
+f ∗(β) attains its minimum within this domain. Because f ∗(β) is convex (or strongly convex under addi-tional conditions), the minimizer is unique. The joint optimization problem therefore admits a unique pair (β∗, S ∗(β∗)) corresponding to a global minimum. 
+
+# 3 Model optimization 
+
+The affinity matrix estimated in the previous section needs to be estimated and exploited to adaptively perform clustering of nodes. The resulting segmentation of the graph resolves by construction into the subtyping of patients based on similarity in both their baseline and disease evolution characteristics. In this section, we explain how to solve the optimization problem. 
+
+# 3.1 Population Graph Segmentation 
+
+Starting from the optimization problem defined in Equation 5, we observe that the variable S ∈ Rn×n
+
+represents a similarity or assignment matrix, which defines the weighted edges of a graph whose vertices correspond to the data points {Xi}ni=1 . In this graph, an edge between node i and node j has weight Sij .The goal is to impose an additional constraint or regularization on S such that the resulting graph has exactly c connected components, where c is the desired number of clusters into which we wish to partition the data. To achieve this, we exploit a fundamental property from spectral graph theory. Specifically, given the (unnormalized) graph Laplacian matrix L defined as: 
+
+L = D − S + ST
+
+2 (8) where D is the degree matrix with diagonal entries 
+
+Dii =
+
+> n
+
+X
+
+> j=1
+
+Sij + Sji 
+
+2 (9) it is known that the multiplicity of the eigenvalue 0 of L is exactly equal to the number of connected components of the graph [23]. In other words, if L has c eigenvalues equal to zero, then the graph has precisely c disjoint connected components. Thus, in order to enforce that the graph constructed from S
+
+has exactly c connected components, we must ensure that L has exactly c eigenvalues equal to zero. Directly enforcing an exact constraint on the spectrum of L would be computationally prohibitive and non-convex. Instead, we can introduce an additional optimization objective that encourages L to have 
+
+c eigenvalues close to zero. A classical way to approximate this idea is to introduce a matrix U ∈ Rn×c
+
+8whose i-th row is the vector ui ∈ R1×c assigned to each individual i defining their association strength to each cluster k and whose columns are constrained to be orthonormal, i.e., 
+
+U T U = Ic (10) and penalize the trace of the quadratic form U T LU , leading to an additional regularization term of the form: 
+
+α · Tr( U T LU ) (11) where α > 0 is a hyperparameter controlling the strength of the spectral constraint. The intuition behind this penalty is that minimizing Tr( U T LU ) over all matrices U with orthonormal columns forces the columns of U to align with the eigenvectors associated with the smallest eigenvalues of L. If the trace is minimized sufficiently, the corresponding eigenvalues are driven towards zero, thereby encouraging the emergence of c connected components. Consequently, the full optimization problem becomes: 
+
+min  
+
+> β,S,U
+
+−
+
+> K
+
+X
+
+> k=1
+> n
+
+X
+
+> i=1
+
+δki
+
+βTk Xki − log X
+
+> j∈R ki
+
+exp  βTk Xkj
+
+ + η
+
+> K
+
+X
+
+> k=1
+
+∥βk∥1
+
++ γ
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+μ ∥Xi − Xj ∥22 +
+
+> K
+
+X
+
+> k=1
+
+wk · βTk (Xki − Xkj ) 22
+
+!
+
+Sij + λS 2
+
+> ij
+
++ α · Tr( U T LU )
+
+subject to 
+
+> n
+
+X
+
+> j=1
+
+Sij = 1 , Sij ≥ 0 ∀i, j, U T U = Ic.
+
+(12) Thus by augmenting the original optimization problem with the spectral regularization term α·Tr( U T LU ),and ensuring that U has orthonormal columns, we effectively guide the learning process towards construct-ing a graph with exactly c connected components. This process makes the neighborhood assignment S
+
+an adaptive mechanism for clustering, fully integrated into the learning of the model parameters β.
+
+3.1.1 Intuitive Explanation of Minimizing Tr( UTLU )
+
+Let us consider the Laplacian matrix L ∈ Rn×n associated with a graph. Since L is symmetric and positive semi-definite, it has a complete set of orthonormal eigenvectors {v1, v 2, . . . , v n} and real non-negative eigenvalues 0 ≤ λ1 ≤ λ2 ≤ · · · ≤ λn.We are interested in solving the following minimization: 
+
+min   
+
+> U∈Rn×c
+
+Tr (U T LU ) subject to U T U = Ic,
+
+where U is a matrix with c orthonormal columns. Express U in terms of the eigenvectors of L:
+
+U = V Y, 
+
+where V = [ v1, . . . , v n] is the orthogonal matrix of eigenvectors of L, and Y ∈ Rn×c is a coefficient matrix. Since L = V ΛV T with Λ = diag (λ1, . . . , λ n), substituting into the objective gives: Tr (U T LU ) = Tr (Y T V T (V ΛV T )V Y ) = Tr (Y T ΛY ),
+
+because V T V = In. Thus: Tr (U T LU ) = 
+
+> n
+
+X
+
+> i=1
+
+λi∥Yi·∥22,
+
+where Yi· denotes the i-th row of Y . Minimizing Tr (U T LU ) means concentrating ∥Yi·∥22 onto the smallest 
+
+λi. In the extreme, the minimum is achieved when U spans the eigenvectors corresponding to the c
+
+smallest eigenvalues: 
+
+U = [ v1, v 2, . . . , v c].
+
+Thus, minimizing Tr (U T LU ) forces U to align with the subspace spanned by the eigenvectors associated with the c smallest eigenvalues. Minimizing Tr( U T LU ) aligns U with the eigenvectors associated with the smallest eigenvalues of L.93.1.2 Connection to Spectral Clustering 
+
+In spectral clustering the Laplacian L is computed from the similarity graph. then the first c eigenvectors 
+
+v1, . . . , v c corresponding to the smallest eigenvalues are extracted and are used to embed the data points. Clustering (e.g., via k-means) is performed in this embedded space. Thus, minimizing Tr (U T LU ) during model training directly embeds the clustering behaviour without any need for a separate eigen-decomposition or post-processing clustering step. Spectral clustering uses the smallest eigenvectors of the Laplacian to find clusters. Minimizing Tr (U T LU ) embeds this step into the model optimization. 
+
+Algorithm 1 Alternating Minimization for the Joint Optimization of β, S, and U 
+
+> 1:
+
+Input: Data matrices {Xki }k=1 ,...,K i=1 ,...,n , number of nearest neighbors κ, parameters η, γ, λ, α, μ, and 
+
+{wk}Kk=1 . 
+
+> 2:
+
+Initialize: Random or heuristic initializations for β, S, and U satisfying constraints.  
+
+> 3:
+
+while not converged do  
+
+> 4:
+
+Step 1: Update β with fixed S and U 
+
+> 5:
+
+Solve the following optimization problem: 
+
+min  
+
+> β
+
+−
+
+> K
+
+X
+
+> k=1
+> n
+
+X
+
+> i=1
+
+δki
+
+βTk Xki − log X
+
+> j∈R ki
+
+exp  βTk Xkj
+
+ + η
+
+> K
+
+X
+
+> k=1
+
+∥βk∥1 + γ X
+
+> i,j K
+
+X
+
+> k=1
+
+wk∥βTk (Xki − Xkj )∥22Sij  
+
+> 6:
+
+Use a proximal gradient method.  
+
+> 7:
+
+Step 2: Update S with fixed β and U 
+
+> 8:
+
+for each i = 1 , . . . , n do  
+
+> 9:
+
+Solve the following optimization for each row of S:
+
+min 
+
+> Si·
+
+STi· di + λ∥Si·∥22 s.t. 
+
+> n
+
+X
+
+> j=1
+
+Sij = 1 , Sij ≥ 0 
+
+> 10:
+
+where di encodes precomputed weighted distances between sample i and all other samples.  
+
+> 11:
+
+end for  
+
+> 12:
+
+Step 3: Update U with fixed β and S 
+
+> 13:
+
+Form the Laplacian matrix L from the current assignment matrix S. 
+
+> 14:
+
+Solve the following eigenvalue problem: 
+
+min  
+
+> U
+
+Tr( U T LU ) subject to U T U = Ic. 
+
+> 15:
+
+Set U to the eigenvectors corresponding to the c smallest eigenvalues of L. 
+
+> 16:
+
+end while  
+
+> 17:
+
+Output: Optimized parameters β, S, and U .
+
+# 3.2 Solution Strategy for the Optimization Problem 
+
+The problem we propose is highly non-convex due to the coupling of β, S, and U within the objective function. However, it is possible to tackle it effectively by using a block coordinate descent approach, also known as alternating minimization , where we cyclically optimize over each variable while keeping the others fixed. Specifically, the method we propose consists of three main steps, repeated iteratively until convergence. A pseudo-code representation is given in Algorithm 1. Each step involves optimizing over a single group of variables ( β, S, or U ) while keeping the others fixed. In our implementation, the transition-specific weights wk are treated as constant within each iteration i
+
+of the alternating optimization scheme. Specifically, at iteration i, the weights are computed using the estimates of the regression coefficients βk obtained at iteration i−1. This assumption ensures numerical stability and decouples the estimation of transition weights from the current gradient updates. 
+
+Step 1: Update β with S and U Fixed When the variables S and U are fixed, the optimization over β reduces to a regularized optimization problem that combines multiple terms. First, there is a 10 survival modelling term based on the log-partial likelihood, which is convex and differentiable in β.Then, there is an ℓ1-norm penalty on β, promoting sparsity among the parameters. Finally, there are additional quadratic terms involving β that arise from the similarity-weighted differences between features. Mathematically, the subproblem in β can be written as: 
+
+min  
+
+> β
+
+−
+
+> K
+
+X
+
+> k=1
+> n
+
+X
+
+> i=1
+
+δki
+
+βTk Xki − log X
+
+> j∈R ki
+
+exp  βTk Xkj
+
+| {z }
+
+> stratified Cox loss
+
++ η
+
+> K
+
+X
+
+> k=1
+
+∥βk∥1
+
+| {z }
+
+> ℓ1-sparsity
+
++ γ
+
+> K
+
+X
+
+> k=1
+
+wknX
+
+> i,j =1
+
+Sij 
+
+βTk (Xki − Xkj )2
+
+| {z }
+
+> similarity penalty
+
+.
+
+The first and the last terms are non-linear but differentiable, whereas the ℓ1 term is convex but non-smooth. Thus, standard gradient descent cannot be applied directly. Instead, one effective method is to use proxi-mal methods, such as proximal gradient techniques, where after computing a gradient step on the smooth part of the objective, a proximal mapping is applied to enforce sparsity via soft-thresholding. Accordingly, we first compute the gradient of the smooth part as: 
+
+g(β) = ∇βk
+
+−
+
+> K
+
+X
+
+> k=1
+> n
+
+X
+
+> i=1
+
+δki
+
+βTk Xki − log X
+
+> j∈R ki
+
+exp  βTk Xkj
+
+ + γ
+
+> K
+
+X
+
+> k=1
+
+wknX
+
+> i,j =1
+
+Sij 
+
+βTk (Xki − Xkj )2
+
+
+
+that, for every k, becomes: 
+
+gk(βk) = ∇βk
+
+− X
+
+> k,i
+
+δki
+
+βTk Xki − log X
+
+> j∈R ki
+
+exp  βTk Xkj
+
+ + γ X
+
+> k
+
+wk
+
+X
+
+> i,j
+
+Sij 
+
+βTk (Xki − Xkj )2
+
+
+
+= − X
+
+> i
+
+δki
+
+ Xki − ¯Xki (βk) + 2 γw k
+
+X
+
+> i,j
+
+Sij 
+
+βTk (Xki − Xkj )   Xki − Xkj
+
+ .
+
+Intuitively the first part is the difference between the covariate of the individual who failed and the risk-set average at the same time point, and drives the fit toward covariates that increase the partial likelihood. The second term measures how far apart patients i and j are in the current βk-induced risk space, while the outer factor (Xki − Xkj ) nudges βk so as to shrink that distance whenever Sij says the pair should be considered similar. Being αk a fixed step size, the update reads 
+
+β(t+1)  
+
+> k
+
+= prox αk h
+
+
+
+β(t) 
+
+> k
+
+− αk gk
+
+ β(t)
+
+> k
+
+
+
+.
+
+Since h is the weighted ℓ1 norm, its proximal operator is the element-wise soft threshold ,
+
+prox αk η∥·∥ 1 (v) 
+
+> p
+
+= sign( vp) max  |vp| − αkη, 0.
+
+Geometrically, every coordinate of v = β(t) 
+
+> k
+
+− αkgk(β(t) 
+
+> k
+
+) is pulled toward zero by the amount αkη; if the pull is stronger than the coordinate’s magnitude the coefficient is set exactly to zero, realising sparsity. 
+
+Step 2: Update S with β and U Fixed When β and U are held fixed, the optimization over S
+
+simplifies significantly into the following subproblem: 
+
+min  
+
+> S
+
+γ X
+
+> i,j
+
+μ∥Xi − Xj ∥22 +
+
+> K
+
+X
+
+> k=1
+
+wk∥βTk (Xki − Xkj )∥22
+
+!
+
+Sij 
+
+| {z }
+
+> linear term
+
++ λ X
+
+> i,j
+
+S2
+
+> ij
+
+| {z }
+
+> quadratic term
+
+s.t. X
+
+> j
+
+Sij = 1 
+
+| {z }
+
+> equality constraint
+
+, Sij ≥ 0
+
+| {z }
+
+> inequality constraint
+
+.
+
+(13) 11 The terms depending on S are linear and quadratic, while the constraints on S are simply an equality and an inequality linear constraints respectively. As the optimization for each row Sij is independent of the others and can be addressed independently, the optimization of such problem decomposes across the rows of S: for each i, we are solving a simple constrained quadratic minimization problem in n variables. This objective function is thus convex in Sij and, by the fundamental theorem of convex optimization, such convexity and the constraints imply that the optimal solution is unique, i.e., there is a single point where the gradient is zero and the constraints are satisfied. We streamline the formulation of the objective function by defining: 
+
+dij := μ∥Xi − Xj ∥22 +
+
+> K
+
+X
+
+> k=1
+
+wk∥β⊤ 
+
+> k
+
+(Xki − Xkj )∥22.
+
+so that Equation 13 becomes: 
+
+min  
+
+> S
+
+γ X
+
+> ij
+
+dij Sij + λ X
+
+> ij
+
+S2 
+
+> ij
+
+, subject to X
+
+> j
+
+Sij = 1 , Sij ≥ 0,
+
+To find the solution, we convert the constrained problem into an unconstrained problem where to apply the derivative test using a Lagrangian expression [24]. First, we introduce a Lagrange multiplier η ∈ R
+
+to handle the equality constraint: 
+
+L(S, η ) = γ X
+
+> ij
+
+dij Sij + λ X
+
+> ij
+
+S2 
+
+> ij
+
+− η
+
+X
+
+> ij
+
+Sij − 1
+
+ ,
+
+where 1 ∈ Rn is the vector of ones, which can be simplified into: 
+
+L(S, η ) = X
+
+> ij
+
+ γd ij Sij + λS 2 
+
+> ij
+
+− ηS ij 
+
+ + η · 1
+
+To find the solution Sij , we take the derivative of the Lagrangian with respect to Sij and set it equal to zero: 
+
+∂L
+
+∂S ij 
+
+= γd ij + 2 λS ij − η = 0 .
+
+Thus, from the first-order optimality conditions, the derive the closed-form solution Sij by solving the above equation in terms of the parameters of the problem: 
+
+Sij = η − γd ij 
+
+2λ .
+
+Finally, to comply with the non-negativity constraint Sij ≥ 0, which would require further adjustments via a projection step (i.e., soft-thresholding or clamping negative values to zero), we use the notation 
+
+(a)+ = max( a, 0) to identify the function that converts the values of a smaller than 0 to 0. Specifically, we project the solution onto the positive subspace: 
+
+Sij =
+
+ η − γd ij 
+
+2λ
+
+
+
+> +
+
+, (14) where (a)+ = max( a, 0) is applied elementwise. 
+
+Step 3: Update U with β and S Fixed Finally, when β and S are fixed, the optimization over U
+
+involves only the trace term: 
+
+min  
+
+> U
+
+Tr( U T LU ) subject to U T U = Ic,
+
+where L is the Laplacian matrix computed from the current S. This is a classical spectral optimization problem. The Laplacian L is a symmetric positive semi-definite matrix, and the objective function seeks an orthonormal matrix U that minimizes the quadratic form associated with L.It is well-known that the solution is given by taking the eigenvectors of L associated with its c smallest eigenvalues. That is, we perform an eigen-decomposition of L, and we form the matrix U by stacking the first c eigenvectors column-wise. In practice, we do not need to compute the full eigen-decomposition, but rather only the first few eigenvectors, which can be done efficiently using methods like iterative eigensolvers [14]. 12 Adaptive neighbor parameter tuning In the context of solving the optimization problem in Equa-tion 13 according to Equation 14, it is beneficial to promote sparsity in the learned similarity matrix S
+
+by encouraging each data point i to connect only to a small number of neighbors. Indeed, rather than assigning nonzero similarity weights to all pairs (i, j ), a sparse assignment focusing only on the κ-nearest neighbors improves robustness and better reflects the local geometry of the data manifold while reducing the computational complexity. This can be achieved by carefully tuning the regularization parameter λ
+
+(and η) for each data point i.To enforce that each point i connects only to its κ-nearest neighbors, we impose that Sij > 0 if and only if j ∈ Jκ, where Jκ denotes the index set of the κ-nearest neighbors of point i. This requirement translates into the condition: 
+
+Sij =
+
+ η−γd ij  
+
+> 2λ
+
+> 0, if j ∈ Jκ,
+
+0, if j / ∈ Jκ. (15) From the positivity condition for j ∈ Jκ, and using the constraint P 
+
+> j∈Jκ
+
+Sij = 1 , we derive: 
+
+X
+
+> j∈Jκ
+
+Sij = X
+
+> j∈Jκ
+
+η − γd ij 
+
+2λ (16) 
+
+= 12λ
+
+kη − γ X
+
+> j∈Jκ
+
+dij 
+
+ = 1 . (17) Solving for η, we obtain: 
+
+η = 1
+
+κ
+
+2λ + γ X
+
+> j∈Jκ
+
+dij 
+
+ . (18) To ensure that Sij = 0 for j / ∈ Jκ, the argument inside the positive part of (14) must be non-positive: 
+
+0 = 
+
+ η − γd ij 
+
+2λ
+
+
+
+, j / ∈ Jκ, (19) 
+
+⇒ η = γd ij , j / ∈ Jκ. (20) Combining this with the previous expression for η, we derive: 
+
+γd ij = 1
+
+κ
+
+2λ + γ X
+
+> j′∈Jκ
+
+dij ′
+
+ , j / ∈ Jκ, (21) from which we solve for λ:
+
+2λ = γκd ij − γ X
+
+> j′∈Jκ
+
+dij ′ (22) 
+
+⇒ λ = γ
+
+2
+
+κd ij − X
+
+> j′∈Jκ
+
+dij ′
+
+ . (23) The final solution would be: 
+
+Sij =
+
+
+
+12λ
+
+ 1
+
+κ
+
+2λ + γ X
+
+> j′∈Jκ
+
+dij ′
+
+ − γd ij 
+
+ , j ∈ Jκ,
+
+0, j / ∈ Jκ,
+
+(24) A key advantage of this formulation is that it removes the need to specify the number of clusters c a priori, as typically required in clustering-based models. Instead, the graph structure encoded by S naturally emerges from the local relationships in the data without enforcing a global partitioning beforehand. This leads to a more flexible and data-driven learning process. 13 3.3 Computational complexity 
+
+The computational complexity of one iteration of the external while loop is given by the sum of the complexities of the estimation of β and S. The complexity for the estimation of β is the one of the proximal gradiend descent algorithm: O(i n P 
+
+> k
+
+pk), where pk is the number of features of transition k, n
+
+the number of patients, i the number of iterations performed in the inner while loop. The complexity for the estimation of the similarity matrix S is O(n2). Named l the number of iterations of the outer loop, the overall complexity is O(l(i n P pk + n2)) .
+
+# 4 Simulation study 
+
+To evaluate the performance and robustness of the proposed model under a range of realistic and chal-lenging settings, we designed a comprehensive simulation study that systematically varies key data char-acteristics and methodological parameters. In the following sections, we first introduce how we generate the data depending on experimental parameters (Section 4.1), then we detail how we vary such param-eters to perform different tests on our model and principal benchmark models from literature according to major existing performance evaluation metrics (Section 4.2), and finally we conduct an ablation study as inquire wheter our model retains all and only the useful terms (Section 4.3). 
+
+# 4.1 Data generation 
+
+We generate synthetic datasets according to a multi-step pipeline designed to simulate clustered, high-dimensional, time-to-event data with multi-state progression. First, latent patient clusters are assigned by drawing cluster sizes from a multinomial distribution: 
+
+(n1, . . . , n C ) ∼ Multinomial( n, π ),
+
+where πc = 1 /C by default, ensuring balanced cluster sizes. To investigate the impact of class imbalance, this prior can be adjusted. Each patient i ∈ { 1, . . . , n } is then assigned to a cluster c(i) ∈ { 1, . . . , C }.For each patient, covariate vectors Xi ∈ Rp are drawn conditional on cluster membership. Specifically, within each cluster c, covariates follow a multivariate normal distribution: 
+
+Xi ∼ N (μc, Σ) ,
+
+where Σ is initially taken to be diagonal with entries σ21 , . . . , σ 2 
+
+> p
+
+, but may optionally include a correlation structure, e.g., Σjk = ρ|j−k|, allowing for dependence across features. The cluster-specific mean vectors 
+
+μc are drawn once at the beginning of each repetition with elements μcj ∼ N (0 , τ 2), where the variance parameter τ 2 controls the degree of separation between clusters in the covariate space. To simulate event times across the sequence of states (i.e., 0 → 1 → 2), we specify a set of transition-specific hazard functions governed by log-linear covariate effects. For each transition k, we generate the true effect vector β∗ 
+
+> k
+
+∈ Rp as a combination of a shared effect and a sparse, transition-specific deviation: 
+
+β∗ 
+
+> k
+
+= βshared + δk,
+
+where βshared ∼ N (0 , I p) encodes global risk factors, and δk has s% of its coordinates drawn from N (0 , 1) ,with the remainder set to zero, promoting sparsity and ensuring that the ℓ1-penalty in model fitting is meaningful. Event times are drawn from transition-specific Weibull distributions. The baseline hazard for transition 
+
+k is given by 
+
+h0k(t) = αkνktνk −1.
+
+For patient i, the individual-specific hazard is computed as 
+
+hik (t) = h0k(t) exp( β∗Tk Xi).
+
+Event times are sampled using inverse transform sampling: 
+
+Tik =
+
+
+
+− log Uαk exp( β∗Tk Xi)
+
+1/ν k
+
+, U ∼ U (0 , 1) ,
+
+and sequential progression through states is enforced by summing successive transitions, e.g., Ti,k +1 := 
+
+Tik + T ′
+
+> i,k +1
+
+, ensuring temporal consistency in the multi-state process. To simulate right-censoring, 14 censoring times Ci ∼ U (0 , q ) are drawn, with the parameter q calibrated to yield a desired average censoring rate (e.g., 25%). The observed survival times and event indicators are then defined as: 
+
+ Yik = min( Tik , C i)
+
+δik = I[Tik ≤ Ci]. (25) Finally, we compute a ground-truth similarity matrix S∗ ∈ Rn×n that reflects both covariate and risk profile proximity, for evaluating edge-level recovery and clustering performance. This matrix reflects both covariate proximity and risk profile similarity and is defined as: 
+
+S∗ 
+
+> ij
+
+= exp  −σX ∥Xi − Xj ∥22 − σλ
+
+P 
+
+> k
+
+β∗Tk (Xi − Xj ) P 
+
+> j′
+
+exp  −σX ∥Xi − Xj′ ∥22 − σλ
+
+P 
+
+> k
+
+β∗Tk (Xi − Xj′ )  .
+
+Specifically, S∗ is computed via a softmax kernel over pairwise distances in covariate space and projected risk space, parameterized by hyperparameters σX and σλ. This approach provides a continuous, structure-aware benchmark for graph recovery, inspired by affinity-based graph learning methods [25, 26, 27, 28]. Unlike binary cluster labels, this allows for fine-grained evaluation of the learned graph’s fidelity to the true underlying structure generated in our simulation framework. The hyperparameters σX and σλ are tuned so that, on average, within-cluster similarities S∗ 
+
+> ij
+
+are approximately 0.05 higher than between-cluster similarities, providing a useful external benchmark for graph recovery. This matrix enables computation of metrics such as edge prediction AUC and clustering agreement (e.g., ARI, AMI) without relying on the graph learned by the model under evaluation. 
+
+# 4.2 Experiments 
+
+We designed targeted simulation experiments to validate key properties of the proposed model. Each benchmark focuses on a specific hypothesis, uses a tailored evaluation metric, and tests whether the observed performance aligns with theoretical expectations. This section summarizes our methodology and findings across the main dimensions of model evaluation. 
+
+4.2.1 Set up 
+
+Table 1 summarizes the dimensions explored, including the number of patients ( n), number of covariates (p), number of latent disease states ( K), number of underlying patient clusters ( C), baseline hazard types, and censoring rates. 
+
+Dimension Default Values to sweep Rationale 
+
+Patients ( n) 500 200 – 2 000 effects of sample size & spar-sity Covariates ( p) 30 10, 50, 100 high-dimensional regime States ( K) 3 (0 → 1 → 2) 2, 4 typical chronic-disease paths Clusters ( C) 4 2, 6 hidden strata you hope to un-cover Censoring rate 25% 0%, 40% realistic right-censoring Replicates 30 – stable confidence intervals Table 1: Simulation dimensions, defaults, and rationale for parameter sweeps. Each experiment follows a structured workflow to ensure fair comparison and reproducibility. For every combination of dataset parameters we repeat the experiment 30 times to account for stochastic vari-ability. In each repetition, we simulate a synthetic dataset comprising covariates X, event times Y ,censoring indicators δ, true underlying clusters, and ground truth state trajectories S∗. Following our modelling approach, we conduct a grid search to tune the hyperparameters (γ, μ, λ, k ), and the optimal values are then used to train the model. Performance is evaluated using a comprehensive set of metrics. Table 2 summarizes the evaluation metrics used to assess various aspects of model performance, includ-ing predictive accuracy, graph structure recovery, clustering quality, and computational efficiency. For benchmarking, we compare against the baseline and reference models listed in Table 3. These models are trained and evaluated under the same experimental settings as our proposed method, using identical input dimensions and evaluation criteria. As each experiment is repeated 30 times, we report the results as summary statistics (mean ± standard deviation) of the evaluation metrics. 15 Metric Description 
+
+Survival-prediction quality 
+
+Concordance Index (C-index) Measures the concordance between predicted and observed event times for each transition. Higher values indicate better discrimination. Time-dependent AUROC Optional metric capturing the model’s discrimi-natory power at different time points. 
+
+Graph / clustering recovery 
+
+Adjusted Rand Index (ARI) Measures the agreement between cluster assign-ments obtained from spectral clustering on S and true latent clusters c(i).Adjusted Mutual Information (AMI) Quantify clustering agreement with a focus on completeness and homogeneity. 
+
+Model characteristics 
+
+Sparsity ratio ∥β∥0/p Evaluates the fraction of active features; used to assess the impact of the ℓ1-penalty. Runtime and memory scaling Reports wall-clock time and memory footprint, especially focusing on O(n2) operations (e.g., on 
+
+n = 2000 ). Table 2: Evaluation metrics used to assess survival prediction performance, graph/clustering recovery, and computational characteristics. 
+
+4.2.2 Experiment 1: Joint learning improves prediction 
+
+We first evaluate the robustness of the survival prediction depending on the simulation dimensions we defined in Table 1. Moreover, we assess whether jointly optimizing the covariate effects β and the simi-larity graph S yields better predictive performance than comparative methods. We use the concordance index (C-index) and time-dependent AUROC. Results are displayed in Table 4. Jointly estimating the covariate effects and the similarity matrix enhances survival prediction compared to all competing approaches. The proposed model consistently achieves the highest C-index and time-dependent AUROC, clearly outperforming the comparison baselines. This confirms the benefit of coupling representation learning of patient similarity with risk modelling rather than relying on a pre-defined graph. Robustness analysis across simulation dimensions (number of patients, covariates, latent states, and censoring rates) shows that performance remains stable, with only minor fluctuations, attesting to the model’s resilience to structural noise in the data. 
+
+4.2.3 Experiment 2: Graph term recovers latent strata 
+
+To evaluate the ability of the learned graph to capture underlying patient heterogeneity, we compare cluster assignments obtained via spectral clustering on the similarity matrix S to the true latent groupings. The adjusted Rand index and the Adjusted Mutual Information (AMI) serve as the metric of interest. We test the model on data with varying parameters (with reference to Table 2) and we compared it to competing models, discussing successful recovery of latent strata. Results are presented in Table 5. The proposed model consistently attains equal-to-higher Adjusted Rand Index (ARI) and Adjusted Mu-tual Information (AMI) than competing graph-based or tree-based baselines, confirming that the learned similarity matrix S captures the true underlying patient structure. When the separation among clusters decreases (higher τ ), both ARI and AMI decline, as expected, since the latent strata become less dis-tinct. Overall, the results are suggesting that the learned graph embeds both covariate and risk-profile similarities effectively. 
+
+4.2.4 Experiment 3: ℓ1 finds right features and allows scaling 
+
+We test whether the sparsity-inducing penalty correctly identifies the subset of covariates with non-zero effects. This is quantified via the estimated sparsity ratio ∥β∥0/p , which we compare to the true signal proportion s (see Table 2). Moreover, to validate the scalability of our method, we measure runtime and 16 Label Description Our model Full joint optimization model that learns both the regression coefficients β and the similarity matrix 
+
+S simultaneously. 
+
+Cox-only Stratified Cox model using the same loss structure but without the similarity regularization term (γ = 0 ). 
+
+Fixed-Graph + Cox Uses a pre-computed RBF similarity graph based on covariates; optimizes only the Cox model coef-ficients β.
+
+k-NN + Cox Similar to Fixed-Graph + Cox but employs a sparse binary graph constructed via k-nearest neighbors. 
+
+Random Survival Forest A strong non-parametric ensemble baseline that handles censoring without explicit model struc-ture. Table 3: Baseline and comparative models used in the experimental study. 
+
+C-index Time dependent AUROC 
+
+Robustness 
+
+Patients (n) 0.939 ±0.011 0.984 ± 0.013 Covariates (p) 0.925 ± 0.019 0.982 ± 0.011 States (K) 0.937 ± 0.011 0.970 ± 0.023 Clusters (C) 0.942 ± 0.013 0.985 ± 0.011 Censoring rate (q) 0.945 ± 0.017 0.986 ± 0.01 Variance parameter ( τ ) 0.924 ± 0.015 0.964 ± 0.015 
+
+Comparison (with default values) 
+
+Our model 0.977 ± 0.007 0.988 ± 0.001 Cox-only 0.548 ± 0.007 0.735 ±0.038 Fixed-Graph + Cox 0.507 ± 0.09 0.712 ± 0.036 k-NN + Cox 0.582 ± 0.009 0.754 ±0.033 Random Survival Forest 0.81 ± 0.04 0.887 ± 0.007 Table 4: Experiment 1: Robustness and Model Comparison; results are presented in terms of Confidence Intervals of the metrics, as obtained from 30 replicas of the experiments. memory scaling as a function of sample size. Results are examined across varying dimensions and are presented in Table 6. The runtime analysis exhibits a near-linear trend in log-log scale with respect to sample size. Memory usage remains stable, confirming that the algorithm scales efficiently to larger cohorts without excessive computational overhead. 
+
+# 4.3 Ablation study 
+
+To better understand the contribution of each component of our model, we conducted a series of ablation studies. In each setting, we modify a single aspect of the modelling or data-generating pipeline while keeping all other factors constant. To assess the importance of the different regularization terms, we individually disable each component: the similarity-based graph penalty ( γ = 0 ), the neighbor smoothness regularizer ( λ = 0 ), and the sparsity-promoting ℓ1-penalty ( η = 0 ). This helps isolate the contribution of each inductive bias to overall model performance, particularly in terms of survival discrimination and latent cluster recovery. We report the resulting change in performance with respect to the full model using two key metrics: C-index (for survival prediction) and ARI (for clustering recovery). Results are presented in Table 7. 17 ARI AMI 
+
+Robustness 
+
+Patients (n) 0.02 ± 0.013 0.02 ± 0.013 Covariates (p) -0.003 ± 0 0.018 ± 0.009 States (K) 0.002 ± 0.006 0.017 ± 0.009 Clusters (C) 0.013 ± 0.015 0.013 ± 0.007 Censoring rate (q) 0.007 ± 0 0.012 ± 0.006 Variance parameter ( τ ) 0 ± 0 0.018 ± 0.008 
+
+Comparison (with default values) 
+
+Our model 0.015 ± 0.030 0.007 ± 0.010 Cox-only N.A. N.A. Fixed-Graph + Cox 0 ± 0.01 0.023 ± 0.002 k-NN + Cox 0.002 ± 0.006 0.004 ± 0.004 Random Survival Forest N.A. N.A. Table 5: Experiment 2: Robustness and Model Comparison; results are presented in terms of Confidence Intervals of the metrics, as obtained from 30 replicas of the experiments. 
+
+Figure 2: Log-log plot of the execution time of the proposed algorithm as a function of the number of individuals in the study, ranging from 100 to 800. Data points represent average execution times measured over 30 runs. The linear trend on the log-log scale suggests scalability characteristics of the algorithm across varying population sizes. Disabling any of the components results in performance degradation, substantially lowering both C-index and clustering quality, emphasizing their complementary roles in capturing population structure and ensuring consistent survival estimation. The full model therefore represents a balanced combination of components, each contributing to stability and generalization. 
+
+# 5 Application to Liver Metastases (LM) 
+
+We further validate our method with a real world case study, in the context of Liver Metastases (LM). Metastatic progression is a leading cause of cancer-related mortality, with the liver representing the most common site of distant metastases. In colorectal cancer (CRC), approximately 50% of patients develop colorectal liver metastases (CRLM) during the course of the disease. While systemic chemotherapy and surgical resection remain the primary therapeutic options, surgical eligibility is limited to a small subset of patients, and treatment selection is largely empirical [29, 30]. Currently, no validated biomarkers exist to stratify CRLM into clinically meaningful subtypes that could inform therapy. Given the large use of contrast-enhanced computed tomography (CT) in routine oncology workflows, imaging data represent a rich, underutilized source of non-invasive phenotypic information with potential biomarker utility [31, 32]. 18 Sparsity ratio Runtime Memory 
+
+Robustness 
+
+Patients (n) 1 ±0 11.94 ± 8.04 138 ± 3Covariates (p) 1 ± 0 28.13 ± 19.52 134 ± 1States (K) 1 ± 0 4.95 ± 1.24 134 ± 1Clusters (C) 1 ± 0 8.25 ± 2.92 134 ± 1Censoring rate (q) 1 ± 0 9.70 ± 3.83 134 ± 0Variance parameter ( τ ) 1 ± 0 9.39 ± 3.63 134 ±1
+
+Comparison (with default values) 
+
+Our model 1 ± 0 3.71 ± 0.01 129 ± 1Cox-only 1 ± 0 0.72 ±0.01 130 ± 1Fixed-Graph + Cox 1 ± 0 0.39 ± 0.02 134 ± 0k-NN + Cox 1 ± 0 0.42 ± 0.01 133 ± 1Random Survival Forest 1 ± 0 0.22 ± 0.017 150 ± 1Table 6: Experiment 3: Robustness and Model Comparison; results are presented in terms of Confidence Intervals of the metrics, as obtained from 30 replicas of the experiments. 
+
+C-index ARI 
+
+γ = 0 0.950 ± 0.017 0.017 ± 0.007 
+
+λ = 0 0.950 ± 0.014 0.000 ±0.001 
+
+η = 0 0.970 ± 0.006 -0.110 ±0.010 Full model 0.977 ± 0.007 0.015 ± 0.030 Table 7: Ablation study: Effect of Hyperparameters on Model Performance In this case study, we utilize time-resolved imaging and longitudinal clinical data to evaluate a trajectory-informed cancer subtyping framework. Our aim is to characterize imaging-based features of disease evolution that may serve as candidate biomarkers, enabling future work in predictive modelling and personalized therapy selection. 
+
+# 5.1 Dataset description 
+
+This study is based on a retrospective cohort of colorectal cancer patients treated at the Humanitas Research Hospital in Rozzano, Italy. The dataset comprises 102 patients diagnosed with colorectal liver metastases (CRLM), each having undergone systemic chemotherapy followed by hepatic resection. The collection and analysis of patient data were carried out under approval from the Institutional Review Board of Humanitas Research Hospital, in compliance with the Declaration of Helsinki and relevant national regulations on biomedical research. Because of the retrospective nature of the study, the need for informed consent was waived. For each patient, baseline clinical variables were recorded prior to the beginning of chemotherapy. These include age (in years), sex (binary: male/female), number of liver metastases (discrete count), presence of extrahepatic disease (binary: 0 = absent, 1 = present), timing of liver metastasis (binary: synchronous vs. metachronous with respect to primary tumour diagnosis). These covariates are commonly used in clinical practice to stratify risk and estimate prognosis and are therefore included for both descriptive and modelling purposes. For each patient, the largest liver metastasis was identified and analyzed using contrast-enhanced computed tomography (CT) scans at two time points: Baseline ( T0), prior to the initi-ation of systemic chemotherapy; Post-treatment ( T1), following completion of chemotherapy but prior to surgical resection. In both CT acquisitions, the lesion was manually segmented by expert radiologists ac-cording to standardized oncologic imaging protocols using LIFEx sotware ([33],www.lifexsoft.org). From each segmented lesion, 109 radiomic features were extracted using a validated pipeline, which includes intensity, texture, and shape descriptors consistent with the Image Biomarker Standardization Initiative (IBSI) guidelines [34]. These features are designed to quantitatively capture intra-tumoural heterogeneity and lesion morphology and are denoted by the vector: 
+
+X(t) 
+
+> i
+
+=
+
+
+
+X(t) 
+
+> i, 1
+
+, X (t) 
+
+> i, 2
+
+, . . . , X (t)
+
+> i, 109
+
+
+
+∈ R109 , t ∈ { 0, 1}, i ∈ { 1, ..., n },
+
+19 where X(t) 
+
+> i
+
+represents the radiomic feature vector of the i-th patient at time t (baseline or post-treatment). All patients underwent surgical resection following chemotherapy. We collected information about two main clinical outcomes, i.e., relapse , defined as the first occurrence of recurrent disease following resection, and overall survival , defined as time to death from any cause following resection. For each patient, the occurrence (event indicator) and timing (in months) of relapse and death were recorded, yielding right-censored survival outcomes. Let T Ri and T Di denote the time-to-relapse and time-to-death, respectively, with corresponding censoring indicators δRi , δ Di ∈ { 0, 1}.Additionally, we recorded information about treatment-related variables including the length of chemother-apy (in months) and the time interval between end of chemotherapy and resection (in weeks). These temporal markers provide context for interpreting both radiomic changes and outcome events. A com-plete summary of the clinical variables, treatment durations, radiomic feature distributions, and event time statistics is provided in the Supplementary Materials. 
+
+Figure 3: Schematic illustration of the clinical timeline for a representative patient in the cohort. (1) Baseline CT scan. (2) Chemotherapy. (3) Post-treatment CT scan. (4) Surgical resection. (5) Follow-up for relapse or death. 
+
+# 5.2 Methodological pipeline 
+
+This section outlines the methodological framework applied in our analysis, which comprises three main stages: (1) dataset preparation, including feature selection and transformation, necessary to construct a robust and interpretable input for downstream modelling; (2) model fitting; and (3) results interpretation. 
+
+5.2.1 Dataset Preparation 
+
+All baseline clinical variables were retained in the analysis. These include age, sex, number of metastases, presence of extrahepatic disease, and synchronous/metachronous metastasis. A small subset of patients (4 out of 102) had missing entries in one or more clinical variables; rather than apply imputation methods, which may introduce noise or bias given the low dimensionality and clinical semantics of the data, we excluded these patients. This resulted in a final cohort of 98 patients. Radiomic feature selection was conducted to reduce redundancy and enhance interpretability. To ensure a longitudinal consistency, we performed the selection as follows. We separately selected p variables in the baseline dataset X0 ∈ R109 and q variables in the post-treatment dataset X1 ∈ R109 , such that the two datasets resulted into X0 ∈ Rp and X1 ∈ Rq respectively. The selection was carried on based on pairwise Pearson correlation or Spearman correlation with a threshold of 0.9. Then, features belonging to the intersection p ∩ q, i.e., those with strong correlation in both imaging time points were discarded to avoid multi-collinearity and overfitting. This filtering step yielded 27 radiomic features for downstream analysis. All numerical variables, including clinical and radiomic features, were standardized via z-score normaliza-tion while binary categorical variables (e.g., sex, metastasis timing, extrahepatic disease) were embedded in a 2-dimensional vector space to yield continuous, semantically informative representations. This em-bedding was learned using a variation of the Word2Vec algorithm, adapted for categorical data [35]. The core idea of this method parallels the Continuous Bag-of-Words model in natural language processing. Each categorical variable value is treated analogously to a "word", and its "context" is defined by the co-occurrence with other categorical values across features for the same patient. A shallow neural net-work was trained to predict a target categorical value from its context, with an embedding layer mapping 20 inputs to a dense vector space. The result was a set of learned 2D embeddings that capture latent sim-ilarities among categories beyond what is achievable via one-hot encoding. The embedding framework is illustrated in Figure 4. The final 2D embeddings are used as input features in place of their original categorical encodings. 
+
+Figure 4: Schematic illustration of the embedding process for categorical variables using a Word2Vec-inspired Continuous Bag-of-Words model. 
+
+5.2.2 Model fitting and clustering 
+
+To explore the latent structure of disease evolution and derive clinically meaningful subtypes, we defined three alternative clock-reset multi-state models (MSMs), each corresponding to a different assumption about transition timing and state dependency. These models, formally described and illustrated in Figure 5, specify distinct configurations of time-to-event relationships, transition mechanisms, and allowable state trajectories. All models are aligned with the clinical course of colorectal liver metastases, including systemic treatment, resection, relapse, and survival. Using each of these MSM configurations, we applied the trajectory-informed graph clustering approach detailed in the Section 2. For a given model structure, the algorithm first estimates a patient similarity graph by jointly embedding clinical, radiomic, and time-to-event data within the corresponding MSM framework. Spectral clustering is then performed on the resulting graph Laplacian to identify patient subgroups that are, by design, similar in their longitudinal disease trajectories and baseline characteristics. This allowed us to derive coherent subgroups reflective of heterogeneous disease pathways. Hyperparameter optimization was carried out via classical grid search. The tuning objective considered both the statistical relevance of the subtyping and its predictive quality. Specifically, we retained only those hyperparameter combinations that produced partitions of the cohort with significantly different survival distributions, as measured by a Log-Rank test with p-value < 0.05 . Among these candidate configurations, we selected the optimal one based on the highest Harrell’s concordance index (C-index), which quantifies the discriminative power of the survival predictions. 
+
+5.2.3 Evaluation of the goodness of fit 
+
+To assess the quality and clinical relevance of the clustering results derived from each multi-state model (MSM), we employed an evaluation strategy involving both survival modelling and classification perfor-mance. First, we evaluated the goodness-of-fit of the trajectory-informed model using Harrell’s concordance index (C-index), a standard metric for assessing the predictive accuracy of time-to-event models. The C-index was computed based on the estimated Cox proportional hazards weights β, quantifying the model’s ability to rank patients by risk across all possible pairwise comparisons. Second, to test whether the derived subtypes are associated with differential disease trajectories, we fit a classical multi-state model using the survival and mstate packages in R. In this model, the only covariate 21 Baseline  Therapy     
+
+> Death
+> Baseline Therapy Relapse
+> Baseline Therapy Relapse
+> Death
+> Model 1
+> Model 2
+> Model 3
+
+Figure 5: Schematic representation of the three clock-reset multi-state models (MSMs) used in this study. Each model encodes different assumptions about the timing and sequence of clinical transitions: Model 1 captures baseline to therapy to death; Model 2 includes relapse as an intermediate state before death; Model 3 allows for competing relapse vs death trajectories. was the cluster assignment label for each patient. A global Log-Rank test was applied to assess whether the survival curves across subgroups differed significantly. A p-value < 0.05 was considered evidence that the subtypes represent clinically distinct trajectories. Third, for each discovered cluster Ck, we trained a binary LASSO-regularized logistic regression model to classify whether an individual belongs to Ck or not and identify features associated with the labelling. The optimal hyperparameter λ was selected with a 5-fold cross validation monitoring the AUC metric. Classification performance was assessed using AUC in a 5-fold cross-validation scheme to ensure robust-ness. For those features that were significant at testing (p-value ≤ 0.05), a violin plot was generated to highlight their difference between the two clusters. Finally, to visualize the temporal dynamics of disease progression across subtypes, Kaplan-Meier (KM) curves were plotted for each clinically meaningful transition (e.g., from surgery to relapse or death), stratified by cluster label. These plots provide an interpretable depiction of subtype-specific risk profiles over time and highlight differences in progression patterns among the identified groups. Additionally, we used heatmaps to visualize transition probability - as 1 − survival probability - within the multi-state models. 
+
+# 5.3 Results 
+
+We evaluated the trajectory-informed clustering method under three different clock-reset multi-state model (MSM) configurations. Each model captures a distinct structure of clinical state transitions, and clustering was performed using the patient similarity graphs estimated under each configuration. The evaluation includes predictive metrics including C-index, cluster discriminability via AUROC, and subgroup survival separation through Log-Rank tests and Kaplan-Meier (KM) curves. The aggregated summary of the results are available in Table 8 and, in the following, we detailed them. 
+
+Model 1: Progression to Death Model 1 represents a progressive three-state pathway capturing the natural sequence of events from diagnosis to therapy and, ultimately, to death. Patients begin in a 22 Model State Transitions C-index # Clusters Log-Rank p-value AUC 
+
+Model 1 Baseline → Therapy → Death 0.67 2 0.04 0.74 Model 2 Baseline → Therapy → Relapse 0.60 2 0.05 0.94 Model 3 Baseline → Therapy → {Re-lapse, Death} 0.64 2 0.003 0.87 Table 8: Comparison of the three multi-state models in terms of predictive performance, survival strati-fication, and clinical relevance. 
+
+Model Kaplan-Meier Insights and Clinical Utility 
+
+Model 1 Strong survival curve differentiation; red cluster shows survival predominantly within 5 years, while blue cluster has a 50% probability of surviving up to 10 years. Separation suggests some prognostic relevance and clinical utility for precise risk stratification. Model 2 Minimal relapse-based separation; survival curves are almost overlapped. High AUC may indicate feature-driven similarity rather than survival-based stratification. Limited clinical utility. Model 3 Meaningful separation in relapse risk; differentiation in transition from therapy to death, though limited by low event frequency. No meaningful stratification detected in relapse-to-death transition. Clinically useful for for guiding treatment intensity and monitoring strategies based on relapse risk, but provides limited insight into post-relapse survival out-comes. baseline state, transition to a post-chemotherapy state, and may subsequently reach an absorbing death state following surgery. The model was configured with parameter settings: η = 0 .0001 , γ = 10000 , μ = 0 .00005 , k = 7 . At the last iteration of the optimization procedure, the estimated transition weights based on the inverse of the parameters variance are 2.04 for the transition Baseline → Therapy and 2.32 for the transition Therapy 
+
+→ Death . Training dynamics for the model, including the evolution of the loss function across epochs, are provided in the Supplementary Materials. Upon convergence, the model achieved a C-index of 0.67, indicating moderate accuracy in survival predic-tion. Spectral clustering applied to the similarity matrix resulted in 2 patient subgroups. Stratification by cluster in a survival MSM yielded a Log-Rank test p-value of 0.04, suggesting statistically signifi-cant—but modest—differences in overall survival. The classifier distinguishing cluster membership based on clinical and radiomic features achieved a AUC of 0.74. The Kaplan-Meier curves (Figure 6) demonstrate a clear and substantial separation between the two clusters, indicating meaningful differences in survival outcomes. Patients in the blue cluster exhibit significantly better survival probability compared to those in the red cluster, with the curves diverging notably from approximately 1 year onwards and the gap widening progressively over time. While the red cluster shows a relatively steep decline in survival, with the majority of patients experiencing the event of death by around 6 years, the blue cluster presents a much more favorable prognosis. This group maintains a stable survival probability of approximately 0.50 after 5 years, with this proportion of patients remaining alive and event-free extending to the end of the 10-year observation period. This strong and sustained separation throughout the follow-up period strongly suggests that the underlying clustering effectively captures significant and clinically relevant heterogeneity in patient trajectories with respect to survival outcomes, providing valuable insights for differentiated risk assessment. The distinct long-term survival patterns imply that the two identified clusters represent genuinely different risk groups within the patient population, underscoring the potential for tailored therapeutic approaches. This clear separation highlights a clinically actionable distinction: the model effectively isolates a high-risk group that may benefit from intensified monitoring or adjuvant therapy, as well as a lower-risk group that could potentially be spared unnecessary interventions. Intensity-based skewness, both before and after chemotherapy, stands out as the only radiomic feature that achieves statistical significance (p-value < 0.05) in predicting the cluster a patient belongs to, when survival data are not included in the classification task (Figure 7). Figure 8 displays a graphical comparison between the transition probabilities of an individual based on the cluster to which a patient has been assigned to. It is possible to notice a clear difference between the two clusters in the transition to the death state. 23 Figure 6: Kaplan-Meier curve for Model 1 (therapy to death). The two clusters show significant separa-tion, especially from year 5 onwards. 
+
+Figure 7: Violin plots for significant features in Model 1: Intensity-based skewness at baseline and after chemotherapy. 
+
+Figure 8: Graphical representation of transition probabilities for all transitions over time in the multi-state model 1. The red cluster shows a higher transition probability toward death than the blue cluster around four years after therapy. 
+
+Model 2: Progression to Relapse Model 2 adopts a similar structure but redefines the final ab-sorbing state as disease relapse rather than death. This change emphasizes early disease recurrence as a clinically meaningful event distinct from mortality, and may better reflect the course of metastatic 24 colorectal cancer, where relapse is often a pivotal moment in disease management. Parameters for this model were set as: η = 0 .001 , γ = 1000 , μ = 0 .001 , k = 6 . Transition weights after the last iteration of the optimization algorithm are 2.35 for the transition Baseline → Therapy and 2.62 for the transition Therapy → Relapse . The final C-index was 0.60, and the clustering again yielded two patient subgroups. The clusters showed moderate survival differentiation, with a Log-Rank p-value of 0.05 and an AUC of 0.94 for the classifier. Despite the moderate p-value obtained from the Log-Rank test p-value and the high accuracy achieved by the classifier in predicting patient clusters, the inspection of the Kaplan-Meier curves (Figure 9) do not reveal a clear survival stratification between the groups with respect to the event of disease relapse. The survival curves show overlap and only a slight separation, indicating that the clustering does not strongly differentiate patient outcomes based on survival. This discrepancy suggests that the classifier’s strong performance may be driven primarily by the radiomic and clinical features used for clustering, rather than by meaningfully integrting survival information: the clustering task appears to rely heavily on feature similarity without adequately capturing the heterogeneity in survival trajectories, which limits its ability to produce clinically relevant survival-based stratification. 
+
+Figure 9: Kaplan-Meier curve for Model 2 (therapy to relapse). The two curves show a similar progression over time The significant features identified for predicting an individual’s cluster based on radiomic and clinical data are Intensity-based variance after chemotherapy, Neighbouring Gray Tone Difference Matrix (NGTDM) strength after chemotherapy, and age (Figure 10). Figure 11 displays a graphical comparison between the transition probabilities of an individual based on the cluster to which a patient has been assigned to. As in the Kaplan-Meier plots, a clear differentiation between the two clusters is not achieved. 
+
+Model 3: Competing Risks of Relapse and Death Model 3 introduces a more nuanced clinical picture by simultaneously modelling both relapse and death as competing absorbing states. This accounts for the non-trivial portion of patients who die without experiencing relapse, offering a more complete view of patient trajectories. With parameters set to η = 0 .001 , γ = 1000 , μ = 0 .0005 , k = 6 and weights at the end of the optimization process set to 1.82 for the transition Baseline → Therapy , 1.54 for the transition Therapy → Death , 2.54 for the transition Therapy → Relapse and 2.08 for the transition Relapse → Death , this model achieved the C-index of 0.64. Spectral clustering produced two distinct subgroups, with the best Log-Rank test p-value of 0.003 and an AUC of 0.87- lower than Models 2, but reflecting the added complexity of modelling multiple outcomes. The fact that transition Therapy → Death has the lowest weight, and consequently the highest variance in the parameters associated with that transition, is expected given that only six patients in the dataset experience this transition. This limited sample size results in less information to reliably estimate the parameters, leading to greater uncertainty and variability. The KM curve for the transition from therapy to relapse (Figure The Kaplan-Meier curve for the transition from therapy to relapse (Figure 12 a) shows meaningful subgroup differentiation. The red cluster exhibits 25 Figure 10: Violin plots for significant features in Model 2: Intensity-based variance after chemotherapy, Neighbouring Gray Tone Difference Matrix strength after chemotherapy and age. 
+
+Figure 11: Graphical representation of transition probabilities for all transitions over time in the multi-state model 2. The two clusters show very similar transition probabilities over the timeline the worst prognosis, with rapid and early relapse. The blue cluster initially demonstrates a survival trend similar to the red cluster, though it diverges significantly after approximately 0.5 to 1 year, maintaining a higher relapse-free survival probability and indicating that some individuals reach a longer disease-free period. The transition from therapy to death (Figure 12 b) suffers the same problem as described before about the lack of a sufficient amount of data. The transition from relapse to death (Figure 12 c) produced curves that, while showing some periods of overlap, also demonstrate a consistent trend of differentiation. The blue cluster generally maintains a better survival probability than the red cluster, with the curves beginning to separate more clearly after approximately 1.5 years. However, a strong differentiation is not noticeable, differently from the Baseline -> Relapse transition. This may suggest that once relapse occurs, survival is influenced by factors that are partially captured by the current features or model structure, with the blue cluster still exhibiting a survival advantage. The similarity of the KM curves for the relapse-to-death transition across clusters may suggest that once a patient enters the relapse stage, there is minimal differentiation in the probability of death. This in-dicates that the current model and features may not capture factors influencing survival post-relapse, highlighting a relative homogeneity in outcomes after relapse occurs. This is clinically plausible, as treat-ment guidelines often consider relapse to represent essentially a new disease state, prompting an entirely different therapeutic pathway that overrides prior risk distinctions. Based on the observed similarity in survival curves after relapse, it is possible to hypothesize that interventions aimed at preventing relapse might have a greater impact on patient survival than efforts focused on stratifying risk post-relapse. While this interpretation is supported by the current data, further clinical investigation is needed to confirm whether prioritizing relapse prevention indeed leads to improved outcomes. 26 Figure 12: Kaplan-Meier curve for Model 3: a) therapy to relapse; b) therapy to death; c) relapse to death. The features Grey-Level Run Length Matrix Short Run Low Grey Level Emphasis before chemotherapy, Morphological Compactness after chemotherapy, and Neighbouring Gray Tone Difference Matrix Strength after chemotherapy were found to be significant in the fitted classifier for predicting the cluster to which a patient belongs (Figure 13). 
+
+Figure 13: Violin plots for significant features in Model 3: Grey-Level Run Length Matrix Short Run Low Grey Level Emphasis before chemotherapy, Morphological Compactness after chemotherapy and Neighbouring Gray Tone Difference Matrix Strength after chemotherapy. Figure 14 displays a graphical comparison between the transition probabilities of an individual based on the cluster to which a patient has been assigned to. It is possible to see that all the transition to events of interest present a slight-to-moderate, but yet noticeable, differentiation in the two clusters. 
+
+# 5.4 Discussion 
+
+Among the three models evaluated, each demonstrates distinct strengths and limitations in terms of survival prediction performance, possibility of determine the cluster to which a patient belongs to a-priori and clinical relevance. Model 1 achieves the highest concordance index (0.67), indicating it is the most effective at predicting patients’ survival. The Kaplan-Meier curves for this model show a clear ability to stratify individuals by 27 Figure 14: Graphical representation of transition probabilities for all transitions over time in the multi-state model 3. The two clusters show very significant differentiation in all transition probabilities over the timeline death risk, suggesting clinical utility in identifying high-risk patients. Model 2 is the one with the highest area under the curve (AUC), reflecting strong accuracy in predicting cluster membership based on radiomic and clinical features. Despite this, the analysis of the KM plot reveals that Model 2 has very low discrimination capability with respect to the event of disease relapse, implying that its high AUC may be driven more by the similarity of input features rather than by meaningful differences in patient outcomes. This raises concerns that the model may overfit to feature patterns without effectively capturing clinically relevant survival heterogeneity. Model 3, despite its increased complexity, presents a compelling trade-off between predictive power and the ability to differentiate survival outcomes with respect to both relapse and death events. While achiev-ing intermediate C-index and AUC values, its most notable strength lies in generating the most significant Log-Rank test p-value, which translates to a more pronounced separation of survival curves among all possible transitions. Model 3 demonstrates an improved capacity to stratify patients by relapse risk com-pared to model 2, providing a more meaningful distinction between subgroups for this outcome. However, this comes at the cost of a less precise stratification for death risk. This suggests that while incorporating competing risks and additional clinical information may offer a better overall view of patient trajectories by accounting for multiple possible events, it can lead to a loss of precision when specifically stratifying the risk for individual outcomes like death. Overall, Model 3’s increased complexity allows it to capture aspects of patient heterogeneity that the other models may miss, making it a reasonable compromise between predictive accuracy and clinical interpretability. Models 1 and 2 demonstrate strengths in sur-vival ranking and feature-based classification, respectively, but their limitations highlight the challenges of achieving both high predictive performance and meaningful clinical stratification in heterogeneous patient populations. Across all three models, our trajectory-informed clustering approach demonstrated the ability to identify subgroups with differing survival patterns. While quantitative metrics alone were comparable, inspection of Kaplan-Meier curves was essential to uncover meaningful stratification. Notably, Model 3 achieved the best balance between interpretability, predictive accuracy and clinical utility when focusing on the death event. This reinforces the promise of integrating radiomic features, clinical data, and temporal modelling to uncover subtypes that are not only statistically distinct, but also actionable in guiding therapy, patient stratification, and future clinical trial design. 
+
+# 6 Conclusions 
+
+In this work, we proposed a novel approach for cancer subtyping based on longitudinal data. We first evaluated the model on a set of randomly generated datasets comparing the results with other methods and then performed an ablation study to assure that every component of the optimization problem has a positive impact on the final result. Finally, we applied the method to real-world dataset of patients affected by colorectal liver metastases employing three different multi-state models. Two out of three models demonstrated promising results in identifying two distinct subgroups of patients, each with dif-ferent disease-free and survival time expectations. Notably, the algorithm could be leveraged to enhance clinical decision-making and ultimately improve patient outcomes by tailoring treatment planning. While this work presents a valuable method for cancer subtyping, there are two key limitations that warrant attention in future research. First, the approach assumes Markovian transitions in the multi-state model, which restricts its ability to incorporate variations in covariates between states. Second, 28 the method’s representation of competing risks through a linear combination, though flexible, may over-simplify the complexities of patient heterogeneity in the presence of competing risks. Addressing these limitations could enhance the model’s robustness and its applicability in clinical settings. 29 Supplementary Materials 
+
+# Patients’ clinical description 
+
+A. Patients’ Outcomes Feature Frequency Percentage 
+
+Disease free 17 17.3% Alive with disease relapse 39 39.8% Dead after disease relapse 37 37.8% Dead without disease relapse 5 5.1% 
+
+B. Patients’ Clinical Categorical Features Feature Values Percentage 
+
+Sex M: 59 M: 60.3% F: 39 F: 39.7% Extrahepatic disease Yes: 22 Yes: 22.5% No: 76 No: 77.5% Synchronous/Metachronous S: 72 S: 73.4% M: 26 M: 26.6% 
+
+C. Patients’ Clinical Numerical Features Feature Mean SD Median 
+
+Age 61.3 11.1 61.5 N metastases 6.1 4.4 5.0 Table 9: Patient Clinical Data Summary 30 Patients’ radiomics description 
+
+Feature Radiomics baseline Radiomics post-treatment 
+
+Mean SD Median Mean SD Median MORPHOLOGICAL_Volume 69428 142938 16918 18373 50899 4437 MORPHOLOGICAL_ApproximateVolume 69537 143016 17031 18445 50963 4489 MORPHOLOGICAL_Compactness 0.02897 0.00568 0.02963 0.03075 0.005366 0.031875 MORPHOLOGICAL_CentreOfMassShift 0.14790 0.13184 0.10568 0.47111 0.39687 0.36119 INTENSITY-BASED_Mean 69.5570 18.3011 69.1854 73.710 20.975 70.527 INTENSITY-BASED_Variance 646.842 980.291 507.205 593.13 319.05 503.22 INTENSITY-BASED_Skewness 0.14812 0.41450 0.11977 0.10160 0.87914 0.15893 INTENSITY-BASED_Kurtosis 0.90497 4.19676 0.08374 1.58793 10.241 0.04260 INTENSITY-BASED_MinimumGreyLevel -34.557 125.296 -10.5 -8.7244 74.4167 1.0 INTENSITY-BASED_90thPercentile 100.076 21.3577 98.5 104.13 23.340 101.5 INTENSITY-BASED_MaximumGreyLevel 182.773 102.811 161 165.417 55.4146 148.5 INTENSITY-BASED_InterquartileRange 31.3434 11.5948 30.5 31.6734 9.37178 30.0 INTENSITY-BASED_Range 217.331 200.652 167.5 174.142 99.0992 151.5 INTENSITY-BASED_CoefficientOfVariation 0.37166 0.20153 0.33595 0.344205 0.131670 0.315178 GLCM_JointMaximum 0.04824 0.02229 0.04264 0.050196 0.02248 0.045354 GLCM_DifferenceAverage 1.84829 0.94464 1.72193 1.85608 0.45142 1.77284 GLCM_DifferenceEntropy 4.50187 2.72321 5.80116 6.08266 0.61347 6.12462 GLCM_NormalisedInverseDifference 0.91651 0.02641 0.91962 0.90518 0.026365 0.90658 GLCM_Correlation 0.43917 0.17071 0.44016 0.40512 0.153657 0.425651 GLCM_ClusterShade -19.497 318.784 4.44652 18.5405 67.2203 10.0526 GLRLM_ShortRunsEmphasis 0.87600 0.03344 0.87920 0.89319 0.02712 0.89417 GLRLM_ShortRunLowGreyLevelEmphasis 7.58e-5 3.58e-6 7.59e-5 7.67e-5 3.00e-6 7.68e-5 GLRLM_ShortRunHighGreyLevelEmphasis 10155 577.530 10145 10435.9 603.289 10347.3 NGTDM_Contrast 0.04572 0.02652 0.04194 0.06325 0.03761 0.05396 NGTDM_Strength 0.22044 0.36028 0.12711 0.82447 1.14152 0.40177 GLSZM_SmallZoneEmphasis 0.59157 0.06448 0.59989 0.57793 0.05305 0.5909 GLSZM_ZoneSizeEntropy 5.73740 0.53856 5.81217 5.48960 0.60256 5.56010 
+
+Table 10: Radiomics Features: Baseline vs Post-treatment 31 Training Loss Curves 
+
+This section presents the loss curves of the proposed algorithm applied to the presented case study. At each iteration of the outermost loop of Algorithm 1, the total loss function was evaluated using the current estimates of S and β. These loss values were recorded at each iteration to monitor the progression of the optimization process. Since the initialization values for both S and β are fixed and no stochastic elements were introduced, the entire procedure is deterministic, ensuring reproducibility of the results. After completing all iterations, a loss graph was generated by plotting the total loss against the iteration number. a)   
+
+> a) Model 1 b) Model 2 c) Model 3
+
+Figure 15: Training losses for the three fitted models, each reflecting different assumptions about clinical transition dynamics. Model 1 represents a linear progression from baseline to therapy and ultimately to death. Model 2 incorporates relapse as an intermediate state preceding death. Model 3 introduces competing trajectories, allowing patients to either relapse or die following therapy. Panels a), b), and c) correspond to Models 1, 2, and 3, respectively. 32 Acknowledgements 
+
+The authors wish to thank the Italian Association for Cancer Research (AIRC - grant #2019-23822), the physicians who contributed to data collection and the patients. L. Cavinato is funded by the Na-tional Plan for NRRP Complementary Investments “Advanced Technologies for Human-centred Medicine” (PNC0000003). The present research is part of the activities of “Dipartimento di Eccellenza 2023-2027". 
+
+# References 
+
+[1] World Health Organization. Cancer, 2024. Available at: https://www.who.int/health-topics/ cancer .[2] Ibiayi Dagogo-Jack and Alice T Shaw. Tumour heterogeneity and resistance to cancer therapies. 
+
+Nature reviews Clinical oncology , 15(2):81–94, 2018. [3] Kathryn L Simpson, Dominic G Rothwell, Fiona Blackhall, and Caroline Dive. Challenges of small cell lung cancer heterogeneity and phenotypic plasticity. Nature Reviews Cancer , pages 1–16, 2025. [4] Sandro Hodel, Christoph Laux, Jan Farei-Campagna, Tobias Götschi, Beata Bode-Lesniewska, and Daniel Andreas Müller. The impact of biopsy sampling errors and the quality of surgical margins on local recurrence and survival in chondrosarcoma. Cancer management and research , pages 3765– 3771, 2018. [5] Zhenwei Yang, Dimitris Rizopoulos, Eveline AM Heijnsdijk, Lisa F Newcomb, and Nicole S Erler. Personalized biopsy schedules using an interval-censored cause-specific joint model. arXiv preprint arXiv:2209.00105 , 2022. [6] Ran Duan, Lin Gao, Yong Gao, Yuxuan Hu, Han Xu, Mingfeng Huang, Kuo Song, Hongda Wang, Yongqiang Dong, Chaoqun Jiang, et al. Evaluation and comparison of multi-omics data integration methods for cancer subtyping. PLoS computational biology , 17(8):e1009224, 2021. [7] Lan Zhao, Victor HF Lee, Michael K Ng, Hong Yan, and Maarten F Bijlsma. Molecular subtyp-ing of cancer: current status and moving toward clinical applications. Briefings in bioinformatics ,20(2):572–584, 2019. [8] Richard C Wang and Zhixiang Wang. Precision medicine: disease subtyping and tailored treatment. 
+
+Cancers , 15(15):3837, 2023. [9] Silvia Liverani, Lucy Leigh, Irene L Hudson, and Julie E Byles. Clustering method for censored and collinear survival data. Computational Statistics , 36:35–60, 2021. [10] Eric Bair and Robert Tibshirani. Semi-supervised methods to predict patient survival from gene expression data. PLoS biology , 2(4):e108, 2004. [11] Laura Manduchi, Ričards Marcinkevičs, Michela C Massi, Thomas Weikert, Alexander Sauter, Ver-ena Gotta, Timothy Müller, Flavio Vasella, Marian C Neidert, Marc Pfister, et al. A deep variational approach to clustering survival data. In International Conference on Learning Representations .[12] Cheng Liu, Wenming Cao, Si Wu, Wenjun Shen, Dazhi Jiang, Zhiwen Yu, and Hau-San Wong. Super-vised graph clustering for cancer subtyping based on survival analysis and integration of multi-omic tumor data. IEEE/ACM Transactions on Computational Biology and Bioinformatics , 19(2):1193– 1202, 2020. [13] Hein Putter, Marta Fiocco, and Ronald B Geskus. Tutorial in biostatistics: competing risks and multi-state models. Statistics in medicine , 26(11):2389–2430, 2007. [14] Feiping Nie, Xiaoqian Wang, and Heng Huang. Clustering and projected clustering with adap-tive neighbors. In Proceedings of the 20th ACM SIGKDD international conference on Knowledge discovery and data mining , pages 977–986, 2014. [15] Thomas H Scheike and Mei-Jie Zhang. Direct modelling of regression effects for transition probabil-ities in multistate models. Scandinavian Journal of Statistics , 34(1):17–32, 2007. 33 [16] Sander Greenland. Quantitative methods in the review of epidemiologic literature. Epidemiologic Reviews , 9:1–30, 1987. [17] Trevor Hastie, Robert Tibshirani, and Jerome Friedman. The Elements of Statistical Learning: Data Mining, Inference, and Prediction . Springer Series in Statistics. Springer Science & Business Media, 2nd edition, 2009. [18] Bradley P. Carlin and Thomas A. Louis. Bayesian Methods for Data Analysis . Chapman and Hall/CRC, Boca Raton, 3rd edition, 2008. [19] Fernando Marín-Martínez and Julio Sánchez-Meca. Weighting by inverse variance or by sample size in random-effects meta-analysis. Educational and Psychological Measurement , 70(1):56–73, 2010. [20] A. Fisher. Inverse-variance weighting for estimation of heterogeneous treatment effects. In Forty-first International Conference on Machine Learning , July 2024. [21] Zhaoguan Lin, Yusha Deng, and Wei Pan. Combining the strengths of inverse-variance weighting and egger regression in mendelian randomization using a mixture of regressions model. PLoS Genetics ,17(11):e1009922, 2021. [22] Per K. Andersen, Ørnulf Borgan, Richard D. Gill, and Niels Keiding. Statistical Models Based on Counting Processes . Springer Series in Statistics. Springer-Verlag, New York, 1993. [23] Fan R. K. Chung. Spectral graph theory , volume 92. American Mathematical Society, 1997. [24] Xiaojie Guo. Robust subspace segmentation by simultaneously learning data representations and their affinity matrix. In IJCAI , pages 3547–3553, 2015. [25] Dengyong Zhou, Olivier Bousquet, Thomas Navin Lal, Jason Weston, and Bernhard Schölkopf. Learning with local and global consistency. In Advances in neural information processing systems ,volume 16, pages 321–328, 2004. [26] Mikhail Belkin and Partha Niyogi. Laplacian eigenmaps for dimensionality reduction and data representation. Neural computation , 15(6):1373–1396, 2003. [27] Chang Wang and Sridhar Mahadevan. Manifold alignment using procrustes analysis. In Proceedings of the 25th international conference on Machine learning , pages 1120–1127, 2009. [28] Tianyi Wang, Zhe Liu, Yao Jin, Jing Xu, and Yunan Yang. Graph-regularized cox model for survival prediction. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 34, pages 619– 626, 2020. [29] Hui Zhou, Zhongtao Liu, Yongxiang Wang, Xiaoyong Wen, Eric H Amador, Liqin Yuan, Xin Ran, Li Xiong, Yuping Ran, Wei Chen, et al. Colorectal liver metastasis: molecular mechanism and interventional therapy. Signal transduction and targeted therapy , 7(1):70, 2022. [30] Felix Che-Lok Chow and Kenneth Siu-Ho Chok. Colorectal liver metastases: An update on multi-disciplinary approach. World journal of hepatology , 11(2):150, 2019. [31] Francesco Fiz, Luca Viganò, Nicolò Gennaro, Guido Costa, Ludovico La Bella, Alexandra Boichuk, Lara Cavinato, Martina Sollini, Letterio S Politi, Arturo Chiti, et al. Radiomics of liver metastases: a systematic review. Cancers , 12(10):2881, 2020. [32] Azarakhsh Baghdadi, Sahar Mirpour, Maryam Ghadimi, Mina Motaghi, Bita Hazhirkarzar, Timo-thy M Pawlik, and Ihab R Kamel. Imaging of colorectal liver metastasis. Journal of Gastrointestinal Surgery , 26(1):245–257, 2022. [33] Christophe Nioche, Fanny Orlhac, Sarah Boughdad, Sylvain Reuzé, Jessica Goya-Outi, Charlotte Robert, Claire Pellot-Barakat, Michael Soussan, Frédérique Frouin, and Irène Buvat. Lifex: a free-ware for radiomic feature calculation in multimodality imaging to accelerate advances in the char-acterization of tumor heterogeneity. Cancer research , 78(16):4786–4789, 2018. [34] Alex Zwanenburg, Stefan Leger, Martin Vallières, and Steffen Löck. Image biomarker standardisation initiative. arXiv preprint arXiv:1612.07003 , 2016. 34 [35] Hahn Waldemar, Sedlmayr Martin, and Wolfien Markus. Word2vec embeddings for categorical values in synthetic tabular generation. In 2022 International Conference on Computational Science and Computational Intelligence (CSCI) , pages 613–622. IEEE, 2022. 35
